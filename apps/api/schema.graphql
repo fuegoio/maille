@@ -1,0 +1,192 @@
+type Account {
+  default: Boolean!
+  id: UUID!
+  movements: Boolean!
+  name: String!
+  startingBalance: Float
+  startingCashBalance: Float
+  type: String!
+}
+
+type Activity {
+  amount: Float!
+  category: UUID
+  date: Date!
+  description: String
+  id: UUID!
+  liabilities: [Liability!]
+  movements: [ActivityMovement!]!
+  name: String!
+  number: Int!
+  project: UUID
+  status: String!
+  subcategory: UUID
+  transactions: [Transaction!]!
+  type: String!
+}
+
+type ActivityCategory {
+  id: UUID!
+  name: String!
+  type: String!
+}
+
+type ActivityMovement {
+  amount: Int!
+  id: UUID!
+  movement: UUID!
+}
+
+input ActivityMovementInput {
+  amount: Int!
+  id: UUID!
+  movement: UUID!
+}
+
+type ActivitySubCategory {
+  category: UUID!
+  id: UUID!
+  name: String!
+}
+
+type Contact {
+  approved: Boolean!
+  contact: UUID!
+  contactEmail: String!
+  id: UUID!
+  liabilityAccount: UUID
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+type DeleteActivityResponse {
+  id: String!
+  success: Boolean!
+}
+
+type DeleteMovementActivityResponse {
+  id: String!
+  success: Boolean!
+}
+
+type DeleteMovementResponse {
+  id: String!
+  success: Boolean!
+}
+
+type DeleteTransactionResponse {
+  id: String!
+  success: Boolean!
+}
+
+type Event {
+  clientId: UUID!
+  createdAt: Float!
+  payload: String!
+  type: String!
+}
+
+type Liability {
+  account: UUID!
+  activity: UUID
+  amount: Float!
+  date: Date!
+  linkId: UUID!
+  linkedAmount: Float
+  name: String!
+  status: String!
+}
+
+type Movement {
+  account: UUID!
+  activities: [MovementActivity!]!
+  amount: Float!
+  date: Date!
+  id: UUID!
+  name: String!
+  status: String!
+}
+
+type MovementActivity {
+  activity: UUID!
+  amount: Int!
+  id: UUID!
+}
+
+type Mutation {
+  addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID!, id: UUID!, toAccount: UUID!): Transaction!
+  createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!): Activity!
+  createActivityCategory(id: UUID!, name: String!, type: String!): ActivityCategory!
+  createActivitySubCategory(category: UUID!, id: UUID!, name: String!): ActivitySubCategory!
+  createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!): Movement!
+  createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!): MovementActivity!
+  createProject(emoji: String, id: UUID!, name: String!): Project!
+  deleteActivity(id: UUID!): DeleteActivityResponse!
+  deleteActivityCategory(id: UUID!): DeleteActivityResponse!
+  deleteActivitySubCategory(id: UUID!): DeleteActivityResponse!
+  deleteMovement(id: UUID!): DeleteMovementResponse!
+  deleteMovementActivity(id: UUID!): DeleteMovementActivityResponse!
+  deleteProject(id: UUID!): Boolean!
+  deleteTransaction(activityId: UUID!, id: UUID!): DeleteTransactionResponse!
+  updateActivity(category: UUID, date: Date, description: String, id: UUID!, name: String, project: UUID, subcategory: UUID, type: String): Activity!
+  updateActivityCategory(id: UUID!, name: String!): ActivityCategory!
+  updateActivitySubCategory(id: UUID!, name: String!): ActivitySubCategory!
+  updateMovement(amount: Float, date: Date, id: UUID!): Movement!
+  updateMovementActivity(amount: Float!, id: UUID!): MovementActivity!
+  updateProject(emoji: String, endDate: Date, id: UUID!, name: String, startDate: Date): Project!
+  updateTransaction(activityId: UUID!, amount: Float, fromAccount: UUID, id: UUID!, toAccount: UUID): Transaction!
+}
+
+type Project {
+  emoji: String
+  endDate: Date
+  id: UUID!
+  name: String!
+  startDate: Date
+}
+
+type Query {
+  accounts: [Account!]!
+  activities: [Activity!]!
+  activityCategories: [ActivityCategory!]!
+  activitySubcategories: [ActivitySubCategory!]!
+  contacts: [Contact!]!
+  events(lastSync: Float!): [Event!]!
+  liabilities: [Liability!]!
+  movements: [Movement!]!
+  projects: [Project!]!
+  settings: Settings!
+}
+
+type Settings {
+  currency: String!
+  startingPeriod: String!
+}
+
+type Subscription {
+  """Events related to posts"""
+  events: Event!
+}
+
+type Transaction {
+  amount: Int!
+  fromAccount: UUID!
+  id: UUID!
+  liabilities: [Liability!]
+  toAccount: UUID!
+}
+
+input TransactionInput {
+  amount: Int!
+  fromAccount: UUID!
+  id: UUID!
+  toAccount: UUID!
+}
+
+"""
+A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
+"""
+scalar UUID
