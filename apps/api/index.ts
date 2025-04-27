@@ -2,6 +2,8 @@ import { writeFileSync } from "fs";
 import { login } from "@/api/auth";
 import { lexicographicSortSchema, printSchema } from "graphql";
 import { schema, yoga } from "@/api";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { db } from "@/database";
 
 writeFileSync("./schema.graphql", printSchema(lexicographicSortSchema(schema)));
 
@@ -67,3 +69,7 @@ console.info(
     `http://${server.hostname}:${server.port}`,
   )}`,
 );
+
+migrate(db, { migrationsFolder: "./drizzle" });
+
+console.info("Database migrated successfully");
