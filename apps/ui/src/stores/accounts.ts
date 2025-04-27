@@ -4,7 +4,7 @@ import type { Account } from "@maille/core/accounts";
 import { AccountType } from "@maille/core/accounts";
 
 import { useAuthStore } from "./auth";
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import { useStorage } from "@vueuse/core";
 
 export const ACCOUNT_TYPES_COLOR = {

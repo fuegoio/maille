@@ -12,6 +12,7 @@ import { useNetwork } from "@vueuse/core";
 import type { Mutation } from "@/mutations";
 import { useMovementsStore } from "./movements";
 import { useProjectsStore } from "./projects";
+import config from "@/config";
 
 export const useEventsStore = defineStore("events", () => {
   const authStore = useAuthStore();
@@ -29,7 +30,7 @@ export const useEventsStore = defineStore("events", () => {
 
   const client = computed(
     () =>
-      new GraphQLClient("http://localhost:3000/graphql", {
+      new GraphQLClient(`${config.apiUrl}/graphql`, {
         headers: {
           Authorization: `Bearer ${authStore.authToken}`,
         },
@@ -91,7 +92,7 @@ export const useEventsStore = defineStore("events", () => {
 
   const streamClient = computed(() =>
     createClient({
-      url: "http://localhost:3000/graphql/stream",
+      url: `${config.apiUrl}/graphql/stream`,
       singleConnection: true,
       headers: { Authorization: `Bearer ${authStore.authToken}` },
     }),

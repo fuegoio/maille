@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 import type { Contact } from "@maille/core/contacts";
 
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import { useStorage } from "@vueuse/core";
 
 export const useContactsStore = defineStore("contacts", () => {

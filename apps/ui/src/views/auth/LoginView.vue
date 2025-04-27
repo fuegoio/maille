@@ -6,8 +6,8 @@ import { useRouter } from "vue-router";
 import Logo from "@/components/Logo.vue";
 
 import { useAuthStore } from "@/stores/auth";
-import axios from "@/lib/axios";
 import { useEventsStore } from "@/stores/events";
+import config from "@/config";
 
 const authStore = useAuthStore();
 const { authToken, user } = storeToRefs(authStore);
@@ -27,14 +27,22 @@ const login = async () => {
 
   try {
     const generatedClientId = window.crypto.randomUUID();
-    const request = await axios.post("http://localhost:3000/auth/login", {
-      email: email.value,
-      password: password.value,
-      clientId: generatedClientId,
+    const request = await fetch(`${config.apiUrl}/auth/login`, {
+      method: "POST",
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value,
+        clientId: generatedClientId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
     localStorage.clear();
-    authToken.value = request.data.jwt;
-    user.value = request.data.user;
+    const data = await request.json();
+
+    authToken.value = data.jwt;
+    user.value = data.user;
     clientId.value = generatedClientId;
     router.push("/loading");
   } catch (e) {

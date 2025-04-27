@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import { useAuthStore } from "./auth";
 import { useStorage } from "@vueuse/core";
@@ -147,10 +147,7 @@ export const useMovementsStore = defineStore("movements", () => {
         : "incomplete";
 
     const activitiesStore = useActivitiesStore();
-    activitiesStore.addMovementActivityToActivity(
-      movementId,
-      movementActivity,
-    );
+    activitiesStore.addMovementActivityToActivity(movementId, movementActivity);
 
     return movementActivity;
   };
@@ -215,7 +212,8 @@ export const useMovementsStore = defineStore("movements", () => {
     const movementActivityIndex = movement.activities.findIndex(
       (a) => a.id === movementActivityId,
     );
-    if (movementActivityIndex === -1) throw new Error("movement activity not found");
+    if (movementActivityIndex === -1)
+      throw new Error("movement activity not found");
 
     const movementActivity = movement.activities[movementActivityIndex];
     const activitiesStore = useActivitiesStore();
@@ -249,7 +247,11 @@ export const useMovementsStore = defineStore("movements", () => {
     } else if (event.type === "createMovementActivity") {
       addMovementActivity(event.payload.movement, event.payload);
     } else if (event.type === "updateMovementActivity") {
-      updateMovementActivity(event.payload.movement, event.payload.id, event.payload.amount);
+      updateMovementActivity(
+        event.payload.movement,
+        event.payload.id,
+        event.payload.amount,
+      );
     } else if (event.type === "deleteMovementActivity") {
       deleteMovementActivity(event.payload.movement, event.payload.id);
     }
@@ -273,7 +275,11 @@ export const useMovementsStore = defineStore("movements", () => {
     } else if (event.name === "createMovementActivity") {
       deleteMovementActivity(event.variables.movementId, event.variables.id);
     } else if (event.name === "updateMovementActivity") {
-      updateMovementActivity(event.rollbackData.movement, event.variables.id, event.rollbackData.amount);
+      updateMovementActivity(
+        event.rollbackData.movement,
+        event.variables.id,
+        event.rollbackData.amount,
+      );
     } else if (event.name === "deleteMovementActivity") {
       addMovementActivity(event.rollbackData.movement, event.rollbackData);
     }
@@ -290,7 +296,7 @@ export const useMovementsStore = defineStore("movements", () => {
 
     focusedMovement,
 
-createMovementActivity,
+    createMovementActivity,
     addActivityMovementToMovement,
     updateMovementActivity,
     deleteMovementActivity,

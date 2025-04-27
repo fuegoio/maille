@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import type { Project, ProjectStatus } from "@maille/core/projects";
 import type { ActivityType } from "@maille/core/activities";
 import { useActivitiesStore } from "./activities";

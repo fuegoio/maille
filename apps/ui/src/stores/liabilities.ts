@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 import type { Liability } from "@maille/core/liabilities";
 
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import { useStorage } from "@vueuse/core";
 import type { Activity } from "@maille/core/activities";
 import dayjs from "dayjs";
@@ -19,7 +19,7 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
           };
         });
       },
-      write: (v: Activity[]) => JSON.stringify(v),
+      write: (v: Liability[]) => JSON.stringify(v),
     },
   });
 

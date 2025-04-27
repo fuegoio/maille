@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { defineStore } from "pinia";
-import { type UUID } from "crypto";
+import type { UUID } from "crypto";
 import { ref } from "vue";
 import {
   getActivityStatus,
