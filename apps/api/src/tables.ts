@@ -1,4 +1,4 @@
-import { text, integer, sqliteTable, numeric } from "drizzle-orm/sqlite-core";
+import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import type { UUID } from "crypto";
 import type { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
@@ -12,18 +12,18 @@ export const activities = sqliteTable("activities", {
   user: text("user")
     .notNull()
     .$type<UUID>()
-    .references((): any => users.id),
+    .references(() => users.id),
   number: integer("number").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
   category: text("category")
     .$type<UUID>()
-    .references((): any => activityCategories.id),
+    .references(() => activityCategories.id),
   subcategory: text("subcategory")
     .$type<UUID>()
-    .references((): any => activitySubcategories.id),
+    .references(() => activitySubcategories.id),
   project: text("project")
     .$type<UUID>()
-    .references((): any => projects.id),
+    .references(() => projects.id),
 });
 
 export const liabilities = sqliteTable("liabilities", {
@@ -31,7 +31,7 @@ export const liabilities = sqliteTable("liabilities", {
   user: text("user")
     .notNull()
     .$type<UUID>()
-    .references((): any => users.id),
+    .references(() => users.id),
   activity: text("activity")
     .references(() => activities.id)
     .$type<UUID>(),
@@ -76,11 +76,11 @@ export const transactions = sqliteTable("transactions", {
   fromAccount: text("from_account")
     .notNull()
     .$type<UUID>()
-    .references((): any => accounts.id),
+    .references(() => accounts.id),
   toAccount: text("to_account")
     .notNull()
     .$type<UUID>()
-    .references((): any => accounts.id),
+    .references(() => accounts.id),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)
@@ -146,14 +146,14 @@ export const contacts = sqliteTable("contacts", {
   user: text("user")
     .notNull()
     .$type<UUID>()
-    .references((): any => users.id),
+    .references(() => users.id),
   contact: text("contact")
     .notNull()
     .$type<UUID>()
-    .references((): any => users.id),
+    .references(() => users.id),
   contactEmail: text("contact_email").notNull(),
   approved: integer("default", { mode: "boolean" }).notNull().default(false),
   liabilityAccount: text("liability_account")
     .$type<UUID>()
-    .references((): any => accounts.id),
+    .references(() => accounts.id),
 });
