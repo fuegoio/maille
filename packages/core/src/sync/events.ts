@@ -1,5 +1,5 @@
-import type { ActivityType } from "@/activities/types.js";
-import type { Liability } from "@/liabilities/types.js";
+import type { ActivityType } from "#activities/types.ts";
+import type { Liability } from "#liabilities/types.ts";
 import type { UUID } from "crypto";
 
 export type CreateActivityEvent = {

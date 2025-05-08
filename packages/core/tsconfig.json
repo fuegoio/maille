@@ -34,9 +34,6 @@
 
     "outDir": "dist",
     "rootDir": "src",
-
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "noEmit": true
   }
 }

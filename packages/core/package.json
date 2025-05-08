@@ -3,41 +3,17 @@
   "type": "module",
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "type-check": "tsc"
   },
   "exports": {
-    "./activities": {
-      "types": "./src/activities/index.ts",
-      "default": "./dist/activities/index.js"
-    },
-    "./accounts": {
-      "types": "./src/accounts/index.ts",
-      "default": "./dist/accounts/index.js"
-    },
-    "./movements": {
-      "types": "./src/movements/index.ts",
-      "default": "./dist/movements/index.js"
-    },
-    "./projects": {
-      "types": "./src/projects/index.ts",
-      "default": "./dist/projects/index.js"
-    },
-    "./sync": {
-      "types": "./src/sync/index.ts",
-      "default": "./dist/sync/index.js"
-    },
-    "./settings": {
-      "types": "./src/settings/index.ts",
-      "default": "./dist/settings/index.js"
-    },
-    "./contacts": {
-      "types": "./src/contacts/index.ts",
-      "default": "./dist/contacts/index.js"
-    },
-    "./liabilities": {
-      "types": "./src/liabilities/index.ts",
-      "default": "./dist/liabilities/index.js"
-    }
+    "./activities": "./src/activities/index.ts",
+    "./accounts": "./src/accounts/index.ts",
+    "./movements": "./src/movements/index.ts",
+    "./projects": "./src/projects/index.ts",
+    "./sync": "./src/sync/index.ts",
+    "./settings": "./src/settings/index.ts",
+    "./contacts": "./src/contacts/index.ts",
+    "./liabilities": "./src/liabilities/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
@@ -46,5 +22,8 @@
   "dependencies": {
     "dayjs": "^1.11.12",
     "lodash": "^4.17.21"
+  },
+  "imports": {
+    "#*": "./src/*"
   }
 }

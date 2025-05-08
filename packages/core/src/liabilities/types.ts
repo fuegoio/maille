@@ -4,7 +4,7 @@ import type {
   ActivityFilterDateValues,
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
-} from "@/activities/types.js";
+} from "#activities/types.ts";
 import type { UUID } from "crypto";
 import type dayjs from "dayjs";
 
