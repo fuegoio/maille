@@ -3,9 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run --hot index.ts",
+    "dev": "bun run --watch index.ts | pino-pretty",
     "generate": "bunx drizzle-kit generate --dialect sqlite --schema ./src/tables.ts",
-    "migrate": "bun run migrate.ts"
+    "start": "bun run index.ts | pino-pretty"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",

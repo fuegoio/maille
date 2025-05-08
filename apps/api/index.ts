@@ -1,75 +1,19 @@
 import { writeFileSync } from "fs";
-import { login } from "@/api/auth";
 import { lexicographicSortSchema, printSchema } from "graphql";
-import { schema, yoga } from "@/api";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { db } from "@/database";
+import { logger } from "@/logger";
+import { startServer } from "@/server";
+import { schema } from "@/api";
 
-writeFileSync("./schema.graphql", printSchema(lexicographicSortSchema(schema)));
+logger.info("Maille API Server");
 
-const server = Bun.serve({
-  fetch: async (request, server) => {
-    const path = new URL(request.url).pathname;
-
-    // Handle GraphQL requests
-    if (path.startsWith("/graphql")) {
-      return yoga.fetch(request, server);
-    }
-
-    let res: Response;
-
-    // Handle CORS preflight requests
-    if (request.method === "OPTIONS") {
-      res = new Response("Departed");
-    } else {
-      if (path.startsWith("/auth/login")) {
-        if (request.method !== "POST") {
-          res = new Response("Method not allowed", { status: 405 });
-        }
-
-        const body = await request.json();
-        if (body.email && body.password && body.clientId) {
-          try {
-            const { jwt, user } = await login(
-              body.email,
-              body.password,
-              body.clientId,
-            );
-            res = Response.json({ jwt, user });
-          } catch (e) {
-            res = new Response("Unauthorized", { status: 401 });
-          }
-        } else {
-          res = new Response("Bad request", { status: 400 });
-        }
-      } else {
-        res = new Response("Not found", { status: 404 });
-      }
-    }
-
-    // Apply CORS headers to the response
-    res.headers.set("Access-Control-Allow-Origin", "*");
-    res.headers.set(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS",
-    );
-    res.headers.set(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
-    );
-
-    // Return the response
-    return res;
-  },
-});
-
-console.info(
-  `Server is running on ${new URL(
-    yoga.graphqlEndpoint,
-    `http://${server.hostname}:${server.port}`,
-  )}`,
-);
-
+logger.info("Database initializing...");
 migrate(db, { migrationsFolder: "./drizzle" });
+logger.info("Database initialized successfully");
 
-console.info("Database migrated successfully");
+logger.info("Compiling GraphQL schema...");
+writeFileSync("./schema.graphql", printSchema(lexicographicSortSchema(schema)));
+logger.info("GraphQL schema compiled successfully");
+
+startServer();

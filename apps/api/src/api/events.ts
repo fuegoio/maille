@@ -5,6 +5,7 @@ import { db } from "@/database";
 import { events } from "@/tables";
 import { and, eq, gt } from "drizzle-orm";
 import type { UUID } from "crypto";
+import { logger } from "@/logger";
 
 export const EventSchema = builder.objectRef<SyncEvent>("Event");
 
@@ -55,11 +56,11 @@ builder.queryField("events", (t) =>
         .select()
         .from(events)
         .where(
-          and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user))
+          and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user)),
         );
 
-      console.log(
-        `[${ctx.user}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`
+      logger.info(
+        `[${ctx.user}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
       );
 
       return eventsQuery.map((event) => ({
@@ -67,7 +68,7 @@ builder.queryField("events", (t) =>
         payload: JSON.parse(event.payload),
       }));
     },
-  })
+  }),
 );
 
 export const addEvent = async (event: SyncEvent) => {
