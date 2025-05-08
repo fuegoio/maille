@@ -93,7 +93,7 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Movement not found");
         }
 
-        let updates: Partial<typeof movement> = {};
+        const updates: Partial<typeof movement> = {};
         if (args.date) {
           updates.date = args.date;
         }

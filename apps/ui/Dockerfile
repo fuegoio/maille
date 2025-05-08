@@ -9,7 +9,7 @@ RUN npm install
 COPY . .
 
 WORKDIR /app/apps/ui
-RUN npm run build-only
+RUN npm run build
 
 FROM nginx:alpine
 

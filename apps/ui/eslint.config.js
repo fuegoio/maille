@@ -8,7 +8,4 @@ export default [
   js.configs.recommended,
   ...vueTsEslintConfig(),
   skipFormattingConfig,
-  {
-    rules: {},
-  },
 ];

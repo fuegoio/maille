@@ -326,7 +326,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
-        let activityUpdates: Partial<typeof activity> = {};
+        const activityUpdates: Partial<typeof activity> = {};
         if (args.name) {
           activityUpdates.name = args.name;
         }
