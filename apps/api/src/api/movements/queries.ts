@@ -10,11 +10,10 @@ export const registerMovementsQueries = () => {
   builder.queryField("movements", (t) =>
     t.field({
       type: [MovementSchema],
-      resolve: async (root, args, ctx) => {
+      resolve: async () => {
         const movementsData = await db
           .select()
           .from(movements)
-          .where(eq(movements.user, ctx.user))
           .leftJoin(
             movementsActivities,
             eq(movements.id, movementsActivities.movement),

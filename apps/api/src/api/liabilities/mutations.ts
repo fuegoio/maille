@@ -31,7 +31,7 @@ export const registerLiabilitiesMutations = () => {
           await db
             .select()
             .from(liabilities)
-            .where(and(eq(liabilities.id, id), eq(liabilities.user, ctx.user)))
+            .where(eq(liabilities.id, id))
             .limit(1)
         )[0];
 
@@ -44,14 +44,12 @@ export const registerLiabilitiesMutations = () => {
               name,
               date,
             })
-            .where(and(eq(liabilities.user, ctx.user), eq(liabilities.id, id)));
+            .where(eq(liabilities.id, id));
         } else {
           await db.insert(liabilities).values({
             id,
-            user: ctx.user,
             account,
             amount,
-
             name,
             date,
           });

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0ed6bbe5-44c1-4d58-91f8-a32184c46d56",
+  "id": "50e42f03-caaf-4678-b481-645a22eb04e5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -104,8 +104,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "user": {
-          "name": "user",
+        "created_by": {
+          "name": "created_by",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -149,12 +149,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "activities_user_users_id_fk": {
-          "name": "activities_user_users_id_fk",
+        "activities_created_by_users_id_fk": {
+          "name": "activities_created_by_users_id_fk",
           "tableFrom": "activities",
           "tableTo": "users",
           "columnsFrom": [
-            "user"
+            "created_by"
           ],
           "columnsTo": [
             "id"
@@ -215,13 +215,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
           "type": "text",
@@ -249,13 +242,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -303,13 +289,6 @@
           "notNull": true,
           "autoincrement": true
         },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "type": {
           "name": "type",
           "type": "text",
@@ -354,13 +333,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "activity": {
           "name": "activity",
           "type": "text",
@@ -399,19 +371,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "liabilities_user_users_id_fk": {
-          "name": "liabilities_user_users_id_fk",
-          "tableFrom": "liabilities",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "liabilities_activity_activities_id_fk": {
           "name": "liabilities_activity_activities_id_fk",
           "tableFrom": "liabilities",
@@ -452,8 +411,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user": {
-          "name": "user",
+        "created_by": {
+          "name": "created_by",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -514,13 +473,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -585,13 +537,6 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -721,6 +666,13 @@
           "type": "text",
           "primaryKey": true,
           "notNull": true,
+          "autoincrement": false
+        },
+        "avatar_url": {
+          "name": "avatar_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "email": {

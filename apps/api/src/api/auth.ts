@@ -96,8 +96,8 @@ export const login = async (
       user: {
         id: user[0].id,
         email: user[0].email,
-        firstName: user[0].first_name,
-        lastName: user[0].last_name,
+        firstName: user[0].firstName,
+        lastName: user[0].lastName,
       },
     };
   }
@@ -118,8 +118,8 @@ export const createUser = async (
         id: crypto.randomUUID(),
         email,
         password: await Bun.password.hash(password),
-        first_name: firstName,
-        last_name: lastName,
+        firstName,
+        lastName,
       })
       .returning()
   )[0];

@@ -30,7 +30,7 @@ export const registerMovementsMutations = () => {
       resolve: async (root, args, ctx) => {
         await db.insert(movements).values({
           id: args.id,
-          user: ctx.user,
+          createdBy: ctx.user,
           name: args.name,
           date: new Date(args.date),
           amount: args.amount,
@@ -48,12 +48,10 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return {
           id: args.id,
-          user: ctx.user,
           name: args.name,
           date: dayjs(args.date),
           amount: args.amount,
@@ -62,7 +60,7 @@ export const registerMovementsMutations = () => {
           status: "incomplete" as "incomplete" | "completed",
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("updateMovement", (t) =>
@@ -86,7 +84,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user)))
+            .where(eq(movements.id, args.id))
             .limit(1)
         )[0];
         if (!movement) {
@@ -118,7 +116,6 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         const activitiesData = await db
@@ -136,7 +133,7 @@ export const registerMovementsMutations = () => {
             : "incomplete") as "incomplete" | "completed",
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("deleteMovement", (t) =>
@@ -152,7 +149,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user)))
+            .where(eq(movements.id, args.id))
             .limit(1)
         )[0];
         if (!movement) {
@@ -171,7 +168,6 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return {
@@ -179,7 +175,7 @@ export const registerMovementsMutations = () => {
           success: true,
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("createMovementActivity", (t) =>
@@ -200,7 +196,6 @@ export const registerMovementsMutations = () => {
       resolve: async (root, args, ctx) => {
         await db.insert(movementsActivities).values({
           id: args.id,
-          user: ctx.user,
           movement: args.movementId,
           activity: args.activityId,
           amount: args.amount,
@@ -216,7 +211,6 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return {
@@ -226,7 +220,7 @@ export const registerMovementsMutations = () => {
           amount: args.amount,
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("updateMovementActivity", (t) =>
@@ -271,12 +265,11 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return updatedMovementActivity;
       },
-    })
+    }),
   );
 
   builder.mutationField("deleteMovementActivity", (t) =>
@@ -312,11 +305,10 @@ export const registerMovementsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { id: args.id, success: true };
       },
-    })
+    }),
   );
 };

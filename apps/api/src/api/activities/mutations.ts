@@ -102,7 +102,7 @@ export const registerActivitiesMutations = () => {
 
         await db.insert(activities).values({
           id: args.id,
-          user: ctx.user,
+          createdBy: ctx.user,
           number,
           name: args.name,
           description: args.description,
@@ -188,12 +188,8 @@ export const registerActivitiesMutations = () => {
           activityLiabilities.push({
             ...liability,
             date: dayjs(liability.date),
-            status: "completed",
           });
-          await db.insert(liabilities).values({
-            ...liability,
-            user: ctx.user,
-          });
+          await db.insert(liabilities).values(liability);
         });
 
         // Movements
@@ -201,7 +197,6 @@ export const registerActivitiesMutations = () => {
         if (args.movement) {
           const movementActivity = {
             id: args.movement.id,
-            user: ctx.user,
             activity: args.id,
             movement: args.movement.movement,
             amount: args.movement.amount,
@@ -215,7 +210,6 @@ export const registerActivitiesMutations = () => {
           payload: {
             id: args.id,
             number,
-            users: [ctx.user],
             name: args.name,
             description: args.description ?? null,
             date: args.date.toISOString(),
@@ -229,13 +223,11 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return {
           id: args.id,
           number,
-          users: [ctx.user],
           name: args.name,
           description: args.description ?? null,
           date: dayjs(args.date),
@@ -317,9 +309,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(
-              and(eq(activities.id, args.id), eq(activities.user, ctx.user)),
-            )
+            .where(and(eq(activities.id, args.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -382,7 +372,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         const accountsQuery = await db.select().from(accounts);
@@ -464,7 +453,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return {
@@ -537,7 +525,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, activity.id),
                 ),
               )
@@ -552,7 +539,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, activity.id),
                 ),
               );
@@ -560,7 +546,6 @@ export const registerActivitiesMutations = () => {
               ...existingLiability,
               date: dayjs(existingLiability.date),
               amount: existingLiability.amount - newTransaction.amount,
-              status: "completed",
             });
           } else {
             const liability = {
@@ -574,11 +559,9 @@ export const registerActivitiesMutations = () => {
             transactionLiabilities.push({
               ...liability,
               date: dayjs(liability.date),
-              status: "completed",
             });
             await db.insert(liabilities).values({
               ...liability,
-              user: ctx.user,
             });
           }
         }
@@ -591,7 +574,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, toAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, activity.id),
                 ),
               )
@@ -606,7 +588,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, toAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, activity.id),
                 ),
               );
@@ -614,7 +595,6 @@ export const registerActivitiesMutations = () => {
               ...existingLiability,
               date: dayjs(existingLiability.date),
               amount: existingLiability.amount + newTransaction.amount,
-              status: "completed",
             });
           } else {
             const liability = {
@@ -628,11 +608,9 @@ export const registerActivitiesMutations = () => {
             transactionLiabilities.push({
               ...liability,
               date: dayjs(liability.date),
-              status: "completed",
             });
             await db.insert(liabilities).values({
               ...liability,
-              user: ctx.user,
             });
           }
         }
@@ -646,7 +624,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { ...newTransaction, liabilities: transactionLiabilities };
@@ -752,7 +729,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, oldFromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -767,7 +743,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, oldFromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -782,7 +757,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, oldToAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -797,7 +771,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, oldToAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -812,7 +785,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, newFromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -827,7 +799,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, newFromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -835,7 +806,6 @@ export const registerActivitiesMutations = () => {
               ...existingLiability,
               date: dayjs(existingLiability.date),
               amount: existingLiability.amount - updatedTransaction.amount,
-              status: "completed",
             });
           } else {
             const liability = {
@@ -849,11 +819,9 @@ export const registerActivitiesMutations = () => {
             transactionLiabilities.push({
               ...liability,
               date: dayjs(liability.date),
-              status: "completed",
             });
             await db.insert(liabilities).values({
               ...liability,
-              user: ctx.user,
             });
           }
         }
@@ -866,7 +834,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, newToAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -881,7 +848,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, newToAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -889,7 +855,6 @@ export const registerActivitiesMutations = () => {
               ...existingLiability,
               date: dayjs(existingLiability.date),
               amount: existingLiability.amount + updatedTransaction.amount,
-              status: "completed",
             });
           } else {
             const liability = {
@@ -903,11 +868,9 @@ export const registerActivitiesMutations = () => {
             transactionLiabilities.push({
               ...liability,
               date: dayjs(liability.date),
-              status: "completed",
             });
             await db.insert(liabilities).values({
               ...liability,
-              user: ctx.user,
             });
           }
         }
@@ -922,7 +885,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { ...updatedTransaction, liabilities: transactionLiabilities };
@@ -994,7 +956,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -1009,7 +970,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -1024,7 +984,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, toAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               )
@@ -1039,7 +998,6 @@ export const registerActivitiesMutations = () => {
               .where(
                 and(
                   eq(liabilities.account, toAccount.id),
-                  eq(liabilities.user, ctx.user),
                   eq(liabilities.activity, transaction.activity),
                 ),
               );
@@ -1054,7 +1012,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { id: args.id, success: true };
@@ -1078,7 +1035,6 @@ export const registerActivitiesMutations = () => {
 
         const category = {
           id: args.id,
-          user: ctx.user,
           name: args.name,
           type: parsedType,
         };
@@ -1089,7 +1045,6 @@ export const registerActivitiesMutations = () => {
           payload: category,
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return category;
@@ -1112,12 +1067,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(
-              and(
-                eq(activityCategories.id, args.id),
-                eq(activityCategories.user, ctx.user),
-              ),
-            )
+            .where(and(eq(activityCategories.id, args.id)))
             .limit(1)
         )[0];
         if (!category) {
@@ -1140,7 +1090,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return updatedCategory[0];
@@ -1162,12 +1111,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(
-              and(
-                eq(activityCategories.id, args.id),
-                eq(activityCategories.user, ctx.user),
-              ),
-            )
+            .where(and(eq(activityCategories.id, args.id)))
             .limit(1)
         )[0];
         if (!category) {
@@ -1180,12 +1124,7 @@ export const registerActivitiesMutations = () => {
             category: null,
             subcategory: null,
           })
-          .where(
-            and(
-              eq(activities.category, args.id),
-              eq(activities.user, ctx.user),
-            ),
-          );
+          .where(and(eq(activities.category, args.id)));
         await db
           .delete(activityCategories)
           .where(eq(activityCategories.id, args.id));
@@ -1197,7 +1136,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { id: args.id, success: true };
@@ -1220,7 +1158,6 @@ export const registerActivitiesMutations = () => {
       resolve: async (root, args, ctx) => {
         const subcategory = {
           id: args.id,
-          user: ctx.user,
           name: args.name,
           category: args.category,
         };
@@ -1231,7 +1168,6 @@ export const registerActivitiesMutations = () => {
           payload: subcategory,
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return subcategory;
@@ -1254,12 +1190,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(
-              and(
-                eq(activitySubcategories.id, args.id),
-                eq(activitySubcategories.user, ctx.user),
-              ),
-            )
+            .where(and(eq(activitySubcategories.id, args.id)))
             .limit(1)
         )[0];
         if (!subcategory) {
@@ -1282,7 +1213,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return updatedSubCategory[0];
@@ -1304,12 +1234,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(
-              and(
-                eq(activitySubcategories.id, args.id),
-                eq(activitySubcategories.user, ctx.user),
-              ),
-            )
+            .where(and(eq(activitySubcategories.id, args.id)))
             .limit(1)
         )[0];
         if (!subCategory) {
@@ -1321,12 +1246,7 @@ export const registerActivitiesMutations = () => {
           .set({
             subcategory: null,
           })
-          .where(
-            and(
-              eq(activities.subcategory, args.id),
-              eq(activities.user, ctx.user),
-            ),
-          );
+          .where(and(eq(activities.subcategory, args.id)));
         await db
           .delete(activitySubcategories)
           .where(eq(activitySubcategories.id, args.id));
@@ -1338,7 +1258,6 @@ export const registerActivitiesMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
-          user: ctx.user,
         });
 
         return { id: args.id, success: true };

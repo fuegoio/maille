@@ -57,7 +57,6 @@ DeleteMovementResponseSchema.implement({
   }),
 });
 
-
 export const DeleteMovementActivityResponseSchema = builder.objectRef<{
   id: UUID;
   success: boolean;
@@ -69,3 +68,4 @@ DeleteMovementActivityResponseSchema.implement({
     success: t.exposeBoolean("success"),
   }),
 });
+

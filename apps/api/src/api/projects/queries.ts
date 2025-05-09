@@ -9,11 +9,8 @@ export const registerProjectsQueries = () => {
   builder.queryField("projects", (t) =>
     t.field({
       type: [ProjectSchema],
-      resolve: async (root, args, ctx) => {
-        const projectsQuery = await db
-          .select()
-          .from(projects)
-          .where(eq(projects.user, ctx.user));
+      resolve: async () => {
+        const projectsQuery = await db.select().from(projects);
 
         return projectsQuery.map((project) => ({
           ...project,

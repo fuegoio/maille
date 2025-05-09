@@ -7,7 +7,6 @@ export type CreateActivityEvent = {
   payload: {
     id: UUID;
     number: number;
-    users: UUID[];
     name: string;
     description: string | null;
     date: string;
@@ -35,7 +34,6 @@ export type UpdateActivityEvent = {
   payload: {
     id: UUID;
     name?: string;
-    users?: UUID[];
     description?: string | null;
     date?: string;
     type?: ActivityType;
@@ -214,7 +212,6 @@ export type DeleteProjectEvent = {
 };
 
 type BaseSyncEvent = {
-  user: UUID;
   createdAt: Date;
   clientId: UUID;
 };
