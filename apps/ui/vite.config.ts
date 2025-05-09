@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
+import graphqlCodegen from "vite-plugin-graphql-codegen";
 
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
@@ -13,6 +14,7 @@ export default defineConfig(() => {
     },
     plugins: [
       vue(),
+      graphqlCodegen(),
       // VitePWA({
       //   registerType: "autoUpdate",
       //   injectRegister: "inline",
