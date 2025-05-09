@@ -12,7 +12,6 @@
     "./projects": "./src/projects/index.ts",
     "./sync": "./src/sync/index.ts",
     "./settings": "./src/settings/index.ts",
-    "./contacts": "./src/contacts/index.ts",
     "./liabilities": "./src/liabilities/index.ts"
   },
   "devDependencies": {

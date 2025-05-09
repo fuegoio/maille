@@ -49,14 +49,6 @@ type ActivitySubCategory {
   name: String!
 }
 
-type Contact {
-  approved: Boolean!
-  contact: UUID!
-  contactEmail: String!
-  id: UUID!
-  liabilityAccount: UUID
-}
-
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -153,7 +145,6 @@ type Query {
   activities: [Activity!]!
   activityCategories: [ActivityCategory!]!
   activitySubcategories: [ActivitySubCategory!]!
-  contacts: [Contact!]!
   events(lastSync: Float!): [Event!]!
   liabilities: [Liability!]!
   movements: [Movement!]!

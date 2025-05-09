@@ -140,20 +140,3 @@ export const users = sqliteTable("users", {
   last_name: text("last_name").notNull(),
   password: text("password").notNull(),
 });
-
-export const contacts = sqliteTable("contacts", {
-  id: text("id").primaryKey().$type<UUID>(),
-  user: text("user")
-    .notNull()
-    .$type<UUID>()
-    .references(() => users.id),
-  contact: text("contact")
-    .notNull()
-    .$type<UUID>()
-    .references(() => users.id),
-  contactEmail: text("contact_email").notNull(),
-  approved: integer("default", { mode: "boolean" }).notNull().default(false),
-  liabilityAccount: text("liability_account")
-    .$type<UUID>()
-    .references(() => accounts.id),
-});

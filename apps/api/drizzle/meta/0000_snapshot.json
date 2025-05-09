@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "144095ce-47b2-4a43-a2d7-60c2b8347c6c",
+  "id": "6283abd3-012c-4cee-b755-f2004a73d4ce",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -153,8 +153,12 @@
           "name": "activities_user_users_id_fk",
           "tableFrom": "activities",
           "tableTo": "users",
-          "columnsFrom": ["user"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -162,8 +166,12 @@
           "name": "activities_category_activity_categories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_categories",
-          "columnsFrom": ["category"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -171,8 +179,12 @@
           "name": "activities_subcategory_activity_subcategories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_subcategories",
-          "columnsFrom": ["subcategory"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "subcategory"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -180,8 +192,12 @@
           "name": "activities_project_projects_id_fk",
           "tableFrom": "activities",
           "tableTo": "projects",
-          "columnsFrom": ["project"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "project"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -264,88 +280,12 @@
           "name": "activity_subcategories_category_activity_categories_id_fk",
           "tableFrom": "activity_subcategories",
           "tableTo": "activity_categories",
-          "columnsFrom": ["category"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "contacts": {
-      "name": "contacts",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "contact": {
-          "name": "contact",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "contact_email": {
-          "name": "contact_email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "default": {
-          "name": "default",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "liability_account": {
-          "name": "liability_account",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "contacts_user_users_id_fk": {
-          "name": "contacts_user_users_id_fk",
-          "tableFrom": "contacts",
-          "tableTo": "users",
-          "columnsFrom": ["user"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "contacts_contact_users_id_fk": {
-          "name": "contacts_contact_users_id_fk",
-          "tableFrom": "contacts",
-          "tableTo": "users",
-          "columnsFrom": ["contact"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "contacts_liability_account_accounts_id_fk": {
-          "name": "contacts_liability_account_accounts_id_fk",
-          "tableFrom": "contacts",
-          "tableTo": "accounts",
-          "columnsFrom": ["liability_account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -463,8 +403,12 @@
           "name": "liabilities_user_users_id_fk",
           "tableFrom": "liabilities",
           "tableTo": "users",
-          "columnsFrom": ["user"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -472,8 +416,12 @@
           "name": "liabilities_activity_activities_id_fk",
           "tableFrom": "liabilities",
           "tableTo": "activities",
-          "columnsFrom": ["activity"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -481,8 +429,12 @@
           "name": "liabilities_account_accounts_id_fk",
           "tableFrom": "liabilities",
           "tableTo": "accounts",
-          "columnsFrom": ["account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -542,8 +494,12 @@
           "name": "movements_account_accounts_id_fk",
           "tableFrom": "movements",
           "tableTo": "accounts",
-          "columnsFrom": ["account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -596,8 +552,12 @@
           "name": "movements_activities_activity_activities_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "activities",
-          "columnsFrom": ["activity"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -605,8 +565,12 @@
           "name": "movements_activities_movement_movements_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "movements",
-          "columnsFrom": ["movement"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "movement"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -710,8 +674,12 @@
           "name": "transactions_from_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": ["from_account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "from_account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -719,8 +687,12 @@
           "name": "transactions_to_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": ["to_account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "to_account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -728,8 +700,12 @@
           "name": "transactions_activity_activities_id_fk",
           "tableFrom": "transactions",
           "tableTo": "activities",
-          "columnsFrom": ["activity"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -792,4 +768,3 @@
     "indexes": {}
   }
 }
-

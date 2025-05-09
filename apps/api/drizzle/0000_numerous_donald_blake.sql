@@ -41,18 +41,6 @@ CREATE TABLE `activity_subcategories` (
 	FOREIGN KEY (`category`) REFERENCES `activity_categories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `contacts` (
-	`id` text PRIMARY KEY NOT NULL,
-	`user` text NOT NULL,
-	`contact` text NOT NULL,
-	`contact_email` text NOT NULL,
-	`default` integer DEFAULT false NOT NULL,
-	`liability_account` text,
-	FOREIGN KEY (`user`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`contact`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`liability_account`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
 CREATE TABLE `events` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user` text NOT NULL,

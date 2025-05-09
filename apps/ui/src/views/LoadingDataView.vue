@@ -2,7 +2,6 @@
 import { graphql } from "@/gql";
 import { useAccountsStore } from "@/stores/accounts";
 import { useActivitiesStore } from "@/stores/activities";
-import { useContactsStore } from "@/stores/contacts";
 import { useEventsStore } from "@/stores/events";
 import { useLiabilitiesStore } from "@/stores/liabilities";
 import { useMovementsStore } from "@/stores/movements";
@@ -90,14 +89,6 @@ const loadInitialData = async () => {
         status
       }
 
-      contacts {
-        id
-        contact
-        contactEmail
-        approved
-        liabilityAccount
-      }
-
       liabilities {
         activity
         amount
@@ -156,10 +147,6 @@ const loadInitialData = async () => {
     date: dayjs(m.date),
     status: m.status as Movement["status"],
   }));
-
-  const contactsStore = useContactsStore();
-  const { contacts } = storeToRefs(contactsStore);
-  contacts.value = initialDataRequest.contacts;
 
   const liabilitiesStore = useLiabilitiesStore();
   const { liabilities } = storeToRefs(liabilitiesStore);
