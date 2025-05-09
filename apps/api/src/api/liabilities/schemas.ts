@@ -5,6 +5,10 @@ export const LiabilitySchema = builder.objectRef<Liability>("Liability");
 
 LiabilitySchema.implement({
   fields: (t) => ({
+    id: t.field({
+      type: "UUID",
+      resolve: (parent) => parent.id,
+    }),
     amount: t.exposeFloat("amount"),
     activity: t.field({
       type: "UUID",
@@ -20,12 +24,5 @@ LiabilitySchema.implement({
       type: "Date",
       resolve: (parent) => parent.date.toDate(),
     }),
-
-    linkId: t.field({
-      type: "UUID",
-      resolve: (parent) => parent.linkId,
-    }),
-    linkedAmount: t.exposeFloat("linkedAmount", { nullable: true }),
-    status: t.exposeString("status"),
   }),
 });

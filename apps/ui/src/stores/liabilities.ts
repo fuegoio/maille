@@ -33,14 +33,13 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
     amount: number;
     activity: Activity;
     account: UUID;
-    linkId: UUID;
+    id: UUID;
   }) => {
     const liability: Liability = {
       ...input,
       activity: input.activity.id,
       name: input.activity.name,
       date: input.activity.date,
-      status: "completed",
     };
     liabilities.value.push(liability);
 
@@ -62,14 +61,14 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
 
   const updateLiabilitiesLinkId = (
     activityId: UUID,
-    liabilitiesUpdates: { account: UUID; linkId: UUID }[],
+    liabilitiesUpdates: { account: UUID; id: UUID }[],
   ) => {
     liabilitiesUpdates.forEach((liability) => {
       const liabilityStored = liabilities.value.find(
         (l) => l.account === liability.account && l.activity === activityId,
       );
       if (liabilityStored) {
-        liabilityStored.linkId = liability.linkId;
+        liabilityStored.id = liability.id;
       }
     });
   };

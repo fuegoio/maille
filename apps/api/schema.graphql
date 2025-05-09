@@ -86,10 +86,8 @@ type Liability {
   activity: UUID
   amount: Float!
   date: Date!
-  linkId: UUID!
-  linkedAmount: Float
+  id: UUID!
   name: String!
-  status: String!
 }
 
 type Movement {

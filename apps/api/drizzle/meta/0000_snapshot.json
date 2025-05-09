@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6283abd3-012c-4cee-b755-f2004a73d4ce",
+  "id": "0ed6bbe5-44c1-4d58-91f8-a32184c46d56",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -347,8 +347,8 @@
     "liabilities": {
       "name": "liabilities",
       "columns": {
-        "link_id": {
-          "name": "link_id",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

@@ -51,7 +51,7 @@ CREATE TABLE `events` (
 );
 --> statement-breakpoint
 CREATE TABLE `liabilities` (
-	`link_id` text NOT NULL,
+	`id` text NOT NULL,
 	`user` text NOT NULL,
 	`activity` text,
 	`account` text NOT NULL,

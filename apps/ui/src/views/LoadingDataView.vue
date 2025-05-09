@@ -9,7 +9,6 @@ import { useProjectsStore } from "@/stores/projects";
 import { useSettingsStore } from "@/stores/settings";
 import type { AccountType } from "@maille/core/accounts";
 import type { ActivityStatus, ActivityType } from "@maille/core/activities";
-import type { Liability } from "@maille/core/liabilities";
 import type { Movement } from "@maille/core/movements";
 import dayjs from "dayjs";
 import { storeToRefs } from "pinia";
@@ -90,14 +89,12 @@ const loadInitialData = async () => {
       }
 
       liabilities {
+        id
         activity
         amount
         account
         name
         date
-        status
-        linkedAmount
-        linkId
       }
 
       projects {
@@ -152,8 +149,7 @@ const loadInitialData = async () => {
   const { liabilities } = storeToRefs(liabilitiesStore);
   liabilities.value = initialDataRequest.liabilities.map((l) => ({
     ...l,
-    linkedAmount: l.linkedAmount ?? undefined,
-    status: l.status as Liability["status"],
+    date: dayjs(l.date),
   }));
 
   const projectsStore = useProjectsStore();

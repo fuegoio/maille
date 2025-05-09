@@ -22,21 +22,16 @@ export const registerLiabilitiesMutations = () => {
         date: t.arg({
           type: "Date",
         }),
-        linkId: t.arg({
+        id: t.arg({
           type: "UUID",
         }),
       },
-      resolve: async (root, { linkId, account, amount, name, date }, ctx) => {
+      resolve: async (root, { id, account, amount, name, date }, ctx) => {
         const liability = (
           await db
             .select()
             .from(liabilities)
-            .where(
-              and(
-                eq(liabilities.linkId, linkId),
-                eq(liabilities.user, ctx.user),
-              ),
-            )
+            .where(and(eq(liabilities.id, id), eq(liabilities.user, ctx.user)))
             .limit(1)
         )[0];
 
@@ -49,15 +44,10 @@ export const registerLiabilitiesMutations = () => {
               name,
               date,
             })
-            .where(
-              and(
-                eq(liabilities.user, ctx.user),
-                eq(liabilities.linkId, linkId),
-              ),
-            );
+            .where(and(eq(liabilities.user, ctx.user), eq(liabilities.id, id)));
         } else {
           await db.insert(liabilities).values({
-            linkId,
+            id,
             user: ctx.user,
             account,
             amount,
@@ -68,7 +58,7 @@ export const registerLiabilitiesMutations = () => {
         }
 
         return {
-          linkId,
+          id,
           account,
           amount,
           name,

@@ -159,7 +159,7 @@ export const useActivitiesStore = defineStore("activities", () => {
       liabilities: liabilitiesByAccount.map((liability) => ({
         account: liability.accountId,
         amount: liability.amount,
-        linkId: window.crypto.randomUUID(),
+        id: window.crypto.randomUUID(),
       })),
     });
   };
@@ -179,7 +179,7 @@ export const useActivitiesStore = defineStore("activities", () => {
     liabilities: {
       account: UUID;
       amount: number;
-      linkId: UUID;
+      id: UUID;
     }[];
   }) => {
     const activity: Activity = {
@@ -204,7 +204,7 @@ export const useActivitiesStore = defineStore("activities", () => {
         amount: liability.amount,
         activity: activity,
         account: liability.account,
-        linkId: liability.linkId,
+        id: liability.id,
       });
     });
 
@@ -431,7 +431,7 @@ export const useActivitiesStore = defineStore("activities", () => {
           amount: -amount,
           activity: activity,
           account: from,
-          linkId: window.crypto.randomUUID(),
+          id: window.crypto.randomUUID(),
         });
       }
     }
@@ -448,7 +448,7 @@ export const useActivitiesStore = defineStore("activities", () => {
           amount: amount,
           activity: activity,
           account: toAccount.id,
-          linkId: window.crypto.randomUUID(),
+          id: window.crypto.randomUUID(),
         });
       }
     }
@@ -551,7 +551,7 @@ export const useActivitiesStore = defineStore("activities", () => {
           amount: -transaction.amount,
           activity: activity,
           account: newFromAccount.id,
-          linkId: window.crypto.randomUUID(),
+          id: window.crypto.randomUUID(),
         });
       }
     }
@@ -568,7 +568,7 @@ export const useActivitiesStore = defineStore("activities", () => {
           amount: transaction.amount,
           activity: activity,
           account: newToAccount.id,
-          linkId: window.crypto.randomUUID(),
+          id: window.crypto.randomUUID(),
         });
       }
     }

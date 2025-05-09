@@ -37,7 +37,7 @@ export const createActivityMutation = graphql(/* GraphQL */ `
       number
       liabilities {
         account
-        linkId
+        id
       }
     }
   }
@@ -122,7 +122,7 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
       id
       liabilities {
         account
-        linkId
+        id
       }
     }
   }
@@ -146,7 +146,7 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
       id
       liabilities {
         account
-        linkId
+        id
       }
     }
   }

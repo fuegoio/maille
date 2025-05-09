@@ -37,7 +37,7 @@ const liabilitiesFiltered = computed(() => {
         ? liability.account === props.accountFilter
         : true,
     )
-    .map((l) => ({ ...l, id: l.linkId }));
+    .map((l) => ({ ...l, id: l.id }));
 });
 
 const liabilitiesSorted = computed(() => {

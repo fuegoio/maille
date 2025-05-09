@@ -35,7 +35,7 @@ const exportLiabilities = () => {
   const csvFile = stringify([
     ["id", "date", "name", "amount", "account"],
     ...filteredLiabilities.value.map((l) => [
-      l.linkId,
+      l.id,
       l.date.format("YYYY-MM-DD"),
       l.name,
       l.amount,

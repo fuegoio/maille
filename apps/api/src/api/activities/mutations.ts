@@ -183,7 +183,7 @@ export const registerActivitiesMutations = () => {
             name: args.name,
             date: args.date,
             amount,
-            linkId: crypto.randomUUID(),
+            id: crypto.randomUUID(),
           };
           activityLiabilities.push({
             ...liability,
@@ -564,7 +564,7 @@ export const registerActivitiesMutations = () => {
             });
           } else {
             const liability = {
-              linkId: crypto.randomUUID(),
+              id: crypto.randomUUID(),
               activity: newTransaction.activity,
               amount: -newTransaction.amount,
               account: fromAccount.id,
@@ -618,7 +618,7 @@ export const registerActivitiesMutations = () => {
             });
           } else {
             const liability = {
-              linkId: crypto.randomUUID(),
+              id: crypto.randomUUID(),
               activity: newTransaction.activity,
               amount: newTransaction.amount,
               account: toAccount.id,
@@ -842,7 +842,7 @@ export const registerActivitiesMutations = () => {
               activity: transaction.activity,
               amount: -updatedTransaction.amount,
               account: newFromAccount.id,
-              linkId: crypto.randomUUID(),
+              id: crypto.randomUUID(),
               name: activity.name,
               date: activity.date,
             };
@@ -896,7 +896,7 @@ export const registerActivitiesMutations = () => {
               activity: transaction.activity,
               amount: updatedTransaction.amount,
               account: newToAccount.id,
-              linkId: crypto.randomUUID(),
+              id: crypto.randomUUID(),
               name: activity.name,
               date: activity.date,
             };

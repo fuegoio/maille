@@ -27,7 +27,7 @@ export const activities = sqliteTable("activities", {
 });
 
 export const liabilities = sqliteTable("liabilities", {
-  linkId: text("link_id").notNull().$type<UUID>(),
+  id: text("id").notNull().$type<UUID>(),
   user: text("user")
     .notNull()
     .$type<UUID>()

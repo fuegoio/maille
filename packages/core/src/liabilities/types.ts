@@ -9,15 +9,12 @@ import type { UUID } from "crypto";
 import type dayjs from "dayjs";
 
 export type Liability = {
+  id: UUID;
   amount: number;
   activity: UUID | null;
   account: UUID;
   name: string;
   date: dayjs.Dayjs;
-
-  status: "incomplete" | "completed";
-  linkId: UUID;
-  linkedAmount?: number;
 };
 
 type LiabilityFilterNameDescription = {
