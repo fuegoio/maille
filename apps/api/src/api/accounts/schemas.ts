@@ -1,5 +1,6 @@
 import type { Account } from "@maille/core/accounts";
 import { builder } from "../builder";
+import type { UUID } from "crypto";
 
 export const AccountSchema = builder.objectRef<Account>("Account");
 
@@ -17,5 +18,17 @@ AccountSchema.implement({
       nullable: true,
     }),
     movements: t.exposeBoolean("movements"),
+  }),
+});
+
+export const DeleteAccountResponseSchema = builder.objectRef<{
+  id: UUID;
+  success: boolean;
+}>("DeleteAccountResponse");
+
+DeleteAccountResponseSchema.implement({
+  fields: (t) => ({
+    id: t.exposeString("id"),
+    success: t.exposeBoolean("success"),
   }),
 });

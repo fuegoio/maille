@@ -1,3 +1,4 @@
+import type { Account, AccountType } from "#accounts/types.js";
 import type { ActivityType } from "#activities/types.ts";
 import type { Liability } from "#liabilities/types.ts";
 import type { UUID } from "crypto";
@@ -211,6 +212,32 @@ export type DeleteProjectEvent = {
   };
 };
 
+export type CreateAccountEvent = {
+  type: "createAccount";
+  payload: {
+    id: UUID;
+    name: string;
+    type: AccountType;
+  };
+};
+
+export type UpdateAccountEvent = {
+  type: "updateAccount";
+  payload: {
+    id: UUID;
+    startingBalance?: number | null;
+    startingCashBalance?: number | null;
+    movements?: boolean;
+  };
+};
+
+export type DeleteAccountEvent = {
+  type: "deleteAccount";
+  payload: {
+    id: UUID;
+  };
+};
+
 type BaseSyncEvent = {
   createdAt: Date;
   clientId: UUID;
@@ -239,4 +266,7 @@ export type SyncEvent = BaseSyncEvent &
     | CreateProjectEvent
     | UpdateProjectEvent
     | DeleteProjectEvent
+    | CreateAccountEvent
+    | UpdateAccountEvent
+    | DeleteAccountEvent
   );

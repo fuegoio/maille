@@ -54,6 +54,11 @@ A date string, such as 2007-12-03, compliant with the `full-date` format outline
 """
 scalar Date
 
+type DeleteAccountResponse {
+  id: String!
+  success: Boolean!
+}
+
 type DeleteActivityResponse {
   id: String!
   success: Boolean!
@@ -108,12 +113,14 @@ type MovementActivity {
 
 type Mutation {
   addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID!, id: UUID!, toAccount: UUID!): Transaction!
+  createAccount(id: UUID!, name: String!, type: String!): Account!
   createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!): Activity!
   createActivityCategory(id: UUID!, name: String!, type: String!): ActivityCategory!
   createActivitySubCategory(category: UUID!, id: UUID!, name: String!): ActivitySubCategory!
   createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!): Movement!
   createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!): MovementActivity!
   createProject(emoji: String, id: UUID!, name: String!): Project!
+  deleteAccount(id: UUID!): DeleteAccountResponse!
   deleteActivity(id: UUID!): DeleteActivityResponse!
   deleteActivityCategory(id: UUID!): DeleteActivityResponse!
   deleteActivitySubCategory(id: UUID!): DeleteActivityResponse!
@@ -121,6 +128,7 @@ type Mutation {
   deleteMovementActivity(id: UUID!): DeleteMovementActivityResponse!
   deleteProject(id: UUID!): Boolean!
   deleteTransaction(activityId: UUID!, id: UUID!): DeleteTransactionResponse!
+  updateAccount(id: UUID!, movements: Boolean, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: UUID, date: Date, description: String, id: UUID!, name: String, project: UUID, subcategory: UUID, type: String): Activity!
   updateActivityCategory(id: UUID!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: UUID!, name: String!): ActivitySubCategory!

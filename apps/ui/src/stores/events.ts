@@ -13,12 +13,14 @@ import type { Mutation } from "@/mutations";
 import { useMovementsStore } from "./movements";
 import { useProjectsStore } from "./projects";
 import config from "@/config";
+import { useAccountsStore } from "./accounts";
 
 export const useEventsStore = defineStore("events", () => {
   const authStore = useAuthStore();
   const activitiesStore = useActivitiesStore();
   const movementsStore = useMovementsStore();
   const projectsStore = useProjectsStore();
+  const accountsStore = useAccountsStore();
 
   const clientId = useStorage<string | undefined>("client_id", undefined);
   const lastEventTimestamp = useStorage<number>("last_event_timestamp", 0);
@@ -84,6 +86,7 @@ export const useEventsStore = defineStore("events", () => {
         activitiesStore.handleMutationError(event);
         movementsStore.handleMutationError(event);
         projectsStore.handleMutationError(event);
+        accountsStore.handleMutationError(event);
       }
     }
   };
@@ -119,12 +122,12 @@ export const useEventsStore = defineStore("events", () => {
         payload: JSON.parse(eventData.payload),
         createdAt: new Date(eventData.createdAt * 1000),
         clientId: eventData.clientId,
-        user: authStore.user!.id,
       };
 
       activitiesStore.handleEvent(event);
       movementsStore.handleEvent(event);
       projectsStore.handleEvent(event);
+      accountsStore.handleEvent(event);
     }
   };
 
@@ -160,6 +163,7 @@ export const useEventsStore = defineStore("events", () => {
         activitiesStore.handleEvent(event);
         movementsStore.handleEvent(event);
         projectsStore.handleEvent(event);
+        accountsStore.handleEvent(event);
       });
   };
 

@@ -62,8 +62,18 @@ export type DeleteMovementMutation = MutationType<
 >;
 
 export const createMovementActivityMutation = graphql(/* GraphQL */ `
-  mutation CreateMovementActivity($id: UUID!, $movementId: UUID!, $activityId: UUID!, $amount: Float!) {
-    createMovementActivity(id: $id, movementId: $movementId, activityId: $activityId, amount: $amount) {
+  mutation CreateMovementActivity(
+    $id: UUID!
+    $movementId: UUID!
+    $activityId: UUID!
+    $amount: Float!
+  ) {
+    createMovementActivity(
+      id: $id
+      movementId: $movementId
+      activityId: $activityId
+      amount: $amount
+    ) {
       id
     }
   }
@@ -104,9 +114,8 @@ export type UpdateMovementActivityMutation = MutationType<
 export type DeleteMovementActivityMutation = MutationType<
   "deleteMovementActivity",
   typeof deleteMovementActivityMutation,
-  MovementActivity & {movement: UUID}
+  MovementActivity & { movement: UUID }
 >;
-
 
 export type MovementMutation =
   | CreateMovementMutation

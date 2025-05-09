@@ -6,6 +6,7 @@ import { useGraphQLSSE } from "@graphql-yoga/plugin-graphql-sse";
 import { registerActivitiesQueries } from "./activities/queries";
 import { registerActivitiesMutations } from "./activities/mutations";
 import { registerAccountsQueries } from "./accounts/queries";
+import { registerAccountsMutations } from "./accounts/mutations";
 import { registerSettingsQueries } from "./settings";
 import { registerMovementsQueries } from "./movements/queries";
 import { registerMovementsMutations } from "./movements/mutations";
@@ -25,6 +26,7 @@ builder.mutationType({});
 registerActivitiesMutations();
 registerMovementsMutations();
 registerProjectsMutations();
+registerAccountsMutations();
 
 export const schema = builder.toSchema();
 

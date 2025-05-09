@@ -14,6 +14,12 @@ import {
 import { AccountType } from "@maille/core/accounts";
 import { useSettingsStore } from "@/stores/settings";
 import { useActivitiesStore } from "@/stores/activities";
+import { useEventsStore } from "@/stores/events";
+import {
+  createAccountMutation,
+  deleteAccountMutation,
+  updateAccountMutation,
+} from "@/mutations/accounts";
 
 const accountsStore = useAccountsStore();
 const { accounts } = storeToRefs(accountsStore);
@@ -30,13 +36,13 @@ const startingPeriodFormatted = dayjs(settings.value.startingPeriod).format(
 
 const props = defineProps<{ accountType: AccountType }>();
 
-const expanded = ref<number | null>(null);
+const expanded = ref<UUID | null>(null);
 const newAccount = ref({
   show: false,
-  name: undefined as string | undefined,
+  name: null,
 });
 
-const toggleExpand = (accountId: number) => {
+const toggleExpand = (accountId: UUID) => {
   if (expanded.value === accountId) {
     expanded.value = null;
   } else {
@@ -54,22 +60,51 @@ const sortedAccounts = computed(() => {
 
 const cancelNewAccount = () => {
   newAccount.value.show = false;
-  newAccount.value.name = undefined;
+  newAccount.value.name = null;
 };
+
+const eventsStore = useEventsStore();
 
 const addNewAccount = async () => {
   if (!newAccount.value.name) return;
 
-  await accountsStore.addAccount(
-    newAccount.value.name,
-    props.accountType,
-    true,
-  );
+  const account = accountsStore.addAccount({
+    name: newAccount.value.name,
+    type: props.accountType,
+  });
+
+  eventsStore.sendEvent({
+    name: "createAccount",
+    mutation: createAccountMutation,
+    variables: account,
+    rollbackData: undefined,
+  });
+
   cancelNewAccount();
 };
 
-const updateAccount = async (accountId: UUID) => {
-  await accountsStore.updateAccount(accountId);
+const updateAccount = async (
+  accountId: UUID,
+  update: {
+    startingBalance?: number | null;
+    startingCashBalance?: number | null;
+    movements?: boolean;
+  },
+) => {
+  const account = accounts.value.find((a) => a.id === accountId);
+  if (!account) return;
+
+  accountsStore.updateAccount(accountId, update);
+
+  eventsStore.sendEvent({
+    name: "updateAccount",
+    mutation: updateAccountMutation,
+    variables: {
+      id: accountId,
+      ...update,
+    },
+    rollbackData: _.cloneDeep(account),
+  });
 };
 
 const getTransactionsLinkedToAccount = (accountId: UUID) => {
@@ -80,9 +115,21 @@ const getTransactionsLinkedToAccount = (accountId: UUID) => {
 };
 
 const deleteAccount = async (accountId: UUID) => {
+  const account = accounts.value.find((a) => a.id === accountId);
+  if (!account) return;
+
   if (getTransactionsLinkedToAccount(accountId) > 0) return;
 
-  await accountsStore.deleteAccount(accountId);
+  accountsStore.deleteAccount(accountId);
+
+  eventsStore.sendEvent({
+    name: "deleteAccount",
+    mutation: deleteAccountMutation,
+    variables: {
+      id: accountId,
+    },
+    rollbackData: account,
+  });
 };
 </script>
 
@@ -182,9 +229,14 @@ const deleteAccount = async (accountId: UUID) => {
           </div>
           <div class="flex-1" />
           <TAmountInput
-            v-model="account.startingBalance"
+            :model-value="account.startingBalance"
             class="w-full sm:w-56 mt-2 sm:mt-0"
-            @update:model-value="updateAccount(account.id)"
+            @update:model-value="
+              (startingBalance) =>
+                updateAccount(account.id, {
+                  startingBalance,
+                })
+            "
           />
         </div>
 
@@ -197,11 +249,16 @@ const deleteAccount = async (accountId: UUID) => {
           </div>
           <div class="flex-1" />
           <TAmountInput
-            v-model="account.startingCashBalance"
+            :model-value="account.startingCashBalance"
             class="w-full sm:w-56 mt-2 sm:mt-0"
             placeholder=""
             clearable
-            @update:model-value="updateAccount(account.id)"
+            @update:model-value="
+              (startingCashBalance) =>
+                updateAccount(account.id, {
+                  startingCashBalance,
+                })
+            "
           />
         </div>
 
@@ -211,11 +268,16 @@ const deleteAccount = async (accountId: UUID) => {
           <div class="text-sm text-primary-500">Movements enabled</div>
           <div class="flex-1" />
           <input
-            v-model="account.movements"
+            :model-value="account.movements"
             name="check-movements"
             type="checkbox"
             class="h-4 w-4 rounded text-primary-600 focus:outline-none mt-2 sm:mt-0"
-            @change="updateAccount(account.id)"
+            @change="
+              (e) =>
+                updateAccount(account.id, {
+                  movements: (e.target as HTMLInputElement).checked,
+                })
+            "
           />
         </div>
       </div>
