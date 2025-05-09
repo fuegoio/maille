@@ -1,6 +1,6 @@
 import { logger } from "@/logger";
 import { login } from "@/api/auth";
-import { schema, yoga } from "@/api";
+import { yoga } from "@/api";
 
 export const startServer = () => {
   logger.info("Starting GraphQL server...");
