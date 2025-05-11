@@ -77,6 +77,14 @@ export const useEventsStore = defineStore("events", () => {
         ...event,
         result,
       } as Mutation);
+      accountsStore.handleMutationSuccess({
+        ...event,
+        result,
+      } as Mutation);
+      usersStore.handleMutationSuccess({
+        ...event,
+        result,
+      } as Mutation);
 
       eventInProcessing.value = false;
       await dequeueEvents();

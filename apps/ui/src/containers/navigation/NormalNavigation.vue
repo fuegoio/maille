@@ -162,7 +162,9 @@ const menuItems = computed(() => {
       <MenuButton ref="trigger">
         <UserAvatar
           :user-id="user.id"
-          :class="twMerge(open && 'bg-primary-300', 'hover:bg-primary-300')"
+          :class="
+            twMerge(open && 'bg-primary-300', 'hover:bg-primary-300 rounded')
+          "
         />
       </MenuButton>
 

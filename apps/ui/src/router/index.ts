@@ -10,6 +10,7 @@ import SettingsView from "@/views/settings/SettingsView.vue";
 import SettingsAccountsView from "@/views/settings/SettingsAccountsView.vue";
 import SettingsActivityCategoriesView from "@/views/settings/SettingsActivityCategoriesView.vue";
 import SettingsProfileView from "@/views/settings/SettingsProfileView.vue";
+import SettingsUsersView from "@/views/settings/SettingsUsersView.vue";
 
 import MovementsView from "@/views/MovementsView.vue";
 import ActivitiesView from "@/views/ActivitiesView.vue";
@@ -101,6 +102,11 @@ const router = createRouter({
       path: "/settings/profile",
       name: "settings_profile",
       component: SettingsProfileView,
+    },
+    {
+      path: "/settings/users",
+      name: "settings_users",
+      component: SettingsUsersView,
     },
     {
       path: "/settings/account",

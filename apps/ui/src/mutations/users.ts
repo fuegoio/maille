@@ -15,6 +15,10 @@ export const createUserMutation = graphql(/* GraphQL */ `
       password: $password
     ) {
       id
+      firstName
+      lastName
+      email
+      avatar
     }
   }
 `);

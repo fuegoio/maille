@@ -67,6 +67,20 @@ const goBack = () => {
 
     <RouterLink
       class="flex items-center hover:bg-primary-600 rounded px-2 h-8 group transition-colors my-1"
+      :to="{ name: 'settings_users' }"
+      :class="{
+        'bg-primary-900': route.name === 'settings_users',
+      }"
+      @click="emit('close')"
+    >
+      <i
+        class="mdi mdi-account-group text-primary-500 group-hover:text-primary-300 transition-colors"
+      />
+      <span class="text-sm ml-3 text-primary-300 font-medium">Users</span>
+    </RouterLink>
+
+    <RouterLink
+      class="flex items-center hover:bg-primary-600 rounded px-2 h-8 group transition-colors my-1"
       :to="{ name: 'settings_accounts' }"
       :class="{
         'bg-primary-900': route.name === 'settings_accounts',

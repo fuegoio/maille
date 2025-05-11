@@ -26,7 +26,7 @@ export const useUsersStore = defineStore("users", () => {
   // Events
   const handleEvent = (event: SyncEvent) => {
     if (event.type === "createUser") {
-      addUser(event.payload);
+      addUser({ ...event.payload, avatar: null });
     } else if (event.type === "updateUser") {
       updateUser(event.payload.id, {
         ...event.payload,
@@ -37,6 +37,9 @@ export const useUsersStore = defineStore("users", () => {
   // Mutations
   const handleMutationSuccess = (event: Mutation) => {
     if (!event.result) return;
+    if (event.name === "createUser") {
+      addUser(event.result.createUser);
+    }
   };
 
   const handleMutationError = (event: Mutation) => {
