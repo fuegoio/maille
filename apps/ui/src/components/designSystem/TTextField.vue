@@ -71,6 +71,7 @@ defineExpose({ click: () => input.value.focus() });
       :placeholder="placeholder"
       class="pl-3 text-left min-w-0 border-none h-8 text-sm bg-transparent flex-1"
       :step="type === 'number' ? 0.01 : undefined"
+      :disabled="disabled"
       @focus="currentlyFocused = true"
       @blur="
         currentlyFocused = false;

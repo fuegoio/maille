@@ -9,6 +9,7 @@ import LoadingDataView from "@/views/LoadingDataView.vue";
 import SettingsView from "@/views/settings/SettingsView.vue";
 import SettingsAccountsView from "@/views/settings/SettingsAccountsView.vue";
 import SettingsActivityCategoriesView from "@/views/settings/SettingsActivityCategoriesView.vue";
+import SettingsProfileView from "@/views/settings/SettingsProfileView.vue";
 
 import MovementsView from "@/views/MovementsView.vue";
 import ActivitiesView from "@/views/ActivitiesView.vue";
@@ -95,6 +96,11 @@ const router = createRouter({
         }
         next();
       },
+    },
+    {
+      path: "/settings/profile",
+      name: "settings_profile",
+      component: SettingsProfileView,
     },
     {
       path: "/settings/account",

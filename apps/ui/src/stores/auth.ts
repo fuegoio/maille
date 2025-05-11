@@ -9,6 +9,24 @@ export const useAuthStore = defineStore("auth", () => {
   });
   const authToken = useStorage<string | null>("access_token", null);
 
+  const updateUser = ({
+    firstName,
+    lastName,
+    avatar,
+  }: {
+    firstName: string;
+    lastName: string;
+    avatar: string | null;
+  }) => {
+    if (!user.value) return;
+    user.value = {
+      ...user.value,
+      firstName,
+      lastName,
+      avatar,
+    };
+  };
+
   const logout = async () => {
     if (!authToken.value) return;
 
@@ -19,6 +37,8 @@ export const useAuthStore = defineStore("auth", () => {
   return {
     user,
     authToken,
+
+    updateUser,
 
     logout,
   };

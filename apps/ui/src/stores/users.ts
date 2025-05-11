@@ -55,6 +55,8 @@ export const useUsersStore = defineStore("users", () => {
     users,
     getUserById,
 
+    updateUser,
+
     handleEvent,
     handleMutationSuccess,
     handleMutationError,
