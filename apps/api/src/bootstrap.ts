@@ -26,7 +26,6 @@ export const bootstrapUsers = async () => {
   await db.insert(accounts).values([
     {
       id: crypto.randomUUID(),
-      user: user.id,
       name: "Revenue",
       type: AccountType.REVENUE,
       default: true,
@@ -34,7 +33,6 @@ export const bootstrapUsers = async () => {
     },
     {
       id: crypto.randomUUID(),
-      user: user.id,
       name: "Expense",
       type: AccountType.EXPENSE,
       default: true,
@@ -78,7 +76,6 @@ export const bootstrapUsers = async () => {
   await db.insert(activityCategories).values([
     {
       id: liabilityAccountId,
-      user: user.id,
       name: "Salary",
       type: ActivityType.REVENUE,
     },

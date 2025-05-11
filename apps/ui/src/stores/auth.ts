@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { StorageSerializers, useStorage } from "@vueuse/core";
 
-import type { User } from "@/types/users";
+import type { User } from "@maille/core/users";
 
 export const useAuthStore = defineStore("auth", () => {
   const user = useStorage<User | null>("user", null, undefined, {

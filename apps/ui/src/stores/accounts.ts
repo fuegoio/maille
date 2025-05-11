@@ -44,6 +44,7 @@ export const useAccountsStore = defineStore("accounts", () => {
     type: AccountType;
   }): Account => {
     const { user } = useAuthStore();
+    if (!user) throw new Error("User not found");
     const newAccount = {
       id: id ?? window.crypto.randomUUID(),
       name,

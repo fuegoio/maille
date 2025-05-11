@@ -14,6 +14,7 @@ import { useMovementsStore } from "./movements";
 import { useProjectsStore } from "./projects";
 import config from "@/config";
 import { useAccountsStore } from "./accounts";
+import { useUsersStore } from "./users";
 
 export const useEventsStore = defineStore("events", () => {
   const authStore = useAuthStore();
@@ -21,6 +22,7 @@ export const useEventsStore = defineStore("events", () => {
   const movementsStore = useMovementsStore();
   const projectsStore = useProjectsStore();
   const accountsStore = useAccountsStore();
+  const usersStore = useUsersStore();
 
   const clientId = useStorage<string | undefined>("client_id", undefined);
   const lastEventTimestamp = useStorage<number>("last_event_timestamp", 0);
@@ -87,6 +89,7 @@ export const useEventsStore = defineStore("events", () => {
         movementsStore.handleMutationError(event);
         projectsStore.handleMutationError(event);
         accountsStore.handleMutationError(event);
+        usersStore.handleMutationError(event);
       }
     }
   };
@@ -128,6 +131,7 @@ export const useEventsStore = defineStore("events", () => {
       movementsStore.handleEvent(event);
       projectsStore.handleEvent(event);
       accountsStore.handleEvent(event);
+      usersStore.handleEvent(event);
     }
   };
 
@@ -164,6 +168,7 @@ export const useEventsStore = defineStore("events", () => {
         movementsStore.handleEvent(event);
         projectsStore.handleEvent(event);
         accountsStore.handleEvent(event);
+        usersStore.handleEvent(event);
       });
   };
 

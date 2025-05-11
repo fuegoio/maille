@@ -13,6 +13,8 @@ import { registerMovementsMutations } from "./movements/mutations";
 import { registerLiabilitiesQueries } from "./liabilities/queries";
 import { registerProjectsQueries } from "./projects/queries";
 import { registerProjectsMutations } from "./projects/mutations";
+import { registerUsersMutations } from "./users/mutations";
+import { registerUsersQueries } from "./users/queries";
 
 builder.queryType({});
 registerActivitiesQueries();
@@ -21,12 +23,14 @@ registerSettingsQueries();
 registerMovementsQueries();
 registerLiabilitiesQueries();
 registerProjectsQueries();
+registerUsersQueries();
 
 builder.mutationType({});
 registerActivitiesMutations();
 registerMovementsMutations();
 registerProjectsMutations();
 registerAccountsMutations();
+registerUsersMutations();
 
 export const schema = builder.toSchema();
 

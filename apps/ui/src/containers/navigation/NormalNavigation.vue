@@ -15,6 +15,8 @@ import { usePopper } from "@/hooks/use-popper";
 
 import Logo from "@/components/Logo.vue";
 import { useEventsStore } from "@/stores/events";
+import UserAvatar from "@/components/users/UserAvatar.vue";
+import { twMerge } from "tailwind-merge";
 
 const props = defineProps<{
   openMobile: boolean;
@@ -59,12 +61,6 @@ const pastPeriodAvailable = computed(() => {
   return periodsAvailable.value.find(
     (p) => p.month === pastMonth.month() && p.year === pastMonth.year(),
   );
-});
-
-const userInitials = computed(() => {
-  if (!user) return;
-  if (!user.lastName) return user.firstName[0];
-  return `${user.firstName[0]}${user.lastName[0]}`;
 });
 
 const menuItems = computed(() => {
@@ -162,13 +158,12 @@ const menuItems = computed(() => {
       </div>
     </div>
 
-    <Menu v-slot="{ open }">
-      <MenuButton
-        ref="trigger"
-        class="inline-flex items-center justify-center w-6 h-6 transition-colors bg-primary-400 hover:bg-primary-300 shrink-0 rounded text-[0.6rem] font-semibold text-white"
-        :class="{ 'bg-primary-300': open }"
-      >
-        {{ `${userInitials}` }}
+    <Menu v-if="user" v-slot="{ open }">
+      <MenuButton ref="trigger">
+        <UserAvatar
+          :user-id="user.id"
+          :class="twMerge(open && 'bg-primary-300', 'hover:bg-primary-300')"
+        />
       </MenuButton>
 
       <Portal v-if="open">

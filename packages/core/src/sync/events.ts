@@ -238,7 +238,27 @@ export type DeleteAccountEvent = {
   };
 };
 
-type BaseSyncEvent = {
+export type CreateUserEvent = {
+  type: "createUser";
+  payload: {
+    id: UUID;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+
+export type UpdateUserEvent = {
+  type: "updateUser";
+  payload: {
+    id: UUID;
+    firstName?: string;
+    lastName?: string;
+    avatar?: string | null;
+  };
+};
+
+export type BaseSyncEvent = {
   createdAt: Date;
   clientId: UUID;
 };
@@ -269,4 +289,6 @@ export type SyncEvent = BaseSyncEvent &
     | CreateAccountEvent
     | UpdateAccountEvent
     | DeleteAccountEvent
+    | CreateUserEvent
+    | UpdateUserEvent
   );

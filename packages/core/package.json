@@ -12,7 +12,8 @@
     "./projects": "./src/projects/index.ts",
     "./sync": "./src/sync/index.ts",
     "./settings": "./src/settings/index.ts",
-    "./liabilities": "./src/liabilities/index.ts"
+    "./liabilities": "./src/liabilities/index.ts",
+    "./users": "./src/users/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.2.2",

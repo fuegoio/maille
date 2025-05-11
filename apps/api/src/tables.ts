@@ -82,7 +82,7 @@ export const transactions = sqliteTable("transactions", {
 
 export const accounts = sqliteTable("accounts", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
+  user: text("user").$type<UUID | null>(),
   name: text("name").notNull(),
   type: text("type").notNull().$type<AccountType>(),
   startingBalance: integer("starting_balance").notNull().default(0),

@@ -6,6 +6,7 @@ type Account {
   startingBalance: Float
   startingCashBalance: Float
   type: String!
+  user: UUID
 }
 
 type Activity {
@@ -120,6 +121,7 @@ type Mutation {
   createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!): Movement!
   createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!): MovementActivity!
   createProject(emoji: String, id: UUID!, name: String!): Project!
+  createUser(email: String!, firstName: String!, lastName: String!, password: String!): User!
   deleteAccount(id: UUID!): DeleteAccountResponse!
   deleteActivity(id: UUID!): DeleteActivityResponse!
   deleteActivityCategory(id: UUID!): DeleteActivityResponse!
@@ -136,6 +138,7 @@ type Mutation {
   updateMovementActivity(amount: Float!, id: UUID!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: UUID!, name: String, startDate: Date): Project!
   updateTransaction(activityId: UUID!, amount: Float, fromAccount: UUID, id: UUID!, toAccount: UUID): Transaction!
+  updateUser(avatar: String, firstName: String, lastName: String): User!
 }
 
 type Project {
@@ -156,6 +159,7 @@ type Query {
   movements: [Movement!]!
   projects: [Project!]!
   settings: Settings!
+  users: [User!]!
 }
 
 type Settings {
@@ -187,3 +191,11 @@ input TransactionInput {
 A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
 """
 scalar UUID
+
+type User {
+  avatar: String
+  email: String!
+  firstName: String!
+  id: UUID!
+  lastName: String!
+}

@@ -44,6 +44,7 @@ export const registerAccountsMutations = () => {
         return {
           id: args.id,
           name: args.name,
+          user: ctx.user,
           type: accountType,
           default: false,
           startingBalance: null,

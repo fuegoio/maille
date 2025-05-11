@@ -7,6 +7,7 @@ import { useLiabilitiesStore } from "@/stores/liabilities";
 import { useMovementsStore } from "@/stores/movements";
 import { useProjectsStore } from "@/stores/projects";
 import { useSettingsStore } from "@/stores/settings";
+import { useUsersStore } from "@/stores/users";
 import type { AccountType } from "@maille/core/accounts";
 import type { ActivityStatus, ActivityType } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
@@ -61,12 +62,20 @@ const loadInitialData = async () => {
 
       accounts {
         id
+        user
         name
         type
         default
         startingBalance
         startingCashBalance
         movements
+      }
+
+      users {
+        id
+        email
+        firstName
+        lastName
       }
 
       settings {
@@ -159,6 +168,10 @@ const loadInitialData = async () => {
     startDate: p.startDate ? dayjs(p.startDate) : null,
     endDate: p.endDate ? dayjs(p.endDate) : null,
   }));
+
+  const usersStore = useUsersStore();
+  const { users } = storeToRefs(usersStore);
+  users.value = initialDataRequest.users;
 
   router.replace({ name: "dashboard" });
 };
