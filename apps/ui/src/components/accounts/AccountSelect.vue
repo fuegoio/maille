@@ -19,6 +19,7 @@ import {
 } from "@/stores/accounts";
 
 import { AccountType } from "@maille/core/accounts";
+import UserAvatar from "../users/UserAvatar.vue";
 
 const accountsStore = useAccountsStore();
 const { accounts } = storeToRefs(accountsStore);
@@ -116,8 +117,13 @@ export default {
       <template v-if="Array.isArray(value)">
         <template v-for="(accountId, index) in value" :key="accountId">
           <div v-if="index !== 0" class="ml-0.5 mr-2 text-white">,</div>
+          <UserAvatar
+            v-if="accounts.find((a) => a.id === accountId)!.user"
+            :user-id="accounts.find((a) => a.id === accountId)!.user!"
+            class="size-4 text-[0.5rem]"
+          />
           <div
-            class="h-3 w-3 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors"
+            class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1 outline outline-primary-800"
             :class="
               ACCOUNT_TYPES_COLOR[
                 accounts.find((a) => a.id === accountId)!.type
@@ -133,8 +139,13 @@ export default {
         </template>
       </template>
       <template v-else-if="value !== null">
+        <UserAvatar
+          v-if="accounts.find((a) => a.id === value)!.user"
+          :user-id="accounts.find((a) => a.id === value)!.user!"
+          class="size-4 text-[0.5rem] outline outline-primary-800"
+        />
         <div
-          class="h-3 w-3 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors"
+          class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1 outline outline-primary-800"
           :class="
             ACCOUNT_TYPES_COLOR[accounts.find((a) => a.id === value)!.type]
           "
@@ -201,12 +212,17 @@ export default {
             <li
               :class="[
                 active ? 'bg-primary-400 text-white' : 'text-white',
-                'relative cursor-default select-none py-2 pl-10 pr-4',
+                'relative cursor-default select-none py-2 pl-10 pr-4 inline-flex items-center w-full',
               ]"
             >
-              <span :class="['block truncate']">
+              <span class="block truncate flex-1">
                 {{ account.name }}
               </span>
+              <UserAvatar
+                v-if="account.user"
+                :user-id="account.user"
+                class="size-4 text-[0.5rem] ml-2"
+              />
               <span
                 v-if="selected"
                 class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-400"
