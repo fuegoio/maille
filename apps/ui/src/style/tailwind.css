@@ -22,27 +22,27 @@
     Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* Custom font sizes */
-  --font-size-xs: 0.75rem;
-  --font-size-xs--line-height: normal;
-  --font-size-xs--letter-spacing: 0.01em;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: normal;
+  --text-xs--letter-spacing: 0.01em;
 
-  --font-size-sm: 0.8125rem;
-  --font-size-sm--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1rem;
 
-  --font-size-base: 0.9375rem;
-  --font-size-base--line-height: 1rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1rem;
 
-  --font-size-xl: 1.125rem;
-  --font-size-xl--line-height: 1;
+  --text-xl: 1.125rem;
+  --text-xl--line-height: 1;
 
-  --font-size-2xl: 1.25rem;
-  --font-size-2xl--line-height: 1;
+  --text-2xl: 1.25rem;
+  --text-2xl--line-height: 1;
 
-  --font-size-3xl: 1.5rem;
-  --font-size-3xl--line-height: 1;
+  --text-3xl: 1.5rem;
+  --text-3xl--line-height: 1;
 
-  --font-size-4xl: 2.25rem;
-  --font-size-4xl--line-height: 1;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1;
 
   /* Custom screen breakpoints */
   --breakpoint-xs: 425px;
