@@ -1,4 +1,4 @@
-@import "./tailwind.css";
-@import "@/assets/base.scss";
-@import "@/assets/transitions.scss";
-@import "@/assets/scrollbar.scss";
+@import "@/style/tailwind.css";
+@import "@/style/base.scss";
+@import "@/style/transitions.scss";
+@import "@/style/scrollbar.scss";
