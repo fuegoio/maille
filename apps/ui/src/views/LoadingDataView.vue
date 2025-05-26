@@ -76,6 +76,7 @@ const loadInitialData = async () => {
         email
         firstName
         lastName
+        avatar
       }
 
       settings {
