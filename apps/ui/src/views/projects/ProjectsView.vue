@@ -126,7 +126,7 @@ const activitiesTotal = computed(() => {
             class="text-sm hidden sm:flex items-center px-3 my-1 w-28 flex-shrink-0"
           >
             <div
-              class="h-[9px] w-[9px] rounded-sm shrink-0 mr-3 mt-[1px]"
+              class="h-[9px] w-[9px] rounded-xs shrink-0 mr-3 mt-[1px]"
               :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
             />
             <div

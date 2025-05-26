@@ -268,7 +268,7 @@ useHotkey(["k"], () => {
                         class="text-sm text-white text-right sm:flex items-center pl-4 hidden font-mono"
                       >
                         <div
-                          class="h-[9px] w-[9px] rounded-sm shrink-0 mr-3 mt-[2px]"
+                          class="h-[9px] w-[9px] rounded-xs shrink-0 mr-3 mt-[2px]"
                           :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
                         />
                         {{

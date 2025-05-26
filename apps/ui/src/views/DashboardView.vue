@@ -36,12 +36,10 @@ const router = useRouter();
 
 const now = dayjs();
 
-const currentPeriodActivityData = computed<
-  PeriodActivityData
->(() => {
+const currentPeriodActivityData = computed<PeriodActivityData>(() => {
   return periodsActivityData.value.find(
-      (pad) => pad.month === now.month() && pad.year === now.year(),
-    )!
+    (pad) => pad.month === now.month() && pad.year === now.year(),
+  )!;
 });
 
 const lastActivities = computed(() => {
@@ -131,7 +129,7 @@ const goToPeriod = () => {
           >
             <div class="flex items-center">
               <div
-                class="h-2.5 w-2.5 rounded-full shrink-0 mr-2"
+                class="h-2.5 w-2.5 rounded-sm shrink-0 mr-2"
                 :class="activityType.color"
               />
               <span class="text-white font-medium text-sm">

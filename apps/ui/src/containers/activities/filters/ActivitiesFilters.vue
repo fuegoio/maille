@@ -76,7 +76,7 @@ const activitiesTotal = computed(() => {
             class="text-sm text-right flex items-center px-2 my-1 font-mono"
           >
             <div
-              class="h-[9px] w-[9px] rounded-sm shrink-0 mr-3"
+              class="h-[9px] w-[9px] rounded-xs shrink-0 mr-3"
               :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
             />
             {{ getCurrencyFormatter().format(activitiesTotal[activityType]!) }}

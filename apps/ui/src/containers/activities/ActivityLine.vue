@@ -99,7 +99,7 @@ const transactions = computed(() => {
 
         <div
           v-if="activity.type"
-          class="size-2 rounded-sm shrink-0"
+          class="size-2 rounded-xs shrink-0"
           :class="`bg-${ACTIVITY_TYPES_COLOR[activity.type]}-300`"
         />
 
