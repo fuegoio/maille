@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom color palette */
+  --color-primary-100: hsl(0, 0%, 97%);
+  --color-primary-200: hsl(0, 0%, 83%);
+  --color-primary-300: hsl(0, 0%, 70%);
+  --color-primary-400: hsl(0, 0%, 58%);
+  --color-primary-500: hsl(0, 0%, 47%);
+  --color-primary-600: hsl(0, 0%, 37%);
+  --color-primary-700: hsl(0, 0%, 26%);
+  --color-primary-800: hsl(0, 0%, 18%);
+  --color-primary-900: hsl(0, 0%, 11%);
+  --color-primary-950: hsl(0, 0%, 9%);
+
+  /* Custom font families */
+  --font-family-sans: "Inter var", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-mono: "Source Code Pro", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Custom font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-xs--line-height: normal;
+  --font-size-xs--letter-spacing: 0.01em;
+  
+  --font-size-sm: 0.8125rem;
+  --font-size-sm--line-height: 1rem;
+  
+  --font-size-base: 0.9375rem;
+  --font-size-base--line-height: 1rem;
+  
+  --font-size-xl: 1.125rem;
+  --font-size-xl--line-height: 1;
+  
+  --font-size-2xl: 1.25rem;
+  --font-size-2xl--line-height: 1;
+  
+  --font-size-3xl: 1.5rem;
+  --font-size-3xl--line-height: 1;
+  
+  --font-size-4xl: 2.25rem;
+  --font-size-4xl--line-height: 1;
+
+  /* Custom screen breakpoints */
+  --breakpoint-xs: 425px;
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply border-primary-700;
+  }
+}
