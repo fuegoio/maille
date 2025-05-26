@@ -14,11 +14,8 @@ import type { Period, PeriodActivityData } from "@/types/periods";
 import { useHeadStore } from "@/stores/head";
 
 const periodsStore = usePeriodsStore();
-const {
-  periodsAvailable,
-  periodsActivityData,
-  periodsForecastData,
-} = storeToRefs(periodsStore);
+const { periodsAvailable, periodsActivityData, periodsForecastData } =
+  storeToRefs(periodsStore);
 
 const headStore = useHeadStore();
 headStore.updateTitle("Periods");
@@ -191,7 +188,7 @@ const getPeriodRouteParam = (period: Period) => {
           >
             <div class="flex items-center">
               <div
-                class="h-2 w-2 rounded-xl shrink-0 mr-2"
+                class="size-2 rounded-sm shrink-0 mr-2"
                 :class="activityType.color"
               />
               <span class="text-sm text-white">

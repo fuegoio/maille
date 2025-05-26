@@ -75,7 +75,7 @@ const activityView = computed(() => {
         <header class="h-14 border-b pl-14 pr-4 lg:pl-8 flex items-center">
           <div class="flex items-center -ml-0.5">
             <div
-              class="h-3 w-3 rounded-xl shrink-0 mr-3"
+              class="size-3 rounded shrink-0 mr-3"
               :class="`bg-${ACTIVITY_TYPES_COLOR[category.type]}-300`"
             />
             <span class="text-sm text-white font-semibold">

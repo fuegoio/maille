@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { Dayjs } from "dayjs";
 import Color from "colorjs.io";
+import type { Dayjs } from "dayjs";
 import _ from "lodash";
 import { storeToRefs } from "pinia";
 import { computed } from "vue";
 
 import {
-  useActivitiesStore,
-  ACTIVITY_TYPES_NAME,
   ACTIVITY_TYPES_COLOR,
+  ACTIVITY_TYPES_NAME,
+  useActivitiesStore,
 } from "@/stores/activities";
 import { usePeriodsStore } from "@/stores/periods";
 
@@ -17,14 +17,13 @@ import PeriodActivityCategoryLine from "@/containers/periods/PeriodActivityCateg
 import { getCurrencyFormatter } from "@/utils/currency";
 
 import { ActivityType } from "@maille/core/activities";
-import type { PeriodActivityData } from "@maille/core/periods";
+import type { PeriodActivityData } from "@/types/periods";
 
 const activitiesStore = useActivitiesStore();
 const { categories } = storeToRefs(activitiesStore);
 
 const periodsStore = usePeriodsStore();
-const { viewFilters, periodsActivityData } =
-  storeToRefs(periodsStore);
+const { viewFilters, periodsActivityData } = storeToRefs(periodsStore);
 
 const props = defineProps<{
   periodDate: Dayjs;
@@ -40,8 +39,7 @@ const periodActivityData = computed<PeriodActivityData>(() => {
 
 const getCategories = (activityType: ActivityType) => {
   return _.sortBy(
-    categories.value
-      .filter((c) => c.type === activityType),
+    categories.value.filter((c) => c.type === activityType),
     "name",
   );
 };
@@ -103,7 +101,7 @@ const getProgressBarColor = (index: number, activityType: ActivityType) => {
     >
       <div class="flex items-center">
         <div
-          class="h-3 w-3 rounded-xl shrink-0 mr-3"
+          class="size-3 rounded shrink-0 mr-3"
           :class="`bg-${ACTIVITY_TYPES_COLOR[activityType.type]}-300`"
         />
         <span class="text-sm text-white font-medium">

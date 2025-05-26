@@ -77,7 +77,7 @@ const selectActivityTypeToFilterActivities = (activityType: ActivityType) => {
       >
         <div class="flex items-center">
           <div
-            class="h-3 w-3 rounded-xl shrink-0 mr-3"
+            class="size-3 rounded shrink-0 mr-3"
             :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
           />
           <span

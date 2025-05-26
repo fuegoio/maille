@@ -329,7 +329,7 @@ watch(
                   <template #selected="{ item }">
                     <div class="flex items-center">
                       <div
-                        class="h-3 w-3 rounded-xl shrink-0 mr-3"
+                        class="size-3 rounded shrink-0 mr-3"
                         :class="`bg-${ACTIVITY_TYPES_COLOR[item.id as ActivityType]}-300`"
                       />
                       <span class="text-sm text-white">
@@ -341,7 +341,7 @@ watch(
                   <template #item="{ item, selected }">
                     <div class="flex items-center">
                       <div
-                        class="h-3 w-3 rounded-xl shrink-0 mr-3"
+                        class="size-3 rounded shrink-0 mr-3"
                         :class="`bg-${ACTIVITY_TYPES_COLOR[item.id as ActivityType]}-300`"
                       />
                       <span class="text-sm text-primary-100 mb-[1px]">

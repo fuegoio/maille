@@ -166,7 +166,7 @@ const deleteSubCategory = async (subcategoryId: UUID) => {
   <div class="pb-10">
     <div class="flex items-center mb-2 px-2">
       <div
-        class="h-3 w-3 rounded-xl mr-2 sm:mr-3 shrink-0"
+        class="size-3 rounded mr-2 sm:mr-3 shrink-0"
         :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
       />
       <div class="text-sm font-medium text-primary-400">

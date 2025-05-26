@@ -9,6 +9,7 @@ const accountStore = useAccountsStore();
 
 const props = defineProps<{
   accountId: UUID;
+  onlyUser?: boolean;
 }>();
 
 const account = computed(() => {
@@ -21,14 +22,15 @@ const account = computed(() => {
     <UserAvatar
       v-if="account.user"
       :user-id="account.user"
-      class="size-4 text-[0.5rem] outline outline-primary-800"
+      class="size-4 text-[0.5rem]"
     />
     <div
-      class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 -ml-1 outline outline-primary-800"
+      v-if="!onlyUser"
+      class="size-4 rounded-xl shrink-0 -ml-1 outline outline-primary-800"
       :class="ACCOUNT_TYPES_COLOR[account.type]"
     />
     <div
-      class="font-medium text-ellipsis whitespace-nowrap overflow-hidden text-white"
+      class="font-medium text-ellipsis whitespace-nowrap overflow-hidden text-white ml-2 sm:ml-3"
     >
       {{ account.name }}
     </div>

@@ -18,6 +18,7 @@ import type { PeriodAccountData } from "@/types/periods";
 import { AccountType } from "@maille/core/accounts";
 import { useActivitiesStore } from "@/stores/activities";
 import type { UUID } from "crypto";
+import AccountLabel from "@/components/AccountLabel.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -110,7 +111,7 @@ const getProgressBarColor = (index: number, accountType: AccountType) => {
   >
     <div class="flex items-center px-3 h-9">
       <div
-        class="h-3 w-3 rounded-xl mr-2 sm:mr-3 shrink-0"
+        class="size-3 rounded-xl mr-2 sm:mr-3 shrink-0"
         :class="ACCOUNT_TYPES_COLOR[accountType]"
       />
       <div class="text-white font-medium text-sm">
@@ -215,7 +216,7 @@ const getProgressBarColor = (index: number, accountType: AccountType) => {
         (ad) => ad.account.type === accountType,
       )"
       :key="accountData.account.id"
-      class="rounded flex flex-col justify-center group pl-6"
+      class="rounded flex flex-col justify-center group pl-2.5"
       :class="[
         accountType === AccountType.BANK_ACCOUNT &&
         accountData.account.startingCashBalance !== null
@@ -223,13 +224,13 @@ const getProgressBarColor = (index: number, accountType: AccountType) => {
           : 'h-9',
         viewFilters.account === accountData.account.id
           ? 'bg-primary-900'
-          : 'hover:bg-primary-900',
+          : 'hover:bg-primary-800',
       ]"
       @click="selectAccountToFilterActivities(accountData.account.id)"
     >
-      <div class="flex items-center rounded px-3">
+      <div class="flex items-center rounded pr-3">
         <div class="font-medium text-primary-100 text-xs">
-          {{ accountData.account.name }}
+          <AccountLabel :account-id="accountData.account.id" only-user />
         </div>
 
         <div class="flex-1" />
@@ -280,7 +281,7 @@ const getProgressBarColor = (index: number, accountType: AccountType) => {
         "
       >
         <div class="flex items-center px-3 mt-2">
-          <div class="text-primary-100 text-xs ml-3">Cash balance</div>
+          <div class="text-primary-100 text-xs ml-7">Cash balance</div>
 
           <div class="flex-1" />
 

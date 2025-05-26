@@ -192,10 +192,13 @@ useHotkey(["j"], () => {
   if (activities.length === 0) return;
 
   const currentIndex = activities.findIndex(
-    (activity) => activity.id === focusedActivity.value
+    (activity) => activity.id === focusedActivity.value,
   );
 
-  const nextIndex = currentIndex === -1 ? 0 : (currentIndex - 1 + activities.length) % activities.length;
+  const nextIndex =
+    currentIndex === -1
+      ? 0
+      : (currentIndex - 1 + activities.length) % activities.length;
   focusedActivity.value = activities[nextIndex].id;
 });
 
@@ -204,7 +207,7 @@ useHotkey(["k"], () => {
   if (activities.length === 0) return;
 
   const currentIndex = activities.findIndex(
-    (activity) => activity.id === focusedActivity.value
+    (activity) => activity.id === focusedActivity.value,
   );
 
   const nextIndex = (currentIndex + 1) % activities.length;
@@ -265,7 +268,7 @@ useHotkey(["k"], () => {
                         class="text-sm text-white text-right sm:flex items-center pl-4 hidden font-mono"
                       >
                         <div
-                          class="h-[9px] w-[9px] rounded-xl shrink-0 mr-3 mt-[2px]"
+                          class="h-[9px] w-[9px] rounded-sm shrink-0 mr-3 mt-[2px]"
                           :class="`bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`"
                         />
                         {{
