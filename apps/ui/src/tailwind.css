@@ -14,29 +14,33 @@
   --color-primary-950: hsl(0, 0%, 9%);
 
   /* Custom font families */
-  --font-family-sans: "Inter var", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-family-mono: "Source Code Pro", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans:
+    "Inter var", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "Source Code Pro", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
 
   /* Custom font sizes */
   --font-size-xs: 0.75rem;
   --font-size-xs--line-height: normal;
   --font-size-xs--letter-spacing: 0.01em;
-  
+
   --font-size-sm: 0.8125rem;
   --font-size-sm--line-height: 1rem;
-  
+
   --font-size-base: 0.9375rem;
   --font-size-base--line-height: 1rem;
-  
+
   --font-size-xl: 1.125rem;
   --font-size-xl--line-height: 1;
-  
+
   --font-size-2xl: 1.25rem;
   --font-size-2xl--line-height: 1;
-  
+
   --font-size-3xl: 1.5rem;
   --font-size-3xl--line-height: 1;
-  
+
   --font-size-4xl: 2.25rem;
   --font-size-4xl--line-height: 1;
 
@@ -51,3 +55,4 @@
     @apply border-primary-700;
   }
 }
+
