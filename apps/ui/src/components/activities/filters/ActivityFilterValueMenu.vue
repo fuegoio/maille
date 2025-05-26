@@ -2,6 +2,9 @@
 import { ref, nextTick } from "vue";
 
 import AccountSelect from "@/components/accounts/AccountSelect.vue";
+import TSelect from "@/components/designSystem/TSelect.vue";
+import TAmountInput from "@/components/designSystem/TAmountInput.vue";
+import TTextField from "@/components/designSystem/TTextField.vue";
 
 import { useActivitiesStore } from "@/stores/activities";
 
@@ -10,6 +13,9 @@ import {
   type ActivityFilter,
   ActivityFilterDateValues,
 } from "@maille/core/activities";
+
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   modelValue: ActivityFilter["value"] | undefined;
@@ -32,12 +38,7 @@ defineExpose({
 });
 </script>
 
-<script lang="ts">
-export default {
-  components: { AccountSelect },
-  inheritAttrs: false,
-};
-</script>
+
 
 <template>
   <template v-if="field === 'date'">

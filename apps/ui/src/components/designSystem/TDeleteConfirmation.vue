@@ -9,6 +9,9 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     modelValue?: boolean;
@@ -34,12 +37,6 @@ const cancel = () => {
 const confirm = () => {
   emit("confirm");
   showDialog.value = false;
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 

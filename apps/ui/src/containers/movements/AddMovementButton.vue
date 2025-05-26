@@ -18,6 +18,9 @@ import type { UUID } from "crypto";
 import { createMovementMutation } from "@/mutations/movements";
 import { useHotkey } from "@/hooks/use-hotkey";
 
+
+defineOptions({ inheritAttrs: false });
+
 const movementsStore = useMovementsStore();
 const eventsStore = useEventsStore();
 
@@ -75,12 +78,6 @@ const open = () => {
 useHotkey(["c"], () => {
   open();
 });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

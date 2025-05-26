@@ -9,6 +9,9 @@ type MenuItemType = {
   icon?: string;
 };
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     items: MenuItemType[];
@@ -24,12 +27,6 @@ const [trigger, container] = usePopper({
   placement: "bottom-end",
   modifiers: [{ name: "offset", options: { offset: [0, 4] } }],
 });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

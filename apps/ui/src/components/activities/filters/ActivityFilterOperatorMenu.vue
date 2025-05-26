@@ -10,6 +10,9 @@ import {
   type ActivityFilter,
 } from "@maille/core/activities";
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps<{
   modelValue: ActivityFilter["operator"] | undefined;
   field: ActivityFilter["field"];
@@ -37,12 +40,6 @@ const operators = computed<readonly string[]>(() => {
 
 const select = ref();
 defineExpose({ click: () => select.value.click() });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

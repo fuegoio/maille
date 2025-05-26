@@ -21,6 +21,9 @@ import {
 import { AccountType } from "@maille/core/accounts";
 import UserAvatar from "../users/UserAvatar.vue";
 
+
+defineOptions({ inheritAttrs: false });
+
 const accountsStore = useAccountsStore();
 const { accounts } = storeToRefs(accountsStore);
 
@@ -87,12 +90,6 @@ watch(container, () => {
     emit("close");
   }
 });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

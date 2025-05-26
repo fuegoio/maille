@@ -5,6 +5,9 @@ import AddAndEditProjectModal from "./AddAndEditProjectModal.vue";
 
 import { useHotkey } from "@/hooks/use-hotkey";
 
+
+defineOptions({ inheritAttrs: false });
+
 const emit = defineEmits(["create"]);
 
 const show = ref(false);
@@ -12,12 +15,6 @@ const show = ref(false);
 useHotkey(["c"], () => {
   show.value = true;
 });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

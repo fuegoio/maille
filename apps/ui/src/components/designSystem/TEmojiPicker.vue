@@ -10,6 +10,9 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     modelValue?: string | null;
@@ -82,12 +85,6 @@ watch(container, () => {
     search.value = "";
   }
 });
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
 </script>
 
 <template>

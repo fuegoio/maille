@@ -7,6 +7,8 @@ import { useHotkey } from "@/hooks/use-hotkey";
 
 import type { Movement } from "@maille/core/movements";
 
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     movement?: Movement;
@@ -22,11 +24,7 @@ useHotkey(["c"], () => {
 });
 </script>
 
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
-</script>
+
 
 <template>
   <button

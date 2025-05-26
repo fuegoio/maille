@@ -6,6 +6,9 @@ import { Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     text: string;
@@ -28,12 +31,6 @@ const hoverPopover = _.debounce((): void => {
 const closePopover = (): void => {
   popoverHover.value = false;
   hoverPopover.cancel();
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 

@@ -6,6 +6,9 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
+
+defineOptions({ inheritAttrs: false });
+
 const WEEK_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const props = withDefaults(
@@ -63,12 +66,6 @@ const isValueDate = (day: number) => {
     date.value.add(day, "day").format("DD/MM/YYYY") ===
     dayjs(value.value).format("DD/MM/YYYY")
   );
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 

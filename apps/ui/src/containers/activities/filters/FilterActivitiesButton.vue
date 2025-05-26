@@ -8,6 +8,9 @@ import {
   type ActivityFilter,
 } from "@maille/core/activities";
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps<{
   viewId: string;
 }>();
@@ -21,12 +24,6 @@ const selectField = (field: ActivityFilter["field"]) => {
     operator: undefined,
     value: undefined,
   } as ActivityFilter);
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 
