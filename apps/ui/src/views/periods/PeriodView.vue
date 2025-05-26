@@ -145,18 +145,12 @@ const periodMovements = computed(() => {
 
 const periodLiabilities = computed(() => {
   return liabilities.value
-    .filter((liability) =>
-      periodActivities.value.map((a) => a.id).includes(liability.activity),
+    .filter(
+      (liability) =>
+        !!liability.activity &&
+        periodActivities.value.map((a) => a.id).includes(liability.activity),
     )
-    .filter((liability) => liability.amount != 0)
-    .map((l) => {
-      const activity = periodActivities.value.find((a) => a.id === l.activity);
-      if (!activity) throw new Error("activity not found");
-      return {
-        ...l,
-        activity,
-      };
-    });
+    .filter((liability) => liability.amount != 0);
 });
 
 const periodActivityData = computed<PeriodActivityData | undefined>(() => {
