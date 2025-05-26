@@ -1,15 +1,4 @@
-@import "tailwindcss/base";
-@import "@/assets/base.scss";
-@import "@/assets/transitions.scss";
-@import "@/assets/scrollbar.scss";
-
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
-
-@layer base {
-  *,
-  ::before,
-  ::after {
-    @apply border-primary-700;
-  }
-}
+@import "@/style/tailwind.css";
+@import "@/style/base.scss";
+@import "@/style/transitions.scss";
+@import "@/style/scrollbar.scss";

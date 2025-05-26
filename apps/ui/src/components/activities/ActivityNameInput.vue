@@ -28,7 +28,7 @@ const handleInput = () => {
 const resizeInput = () => {
   if (input.value) {
     input.value.style.height = "";
-    input.value.style.height = input.value.scrollHeight + "px";
+    input.value.style.height = input.value.scrollHeight + 1 + "px";
   }
 };
 

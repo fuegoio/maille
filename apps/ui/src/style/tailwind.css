@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom color palette */
+  --color-primary-100: hsl(0, 0%, 97%);
+  --color-primary-200: hsl(0, 0%, 83%);
+  --color-primary-300: hsl(0, 0%, 70%);
+  --color-primary-400: hsl(0, 0%, 58%);
+  --color-primary-500: hsl(0, 0%, 47%);
+  --color-primary-600: hsl(0, 0%, 37%);
+  --color-primary-700: hsl(0, 0%, 26%);
+  --color-primary-800: hsl(0, 0%, 18%);
+  --color-primary-900: hsl(0, 0%, 11%);
+  --color-primary-950: hsl(0, 0%, 9%);
+
+  /* Custom font families */
+  --font-sans:
+    "Inter var", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "Source Code Pro", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Custom font sizes */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: normal;
+  --text-xs--letter-spacing: 0.01em;
+
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1rem;
+
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1rem;
+
+  --text-xl: 1.125rem;
+  --text-xl--line-height: 1;
+
+  --text-2xl: 1.25rem;
+  --text-2xl--line-height: 1;
+
+  --text-3xl: 1.5rem;
+  --text-3xl--line-height: 1;
+
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1;
+
+  /* Custom screen breakpoints */
+  --breakpoint-xs: 425px;
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply border-primary-700;
+  }
+}
