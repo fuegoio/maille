@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useAttrs, watch } from "vue";
 
 import {
   Listbox,
@@ -10,6 +10,7 @@ import {
 } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
+import { twMerge } from "tailwind-merge";
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +34,9 @@ const props = withDefaults(
   },
 );
 const emit = defineEmits(["update:modelValue", "close"]);
+
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
 
 const value = ref<any | null>(props.modelValue);
 if (props.modelValue === null) {
@@ -96,12 +100,6 @@ watch(container, () => {
 });
 </script>
 
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
-</script>
-
 <template>
   <Listbox
     v-slot="{ open }"
@@ -113,14 +111,18 @@ export default {
     <ListboxButton ref="trigger" as="template">
       <slot :open="open" :text="selectedItemText">
         <button
-          class="relative rounded pl-3 pr-10 text-left text-sm h-10 border transition-colors"
-          :class="{
-            'opacity-30': disabled,
-            'border-primary-300': open,
-            'hover:border-primary-300 hover:bg-primary-600 focus:border-primary-300':
-              !open && !disabled,
-          }"
-          v-bind="$attrs"
+          :class="
+            twMerge(
+              'relative rounded pl-3 pr-10 text-left text-sm h-10 border transition-colors',
+              disabled ? 'opacity-30' : '',
+              open ? 'border-primary-300' : '',
+              !open && !disabled
+                ? 'hover:border-primary-300 hover:bg-primary-600 focus:border-primary-300'
+                : '',
+              attrs.class as string,
+            )
+          "
+          v-bind="{ ...attrs, class: undefined }"
         >
           <slot
             v-if="selectedItem !== null"
