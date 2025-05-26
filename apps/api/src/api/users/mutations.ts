@@ -41,6 +41,7 @@ export const registerUsersMutations = () => {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          avatar: null,
         };
       },
     }),

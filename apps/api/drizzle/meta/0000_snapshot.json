@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "50e42f03-caaf-4678-b481-645a22eb04e5",
+  "id": "88bd9949-55f0-487e-b023-cdc26ab26471",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "accounts": {
@@ -18,7 +18,7 @@
           "name": "user",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "name": {
@@ -668,8 +668,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "avatar_url": {
-          "name": "avatar_url",
+        "avatar": {
+          "name": "avatar",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

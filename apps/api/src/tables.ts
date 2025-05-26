@@ -126,7 +126,7 @@ export const events = sqliteTable("events", {
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey().$type<UUID>(),
-  avatarUrl: text("avatar_url"),
+  avatar: text("avatar"),
   email: text("email").notNull(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),

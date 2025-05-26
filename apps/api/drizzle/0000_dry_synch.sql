@@ -1,6 +1,6 @@
 CREATE TABLE `accounts` (
 	`id` text PRIMARY KEY NOT NULL,
-	`user` text NOT NULL,
+	`user` text,
 	`name` text NOT NULL,
 	`type` text NOT NULL,
 	`starting_balance` integer DEFAULT 0 NOT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE `transactions` (
 --> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
-	`avatar_url` text,
+	`avatar` text,
 	`email` text NOT NULL,
 	`first_name` text NOT NULL,
 	`last_name` text NOT NULL,
