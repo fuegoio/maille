@@ -20,6 +20,8 @@ import { usePopper } from "@/hooks/use-popper";
 import type { Period } from "@/types/periods";
 import { usePeriodsStore } from "@/stores/periods";
 
+defineOptions({ inheritAttrs: false });
+
 const router = useRouter();
 const route = useRoute();
 
@@ -85,11 +87,7 @@ const handleInput = (newDate: string) => {
 };
 </script>
 
-<script lang="ts">
-export default {
-  inheritAttrs: false,
-};
-</script>
+
 
 <template>
   <Listbox

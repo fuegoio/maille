@@ -24,6 +24,9 @@ import type { UUID } from "crypto";
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
+
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(
   defineProps<{
     large?: boolean;
@@ -131,12 +134,6 @@ const processFile = () => {
 
 const open = () => {
   importMovementsDialog.value.show = true;
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 

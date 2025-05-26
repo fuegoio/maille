@@ -6,6 +6,9 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
+
+defineOptions({ inheritAttrs: false });
+
 const MONTHS = [
   "Jan.",
   "Feb.",
@@ -57,12 +60,6 @@ const isCurrentPeriod = (month: number) => {
 const isValuePeriod = (month: number) => {
   if (!value.value) return false;
   return month === value.value.month() && year.value === value.value.year();
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 

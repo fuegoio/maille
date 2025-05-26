@@ -7,6 +7,9 @@ import { Popover, PopoverButton, PopoverPanel, Portal } from "@headlessui/vue";
 import { usePopper } from "@/hooks/use-popper";
 import { getCurrencyFormatter } from "@/utils/currency";
 
+
+defineOptions({ inheritAttrs: false });
+
 const CALCULATOR_KEYS = [
   "C",
   "plus-minus",
@@ -200,12 +203,6 @@ const handleCalculatorKey = (key: number | string, closeFunction: Function) => {
       }
       break;
   }
-};
-</script>
-
-<script lang="ts">
-export default {
-  inheritAttrs: false,
 };
 </script>
 
