@@ -7,7 +7,6 @@ import { Popover, PopoverButton, PopoverPanel, Portal } from "@headlessui/vue";
 import { usePopper } from "@/hooks/use-popper";
 import { getCurrencyFormatter } from "@/utils/currency";
 
-
 defineOptions({ inheritAttrs: false });
 
 const CALCULATOR_KEYS = [
@@ -231,7 +230,7 @@ const handleCalculatorKey = (key: number | string, closeFunction: Function) => {
     <Portal v-if="open">
       <PopoverPanel
         ref="container"
-        class="w-56 rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none z-20"
+        class="w-56 rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none z-20"
         @keydown="handleKeyPress($event, close)"
       >
         <div

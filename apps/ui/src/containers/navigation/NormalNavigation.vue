@@ -171,7 +171,7 @@ const menuItems = computed(() => {
       <Portal v-if="open">
         <MenuItems
           ref="container"
-          class="w-56 divide-y divide-gray-100 rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none z-20"
+          class="w-56 divide-y divide-gray-100 rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none z-20"
         >
           <div class="px-1 py-1">
             <MenuItem v-slot="{ active }" @click="logout">

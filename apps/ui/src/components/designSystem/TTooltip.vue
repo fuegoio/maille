@@ -6,7 +6,6 @@ import { Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
-
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
@@ -56,7 +55,7 @@ const closePopover = (): void => {
     >
       <div
         ref="container"
-        class="px-4 py-1.5 text-xs rounded bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none z-20 text-white"
+        class="px-4 py-1.5 text-xs rounded bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none z-20 text-white"
       >
         {{ text }}
       </div>

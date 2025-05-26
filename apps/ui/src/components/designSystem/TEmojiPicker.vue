@@ -10,7 +10,6 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
-
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
@@ -113,7 +112,7 @@ watch(container, () => {
     <Portal v-if="open">
       <MenuItems
         ref="container"
-        class="rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none z-20 h-[340px] w-[410px] flex flex-col max-w-full"
+        class="rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none z-20 h-[340px] w-[410px] flex flex-col max-w-full"
       >
         <div class="flex items-center px-4 py-3 border-b">
           <TTextField

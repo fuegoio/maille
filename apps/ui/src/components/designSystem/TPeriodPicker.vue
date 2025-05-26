@@ -6,7 +6,6 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
-
 defineOptions({ inheritAttrs: false });
 
 const MONTHS = [
@@ -85,7 +84,7 @@ const isValuePeriod = (month: number) => {
     <Portal v-if="open">
       <MenuItems
         ref="container"
-        class="w-64 rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none"
+        class="w-64 rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none"
       >
         <div class="flex items-center px-4 py-3 border-b">
           <div class="text-sm font-medium text-primary-300 pl-2">

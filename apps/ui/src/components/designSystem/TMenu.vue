@@ -9,7 +9,6 @@ type MenuItemType = {
   icon?: string;
 };
 
-
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
@@ -48,7 +47,7 @@ const [trigger, container] = usePopper({
     <Portal v-if="open">
       <MenuItems
         ref="container"
-        class="w-56 divide-y divide-gray-100 rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none"
+        class="w-56 divide-y divide-gray-100 rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none"
       >
         <div class="px-1 py-1">
           <MenuItem

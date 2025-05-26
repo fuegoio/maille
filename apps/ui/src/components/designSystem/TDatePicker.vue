@@ -6,7 +6,6 @@ import { Menu, MenuButton, MenuItems, MenuItem, Portal } from "@headlessui/vue";
 
 import { usePopper } from "@/hooks/use-popper";
 
-
 defineOptions({ inheritAttrs: false });
 
 const WEEK_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -95,7 +94,7 @@ const isValueDate = (day: number) => {
     <Portal v-if="open">
       <MenuItems
         ref="container"
-        class="w-64 rounded-md bg-primary-700 shadow-lg ring-1 ring-black ring-opacity-10 focus:outline-none z-20"
+        class="w-64 rounded-md bg-primary-700 shadow-lg ring-1 ring-primary-600 ring-opacity-10 focus:outline-none z-20"
       >
         <div class="flex items-center px-4 py-3">
           <div class="text-sm font-medium text-white">
