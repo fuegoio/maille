@@ -21,4 +21,4 @@ VOLUME /app/data
 WORKDIR /app/apps/api
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["bun", "run", "start"]
