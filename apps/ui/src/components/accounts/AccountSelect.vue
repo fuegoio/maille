@@ -21,7 +21,6 @@ import {
 import { AccountType } from "@maille/core/accounts";
 import UserAvatar from "../users/UserAvatar.vue";
 
-
 defineOptions({ inheritAttrs: false });
 
 const accountsStore = useAccountsStore();
@@ -120,7 +119,7 @@ watch(container, () => {
             class="size-4 text-[0.5rem]"
           />
           <div
-            class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1 outline outline-primary-800"
+            class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1"
             :class="
               ACCOUNT_TYPES_COLOR[
                 accounts.find((a) => a.id === accountId)!.type
@@ -139,10 +138,10 @@ watch(container, () => {
         <UserAvatar
           v-if="accounts.find((a) => a.id === value)!.user"
           :user-id="accounts.find((a) => a.id === value)!.user!"
-          class="size-4 text-[0.5rem] outline outline-primary-800"
+          class="size-4 text-[0.5rem]"
         />
         <div
-          class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1 outline outline-primary-800"
+          class="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1"
           :class="
             ACCOUNT_TYPES_COLOR[accounts.find((a) => a.id === value)!.type]
           "

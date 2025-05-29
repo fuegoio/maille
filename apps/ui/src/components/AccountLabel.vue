@@ -26,7 +26,7 @@ const account = computed(() => {
     />
     <div
       v-if="!onlyUser"
-      class="size-4 rounded-xl shrink-0 -ml-1 outline outline-primary-800"
+      class="size-4 rounded-xl shrink-0 -ml-1"
       :class="ACCOUNT_TYPES_COLOR[account.type]"
     />
     <div
