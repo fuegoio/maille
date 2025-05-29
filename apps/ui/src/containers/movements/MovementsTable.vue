@@ -133,8 +133,8 @@ const handleMovementClick = (movementId: UUID) => {
   }
 };
 
-useHotkey(["j"], () => {
-  const movements = movementsFiltered.value;
+useHotkey(["k"], () => {
+  const movements = movementsSorted.value;
   if (movements.length === 0) return;
 
   const currentIndex = movements.findIndex(
@@ -148,8 +148,8 @@ useHotkey(["j"], () => {
   focusedMovement.value = movements[nextIndex].id;
 });
 
-useHotkey(["k"], () => {
-  const movements = movementsFiltered.value;
+useHotkey(["j"], () => {
+  const movements = movementsSorted.value;
   if (movements.length === 0) return;
 
   const currentIndex = movements.findIndex(

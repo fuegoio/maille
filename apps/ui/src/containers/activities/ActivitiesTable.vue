@@ -112,11 +112,7 @@ const activitiesFiltered = computed(() => {
 });
 
 const activitiesSorted = computed(() => {
-  return _.orderBy(
-    activitiesFiltered.value,
-    ["activity.date", "id"],
-    ["desc", "desc"],
-  );
+  return _.orderBy(activitiesFiltered.value, ["date", "id"], ["desc", "desc"]);
 });
 
 const activitiesWithGroups = computed<ActivityAndGroup[]>(() => {
@@ -187,8 +183,8 @@ const handleActivityClick = (activityId: UUID) => {
   }
 };
 
-useHotkey(["j"], () => {
-  const activities = activitiesFiltered.value;
+useHotkey(["k"], () => {
+  const activities = activitiesSorted.value;
   if (activities.length === 0) return;
 
   const currentIndex = activities.findIndex(
@@ -202,8 +198,8 @@ useHotkey(["j"], () => {
   focusedActivity.value = activities[nextIndex].id;
 });
 
-useHotkey(["k"], () => {
-  const activities = activitiesFiltered.value;
+useHotkey(["j"], () => {
+  const activities = activitiesSorted.value;
   if (activities.length === 0) return;
 
   const currentIndex = activities.findIndex(
