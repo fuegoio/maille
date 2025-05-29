@@ -67,19 +67,19 @@ loadAuth();
           <RouterView v-slot="{ Component }">
             <component :is="Component" />
           </RouterView>
-
-          <Toaster
-            theme="dark"
-            :toast-options="{
-              style: { background: 'var(--color-primary-950)' },
-            }"
-            :offset="{
-              right: '28px',
-              bottom: '12px',
-            }"
-          />
         </div>
       </main>
+
+      <Toaster
+        theme="dark"
+        :toast-options="{
+          style: { background: 'var(--color-primary-950)' },
+        }"
+        :offset="{
+          right: '28px',
+          bottom: '12px',
+        }"
+      />
     </div>
     <div
       v-else
