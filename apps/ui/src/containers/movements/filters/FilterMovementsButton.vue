@@ -22,7 +22,7 @@ const selectField = (field: MovementFilter["field"]) => {
     field: field,
     operator: undefined,
     value: undefined,
-  } as MovementFilter);
+  } satisfies MovementFilter);
 };
 </script>
 

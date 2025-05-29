@@ -20,16 +20,13 @@ const viewsStore = useViewsStore();
 const movementView = computed(() => viewsStore.getMovementView(props.viewId));
 
 const movementsTotal = computed(() => {
-  return props.movements.reduce((total, movement) => total + movement.amount, 0);
+  return props.movements.reduce(
+    (total, movement) => total + movement.amount,
+    0,
+  );
 });
 
-const completedMovements = computed(() => {
-  return props.movements.filter(m => m.reconciled).length;
-});
-
-const incompleteMovements = computed(() => {
-  return props.movements.filter(m => !m.reconciled).length;
-});
+console.log(movementView);
 </script>
 
 <template>
@@ -54,11 +51,7 @@ const incompleteMovements = computed(() => {
 
       <div class="flex pr-2 mr-4 sm:border-r flex-col sm:flex-row">
         <div class="text-sm text-right flex items-center px-2 my-1 font-mono">
-          <div class="h-[9px] w-[9px] rounded-xs shrink-0 mr-3 bg-blue-300" />
           {{ getCurrencyFormatter().format(movementsTotal) }}
-        </div>
-        <div class="text-xs text-gray-500 flex items-center px-2">
-          {{ completedMovements }} completed, {{ incompleteMovements }} incomplete
         </div>
       </div>
 
