@@ -30,6 +30,7 @@ import { getCurrencyFormatter } from "@/utils/currency";
 import type { PeriodActivityData } from "@/types/periods";
 import LiabilitiesTable from "@/containers/liabilities/LiabilitiesTable.vue";
 import { useLiabilitiesStore } from "@/stores/liabilities";
+import FilterMovementsButton from "@/containers/movements/filters/FilterMovementsButton.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -118,6 +119,10 @@ watch(
 
 const activityView = computed(() => {
   return viewsStore.getActivityView(`period-page`);
+});
+
+const movementsView = computed(() => {
+  return viewsStore.getMovementView(`period-page`);
 });
 
 const label = computed(() =>
@@ -325,13 +330,10 @@ watch(focusedMovement, () => {
             <template
               v-if="
                 currentView === 'activities' &&
-                activityView!.filters.length === 0
+                activityView.filters.length === 0
               "
             >
-              <FilterActivitiesButton
-                :view-id="activityView!.id"
-                class="mx-2"
-              />
+              <FilterActivitiesButton :view-id="activityView.id" class="mx-2" />
               <ExportActivitiesButton
                 class="mr-1"
                 :view-id="activityView.id"
@@ -339,6 +341,14 @@ watch(focusedMovement, () => {
               />
               <div class="mx-3 w-[1px] bg-primary-700 h-5" />
               <ShowTransactionsButton />
+            </template>
+            <template
+              v-else-if="
+                currentView === 'movements' &&
+                movementsView.filters.length === 0
+              "
+            >
+              <FilterMovementsButton :view-id="movementsView.id" class="mx-2" />
             </template>
           </div>
 
@@ -355,6 +365,7 @@ watch(focusedMovement, () => {
             v-else-if="currentView === 'movements'"
             :movements="periodMovements"
             :account-filter="viewFilters.account"
+            :view-id="movementsView.id"
           />
           <LiabilitiesTable
             v-else-if="currentView === 'liabilities'"

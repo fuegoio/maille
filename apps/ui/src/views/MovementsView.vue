@@ -12,10 +12,13 @@ import MovementsTable from "@/containers/movements/MovementsTable.vue";
 import SearchBar from "@/containers/SearchBar.vue";
 import MovementVue from "@/containers/movements//Movement.vue";
 import type { UUID } from "crypto";
+import FilterMovementsButton from "@/containers/movements/filters/FilterMovementsButton.vue";
+import { useViewsStore } from "@/stores/views";
 
 const route = useRoute();
 const router = useRouter();
 
+const viewsStore = useViewsStore();
 const headStore = useHeadStore();
 
 const movementsStore = useMovementsStore();
@@ -64,20 +67,40 @@ const movementsToShow = computed(() => {
     return true;
   });
 });
+
+const viewId = computed(() => {
+  return route.params.id === "tolink" ? "movements-tolink" : "movements-all";
+});
+
+const movementsView = computed(() => {
+  return viewsStore.getMovementView(viewId.value);
+});
 </script>
 
 <template>
   <div class="flex flex-1 flex-col rounded shadow-xl border bg-primary-900">
     <header class="h-14 border-b pl-14 pr-4 lg:pl-8 flex items-center">
       <div class="text-sm font-semibold text-white truncate">Movements</div>
-      <div class="flex-1" />
 
+      <div class="flex-1 sm:hidden" />
+      <template v-if="movementsView.filters.length === 0">
+        <FilterMovementsButton
+          :view-id="movementsView.id"
+          class="ml-4 sm:mr-2"
+        />
+      </template>
+
+      <div class="flex-1 hidden sm:block" />
       <SearchBar />
       <ImportMovementsButton />
       <AddMovementButton class="ml-2" />
     </header>
 
-    <MovementsTable :movements="movementsToShow" grouping="period" />
+    <MovementsTable
+      :view-id="viewId"
+      :movements="movementsToShow"
+      grouping="period"
+    />
   </div>
 
   <MovementVue />

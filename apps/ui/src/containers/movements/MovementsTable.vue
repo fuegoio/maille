@@ -9,11 +9,14 @@ import MovementLine from "@/containers/movements/MovementLine.vue";
 import { useMovementsStore } from "@/stores/movements";
 import { useSearchStore } from "@/stores/search";
 import { useActivitiesStore } from "@/stores/activities";
+import { useViewsStore } from "@/stores/views";
 
 import type { Movement } from "@maille/core/movements";
+import { verifyMovementFilter } from "@maille/core/movements";
 import { storeToRefs } from "pinia";
 import type { UUID } from "crypto";
 import { useHotkey } from "@/hooks/use-hotkey";
+import MovementsFilters from "./filters/MovementsFilters.vue";
 
 const movementsStore = useMovementsStore();
 const { focusedMovement } = storeToRefs(movementsStore);
@@ -22,15 +25,19 @@ const activitiesStore = useActivitiesStore();
 const { focusedActivity } = storeToRefs(activitiesStore);
 
 const { filterStringBySearch } = useSearchStore();
+const viewsStore = useViewsStore();
 
 const props = withDefaults(
   defineProps<{
     movements: Movement[];
+    viewId: string;
     grouping?: "period" | null;
     accountFilter?: UUID | null;
   }>(),
   { grouping: null, accountFilter: null },
 );
+
+const movementView = computed(() => viewsStore.getMovementView(props.viewId));
 
 onBeforeUnmount(() => {
   focusedMovement.value = null;
@@ -58,7 +65,16 @@ const movementsFiltered = computed(() => {
       props.accountFilter !== null
         ? movement.account === props.accountFilter
         : true,
-    );
+    )
+    .filter((movement) => {
+      if (movementView.value.filters.length === 0) return true;
+
+      return movementView.value.filters
+        .map((filter) => {
+          return verifyMovementFilter(filter, movement);
+        })
+        .every((f) => f);
+    });
 });
 
 const movementsSorted = computed(() => {
@@ -121,10 +137,13 @@ useHotkey(["j"], () => {
   if (movements.length === 0) return;
 
   const currentIndex = movements.findIndex(
-    (movement) => movement.id === focusedMovement.value
+    (movement) => movement.id === focusedMovement.value,
   );
 
-  const nextIndex = currentIndex === -1 ? 0 : (currentIndex - 1 + movements.length) % movements.length;
+  const nextIndex =
+    currentIndex === -1
+      ? 0
+      : (currentIndex - 1 + movements.length) % movements.length;
   focusedMovement.value = movements[nextIndex].id;
 });
 
@@ -133,7 +152,7 @@ useHotkey(["k"], () => {
   if (movements.length === 0) return;
 
   const currentIndex = movements.findIndex(
-    (movement) => movement.id === focusedMovement.value
+    (movement) => movement.id === focusedMovement.value,
   );
 
   const nextIndex = (currentIndex + 1) % movements.length;
@@ -143,6 +162,8 @@ useHotkey(["k"], () => {
 
 <template>
   <div class="flex flex-1 flex-col min-h-0 min-w-0">
+    <MovementsFilters :view-id="viewId" :movements="movementsFiltered" />
+
     <div
       v-if="movementsFiltered.length !== 0"
       class="flex-1 flex flex-col sm:min-w-[575px] overflow-x-hidden"
