@@ -10,12 +10,12 @@ import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 
 export const ACCOUNT_TYPES_COLOR = {
-  [AccountType.BANK_ACCOUNT]: "bg-indigo-200",
-  [AccountType.INVESTMENT_ACCOUNT]: "bg-orange-200",
+  [AccountType.BANK_ACCOUNT]: "bg-indigo-400",
+  [AccountType.INVESTMENT_ACCOUNT]: "bg-orange-400",
   [AccountType.CASH]: "bg-stone-200",
-  [AccountType.LIABILITIES]: "bg-sky-200",
-  [AccountType.EXPENSE]: "bg-red-200",
-  [AccountType.REVENUE]: "bg-green-200",
+  [AccountType.LIABILITIES]: "bg-sky-400",
+  [AccountType.EXPENSE]: "bg-red-300",
+  [AccountType.REVENUE]: "bg-green-300",
 };
 
 export const ACCOUNT_TYPES_NAME = {

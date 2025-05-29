@@ -22,11 +22,11 @@ const account = computed(() => {
     <UserAvatar
       v-if="account.user"
       :user-id="account.user"
-      class="size-4 text-[0.5rem]"
+      class="size-4.5 text-[0.6rem]"
     />
     <div
       v-if="!onlyUser"
-      class="size-4 rounded-xl shrink-0 -ml-1"
+      class="size-4.5 rounded-xl shrink-0 -ml-1"
       :class="ACCOUNT_TYPES_COLOR[account.type]"
     />
     <div

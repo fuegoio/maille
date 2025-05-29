@@ -25,7 +25,7 @@ const userInitials = computed(() => {
   <div
     :class="
       twMerge(
-        'inline-flex items-center justify-center w-6 h-6 transition-colors bg-white shrink-0 rounded-full text-[0.6rem] font-semibold text-primary-700',
+        'inline-flex items-center justify-center w-6 h-6 transition-colors border-2 border-primary-700 shrink-0 rounded-full text-[0.6rem] font-semibold text-primary-100 bg-primary-800',
         props.class,
       )
     "
