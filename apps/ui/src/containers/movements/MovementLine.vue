@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import dayjs from "dayjs";
+
+import { vOnLongPress } from "@vueuse/components";
 import { storeToRefs } from "pinia";
 
 import AccountLabel from "@/components/AccountLabel.vue";
@@ -17,16 +19,24 @@ defineProps<{
   isMovementSelected: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   selectMovement: [];
 }>();
 
 const movementsStore = useMovementsStore();
 const { focusedMovement } = storeToRefs(movementsStore);
+
+const handleLongPress = (e: PointerEvent) => {
+  if (e.pointerType === "mouse") return;
+  e.preventDefault();
+  emit("selectMovement");
+};
 </script>
 
 <template>
   <div
+    :key="movement.id"
+    v-on-long-press="handleLongPress"
     :class="
       twMerge(
         'h-10 flex items-center gap-2 pr-2 sm:pr-6 border-b text-sm flex-shrink-0 transition-colors hover:bg-primary-800/50 pl-4 sm:pl-2',

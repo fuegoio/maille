@@ -3,7 +3,6 @@ import dayjs from "dayjs";
 import _ from "lodash";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
-
 import MovementLine from "@/containers/movements/MovementLine.vue";
 
 import { useMovementsStore } from "@/stores/movements";
