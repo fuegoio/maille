@@ -30,6 +30,7 @@ import { AccountType } from "@maille/core/accounts";
 import type { UUID } from "crypto";
 import { createActivityMutation } from "@/mutations/activities";
 import { useEventsStore } from "@/stores/events";
+import { toast } from "vue-sonner";
 
 const activitiesStore = useActivitiesStore();
 const { categories, subcategories } = storeToRefs(activitiesStore);
@@ -114,13 +115,22 @@ watch(validForm, () => {
 const eventsStore = useEventsStore();
 
 const addNewActivity = async () => {
-  if (!validForm.value) return;
+  if (!addNewActivityDialog.value.name) {
+    toast.error("A name is required for your activity.");
+    return;
+  } else if (!addNewActivityDialog.value.date) {
+    toast.error("A date is required for your activity.");
+    return;
+  } else if (!addNewActivityDialog.value.type) {
+    toast.error("A type is required for your activity.");
+    return;
+  }
 
   const activity = activitiesStore.createActivity({
-    name: addNewActivityDialog.value.name!,
+    name: addNewActivityDialog.value.name,
     description: addNewActivityDialog.value.description ?? null,
-    date: addNewActivityDialog.value.date!,
-    type: addNewActivityDialog.value.type!,
+    date: addNewActivityDialog.value.date,
+    type: addNewActivityDialog.value.type,
     category: addNewActivityDialog.value.category,
     subcategory: addNewActivityDialog.value.subcategory,
     project: addNewActivityDialog.value.project,
@@ -436,9 +446,7 @@ watch(
                 <TBtn outlined class="mr-3" @click="resetAddNewActivityDialog">
                   Cancel
                 </TBtn>
-                <TBtn :disabled="!validForm" @click="addNewActivity">
-                  Create activity
-                </TBtn>
+                <TBtn @click="addNewActivity"> Create activity </TBtn>
               </div>
             </DialogPanel>
           </TransitionChild>

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { RouterView, useRoute, useRouter } from "vue-router";
 import NavigationDrawer from "@/containers/NavigationDrawer.vue";
+import { Toaster } from "vue-sonner";
 
 import { useAuthStore } from "@/stores/auth";
 import { useEventsStore } from "./stores/events";
@@ -59,13 +60,24 @@ loadAuth();
         v-if="!FULLSCREEN_ROUTES.includes(route.name as string)"
       />
 
-      <main
-        class="flex-1 p-2"
-      >
-        <div class="flex w-full h-full min-w-0 overflow-y-auto gap-4 overflow-x-hidden relative">
-        <RouterView v-slot="{ Component }">
-          <component :is="Component" />
-        </RouterView>
+      <main class="flex-1 p-2">
+        <div
+          class="flex w-full h-full min-w-0 overflow-y-auto gap-4 overflow-x-hidden relative"
+        >
+          <RouterView v-slot="{ Component }">
+            <component :is="Component" />
+          </RouterView>
+
+          <Toaster
+            theme="dark"
+            :toast-options="{
+              style: { background: 'var(--color-primary-950)' },
+            }"
+            :offset="{
+              right: '28px',
+              bottom: '12px',
+            }"
+          />
         </div>
       </main>
     </div>
