@@ -20,10 +20,11 @@ import AccountSelect from "@/components/accounts/AccountSelect.vue";
 
 import { useMovementsStore } from "@/stores/movements";
 import type { UUID } from "crypto";
+import { useEventsStore } from "@/stores/events";
+import { createMovementMutation } from "@/mutations/movements";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
-
 
 defineOptions({ inheritAttrs: false });
 
@@ -37,6 +38,8 @@ const emit = defineEmits(["imported"]);
 
 const movementStore = useMovementsStore();
 const { movements } = storeToRefs(movementStore);
+
+const eventsStore = useEventsStore();
 
 const importMovementsDialog = ref({
   show: false,
@@ -102,7 +105,7 @@ const processFile = () => {
     const movementName = record[importMovementsDialog.value.mapping.name!];
     const movementDate = dayjs(
       record[importMovementsDialog.value.mapping.date!],
-      ["DD/MM/YYYY", "D/M/YYYY"],
+      ["DD/MM/YYYY", "D/M/YYYY", "YYYY-MM-DD"],
     );
     const movementAmount = parseFloat(
       record[importMovementsDialog.value.mapping.amount!]
@@ -119,12 +122,25 @@ const processFile = () => {
     );
 
     if (!existingMovement) {
-      movementStore.addNewMovement(
+      const movement = movementStore.addNewMovement(
         movementDate,
         movementAmount,
         importMovementsDialog.value.account!,
         movementName,
       );
+
+      eventsStore.sendEvent({
+        name: "createMovement",
+        mutation: createMovementMutation,
+        variables: {
+          id: movement.id,
+          name: movement.name,
+          date: movement.date.format("YYYY-MM-DD"),
+          account: movement.account,
+          amount: movement.amount,
+        },
+        rollbackData: undefined,
+      });
     }
   });
 
@@ -141,7 +157,7 @@ const open = () => {
   <button
     v-bind="$attrs"
     type="button"
-    class="inline-flex items-center justify-center transition rounded bg-primary-400 text-white hover:bg-primary-300"
+    class="inline-flex items-center justify-center transition rounded bg-primary-800 text-white hover:bg-primary-700"
     :class="[large ? 'px-3.5 h-8' : 'w-7 sm:w-auto sm:px-2.5 h-7']"
     @click="open"
   >
@@ -171,7 +187,7 @@ const open = () => {
             leave-to="opacity-0 scale-95"
           >
             <DialogPanel
-              class="w-full max-w-xl transform overflow-hidden rounded-lg bg-primary-700 text-left align-middle shadow-2xl transition-all border"
+              class="w-full max-w-xl transform overflow-hidden rounded-lg bg-primary-800 text-left align-middle shadow-2xl transition-all border"
             >
               <DialogTitle as="div" class="flex border-b pb-4 pt-5 px-8">
                 <div class="text-white font-medium">

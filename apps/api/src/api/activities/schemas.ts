@@ -76,7 +76,7 @@ ActivityMovementSchema.implement({
       type: "UUID",
       resolve: (parent) => parent.movement,
     }),
-    amount: t.exposeInt("amount"),
+    amount: t.exposeFloat("amount"),
   }),
 });
 
@@ -90,7 +90,7 @@ TransactionSchema.implement({
       type: "UUID",
       resolve: (parent) => parent.id,
     }),
-    amount: t.exposeInt("amount"),
+    amount: t.exposeFloat("amount"),
     fromAccount: t.field({
       type: "UUID",
       resolve: (parent) => parent.fromAccount,

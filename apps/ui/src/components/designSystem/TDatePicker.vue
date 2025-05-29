@@ -73,7 +73,7 @@ const isValueDate = (day: number) => {
     <MenuButton ref="trigger" :disabled="disabled" as="template">
       <slot :open="open" :value="value" :disabled="disabled">
         <button
-          class="flex items-center rounded h-10 text-left transition-colors"
+          class="flex items-center rounded h-8 text-left transition-colors"
           :class="{
             'border-primary-300': open && !borderless,
             'hover:border-primary-300': !open && !borderless,

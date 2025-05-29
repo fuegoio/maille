@@ -33,13 +33,13 @@ type ActivityCategory {
 }
 
 type ActivityMovement {
-  amount: Int!
+  amount: Float!
   id: UUID!
   movement: UUID!
 }
 
 input ActivityMovementInput {
-  amount: Int!
+  amount: Float!
   id: UUID!
   movement: UUID!
 }
@@ -108,7 +108,7 @@ type Movement {
 
 type MovementActivity {
   activity: UUID!
-  amount: Int!
+  amount: Float!
   id: UUID!
 }
 
@@ -173,7 +173,7 @@ type Subscription {
 }
 
 type Transaction {
-  amount: Int!
+  amount: Float!
   fromAccount: UUID!
   id: UUID!
   liabilities: [Liability!]
@@ -181,7 +181,7 @@ type Transaction {
 }
 
 input TransactionInput {
-  amount: Int!
+  amount: Float!
   fromAccount: UUID!
   id: UUID!
   toAccount: UUID!

@@ -39,7 +39,7 @@ const TransactionInput = builder.inputType("TransactionInput", {
     id: t.field({
       type: "UUID",
     }),
-    amount: t.int(),
+    amount: t.float(),
     fromAccount: t.field({ type: "UUID" }),
     toAccount: t.field({ type: "UUID" }),
   }),
@@ -53,7 +53,7 @@ const ActivityMovementInput = builder.inputType("ActivityMovementInput", {
     movement: t.field({
       type: "UUID",
     }),
-    amount: t.int(),
+    amount: t.float(),
   }),
 });
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import dayjs from "dayjs";
 import _ from "lodash";
-import { computed, onBeforeUnmount, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 
 import MovementLine from "@/containers/movements/MovementLine.vue";
@@ -17,6 +17,7 @@ import { storeToRefs } from "pinia";
 import type { UUID } from "crypto";
 import { useHotkey } from "@/hooks/use-hotkey";
 import MovementsFilters from "./filters/MovementsFilters.vue";
+import MovementsActions from "./MovementsActions.vue";
 
 const movementsStore = useMovementsStore();
 const { focusedMovement } = storeToRefs(movementsStore);
@@ -38,6 +39,7 @@ const props = withDefaults(
 );
 
 const movementView = computed(() => viewsStore.getMovementView(props.viewId));
+const selectedMovements = ref<UUID[]>([]);
 
 onBeforeUnmount(() => {
   focusedMovement.value = null;
@@ -158,6 +160,29 @@ useHotkey(["k"], () => {
   const nextIndex = (currentIndex + 1) % movements.length;
   focusedMovement.value = movements[nextIndex].id;
 });
+
+const selectMovement = (movementId: UUID) => {
+  if (selectedMovements.value.includes(movementId)) {
+    selectedMovements.value = selectedMovements.value.filter(
+      (id) => id !== movementId,
+    );
+  } else {
+    selectedMovements.value.push(movementId);
+  }
+};
+
+useHotkey(["Escape"], () => {
+  if (selectedMovements.value.length > 0) {
+    selectedMovements.value = [];
+  }
+});
+
+useHotkey(
+  (e) => e.key === "a" && (e.metaKey || e.ctrlKey),
+  () => {
+    selectedMovements.value = movementsFiltered.value.map((m) => m.id);
+  },
+);
 </script>
 
 <template>
@@ -189,6 +214,8 @@ useHotkey(["k"], () => {
           <MovementLine
             v-else
             :movement="item"
+            :is-movement-selected="selectedMovements.includes(item.id)"
+            @select-movement="selectMovement(item.id)"
             @click.prevent="handleMovementClick(item.id)"
           />
         </RecycleScroller>
@@ -203,6 +230,8 @@ useHotkey(["k"], () => {
       >
         <MovementLine
           :movement="item"
+          :is-movement-selected="selectedMovements.includes(item.id)"
+          @select-movement="selectMovement(item.id)"
           @click.prevent="handleMovementClick(item.id)"
         />
       </RecycleScroller>
@@ -211,4 +240,9 @@ useHotkey(["k"], () => {
       <div class="text-primary-600">No movement found</div>
     </div>
   </div>
+
+  <MovementsActions
+    :selected-movements="selectedMovements"
+    @clear-selection="selectedMovements = []"
+  />
 </template>

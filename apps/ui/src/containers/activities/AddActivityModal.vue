@@ -41,12 +41,15 @@ const props = withDefaults(
   defineProps<{
     modelValue: boolean;
     movement?: Movement;
+    movements?: Movement[];
+    amount?: number;
     name?: string;
     date?: dayjs.Dayjs;
     type?: ActivityType;
   }>(),
   {
     movement: undefined,
+    movements: undefined,
     name: undefined,
     date: undefined,
     amount: undefined,
@@ -71,6 +74,7 @@ const addNewActivityDialog = ref({
     toAccount: UUID | undefined;
     amount: number;
   }[],
+  movement: undefined as Movement | undefined,
 });
 
 const resetAddNewActivityDialog = () => {
@@ -88,6 +92,7 @@ const resetAddNewActivityDialog = () => {
       subcategory: null,
       project: null,
       transactions: [],
+      movement: undefined,
     };
     emit("update:modelValue", false);
   }, 200);
@@ -115,6 +120,11 @@ watch(validForm, () => {
 const eventsStore = useEventsStore();
 
 const addNewActivity = async () => {
+  await createActivity();
+  resetAddNewActivityDialog();
+};
+
+const createActivity = async () => {
   if (!addNewActivityDialog.value.name) {
     toast.error("A name is required for your activity.");
     return;
@@ -139,7 +149,7 @@ const addNewActivity = async () => {
       toAccount: t.toAccount!,
       amount: t.amount,
     })),
-    movement: props.movement,
+    movement: addNewActivityDialog.value.movement,
   });
 
   eventsStore.sendEvent({
@@ -166,8 +176,6 @@ const addNewActivity = async () => {
     },
     rollbackData: undefined,
   });
-
-  resetAddNewActivityDialog();
 };
 
 const openDialog = () => {
@@ -179,6 +187,18 @@ const openDialog = () => {
     addNewActivityDialog.value.date = props.movement.date;
     addNewActivityDialog.value.type =
       props.movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE;
+
+    addNewActivityDialog.value.transactions = [];
+    addNewActivityDialog.value.movement = props.movement;
+  } else if (props.movements) {
+    const firstMovement = props.movements[0];
+    addNewActivityDialog.value.name = firstMovement.name;
+
+    if (props.movements.every((m) => m.amount < 0)) {
+      addNewActivityDialog.value.type = ActivityType.EXPENSE;
+    } else if (props.movements.every((m) => m.amount > 0)) {
+      addNewActivityDialog.value.type = ActivityType.REVENUE;
+    }
 
     addNewActivityDialog.value.transactions = [];
   } else {
@@ -200,10 +220,22 @@ const guessBestTransaction = () => {
   let toAccount;
 
   if (addNewActivityDialog.value.type === ActivityType.EXPENSE) {
-    fromAccount = props.movement
-      ? props.movement.account
-      : accountsStore.accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)
-          ?.id;
+    fromAccount = accountsStore.accounts.find(
+      (a) => a.type === AccountType.BANK_ACCOUNT,
+    )?.id;
+
+    // If there is one or more movements, we can guess the account
+    if (props.movement) {
+      fromAccount = props.movement.account;
+    } else if (props.movements) {
+      const firstMovement = props.movements[0];
+      if (props.movements.every((m) => m.account === firstMovement.account)) {
+        fromAccount = firstMovement.account;
+      } else {
+        fromAccount = undefined;
+      }
+    }
+
     toAccount = accountsStore.accounts.find(
       (a) => a.type === AccountType.EXPENSE,
     )?.id;
@@ -211,10 +243,22 @@ const guessBestTransaction = () => {
     fromAccount = accountsStore.accounts.find(
       (a) => a.type === AccountType.REVENUE,
     )?.id;
-    toAccount = props.movement
-      ? props.movement.account
-      : accountsStore.accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)
-          ?.id;
+
+    toAccount = accountsStore.accounts.find(
+      (a) => a.type === AccountType.BANK_ACCOUNT,
+    )?.id;
+
+    // If there is one or more movements, we can guess the account
+    if (props.movement) {
+      toAccount = props.movement.account;
+    } else if (props.movements) {
+      const firstMovement = props.movements[0];
+      if (props.movements.every((m) => m.account === firstMovement.account)) {
+        toAccount = firstMovement.account;
+      } else {
+        toAccount = undefined;
+      }
+    }
   } else if (addNewActivityDialog.value.type === ActivityType.INVESTMENT) {
     fromAccount = accountsStore.accounts.find(
       (a) => a.type === AccountType.BANK_ACCOUNT,
@@ -230,10 +274,18 @@ const guessBestTransaction = () => {
 const addTransaction = () => {
   const { fromAccount, toAccount } = guessBestTransaction();
 
+  let amount = 0;
+  if (props.movement) {
+    amount = Math.abs(props.movement.amount);
+  } else if (props.movements) {
+    const firstMovement = props.movements[0];
+    amount = Math.abs(firstMovement.amount);
+  }
+
   addNewActivityDialog.value.transactions.push({
     fromAccount,
     toAccount,
-    amount: props.movement ? Math.abs(props.movement.amount) : 0,
+    amount,
   });
 };
 
@@ -243,6 +295,27 @@ const transactionsSum = computed(() => {
     0,
   );
 });
+
+const addNewActivities = async () => {
+  if (!props.movements) return;
+
+  for (const movement of props.movements) {
+    const { fromAccount, toAccount } = guessBestTransaction();
+
+    addNewActivityDialog.value.date = movement.date;
+    addNewActivityDialog.value.movement = movement;
+    addNewActivityDialog.value.transactions = [
+      {
+        fromAccount,
+        toAccount,
+        amount: Math.abs(movement.amount),
+      },
+    ];
+    await createActivity();
+  }
+
+  resetAddNewActivityDialog();
+};
 
 watch(
   () => props.modelValue,
@@ -288,6 +361,11 @@ watch(
                         {{ movement.name }}
                       </span>
                     </template>
+                    <template v-else-if="movements">
+                      <span class="truncate min-w-0">
+                        {{ movements.length }} movements
+                      </span>
+                    </template>
                     <template v-else> New activity </template>
                   </div>
                 </div>
@@ -303,10 +381,18 @@ watch(
 
               <div class="px-4 sm:px-8 pt-3 pb-3">
                 <TDatePicker
+                  v-if="!movements"
                   v-model="addNewActivityDialog.date"
                   borderless
                   class="font-semibold text-primary-100 text-sm"
                 />
+                <div
+                  v-else
+                  class="text-sm rounded text-primary-500 font-medium h-8 flex items-center"
+                >
+                  Date of the movement
+                </div>
+
                 <div class="flex items-center">
                   <ActivityNameInput
                     v-model="addNewActivityDialog.name"
@@ -407,12 +493,13 @@ watch(
 
                   <div
                     v-if="addNewActivityDialog.transactions.length > 0"
-                    class="flex items-center justify-end text-sm text-primary-100 mr-2.5 font-mono"
+                    class="flex items-center justify-end text-sm text-primary-100 font-mono mr-0.5"
                   >
                     {{ getCurrencyFormatter().format(transactionsSum) }}
                   </div>
                   <button
-                    class="w-7 h-7 hover:bg-primary-500 flex items-center justify-center rounded"
+                    v-if="!movements"
+                    class="w-7 h-7 hover:bg-primary-500 flex items-center justify-center rounded ml-2"
                     @click="addTransaction"
                   >
                     <i class="mdi mdi-plus" />
@@ -434,6 +521,7 @@ watch(
 
                   <TAmountInput v-model="transaction.amount" borderless />
                   <button
+                    v-if="!movements"
                     class="ml-3 w-6 h-6 hover:bg-primary-500 flex items-center justify-center rounded text-primary-300 hover:text-white"
                     @click="addNewActivityDialog.transactions.splice(index, 1)"
                   >
@@ -446,7 +534,12 @@ watch(
                 <TBtn outlined class="mr-3" @click="resetAddNewActivityDialog">
                   Cancel
                 </TBtn>
-                <TBtn @click="addNewActivity"> Create activity </TBtn>
+                <TBtn v-if="!movements" @click="addNewActivity">
+                  Create activity
+                </TBtn>
+                <TBtn v-else @click="addNewActivities">
+                  Create activities
+                </TBtn>
               </div>
             </DialogPanel>
           </TransitionChild>

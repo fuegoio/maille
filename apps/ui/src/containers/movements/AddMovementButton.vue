@@ -18,7 +18,6 @@ import type { UUID } from "crypto";
 import { createMovementMutation } from "@/mutations/movements";
 import { useHotkey } from "@/hooks/use-hotkey";
 
-
 defineOptions({ inheritAttrs: false });
 
 const movementsStore = useMovementsStore();
@@ -85,7 +84,7 @@ useHotkey(["c"], () => {
     <button
       v-bind="$attrs"
       type="button"
-      class="inline-flex items-center justify-center transition text-primary-100 hover:text-white bg-primary-700 hover:bg-primary-600 border rounded px-1.5 h-7"
+      class="inline-flex items-center justify-center transition text-primary-100 hover:text-white bg-primary-800 hover:bg-primary-700 border rounded px-1.5 h-7"
       @click="open"
     >
       <i class="mdi mdi-plus text-base" />

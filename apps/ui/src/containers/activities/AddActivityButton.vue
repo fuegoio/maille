@@ -9,7 +9,7 @@ import type { Movement } from "@maille/core/movements";
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     movement?: Movement;
     large?: boolean;
@@ -24,13 +24,11 @@ useHotkey(["c"], () => {
 });
 </script>
 
-
-
 <template>
   <button
     v-bind="$attrs"
     type="button"
-    class="inline-flex items-center justify-center transition border rounded flex-shrink-0 text-white bg-primary-600 hover:bg-primary-300"
+    class="inline-flex items-center justify-center transition border rounded flex-shrink-0 text-white bg-primary-800 hover:bg-primary-700"
     :class="[large ? 'px-3.5 h-8' : 'w-7 sm:w-auto sm:px-2.5 h-7']"
     @click="show = true"
   >

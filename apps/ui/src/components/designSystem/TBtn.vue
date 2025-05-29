@@ -29,9 +29,9 @@ const classes = computed(() => {
     if (props.danger) {
       classes.push("bg-red-400 hover:bg-red-300");
     } else if (props.outlined) {
-      classes.push("bg-primary-700 hover:bg-primary-600 text-white");
+      classes.push("bg-primary-900 hover:bg-primary-800 text-white");
     } else {
-      classes.push("bg-primary-500 hover:bg-primary-400");
+      classes.push("bg-primary-700 hover:bg-primary-600");
     }
 
     classes.push(

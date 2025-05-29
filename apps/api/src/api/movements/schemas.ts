@@ -41,7 +41,7 @@ MovementActivitySchema.implement({
       type: "UUID",
       resolve: (parent) => parent.activity,
     }),
-    amount: t.exposeInt("amount"),
+    amount: t.exposeFloat("amount"),
   }),
 });
 
@@ -68,4 +68,3 @@ DeleteMovementActivityResponseSchema.implement({
     success: t.exposeBoolean("success"),
   }),
 });
-
