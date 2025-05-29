@@ -4,6 +4,7 @@ import type { UUID } from "crypto";
 
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";
+import type { MovementFilter } from "@maille/core/movements";
 
 type ActivityView = {
   id: string;
@@ -16,6 +17,11 @@ type LiabilityView = {
   filters: LiabilityFilter[];
 };
 
+type MovementView = {
+  id: string;
+  filters: MovementFilter[];
+};
+
 export const useViewsStore = defineStore("views", () => {
   const activityViews = useStorage<Record<string, ActivityView>>(
     "activity_views",
@@ -23,6 +29,10 @@ export const useViewsStore = defineStore("views", () => {
   );
   const liabilityViews = useStorage<Record<string, LiabilityView>>(
     "liability_views",
+    {},
+  );
+  const movementViews = useStorage<Record<string, MovementView>>(
+    "movement_views",
     {},
   );
 
@@ -69,9 +79,21 @@ export const useViewsStore = defineStore("views", () => {
     return liabilityViews.value[viewId];
   };
 
+  const getMovementView = (viewId: string) => {
+    if (!movementViews.value[viewId]) {
+      movementViews.value[viewId] = {
+        id: viewId,
+        filters: [] as MovementFilter[],
+      };
+    }
+
+    return movementViews.value[viewId];
+  };
+
   return {
     getActivityView,
     getLiabilityView,
+    getMovementView,
 
     deleteCategory,
     deleteSubcategory,

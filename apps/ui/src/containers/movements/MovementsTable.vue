@@ -9,8 +9,10 @@ import MovementLine from "@/containers/movements/MovementLine.vue";
 import { useMovementsStore } from "@/stores/movements";
 import { useSearchStore } from "@/stores/search";
 import { useActivitiesStore } from "@/stores/activities";
+import { useViewsStore } from "@/stores/views";
 
 import type { Movement } from "@maille/core/movements";
+import { verifyMovementFilter } from "@maille/core/movements";
 import { storeToRefs } from "pinia";
 import type { UUID } from "crypto";
 import { useHotkey } from "@/hooks/use-hotkey";
@@ -22,15 +24,19 @@ const activitiesStore = useActivitiesStore();
 const { focusedActivity } = storeToRefs(activitiesStore);
 
 const { filterStringBySearch } = useSearchStore();
+const viewsStore = useViewsStore();
 
 const props = withDefaults(
   defineProps<{
     movements: Movement[];
+    viewId: string;
     grouping?: "period" | null;
     accountFilter?: UUID | null;
   }>(),
   { grouping: null, accountFilter: null },
 );
+
+const movementView = computed(() => viewsStore.getMovementView(props.viewId));
 
 onBeforeUnmount(() => {
   focusedMovement.value = null;
@@ -58,7 +64,16 @@ const movementsFiltered = computed(() => {
       props.accountFilter !== null
         ? movement.account === props.accountFilter
         : true,
-    );
+    )
+    .filter((movement) => {
+      if (movementView.value.filters.length === 0) return true;
+
+      return movementView.value.filters
+        .map((filter) => {
+          return verifyMovementFilter(filter, movement);
+        })
+        .every((f) => f);
+    });
 });
 
 const movementsSorted = computed(() => {

@@ -9,6 +9,7 @@ import { useHeadStore } from "@/stores/head";
 import AddMovementButton from "@/containers/movements/AddMovementButton.vue";
 import ImportMovementsButton from "@/containers/movements/ImportMovementsButton.vue";
 import MovementsTable from "@/containers/movements/MovementsTable.vue";
+import MovementsFilters from "@/containers/movements/filters/MovementsFilters.vue";
 import SearchBar from "@/containers/SearchBar.vue";
 import MovementVue from "@/containers/movements//Movement.vue";
 import type { UUID } from "crypto";
@@ -64,6 +65,10 @@ const movementsToShow = computed(() => {
     return true;
   });
 });
+
+const viewId = computed(() => {
+  return route.params.id === "tolink" ? "movements-tolink" : "movements-all";
+});
 </script>
 
 <template>
@@ -77,7 +82,8 @@ const movementsToShow = computed(() => {
       <AddMovementButton class="ml-2" />
     </header>
 
-    <MovementsTable :movements="movementsToShow" grouping="period" />
+    <MovementsFilters :view-id="viewId" :movements="movementsToShow" />
+    <MovementsTable :view-id="viewId" :movements="movementsToShow" grouping="period" />
   </div>
 
   <MovementVue />

@@ -9,6 +9,11 @@ import { VitePWA } from "vite-plugin-pwa";
 // https://vitejs.dev/config/
 export default defineConfig(() => {
   return {
+    server: {
+      port: 12000,
+      host: "0.0.0.0",
+      allowedHosts: ["work-1-iqzaarwxcvuhgifu.prod-runtime.all-hands.dev"],
+    },
     build: {
       sourcemap: true,
     },
