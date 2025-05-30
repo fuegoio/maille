@@ -3,13 +3,14 @@ import { db } from "@/database";
 import { users } from "@/tables";
 import { addEvent } from "../events";
 import { eq } from "drizzle-orm";
-import { UserSchema } from "./schemas";
+import { CreateUserSchema, UserSchema } from "./schemas";
 import { createUser } from "../auth";
+import { bootstrapUser } from "@/services/users";
 
 export const registerUsersMutations = () => {
   builder.mutationField("createUser", (t) =>
     t.field({
-      type: UserSchema,
+      type: CreateUserSchema,
       args: {
         firstName: t.arg.string(),
         lastName: t.arg.string(),
@@ -24,6 +25,7 @@ export const registerUsersMutations = () => {
           args.lastName,
         );
 
+        const { accounts } = await bootstrapUser(user.id);
         await addEvent({
           type: "createUser",
           payload: {
@@ -31,6 +33,7 @@ export const registerUsersMutations = () => {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            accounts,
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
@@ -42,6 +45,7 @@ export const registerUsersMutations = () => {
           firstName: user.firstName,
           lastName: user.lastName,
           avatar: null,
+          accounts,
         };
       },
     }),

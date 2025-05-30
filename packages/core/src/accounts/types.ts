@@ -11,6 +11,10 @@ export enum AccountType {
   REVENUE = "revenue",
 }
 
+export const isAccountType = (value: string): value is AccountType => {
+  return Object.values(AccountType).includes(value as AccountType);
+};
+
 export type Account = {
   id: UUID;
   name: string;

@@ -3,6 +3,7 @@ import type { Plugin } from "graphql-yoga";
 import { db } from "@/database";
 import { users } from "@/tables";
 import { eq } from "drizzle-orm";
+import { logger } from "@/logger";
 
 const alg = "HS256";
 const secret = new TextEncoder().encode(
@@ -123,6 +124,16 @@ export const createUser = async (
       })
       .returning()
   )[0];
+
+  logger.info(
+    {
+      id: user.id,
+      email,
+      firstName,
+      lastName,
+    },
+    `User created successfully`,
+  );
 
   return user;
 };

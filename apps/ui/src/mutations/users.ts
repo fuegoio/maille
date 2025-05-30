@@ -19,6 +19,13 @@ export const createUserMutation = graphql(/* GraphQL */ `
       lastName
       email
       avatar
+      accounts {
+        id
+        name
+        type
+        default
+        movements
+      }
     }
   }
 `);

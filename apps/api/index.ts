@@ -5,7 +5,7 @@ import { db } from "@/database";
 import { logger } from "@/logger";
 import { startServer } from "@/server";
 import { schema } from "@/api";
-import { bootstrapUsers } from "@/bootstrap";
+import { bootstrapInstance } from "@/bootstrap";
 
 logger.info("Maille API Server");
 
@@ -17,6 +17,6 @@ logger.info("Compiling GraphQL schema...");
 writeFileSync("./schema.graphql", printSchema(lexicographicSortSchema(schema)));
 logger.info("GraphQL schema compiled successfully");
 
-await bootstrapUsers();
+await bootstrapInstance();
 
 startServer();

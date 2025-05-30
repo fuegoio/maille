@@ -1,11 +1,11 @@
 import { createUser } from "@/api/auth";
 import { db } from "@/database";
-import { accounts, activityCategories, users } from "@/tables";
-import { AccountType } from "@maille/core/accounts";
+import { activityCategories, users } from "@/tables";
 import { ActivityType } from "@maille/core/activities";
 import { logger } from "./logger";
+import { bootstrapUser } from "./services/users";
 
-export const bootstrapUsers = async () => {
+export const bootstrapInstance = async () => {
   logger.info("Bootstrapping first user ...");
   const userExisting =
     (await db.select().from(users).limit(1))[0] !== undefined;
@@ -20,74 +20,21 @@ export const bootstrapUsers = async () => {
   const password = Math.random().toString(36).slice(-16);
 
   const user = await createUser(email, password, firstName, lastName);
+  await bootstrapUser(user.id);
 
-  // Create accounts
-  const liabilityAccountId = crypto.randomUUID();
-  await db.insert(accounts).values([
-    {
-      id: crypto.randomUUID(),
-      name: "Revenue",
-      type: AccountType.REVENUE,
-      default: true,
-      movements: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Expense",
-      type: AccountType.EXPENSE,
-      default: true,
-      movements: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      user: user.id,
-      name: "Cash",
-      type: AccountType.CASH,
-      default: true,
-      movements: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      user: user.id,
-      name: "Liabilities",
-      type: AccountType.LIABILITIES,
-      default: true,
-      movements: false,
-    },
-    {
-      id: crypto.randomUUID(),
-      user: user.id,
-      name: "Bank account",
-      type: AccountType.BANK_ACCOUNT,
-      default: false,
-      movements: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      user: user.id,
-      name: "Investment account",
-      type: AccountType.INVESTMENT_ACCOUNT,
-      default: false,
-      movements: true,
-    },
-  ]);
+  logger.info(
+    { email, password },
+    "First user created, you can now login with these credentials",
+  );
 
   // Create categories
+  logger.info("Bootstrapping categories...");
   await db.insert(activityCategories).values([
     {
-      id: liabilityAccountId,
+      id: crypto.randomUUID(),
       name: "Salary",
       type: ActivityType.REVENUE,
     },
   ]);
-
-  logger.info(
-    {
-      email,
-      password,
-      firstName,
-      lastName,
-    },
-    `User created successfully`,
-  );
+  logger.info("Categories bootstrapped successfully");
 };

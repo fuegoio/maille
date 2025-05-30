@@ -38,22 +38,29 @@ export const useAccountsStore = defineStore("accounts", () => {
     id,
     name,
     type,
+    isDefault,
+    movements,
+    user,
   }: {
     id?: UUID;
     name: string;
     type: AccountType;
+    isDefault?: boolean;
+    movements?: boolean;
+    user?: UUID | null;
   }): Account => {
-    const { user } = useAuthStore();
-    if (!user) throw new Error("User not found");
+    const { user: loggedUser } = useAuthStore();
+    if (!loggedUser) throw new Error("User not logged in");
+
     const newAccount = {
       id: id ?? window.crypto.randomUUID(),
       name,
       type,
-      user: user.id,
-      default: false,
+      user: user !== undefined ? user : loggedUser.id,
+      default: !!isDefault,
+      movements: !!movements,
       startingBalance: 0,
       startingCashBalance: 0,
-      movements: false,
     };
     accounts.value.push(newAccount);
     return newAccount;

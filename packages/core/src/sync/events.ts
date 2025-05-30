@@ -245,6 +245,7 @@ export type CreateUserEvent = {
     email: string;
     firstName: string;
     lastName: string;
+    accounts: Account[];
   };
 };
 

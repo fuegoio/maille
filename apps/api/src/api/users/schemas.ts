@@ -1,10 +1,11 @@
-import { builder } from "../builder";
+import type { Account } from "@maille/core/accounts";
+import { builder, type TypesWithDefaults } from "../builder";
 import type { User } from "@maille/core/users";
+import { AccountSchema } from "../accounts/schemas";
+import type { ObjectRef } from "@pothos/core";
 
-export const UserSchema = builder.objectRef<User>("User");
-
-UserSchema.implement({
-  fields: (t) => ({
+const addBaseUserImplementation = (ref: ObjectRef<TypesWithDefaults, User>) =>
+  builder.objectFields(ref, (t) => ({
     id: t.field({
       type: "UUID",
       resolve: (parent) => parent.id,
@@ -13,5 +14,24 @@ UserSchema.implement({
     firstName: t.exposeString("firstName"),
     lastName: t.exposeString("lastName"),
     avatar: t.exposeString("avatar", { nullable: true }),
+  }));
+
+export const UserSchema = builder.objectRef<User>("User").implement({});
+
+addBaseUserImplementation(UserSchema);
+
+export const CreateUserSchema = builder
+  .objectRef<
+    User & {
+      accounts: Account[];
+    }
+  >("CreateUser")
+  .implement({});
+
+addBaseUserImplementation(CreateUserSchema);
+builder.objectFields(CreateUserSchema, (t) => ({
+  accounts: t.field({
+    type: [AccountSchema],
+    resolve: (parent) => parent.accounts,
   }),
-});
+}));

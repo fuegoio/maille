@@ -2,7 +2,7 @@ import type { UUID } from "crypto";
 import SchemaBuilder from "@pothos/core";
 import { DateResolver, UUIDResolver } from "graphql-scalars";
 
-export const builder = new SchemaBuilder<{
+export interface SchemaTypes {
   DefaultFieldNullability: false;
   DefaultInputFieldRequiredness: true;
   Scalars: {
@@ -13,7 +13,12 @@ export const builder = new SchemaBuilder<{
     user: UUID;
     clientId: UUID;
   };
-}>({
+}
+
+export type TypesWithDefaults =
+  PothosSchemaTypes.ExtendDefaultTypes<SchemaTypes>;
+
+export const builder = new SchemaBuilder<TypesWithDefaults>({
   defaultFieldNullability: false,
   defaultInputFieldRequiredness: true,
 });

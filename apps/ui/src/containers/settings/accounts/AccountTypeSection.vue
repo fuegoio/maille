@@ -184,7 +184,7 @@ const deleteAccount = async (accountId: UUID) => {
       </div>
 
       <div
-        v-for="account in sortedAccounts"
+        v-for="account in sortedAccounts.filter((a) => a.user === user.id)"
         :key="account.id"
         class="w-full border my-2 px-4 rounded group"
       >
