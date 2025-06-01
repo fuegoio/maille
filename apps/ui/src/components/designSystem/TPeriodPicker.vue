@@ -66,7 +66,7 @@ const isValuePeriod = (month: number) => {
   <Menu v-slot="{ open }">
     <MenuButton
       ref="trigger"
-      class="flex items-center rounded bg-primary-700 h-10 border hover:bg-gray-50"
+      class="flex items-center rounded bg-primary-700 h-10 border hover:bg-primary-600 transition-colors"
       :class="{
         'border-primary-300': open,
         'hover:border-primary-300': !open,

@@ -6,9 +6,7 @@ import TSelect from "@/components/designSystem/TSelect.vue";
 import TAmountInput from "@/components/designSystem/TAmountInput.vue";
 import TTextField from "@/components/designSystem/TTextField.vue";
 
-import {
-  ActivityFilterDateValues,
-} from "@maille/core/activities";
+import { ActivityFilterDateValues } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
 
 defineOptions({ inheritAttrs: false });
@@ -82,7 +80,7 @@ defineExpose({
       :model-value="modelValue"
       multiple
       borderless
-      class="border-r hover:bg-gray-50"
+      class="border-r hover:bg-primary-700"
       @update:model-value="emit('update:model-value', $event)"
       @close="emit('close')"
     />
@@ -113,3 +111,4 @@ defineExpose({
     </TSelect>
   </template>
 </template>
+

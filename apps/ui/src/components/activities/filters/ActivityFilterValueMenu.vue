@@ -14,7 +14,6 @@ import {
   ActivityFilterDateValues,
 } from "@maille/core/activities";
 
-
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
@@ -37,8 +36,6 @@ defineExpose({
   },
 });
 </script>
-
-
 
 <template>
   <template v-if="field === 'date'">
@@ -161,7 +158,7 @@ defineExpose({
       :model-value="modelValue"
       multiple
       borderless
-      class="border-r hover:bg-gray-50"
+      class="border-r hover:bg-primary-700"
       @update:model-value="emit('update:model-value', $event)"
       @close="emit('close')"
     />
