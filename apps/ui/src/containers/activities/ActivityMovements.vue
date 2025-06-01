@@ -125,9 +125,16 @@ const updateAmountLinked = (
   <div class="border-b py-6 px-4 sm:px-8">
     <div class="flex items-center">
       <div
-        class="-ml-2 text-sm font-medium text-primary-100 px-2 rounded h-7 hover:text-white flex items-center"
+        class="text-sm font-medium text-primary-100 rounded h-7 hover:text-white flex items-center w-full"
         @click="showMovements = !showMovements"
       >
+        Movements
+        <i
+          class="mdi ml-2"
+          :class="showMovements ? 'mdi-menu-down' : 'mdi-menu-up'"
+        />
+
+        <div class="flex-1" />
         <i
           v-if="
             !getActivityMovementsReconciliated(
@@ -137,14 +144,9 @@ const updateAmountLinked = (
               movementsStore.getMovementById,
             )
           "
-          class="mdi mdi-progress-helper text-xl text-orange-300 mr-2"
+          class="mdi mdi-progress-helper text-xl text-orange-300 px-1"
         />
-        <i v-else class="mdi mdi-check-circle text-xl text-emerald-400 mr-2" />
-        Movements
-        <i
-          class="mdi ml-2"
-          :class="showMovements ? 'mdi-menu-down' : 'mdi-menu-up'"
-        />
+        <i v-else class="mdi mdi-check-circle text-xl text-emerald-400 px-1" />
       </div>
     </div>
 
