@@ -4,20 +4,27 @@ import _ from "lodash";
 import { computed } from "vue";
 import { RecycleScroller } from "vue-virtual-scroller";
 import LiabilityLine from "@/containers/liabilities/LiabilityLine.vue";
+import LiabilitiesFilters from "@/containers/liabilities/filters/LiabilitiesFilters.vue";
 import type { UUID } from "crypto";
 import { useSearchStore } from "@/stores/search";
+import { useViewsStore } from "@/stores/views";
 import type { Liability } from "@maille/core/liabilities";
+import { verifyLiabilityFilter } from "@maille/core/liabilities";
 
 const { filterStringBySearch } = useSearchStore();
+const viewsStore = useViewsStore();
 
 const props = withDefaults(
   defineProps<{
     liabilities: Liability[];
+    viewId: string;
     grouping?: "period" | null;
     accountFilter?: UUID | null;
   }>(),
   { grouping: null, accountFilter: null },
 );
+
+const liabilityView = computed(() => viewsStore.getLiabilityView(props.viewId));
 
 type Group = {
   id: string;
@@ -37,6 +44,15 @@ const liabilitiesFiltered = computed(() => {
         ? liability.account === props.accountFilter
         : true,
     )
+    .filter((liability) => {
+      if (liabilityView.value.filters.length === 0) return true;
+
+      return liabilityView.value.filters
+        .map((filter) => {
+          return verifyLiabilityFilter(filter, liability);
+        })
+        .every((f) => f);
+    })
     .map((l) => ({ ...l, id: l.id }));
 });
 
@@ -100,6 +116,10 @@ const periodFormatter = (month: number, year: number): string => {
 <template>
   <div class="flex flex-1 h-full overflow-x-hidden">
     <div class="flex flex-1 flex-col min-h-0 min-w-0">
+      <LiabilitiesFilters
+        :view-id="viewId"
+        :liabilities="liabilitiesFiltered"
+      />
       <div
         v-if="liabilitiesFiltered.length !== 0"
         class="flex-1 flex flex-col sm:min-w-[575px] overflow-x-hidden"
