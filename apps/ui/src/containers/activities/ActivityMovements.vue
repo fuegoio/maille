@@ -159,7 +159,7 @@ const updateAmountLinked = (
         <div class="flex items-center px-4">
           <AccountLabel
             :account-id="movementsReconciliatedOfAccount.account"
-            class="text-sm ml-0.5"
+            class="text-sm"
           />
 
           <div class="flex-1" />
