@@ -31,6 +31,8 @@ import type { PeriodActivityData } from "@/types/periods";
 import LiabilitiesTable from "@/containers/liabilities/LiabilitiesTable.vue";
 import { useLiabilitiesStore } from "@/stores/liabilities";
 import FilterMovementsButton from "@/containers/movements/filters/FilterMovementsButton.vue";
+import FilterLiabilitiesButton from "@/containers/liabilities/filters/FilterLiabilitiesButton.vue";
+import ExportLiabilitiesButton from "@/containers/liabilities/ExportLiabilitiesButton.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -123,6 +125,10 @@ const activityView = computed(() => {
 
 const movementsView = computed(() => {
   return viewsStore.getMovementView(`period-page`);
+});
+
+const liabilitiesView = computed(() => {
+  return viewsStore.getLiabilityView(`period-page`);
 });
 
 const label = computed(() =>
@@ -350,6 +356,21 @@ watch(focusedMovement, () => {
             >
               <FilterMovementsButton :view-id="movementsView.id" class="mx-2" />
             </template>
+            <template
+              v-else-if="
+                currentView === 'liabilities' &&
+                liabilitiesView.filters.length === 0
+              "
+            >
+              <FilterLiabilitiesButton
+                :view-id="liabilitiesView.id"
+                class="mx-2"
+              />
+              <ExportLiabilitiesButton
+                :view-id="liabilitiesView.id"
+                :liabilities="liabilities"
+              />
+            </template>
           </div>
 
           <ActivitiesTable
@@ -371,6 +392,7 @@ watch(focusedMovement, () => {
             v-else-if="currentView === 'liabilities'"
             :liabilities="periodLiabilities"
             :account-filter="viewFilters.account"
+            :view-id="liabilitiesView.id"
             hide-periods
           />
         </div>
