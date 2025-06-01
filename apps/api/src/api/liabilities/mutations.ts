@@ -3,6 +3,7 @@ import { builder } from "../builder";
 import { liabilities } from "@/tables";
 import { and, eq } from "drizzle-orm";
 import { LiabilitySchema } from "./schemas";
+import { addEvent } from "@/api/events";
 import dayjs from "dayjs";
 
 export const registerLiabilitiesMutations = () => {
@@ -54,6 +55,16 @@ export const registerLiabilitiesMutations = () => {
           .update(liabilities)
           .set(liabilityUpdates)
           .where(eq(liabilities.id, id));
+
+        await addEvent({
+          type: "updateLiability",
+          payload: {
+            id,
+            ...liabilityUpdates,
+          },
+          createdAt: new Date(),
+          clientId: ctx.clientId,
+        });
 
         return {
           ...liability,

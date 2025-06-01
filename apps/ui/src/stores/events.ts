@@ -15,6 +15,7 @@ import { useProjectsStore } from "./projects";
 import config from "@/config";
 import { useAccountsStore } from "./accounts";
 import { useUsersStore } from "./users";
+import { useLiabilitiesStore } from "./liabilities";
 
 export const useEventsStore = defineStore("events", () => {
   const authStore = useAuthStore();
@@ -23,6 +24,7 @@ export const useEventsStore = defineStore("events", () => {
   const projectsStore = useProjectsStore();
   const accountsStore = useAccountsStore();
   const usersStore = useUsersStore();
+  const liabilitiesStore = useLiabilitiesStore();
 
   const clientId = useStorage<string | undefined>("client_id", undefined);
   const lastEventTimestamp = useStorage<number>("last_event_timestamp", 0);
@@ -85,6 +87,10 @@ export const useEventsStore = defineStore("events", () => {
         ...event,
         result,
       } as Mutation);
+      liabilitiesStore.handleMutationSuccess({
+        ...event,
+        result,
+      } as Mutation);
 
       eventInProcessing.value = false;
       await dequeueEvents();
@@ -98,6 +104,7 @@ export const useEventsStore = defineStore("events", () => {
         projectsStore.handleMutationError(event);
         accountsStore.handleMutationError(event);
         usersStore.handleMutationError(event);
+        liabilitiesStore.handleMutationError(event);
       }
     }
   };
@@ -140,6 +147,7 @@ export const useEventsStore = defineStore("events", () => {
       projectsStore.handleEvent(event);
       accountsStore.handleEvent(event);
       usersStore.handleEvent(event);
+      liabilitiesStore.handleEvent(event);
     }
   };
 
@@ -177,6 +185,7 @@ export const useEventsStore = defineStore("events", () => {
         projectsStore.handleEvent(event);
         accountsStore.handleEvent(event);
         usersStore.handleEvent(event);
+        liabilitiesStore.handleEvent(event);
       });
   };
 

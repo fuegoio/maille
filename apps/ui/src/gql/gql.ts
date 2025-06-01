@@ -29,6 +29,7 @@ type Documents = {
     "\n  mutation CreateActivitySubCategory(\n    $id: UUID!\n    $name: String!\n    $category: UUID!\n  ) {\n    createActivitySubCategory(id: $id, name: $name, category: $category) {\n      id\n    }\n  }\n": typeof types.CreateActivitySubCategoryDocument,
     "\n  mutation UpdateActivitySubCategory($id: UUID!, $name: String!) {\n    updateActivitySubCategory(id: $id, name: $name) {\n      id\n    }\n  }\n": typeof types.UpdateActivitySubCategoryDocument,
     "\n  mutation DeleteActivitySubCategory($id: UUID!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n": typeof types.DeleteActivitySubCategoryDocument,
+    "\n  mutation UpdateLiability(\n    $id: UUID!\n    $name: String\n    $other: String\n    $other_user: UUID\n  ) {\n    updateLiability(\n      id: $id\n      name: $name\n      other: $other\n      other_user: $other_user\n    ) {\n      id\n      amount\n      activity\n      account\n      name\n      date\n      other\n      other_user\n    }\n  }\n": typeof types.UpdateLiabilityDocument,
     "\n  mutation CreateMovement(\n    $id: UUID!\n    $date: Date!\n    $name: String!\n    $account: UUID!\n    $amount: Float!\n  ) {\n    createMovement(\n      id: $id\n      date: $date\n      name: $name\n      account: $account\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": typeof types.CreateMovementDocument,
     "\n  mutation UpdateMovement($id: UUID!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n": typeof types.UpdateMovementDocument,
     "\n  mutation DeleteMovement($id: UUID!) {\n    deleteMovement(id: $id) {\n      success\n    }\n  }\n": typeof types.DeleteMovementDocument,
@@ -59,6 +60,7 @@ const documents: Documents = {
     "\n  mutation CreateActivitySubCategory(\n    $id: UUID!\n    $name: String!\n    $category: UUID!\n  ) {\n    createActivitySubCategory(id: $id, name: $name, category: $category) {\n      id\n    }\n  }\n": types.CreateActivitySubCategoryDocument,
     "\n  mutation UpdateActivitySubCategory($id: UUID!, $name: String!) {\n    updateActivitySubCategory(id: $id, name: $name) {\n      id\n    }\n  }\n": types.UpdateActivitySubCategoryDocument,
     "\n  mutation DeleteActivitySubCategory($id: UUID!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n": types.DeleteActivitySubCategoryDocument,
+    "\n  mutation UpdateLiability(\n    $id: UUID!\n    $name: String\n    $other: String\n    $other_user: UUID\n  ) {\n    updateLiability(\n      id: $id\n      name: $name\n      other: $other\n      other_user: $other_user\n    ) {\n      id\n      amount\n      activity\n      account\n      name\n      date\n      other\n      other_user\n    }\n  }\n": types.UpdateLiabilityDocument,
     "\n  mutation CreateMovement(\n    $id: UUID!\n    $date: Date!\n    $name: String!\n    $account: UUID!\n    $amount: Float!\n  ) {\n    createMovement(\n      id: $id\n      date: $date\n      name: $name\n      account: $account\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": types.CreateMovementDocument,
     "\n  mutation UpdateMovement($id: UUID!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n": types.UpdateMovementDocument,
     "\n  mutation DeleteMovement($id: UUID!) {\n    deleteMovement(id: $id) {\n      success\n    }\n  }\n": types.DeleteMovementDocument,
@@ -148,6 +150,10 @@ export function graphql(source: "\n  mutation UpdateActivitySubCategory($id: UUI
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation DeleteActivitySubCategory($id: UUID!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteActivitySubCategory($id: UUID!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateLiability(\n    $id: UUID!\n    $name: String\n    $other: String\n    $other_user: UUID\n  ) {\n    updateLiability(\n      id: $id\n      name: $name\n      other: $other\n      other_user: $other_user\n    ) {\n      id\n      amount\n      activity\n      account\n      name\n      date\n      other\n      other_user\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateLiability(\n    $id: UUID!\n    $name: String\n    $other: String\n    $other_user: UUID\n  ) {\n    updateLiability(\n      id: $id\n      name: $name\n      other: $other\n      other_user: $other_user\n    ) {\n      id\n      amount\n      activity\n      account\n      name\n      date\n      other\n      other_user\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
