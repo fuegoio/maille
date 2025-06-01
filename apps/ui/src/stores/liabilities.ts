@@ -59,6 +59,17 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
     );
   };
 
+  const updateLiability = (
+    id: UUID,
+    updates: Partial<Pick<Liability, "name" | "other" | "other_user">>,
+  ) => {
+    const liability = liabilities.value.find((l) => l.id === id);
+    if (liability) {
+      Object.assign(liability, updates);
+    }
+    return liability;
+  };
+
   const updateLiabilitiesLinkId = (
     activityId: UUID,
     liabilitiesUpdates: { account: UUID; id: UUID }[],
@@ -79,6 +90,7 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
 
     addLiability,
     getLiability,
+    updateLiability,
     deleteLiabilitiesActivity,
 
     updateLiabilitiesLinkId,

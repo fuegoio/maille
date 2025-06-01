@@ -103,6 +103,8 @@ type Liability {
   date: Date!
   id: UUID!
   name: String!
+  other: String
+  other_user: UUID
 }
 
 type Movement {
@@ -143,6 +145,7 @@ type Mutation {
   updateActivity(category: UUID, date: Date, description: String, id: UUID!, name: String, project: UUID, subcategory: UUID, type: String): Activity!
   updateActivityCategory(id: UUID!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: UUID!, name: String!): ActivitySubCategory!
+  updateLiability(id: UUID!, name: String, other: String, other_user: UUID): Liability!
   updateMovement(amount: Float, date: Date, id: UUID!): Movement!
   updateMovementActivity(amount: Float!, id: UUID!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: UUID!, name: String, startDate: Date): Project!
