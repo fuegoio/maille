@@ -15,6 +15,8 @@ export type Liability = {
   account: UUID;
   name: string;
   date: dayjs.Dayjs;
+  other: string | null;
+  other_user: UUID | null;
 };
 
 type LiabilityFilterNameDescription = {

@@ -38,6 +38,8 @@ export const liabilities = sqliteTable("liabilities", {
   amount: integer("amount").notNull(),
   name: text("name").notNull(),
   date: integer("date", { mode: "timestamp" }).notNull(),
+  other: text("other").$type<string>(),
+  other_user: text("other_user").$type<UUID>(),
 });
 
 export const activityCategories = sqliteTable("activity_categories", {
