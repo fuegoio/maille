@@ -160,7 +160,7 @@ useHotkey(["Escape"], () => {
   <div
     v-if="showMovement"
     ref="mainElement"
-    class="absolute top-0 left-0 sm:relative flex flex-col w-full sm:w-[575px] max-w-full h-full overflow-hidden border bg-primary-900 shadow-xl rounded"
+    class="absolute top-0 left-0 @5xl:relative flex flex-col w-full @5xl:w-[575px] max-w-full h-full overflow-hidden border bg-primary-900 shadow-xl rounded"
   >
     <template v-if="movement">
       <div
@@ -168,7 +168,7 @@ useHotkey(["Escape"], () => {
       >
         <button
           type="button"
-          class="inline-flex items-center justify-center w-6 h-8 ml-8 sm:ml-0 mr-4"
+          class="inline-flex items-center justify-center w-6 h-8 ml-8 lg:ml-0 mr-4"
           @click="close"
         >
           <i

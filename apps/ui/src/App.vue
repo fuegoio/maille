@@ -60,7 +60,7 @@ loadAuth();
         v-if="!FULLSCREEN_ROUTES.includes(route.name as string)"
       />
 
-      <main class="flex-1 p-2">
+      <main class="flex-1 p-2 @container">
         <div
           class="flex w-full h-full min-w-0 overflow-y-auto gap-4 overflow-x-hidden relative"
         >
