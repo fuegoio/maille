@@ -117,7 +117,7 @@ const open = () => {
 
               <div class="px-8 py-6">
                 <div class="flex flex-col sm:flex-row sm:items-center text-sm">
-                  <div class="text-sm text-primary-600">Amount</div>
+                  <div class="text-sm text-primary-100">Amount</div>
                   <div class="flex-1" />
                   <TAmountInput
                     v-model="addNewTransactionDialog.amount"
@@ -128,7 +128,7 @@ const open = () => {
                 <div
                   class="mt-4 flex flex-col sm:flex-row sm:items-center text-sm"
                 >
-                  <div class="text-sm text-primary-600">From account</div>
+                  <div class="text-sm text-primary-100">From account</div>
                   <div class="flex-1" />
                   <AccountSelect
                     v-model="addNewTransactionDialog.fromAccount"
@@ -139,7 +139,7 @@ const open = () => {
                 <div
                   class="mt-4 flex flex-col sm:flex-row sm:items-center text-sm"
                 >
-                  <div class="text-sm text-primary-600">To account</div>
+                  <div class="text-sm text-primary-100">To account</div>
                   <div class="flex-1" />
                   <AccountSelect
                     v-model="addNewTransactionDialog.toAccount"
