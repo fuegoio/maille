@@ -10,6 +10,7 @@ import SearchBar from "@/containers/SearchBar.vue";
 import { useViewsStore } from "@/stores/views";
 import { computed } from "vue";
 import ExportLiabilitiesButton from "@/containers/liabilities/ExportLiabilitiesButton.vue";
+import FilterLiabilitiesButton from "@/containers/liabilities/filters/FilterLiabilitiesButton.vue";
 
 const router = useRouter();
 
@@ -37,8 +38,12 @@ const liabilityView = computed(() => {
       <div class="text-sm font-semibold text-white truncate">Liabilities</div>
       <div class="flex-1" />
       <template v-if="liabilityView.filters.length === 0">
+        <FilterLiabilitiesButton
+          :view-id="liabilityView.id"
+          class="ml-4 sm:mr-2"
+        />
         <ExportLiabilitiesButton
-          class="hidden sm:block ml-4"
+          class="hidden sm:block"
           :view-id="liabilityView.id"
           :liabilities="liabilities"
         />
@@ -46,6 +51,10 @@ const liabilityView = computed(() => {
       <SearchBar />
     </header>
 
-    <LiabilitiesTable :liabilities="liabilities" grouping="period" />
+    <LiabilitiesTable 
+      :view-id="liabilityView.id"
+      :liabilities="liabilities" 
+      grouping="period" 
+    />
   </div>
 </template>

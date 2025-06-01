@@ -46,3 +46,14 @@ export type LiabilityFilter =
   | LiabilityFilterDate
   | LiabilityFilterAmount
   | LiabilityFilterAccount;
+
+export const LiabilityFilterFields: {
+  value: LiabilityFilter["field"];
+  text: string;
+  icon: string;
+}[] = [
+  { value: "name", text: "Name", icon: "mdi-alphabetical" },
+  { value: "date", text: "Date", icon: "mdi-calendar" },
+  { value: "amount", text: "Amount", icon: "mdi-currency-eur" },
+  { value: "account", text: "Account", icon: "mdi-bank" },
+];
