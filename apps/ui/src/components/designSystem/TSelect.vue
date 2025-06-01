@@ -163,7 +163,7 @@ watch(container, () => {
         >
           <li
             :class="[
-              active ? 'bg-primary-400 text-white' : 'text-primary-100',
+              active ? 'bg-primary-600 text-white' : 'text-primary-100',
               'flex items-center py-2 px-4',
             ]"
           >
