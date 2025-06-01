@@ -22,7 +22,7 @@ const { liabilities } = storeToRefs(liabilitiesStore);
 
 const loadRouteParams = async () => {
   await router.isReady();
-  headStore.updateTitle("Movements");
+  headStore.updateTitle("Liabilities");
 };
 
 loadRouteParams();
@@ -36,7 +36,6 @@ const liabilityView = computed(() => {
   <div class="flex flex-1 flex-col rounded shadow-xl border bg-primary-900">
     <header class="h-14 border-b pl-14 pr-4 lg:pl-8 flex items-center">
       <div class="text-sm font-semibold text-white truncate">Liabilities</div>
-      <div class="flex-1" />
       <template v-if="liabilityView.filters.length === 0">
         <FilterLiabilitiesButton
           :view-id="liabilityView.id"
@@ -51,10 +50,10 @@ const liabilityView = computed(() => {
       <SearchBar />
     </header>
 
-    <LiabilitiesTable 
+    <LiabilitiesTable
       :view-id="liabilityView.id"
-      :liabilities="liabilities" 
-      grouping="period" 
+      :liabilities="liabilities"
+      grouping="period"
     />
   </div>
 </template>
