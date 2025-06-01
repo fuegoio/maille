@@ -24,5 +24,15 @@ LiabilitySchema.implement({
       type: "Date",
       resolve: (parent) => parent.date.toDate(),
     }),
+    other: t.field({
+      type: "String",
+      resolve: (parent) => parent.other,
+      nullable: true,
+    }),
+    other_user: t.field({
+      type: "UUID",
+      resolve: (parent) => parent.other_user,
+      nullable: true,
+    }),
   }),
 });
