@@ -123,7 +123,7 @@ const handleTransactionMenuClick = (
                 })
             "
           />
-          <div class="mx-2 text-center text-primary-600">to</div>
+          <div class="mx-2 text-center text-primary-200">to</div>
           <AccountSelect
             :model-value="transaction.toAccount"
             borderless
