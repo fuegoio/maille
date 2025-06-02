@@ -1,6 +1,5 @@
 import { graphql } from "@/gql";
 import type { Liability } from "@maille/core/liabilities";
-import type { UUID } from "crypto";
 import type { MutationType } from "./type";
 
 export const updateLiabilityMutation = graphql(/* GraphQL */ `
@@ -17,13 +16,6 @@ export const updateLiabilityMutation = graphql(/* GraphQL */ `
       other_user: $other_user
     ) {
       id
-      amount
-      activity
-      account
-      name
-      date
-      other
-      other_user
     }
   }
 `);
@@ -33,3 +25,4 @@ export type LiabilityMutation = MutationType<
   typeof updateLiabilityMutation,
   Liability
 >;
+
