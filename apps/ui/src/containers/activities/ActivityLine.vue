@@ -44,7 +44,7 @@ const transactions = computed(() => {
     class="block overflow-hidden border-b flex-shrink-0 group transition-colors"
     :class="[
       focusedActivity === activity.id
-        ? 'bg-primary-800/50 border-l-4 border-l-primary-400'
+        ? 'bg-primary-800/50 border-l-4 border-l-accent'
         : 'hover:bg-primary-800/50 pl-1',
     ]"
     :style="`height: ${

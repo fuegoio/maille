@@ -54,7 +54,7 @@ loadAuth();
   >
     <div
       v-if="!loading"
-      class="flex h-full w-full text-primary-100 bg-primary-950"
+      class="flex h-full w-full text-primary-100 bg-primary-950 grain"
     >
       <NavigationDrawer
         v-if="!FULLSCREEN_ROUTES.includes(route.name as string)"

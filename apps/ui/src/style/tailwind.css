@@ -13,6 +13,9 @@
   --color-primary-900: hsl(0, 0%, 11%);
   --color-primary-950: hsl(0, 0%, 9%);
 
+  --color-background: hsl(0, 0%, 4%);
+  --color-accent: hsl(244.7 90.5% 75.3%);
+
   /* Custom font families */
   --font-sans:
     "Inter var", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",

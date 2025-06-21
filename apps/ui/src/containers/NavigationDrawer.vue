@@ -19,7 +19,7 @@ const openMobile = ref(false);
   </button>
 
   <div
-    class="w-56 h-full absolute px-4 z-20 lg:static lg:shadow-none transition-transform duration-200 lg:translate-x-0 lg:transition-none flex flex-col overflow-y-auto min-h-0 rounded-r-lg bg-primary-900/90 backdrop-blur lg:bg-transparent lg:backdrop-blur-0 shrink-0"
+    class="w-56 h-full absolute px-4 z-20 lg:static lg:shadow-none transition-transform duration-200 lg:translate-x-0 lg:transition-none flex flex-col overflow-y-auto min-h-0 rounded-r-lg bg-primary-900/90 backdrop-blur lg:bg-transparent lg:backdrop-blur-none shrink-0"
     :class="{
       '-translate-x-56 ': !openMobile,
       '': openMobile,
