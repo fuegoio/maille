@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { twMerge } from "tailwind-merge";
+import { onMounted, ref, useAttrs, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +29,8 @@ const props = withDefaults(
   },
 );
 const emit = defineEmits(["update:modelValue", "blur"]);
+defineOptions({ inheritAttrs: false });
+const attrs = useAttrs();
 
 const value = ref<string | number | null>(props.modelValue);
 const currentlyFocused = ref(false);
@@ -55,11 +58,14 @@ defineExpose({ click: () => input.value.focus() });
 
 <template>
   <div
-    class="flex items-center bg-primary-700 rounded border hover:bg-primary-600 text-white transition-colors"
-    :class="[
-      currentlyFocused ? 'border-primary-300' : 'hover:border-primary-300',
-      dense ? 'h-8 rounded' : 'h-10',
-    ]"
+    :class="
+      twMerge(
+        'flex items-center bg-primary-700 rounded border hover:bg-primary-600 text-white transition-colors',
+        currentlyFocused ? 'border-primary-300' : 'hover:border-primary-300',
+        dense ? 'h-8 rounded' : 'h-10',
+        attrs.class as string,
+      )
+    "
   >
     <i v-if="icon" class="mdi pl-3 mdi-16px mt-0.5" :class="icon" />
     <input
@@ -72,6 +78,7 @@ defineExpose({ click: () => input.value.focus() });
       class="pl-3 text-left min-w-0 border-none h-8 text-sm bg-transparent flex-1"
       :step="type === 'number' ? 0.01 : undefined"
       :disabled="disabled"
+      v-bind="{ ...attrs, class: undefined }"
       @focus="currentlyFocused = true"
       @blur="
         currentlyFocused = false;

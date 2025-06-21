@@ -13,11 +13,7 @@ export const registerLiabilitiesQueries = () => {
 
         return liabilitiesData.map((liability) => {
           return {
-            id: liability.id,
-            account: liability.account,
-            activity: liability.activity,
-            amount: liability.amount,
-            name: liability.name,
+            ...liability,
             date: dayjs(liability.date),
           };
         });

@@ -6,10 +6,12 @@ import type { Liability } from "@maille/core/liabilities";
 import { useRouter } from "vue-router";
 import { useActivitiesStore } from "@/stores/activities";
 import { computed } from "vue";
+import { useUsersStore } from "@/stores/users";
 
 const router = useRouter();
 
 const activitiesStore = useActivitiesStore();
+const usersStore = useUsersStore();
 
 const props = defineProps<{
   liability: Liability;
@@ -27,6 +29,11 @@ const goToActivity = () => {
     params: { id: activityLinked.value.number },
   });
 };
+
+const otherUser = computed(() => {
+  if (!props.liability.otherUser) return null;
+  return usersStore.getUserById(props.liability.otherUser);
+});
 </script>
 
 <template>
@@ -47,6 +54,12 @@ const goToActivity = () => {
       class="ml-1 text-primary-100 text-ellipsis overflow-hidden whitespace-nowrap"
     >
       {{ liability.name }}
+    </div>
+    <div v-if="otherUser" class="mx-2 text-center text-primary-200">
+      with {{ otherUser.firstName }} {{ otherUser.lastName }}
+    </div>
+    <div v-else-if="liability.other" class="mx-2 text-center text-primary-200">
+      with {{ liability.other }}
     </div>
 
     <div class="flex-1" />

@@ -5,6 +5,8 @@ import type { Liability } from "@maille/core/liabilities";
 import type { UUID } from "crypto";
 import { useStorage } from "@vueuse/core";
 import type { Activity } from "@maille/core/activities";
+import type { SyncEvent } from "@maille/core/sync";
+import type { Mutation } from "@/mutations";
 import dayjs from "dayjs";
 
 export const useLiabilitiesStore = defineStore("liabilities", () => {
@@ -12,7 +14,7 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
     serializer: {
       read: (v: string) => {
         if (!v) return null;
-        return JSON.parse(v).map((a: any) => {
+        return JSON.parse(v).map((a: Record<string, string | number>) => {
           return {
             ...a,
             date: dayjs(a.date),
@@ -40,6 +42,8 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
       activity: input.activity.id,
       name: input.activity.name,
       date: input.activity.date,
+      other: null,
+      otherUser: null,
     };
     liabilities.value.push(liability);
 
@@ -59,6 +63,17 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
     );
   };
 
+  const updateLiability = (
+    id: UUID,
+    updates: Partial<Pick<Liability, "name" | "other" | "otherUser">>,
+  ) => {
+    const liability = liabilities.value.find((l) => l.id === id);
+    if (liability) {
+      Object.assign(liability, updates);
+    }
+    return liability;
+  };
+
   const updateLiabilitiesLinkId = (
     activityId: UUID,
     liabilitiesUpdates: { account: UUID; id: UUID }[],
@@ -73,14 +88,37 @@ export const useLiabilitiesStore = defineStore("liabilities", () => {
     });
   };
 
+  const handleEvent = (event: SyncEvent) => {
+    if (event.type === "updateLiability") {
+      updateLiability(event.payload.id, {
+        name: event.payload.name,
+        other: event.payload.other,
+        otherUser: event.payload.otherUser,
+      });
+    }
+  };
+
+  const handleMutationSuccess = (mutation: Mutation) => {
+    // Handle successful mutations if needed
+  };
+
+  const handleMutationError = (mutation: Mutation) => {
+    // Handle failed mutations if needed
+  };
+
   return {
     liabilities,
     getLiabilitiesByActivity,
 
     addLiability,
     getLiability,
+    updateLiability,
     deleteLiabilitiesActivity,
 
     updateLiabilitiesLinkId,
+
+    handleEvent,
+    handleMutationSuccess,
+    handleMutationError,
   };
 });

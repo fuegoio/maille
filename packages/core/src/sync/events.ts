@@ -83,6 +83,16 @@ export type DeleteTransactionEvent = {
   };
 };
 
+export type UpdateLiabilityEvent = {
+  type: "updateLiability";
+  payload: {
+    id: UUID;
+    name?: string;
+    other?: string | null;
+    otherUser?: UUID | null;
+  };
+};
+
 export type CreateMovementEvent = {
   type: "createMovement";
   payload: {
@@ -272,6 +282,7 @@ export type SyncEvent = BaseSyncEvent &
     | AddTransactionEvent
     | UpdateTransactionEvent
     | DeleteTransactionEvent
+    | UpdateLiabilityEvent
     | CreateMovementEvent
     | UpdateMovementEvent
     | DeleteMovementEvent

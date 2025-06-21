@@ -1,32 +1,33 @@
 import { db } from "@/database";
 import { builder } from "../builder";
 import { liabilities } from "@/tables";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { LiabilitySchema } from "./schemas";
+import { addEvent } from "@/api/events";
 import dayjs from "dayjs";
 
 export const registerLiabilitiesMutations = () => {
-  builder.mutationField("importLiability", (t) =>
+  builder.mutationField("updateLiability", (t) =>
     t.field({
       type: LiabilitySchema,
       args: {
-        account: t.arg({
-          type: "UUID",
-        }),
-        amount: t.arg({
-          type: "Float",
-        }),
-        name: t.arg({
-          type: "String",
-        }),
-        date: t.arg({
-          type: "Date",
-        }),
         id: t.arg({
           type: "UUID",
         }),
+        name: t.arg({
+          type: "String",
+          required: false,
+        }),
+        other: t.arg({
+          type: "String",
+          required: false,
+        }),
+        otherUser: t.arg({
+          type: "UUID",
+          required: false,
+        }),
       },
-      resolve: async (root, { id, account, amount, name, date }, ctx) => {
+      resolve: async (root, { id, name, other, otherUser }, ctx) => {
         const liability = (
           await db
             .select()
@@ -35,34 +36,40 @@ export const registerLiabilitiesMutations = () => {
             .limit(1)
         )[0];
 
-        if (liability) {
-          await db
-            .update(liabilities)
-            .set({
-              account,
-              amount,
-              name,
-              date,
-            })
-            .where(eq(liabilities.id, id));
-        } else {
-          await db.insert(liabilities).values({
-            id,
-            account,
-            amount,
-            name,
-            date,
-          });
+        if (!liability) {
+          throw new Error("Liability not found");
         }
 
+        const liabilityUpdates: Partial<typeof liability> = {};
+        if (name) {
+          liabilityUpdates.name = name;
+        }
+        if (other !== undefined) {
+          liabilityUpdates.other = other;
+        }
+        if (otherUser !== undefined) {
+          liabilityUpdates.otherUser = otherUser;
+        }
+
+        await db
+          .update(liabilities)
+          .set(liabilityUpdates)
+          .where(eq(liabilities.id, id));
+
+        await addEvent({
+          type: "updateLiability",
+          payload: {
+            id,
+            ...liabilityUpdates,
+          },
+          createdAt: new Date(),
+          clientId: ctx.clientId,
+        });
+
         return {
-          id,
-          account,
-          amount,
-          name,
-          date: dayjs(date),
-          activity: null,
-          status: "incomplete" as const,
+          ...liability,
+          ...liabilityUpdates,
+          date: dayjs(liability.date),
         };
       },
     }),

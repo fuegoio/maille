@@ -3,11 +3,8 @@ import { computed, ref } from "vue";
 
 import { useLiabilitiesStore } from "@/stores/liabilities";
 
-import AccountLabel from "@/components/AccountLabel.vue";
-
-import { getCurrencyFormatter } from "@/utils/currency";
-
 import type { Activity } from "@maille/core/activities";
+import ActivityLiability from "./ActivityLiability.vue";
 
 const liabilitiesStore = useLiabilitiesStore();
 
@@ -40,20 +37,15 @@ const activityLiabilities = computed(() =>
       v-show="showLiabilities"
       class="mt-4 mb-2 -mx-4 rounded border bg-primary-800"
     >
-      <div
+      <ActivityLiability
         v-for="(liability, index) in activityLiabilities"
         :key="liability.account"
-        class="h-10 flex items-center justify-center text-sm hover:bg-primary-700 px-4"
+        :liability="liability"
         :class="[index !== activityLiabilities.length - 1 && 'border-b']"
-      >
-        <AccountLabel :account-id="liability.account" class="text-sm ml-0.5" />
-
-        <div class="flex-1" />
-
-        <span class="font-mono">
-          {{ getCurrencyFormatter().format(liability.amount) }}
-        </span>
-      </div>
+        @update:liability="
+          (l) => liabilitiesStore.updateLiability(liability.id, l)
+        "
+      />
       <div
         v-if="activityLiabilities!.length === 0"
         class="text-sm text-primary-300 px-4 py-3"

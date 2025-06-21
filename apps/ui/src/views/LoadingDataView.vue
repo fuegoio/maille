@@ -105,6 +105,8 @@ const loadInitialData = async () => {
         account
         name
         date
+        other
+        otherUser
       }
 
       projects {
