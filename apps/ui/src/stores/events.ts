@@ -128,12 +128,12 @@ export const useEventsStore = defineStore("events", () => {
       lastEventTimestamp.value = eventData.createdAt;
       if (eventData.clientId === clientId.value) continue;
 
-      const event: SyncEvent = {
+      const event = {
         type: eventData.type,
         payload: JSON.parse(eventData.payload),
         createdAt: new Date(eventData.createdAt * 1000),
         clientId: eventData.clientId,
-      };
+      } as SyncEvent;
 
       activitiesStore.handleEvent(event);
       movementsStore.handleEvent(event);
