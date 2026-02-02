@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate": "graphql-codegen --config codegen.ts",
-    "prepare": "npm run generate"
+    "graphql:generate": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
@@ -17,7 +16,6 @@
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-router": "^1.157.18",
-    "@tanstack/router-vite-plugin": "^1.157.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
@@ -40,6 +38,7 @@
     "@graphql-codegen/cli": "^5.0.6",
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@tanstack/router-plugin": "^1.157.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
