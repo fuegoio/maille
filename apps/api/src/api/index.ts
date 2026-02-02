@@ -7,21 +7,22 @@ import { registerActivitiesQueries } from "./activities/queries";
 import { registerActivitiesMutations } from "./activities/mutations";
 import { registerAccountsQueries } from "./accounts/queries";
 import { registerAccountsMutations } from "./accounts/mutations";
-import { registerSettingsQueries } from "./settings";
 import { registerMovementsQueries } from "./movements/queries";
 import { registerMovementsMutations } from "./movements/mutations";
 import { registerProjectsQueries } from "./projects/queries";
 import { registerProjectsMutations } from "./projects/mutations";
 import { registerUsersMutations } from "./users/mutations";
 import { registerUsersQueries } from "./users/queries";
+import { registerWorkspaceQueries } from "./workspaces/queries";
+import { registerWorkspaceMutations } from "./workspaces/mutations";
 
 builder.queryType({});
 registerActivitiesQueries();
 registerAccountsQueries();
-registerSettingsQueries();
 registerMovementsQueries();
 registerProjectsQueries();
 registerUsersQueries();
+registerWorkspaceQueries();
 
 builder.mutationType({});
 registerActivitiesMutations();
@@ -29,6 +30,7 @@ registerMovementsMutations();
 registerProjectsMutations();
 registerAccountsMutations();
 registerUsersMutations();
+registerWorkspaceMutations();
 
 export const schema = builder.toSchema();
 

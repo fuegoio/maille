@@ -34,7 +34,7 @@ export const startServer = () => {
                 body.clientId,
               );
               res = Response.json({ jwt, user });
-            } catch (e) {
+            } catch {
               res = new Response("Unauthorized", { status: 401 });
             }
           } else {

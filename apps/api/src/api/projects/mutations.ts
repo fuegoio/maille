@@ -17,6 +17,10 @@ export const registerProjectsMutations = () => {
         }),
         name: t.arg.string(),
         emoji: t.arg.string({ required: false }),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
         const project = (
@@ -25,6 +29,7 @@ export const registerProjectsMutations = () => {
             .values({
               id: args.id,
               user: ctx.user,
+              workspace: args.workspace,
               name: args.name,
               emoji: args.emoji,
             })

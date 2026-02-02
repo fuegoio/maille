@@ -7,6 +7,7 @@ type Account {
   startingCashBalance: Float
   type: String!
   user: UUID
+  workspace: UUID
 }
 
 type Activity {
@@ -23,18 +24,21 @@ type Activity {
   subcategory: UUID
   transactions: [Transaction!]!
   type: String!
+  workspace: UUID
 }
 
 type ActivityCategory {
   id: UUID!
   name: String!
   type: String!
+  workspace: UUID
 }
 
 type ActivityMovement {
   amount: Float!
   id: UUID!
   movement: UUID!
+  workspace: UUID
 }
 
 input ActivityMovementInput {
@@ -47,10 +51,11 @@ type ActivitySubCategory {
   category: UUID!
   id: UUID!
   name: String!
+  workspace: UUID
 }
 
 type CreateUser {
-  accounts: [Account!]!
+  accounts(workspaceId: UUID): [Account!]!
   avatar: String
   email: String!
   firstName: String!
@@ -103,24 +108,28 @@ type Movement {
   id: UUID!
   name: String!
   status: String!
+  workspace: UUID
 }
 
 type MovementActivity {
   activity: UUID!
   amount: Float!
   id: UUID!
+  workspace: UUID
 }
 
 type Mutation {
   addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID, fromUser: UUID, id: UUID!, toAccount: UUID, toUser: UUID): Transaction!
-  createAccount(id: UUID!, name: String!, type: String!): Account!
-  createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!): Activity!
-  createActivityCategory(id: UUID!, name: String!, type: String!): ActivityCategory!
-  createActivitySubCategory(category: UUID!, id: UUID!, name: String!): ActivitySubCategory!
-  createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!): Movement!
-  createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!): MovementActivity!
-  createProject(emoji: String, id: UUID!, name: String!): Project!
+  createAccount(id: UUID!, name: String!, type: String!, workspace: UUID): Account!
+  createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!, workspace: UUID): Activity!
+  createActivityCategory(id: UUID!, name: String!, type: String!, workspace: UUID): ActivityCategory!
+  createActivitySubCategory(category: UUID!, id: UUID!, name: String!, workspace: UUID): ActivitySubCategory!
+  createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!, workspace: UUID): Movement!
+  createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!, workspace: UUID): MovementActivity!
+  createProject(emoji: String, id: UUID!, name: String!, workspace: UUID): Project!
   createUser(email: String!, firstName: String!, lastName: String!, password: String!): CreateUser!
+  createWorkspace(id: UUID, name: String!, startingDate: String, currency: String!): Workspace!
+  deleteWorkspace(id: UUID!): Boolean!
   deleteAccount(id: UUID!): DeleteAccountResponse!
   deleteActivity(id: UUID!): DeleteActivityResponse!
   deleteActivityCategory(id: UUID!): DeleteActivityResponse!
@@ -146,23 +155,40 @@ type Project {
   id: UUID!
   name: String!
   startDate: Date
+  workspace: UUID
 }
 
 type Query {
   accounts: [Account!]!
-  activities: [Activity!]!
-  activityCategories: [ActivityCategory!]!
-  activitySubcategories: [ActivitySubCategory!]!
+  activities(workspaceId: UUID): [Activity!]!
+  activityCategories(workspaceId: UUID): [ActivityCategory!]!
+  activitySubcategories(workspaceId: UUID): [ActivitySubCategory!]!
   events(lastSync: Float!): [Event!]!
-  movements: [Movement!]!
-  projects: [Project!]!
+  movements(workspaceId: UUID): [Movement!]!
+  projects(workspaceId: UUID): [Project!]!
   settings: Settings!
   users: [User!]!
+  workspaces: [Workspace!]!
+  workspace(id: UUID!): Workspace!
+  workspaceSettings(workspaceId: UUID!): WorkspaceSettings!
 }
 
 type Settings {
   currency: String!
   startingPeriod: String!
+}
+
+type Workspace {
+  id: UUID!
+  name: String!
+  startingDate: String
+  currency: String!
+  createdAt: String!
+}
+
+type WorkspaceSettings {
+  startingPeriod: String
+  currency: String!
 }
 
 type Subscription {

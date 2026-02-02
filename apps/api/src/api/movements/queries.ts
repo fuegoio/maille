@@ -2,19 +2,31 @@ import { db } from "@/database";
 import { builder } from "../builder";
 import { MovementSchema } from "./schemas";
 import { movements, movementsActivities } from "@/tables";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import dayjs from "dayjs";
 import type { Movement } from "@maille/core/movements";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerMovementsQueries = () => {
   builder.queryField("movements", (t) =>
     t.field({
       type: [MovementSchema],
+      args: {
+        workspaceId: t.arg({ type: "UUID", required: true }),
+      },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspaceId, ctx.user);
+
         const movementsData = await db
           .select()
           .from(movements)
-          .where(eq(movements.user, ctx.user))
+          .where(
+            and(
+              eq(movements.user, ctx.user),
+              eq(movements.workspace, args.workspaceId),
+            ),
+          )
           .leftJoin(
             movementsActivities,
             eq(movements.id, movementsActivities.movement),

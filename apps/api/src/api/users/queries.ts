@@ -8,7 +8,12 @@ export const registerUsersQueries = () => {
     t.field({
       type: [UserSchema],
       resolve: async () => {
-        return await db.select().from(users);
+        const usersList = await db.select().from(users);
+        return usersList.map(user => ({
+          ...user,
+          firstName: user.first_name,
+          lastName: user.last_name,
+        }));
       },
     }),
   );

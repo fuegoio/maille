@@ -63,10 +63,18 @@ builder.queryField("events", (t) =>
         `[${ctx.user}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
       );
 
-      return eventsQuery.map((event) => ({
-        ...event,
-        payload: JSON.parse(event.payload),
-      }));
+      const syncEvents = eventsQuery.map(
+        (event) =>
+          ({
+            type: event.type,
+            payload: JSON.parse(event.payload),
+            createdAt: event.createdAt,
+            clientId: event.clientId,
+            user: event.user,
+          }) as SyncEvent,
+      );
+
+      return syncEvents;
     },
   }),
 );

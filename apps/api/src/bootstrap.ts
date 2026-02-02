@@ -1,6 +1,6 @@
 import { createUser } from "@/api/auth";
 import { db } from "@/database";
-import { activityCategories, users } from "@/tables";
+import { activityCategories, users, workspaces } from "@/tables";
 import { ActivityType } from "@maille/core/activities";
 import { logger } from "./logger";
 import { bootstrapUser } from "./services/users";
@@ -29,12 +29,22 @@ export const bootstrapInstance = async () => {
 
   // Create categories
   logger.info("Bootstrapping categories...");
-  await db.insert(activityCategories).values([
-    {
-      id: crypto.randomUUID(),
-      name: "Salary",
-      type: ActivityType.REVENUE,
-    },
-  ]);
+  const workspace = await db
+    .select()
+    .from(workspaces)
+    .limit(1)
+    .then((res) => res[0]);
+
+  if (workspace) {
+    await db.insert(activityCategories).values([
+      {
+        id: crypto.randomUUID(),
+        user: user.id,
+        workspace: workspace.id,
+        name: "Salary",
+        type: ActivityType.REVENUE,
+      },
+    ]);
+  }
   logger.info("Categories bootstrapped successfully");
 };

@@ -13,6 +13,10 @@ export const activities = sqliteTable("activities", {
     .notNull()
     .$type<UUID>()
     .references(() => users.id),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   number: integer("number").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
   category: text("category")
@@ -29,6 +33,10 @@ export const activities = sqliteTable("activities", {
 export const activityCategories = sqliteTable("activity_categories", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").notNull().$type<UUID>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   name: text("name").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
 });
@@ -36,6 +44,10 @@ export const activityCategories = sqliteTable("activity_categories", {
 export const activitySubcategories = sqliteTable("activity_subcategories", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").notNull().$type<UUID>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   name: text("name").notNull(),
   category: text("category")
     .notNull()
@@ -46,6 +58,10 @@ export const activitySubcategories = sqliteTable("activity_subcategories", {
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").notNull().$type<UUID>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   name: text("name").notNull(),
   emoji: text("emoji"),
   startDate: integer("start_date", { mode: "timestamp" }),
@@ -76,6 +92,10 @@ export const transactions = sqliteTable("transactions", {
 export const accounts = sqliteTable("accounts", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").$type<UUID | null>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   name: text("name").notNull(),
   type: text("type").notNull().$type<AccountType>(),
   startingBalance: integer("starting_balance").notNull().default(0),
@@ -87,6 +107,10 @@ export const accounts = sqliteTable("accounts", {
 export const movements = sqliteTable("movements", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").notNull().$type<UUID>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   date: integer("date", { mode: "timestamp" }).notNull(),
   amount: integer("amount").notNull(),
   account: text("account")
@@ -99,6 +123,10 @@ export const movements = sqliteTable("movements", {
 export const movementsActivities = sqliteTable("movements_activities", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user").notNull().$type<UUID>(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)
@@ -119,6 +147,14 @@ export const events = sqliteTable("events", {
   clientId: text("client_id").notNull().$type<UUID>(),
 });
 
+export const workspaces = sqliteTable("workspaces", {
+  id: text("id").primaryKey().$type<UUID>(),
+  name: text("name").notNull(),
+  startingDate: text("starting_date"),
+  currency: text("currency").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
 export const users = sqliteTable("users", {
   id: text("id").primaryKey().$type<UUID>(),
   avatar: text("avatar"),
@@ -126,4 +162,17 @@ export const users = sqliteTable("users", {
   first_name: text("first_name").notNull(),
   last_name: text("last_name").notNull(),
   password: text("password").notNull(),
+});
+
+export const workspaceUsers = sqliteTable("workspace_users", {
+  id: text("id").primaryKey().$type<UUID>(),
+  user: text("user")
+    .notNull()
+    .$type<UUID>()
+    .references(() => users.id),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });

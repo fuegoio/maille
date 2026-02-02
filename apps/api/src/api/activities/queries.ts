@@ -21,12 +21,19 @@ import {
   type Activity,
 } from "@maille/core/activities";
 import dayjs from "dayjs";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerActivitiesQueries = () => {
   builder.queryField("activities", (t) =>
     t.field({
       type: [ActivitySchema],
+      args: {
+        workspaceId: t.arg({ type: "UUID", required: true }),
+      },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspaceId, ctx.user);
+
         const accountsQuery = await db
           .select()
           .from(accounts)
@@ -39,7 +46,12 @@ export const registerActivitiesQueries = () => {
             movementsActivities,
             and(eq(activities.id, movementsActivities.activity)),
           )
-          .where(eq(activities.user, ctx.user));
+          .where(
+            and(
+              eq(activities.user, ctx.user),
+              eq(activities.workspace, args.workspaceId),
+            ),
+          );
 
         return activitiesData
           .reduce<Omit<Activity, "amount" | "status">[]>((acc, row) => {
@@ -101,11 +113,22 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activityCategories", (t) =>
     t.field({
       type: [ActivityCategorySchema],
+      args: {
+        workspaceId: t.arg({ type: "UUID", required: true }),
+      },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspaceId, ctx.user);
+
         return await db
           .select()
           .from(activityCategories)
-          .where(eq(activityCategories.user, ctx.user));
+          .where(
+            and(
+              eq(activityCategories.user, ctx.user),
+              eq(activityCategories.workspace, args.workspaceId),
+            ),
+          );
       },
     }),
   );
@@ -113,11 +136,22 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activitySubcategories", (t) =>
     t.field({
       type: [ActivitySubCategorySchema],
+      args: {
+        workspaceId: t.arg({ type: "UUID", required: true }),
+      },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspaceId, ctx.user);
+
         return await db
           .select()
           .from(activitySubcategories)
-          .where(eq(activitySubcategories.user, ctx.user));
+          .where(
+            and(
+              eq(activitySubcategories.user, ctx.user),
+              eq(activitySubcategories.workspace, args.workspaceId),
+            ),
+          );
       },
     }),
   );

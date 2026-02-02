@@ -29,6 +29,7 @@ import dayjs from "dayjs";
 import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
+import { validateWorkspace } from "@/services/workspaces";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -77,6 +78,10 @@ export const registerActivitiesMutations = () => {
           type: "UUID",
           required: false,
         }),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
         transactions: t.arg({
           type: [TransactionInput],
           required: false,
@@ -87,6 +92,9 @@ export const registerActivitiesMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspace, ctx.user);
+
         const ActivityTypeEnum = z.nativeEnum(ActivityType);
         const activityType = ActivityTypeEnum.parse(args.type);
 
@@ -99,6 +107,7 @@ export const registerActivitiesMutations = () => {
         await db.insert(activities).values({
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace,
           number,
           name: args.name,
           description: args.description,
@@ -134,6 +143,7 @@ export const registerActivitiesMutations = () => {
           const movementActivity = {
             id: args.movement.id,
             user: ctx.user,
+            workspace: args.workspace ?? null,
             activity: args.id,
             movement: args.movement.movement,
             amount: args.movement.amount,
@@ -174,6 +184,7 @@ export const registerActivitiesMutations = () => {
           category: args.category ?? null,
           subcategory: args.subcategory ?? null,
           project: args.project ?? null,
+          workspace: args.workspace ?? null,
           transactions: newTransactions,
           movements: newMovements,
           amount: getActivityTransactionsReconciliationSum(
@@ -255,6 +266,9 @@ export const registerActivitiesMutations = () => {
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
+
+        // Validate workspace from the activity
+        await validateWorkspace(activity.workspace, ctx.user);
 
         const activityUpdates: Partial<typeof activity> = {};
         if (args.name) {
@@ -370,6 +384,11 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
+        // Validate workspace from the activity
+        if (activity.workspace) {
+          await validateWorkspace(activity.workspace, ctx.user);
+        }
+
         await db.delete(transactions).where(eq(transactions.activity, args.id));
         await db
           .delete(movementsActivities)
@@ -423,6 +442,12 @@ export const registerActivitiesMutations = () => {
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
+
+        // Validate workspace from the activity
+        if (activity.workspace) {
+          await validateWorkspace(activity.workspace, ctx.user);
+        }
+
         const newTransaction = (
           await db
             .insert(transactions)
@@ -499,6 +524,11 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
+        // Validate workspace from the activity
+        if (activity.workspace) {
+          await validateWorkspace(activity.workspace, ctx.user);
+        }
+
         const transaction = (
           await db
             .select()
@@ -572,6 +602,11 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
+        // Validate workspace from the activity
+        if (activity.workspace) {
+          await validateWorkspace(activity.workspace, ctx.user);
+        }
+
         const transaction = (
           await db
             .select()
@@ -615,14 +650,22 @@ export const registerActivitiesMutations = () => {
         }),
         name: t.arg.string(),
         type: t.arg.string(),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspace, ctx.user);
+
         const activityTypeSchema = z.nativeEnum(ActivityType);
         const parsedType = activityTypeSchema.parse(args.type);
 
         const category = {
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace,
           name: args.name,
           type: parsedType,
         };
@@ -666,6 +709,11 @@ export const registerActivitiesMutations = () => {
         )[0];
         if (!category) {
           throw new GraphQLError("Activity category not found");
+        }
+
+        // Validate workspace from the category
+        if (category.workspace) {
+          await validateWorkspace(category.workspace, ctx.user);
         }
 
         const updatedCategory = await db
@@ -718,6 +766,11 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity category not found");
         }
 
+        // Validate workspace from the category
+        if (category.workspace) {
+          await validateWorkspace(category.workspace, ctx.user);
+        }
+
         await db
           .update(activities)
           .set({
@@ -760,11 +813,19 @@ export const registerActivitiesMutations = () => {
         category: t.arg({
           type: "UUID",
         }),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspace, ctx.user);
+
         const subcategory = {
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace,
           name: args.name,
           category: args.category,
         };
@@ -808,6 +869,11 @@ export const registerActivitiesMutations = () => {
         )[0];
         if (!subcategory) {
           throw new GraphQLError("Activity subcategory not found");
+        }
+
+        // Validate workspace from the subcategory
+        if (subcategory.workspace) {
+          await validateWorkspace(subcategory.workspace, ctx.user);
         }
 
         const updatedSubCategory = await db
@@ -858,6 +924,11 @@ export const registerActivitiesMutations = () => {
         )[0];
         if (!subCategory) {
           throw new GraphQLError("Activity subcategory not found");
+        }
+
+        // Validate workspace from the subcategory
+        if (subCategory.workspace) {
+          await validateWorkspace(subCategory.workspace, ctx.user);
         }
 
         await db

@@ -15,6 +15,7 @@ export type Movement = {
   amount: number;
   account: UUID;
   name: string;
+  workspace: UUID | null;
   activities: MovementActivity[];
   status: "incomplete" | "completed";
 };
@@ -23,6 +24,7 @@ export type MovementActivity = {
   id: UUID;
   activity: UUID;
   amount: number;
+  workspace: UUID | null;
 };
 
 export type MovementWithLink = Movement & {

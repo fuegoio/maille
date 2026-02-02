@@ -100,21 +100,21 @@ export const verifyActivityFilter = (
   } else if (filter.field === "from_account") {
     if (filter.operator === "is any of") {
       return activity.transactions.some((t) =>
-        filter.value.includes(t.fromAccount),
+        t.fromAccount !== null && filter.value.includes(t.fromAccount),
       );
     } else if (filter.operator === "is not") {
       return activity.transactions.every(
-        (t) => !filter.value.includes(t.fromAccount),
+        (t) => t.fromAccount === null || !filter.value.includes(t.fromAccount),
       );
     } else throw Error("operator not valid");
   } else if (filter.field === "to_account") {
     if (filter.operator === "is any of") {
       return activity.transactions.some((t) =>
-        filter.value.includes(t.toAccount),
+        t.toAccount !== null && filter.value.includes(t.toAccount),
       );
     } else if (filter.operator === "is not") {
       return activity.transactions.every(
-        (t) => !filter.value.includes(t.toAccount),
+        (t) => t.toAccount === null || !filter.value.includes(t.toAccount),
       );
     } else throw Error("operator not valid");
   } else {

@@ -25,5 +25,10 @@ ProjectSchema.implement({
       },
       nullable: true,
     }),
+    workspace: t.field({
+      type: "UUID",
+      nullable: true,
+      resolve: (parent) => parent.workspace,
+    }),
   }),
 });

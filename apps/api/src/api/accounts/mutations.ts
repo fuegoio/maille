@@ -18,6 +18,10 @@ export const registerAccountsMutations = () => {
         }),
         name: t.arg.string(),
         type: t.arg.string(),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
         const AccountTypeEnum = z.nativeEnum(AccountType);
@@ -28,6 +32,7 @@ export const registerAccountsMutations = () => {
           name: args.name,
           type: accountType,
           user: ctx.user,
+          workspace: args.workspace,
         });
 
         await addEvent({
@@ -39,12 +44,14 @@ export const registerAccountsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return {
           id: args.id,
           name: args.name,
           user: ctx.user,
+          workspace: args.workspace ?? null,
           type: accountType,
           default: false,
           startingBalance: null,
@@ -111,6 +118,7 @@ export const registerAccountsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return updatedAccount;
@@ -150,6 +158,7 @@ export const registerAccountsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return {

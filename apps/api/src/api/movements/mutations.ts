@@ -11,6 +11,7 @@ import { addEvent } from "@/api/events";
 import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerMovementsMutations = () => {
   builder.mutationField("createMovement", (t) =>
@@ -26,11 +27,19 @@ export const registerMovementsMutations = () => {
         account: t.arg({
           type: "UUID",
         }),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspace, ctx.user);
+
         await db.insert(movements).values({
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace,
           name: args.name,
           date: new Date(args.date),
           amount: args.amount,
@@ -54,6 +63,7 @@ export const registerMovementsMutations = () => {
         return {
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace ?? null,
           name: args.name,
           date: dayjs(args.date),
           amount: args.amount,
@@ -91,6 +101,11 @@ export const registerMovementsMutations = () => {
         )[0];
         if (!movement) {
           throw new GraphQLError("Movement not found");
+        }
+
+        // Validate workspace from the movement
+        if (movement.workspace) {
+          await validateWorkspace(movement.workspace, ctx.user);
         }
 
         const updates: Partial<typeof movement> = {};
@@ -159,6 +174,11 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Movement not found");
         }
 
+        // Validate workspace from the movement
+        if (movement.workspace) {
+          await validateWorkspace(movement.workspace, ctx.user);
+        }
+
         await db
           .delete(movementsActivities)
           .where(eq(movementsActivities.movement, args.id));
@@ -196,11 +216,19 @@ export const registerMovementsMutations = () => {
           type: "UUID",
         }),
         amount: t.arg.float(),
+        workspace: t.arg({
+          type: "UUID",
+          required: true,
+        }),
       },
       resolve: async (root, args, ctx) => {
+        // Validate workspace
+        await validateWorkspace(args.workspace, ctx.user);
+
         await db.insert(movementsActivities).values({
           id: args.id,
           user: ctx.user,
+          workspace: args.workspace,
           movement: args.movementId,
           activity: args.activityId,
           amount: args.amount,
@@ -221,6 +249,7 @@ export const registerMovementsMutations = () => {
 
         return {
           id: args.id,
+          workspace: args.workspace ?? null,
           movement: args.movementId,
           activity: args.activityId,
           amount: args.amount,
@@ -249,6 +278,11 @@ export const registerMovementsMutations = () => {
         )[0];
         if (!movementActivity) {
           throw new GraphQLError("MovementActivity not found");
+        }
+
+        // Validate workspace from the movement activity
+        if (movementActivity.workspace) {
+          await validateWorkspace(movementActivity.workspace, ctx.user);
         }
 
         const updatedFields: Partial<typeof movementActivity> = {};
@@ -298,6 +332,11 @@ export const registerMovementsMutations = () => {
         )[0];
         if (!movementActivity) {
           throw new GraphQLError("MovementActivity not found");
+        }
+
+        // Validate workspace from the movement activity
+        if (movementActivity.workspace) {
+          await validateWorkspace(movementActivity.workspace, ctx.user);
         }
 
         await db

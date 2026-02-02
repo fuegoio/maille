@@ -20,6 +20,15 @@ MovementSchema.implement({
       resolve: (parent) => parent.account,
     }),
     name: t.exposeString("name"),
+    workspace: t.field({
+      type: "UUID",
+      resolve: (parent) => {
+        if (!parent.workspace) {
+          throw new Error("Workspace is required for movements");
+        }
+        return parent.workspace;
+      },
+    }),
     activities: t.field({
       type: [MovementActivitySchema],
       resolve: (parent) => parent.activities,
@@ -42,6 +51,15 @@ MovementActivitySchema.implement({
       resolve: (parent) => parent.activity,
     }),
     amount: t.exposeFloat("amount"),
+    workspace: t.field({
+      type: "UUID",
+      resolve: (parent) => {
+        if (!parent.workspace) {
+          throw new Error("Workspace is required for movement activities");
+        }
+        return parent.workspace;
+      },
+    }),
   }),
 });
 

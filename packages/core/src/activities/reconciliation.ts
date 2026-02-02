@@ -153,26 +153,30 @@ export const getActivityTransactionsSumByAccount = (
       let transactionsSumOfFromAccount = transactionsSumByAccount.find(
         (tvb) => tvb.account === transaction.fromAccount,
       );
-      if (!transactionsSumOfFromAccount) {
+      if (!transactionsSumOfFromAccount && transaction.fromAccount) {
         transactionsSumOfFromAccount = {
           account: transaction.fromAccount,
           total: 0,
         };
         transactionsSumByAccount.push(transactionsSumOfFromAccount);
       }
-      transactionsSumOfFromAccount.total += transaction.amount * -1;
+      if (transactionsSumOfFromAccount) {
+        transactionsSumOfFromAccount.total += transaction.amount * -1;
+      }
 
       let transactionsSumOfToAccount = transactionsSumByAccount.find(
         (tvb) => tvb.account === transaction.toAccount,
       );
-      if (!transactionsSumOfToAccount) {
+      if (!transactionsSumOfToAccount && transaction.toAccount) {
         transactionsSumOfToAccount = {
           account: transaction.toAccount,
           total: 0,
         };
         transactionsSumByAccount.push(transactionsSumOfToAccount);
       }
-      transactionsSumOfToAccount.total += transaction.amount;
+      if (transactionsSumOfToAccount) {
+        transactionsSumOfToAccount.total += transaction.amount;
+      }
 
       return transactionsSumByAccount;
     },

@@ -60,7 +60,7 @@ export function useAuth(): Plugin<{
           user: payload.user as string,
           clientId: payload.clientId as string,
         });
-      } catch (e) {
+      } catch {
         return endResponse(
           new fetchAPI.Response(null, {
             status: 401,

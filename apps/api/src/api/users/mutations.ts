@@ -31,19 +31,20 @@ export const registerUsersMutations = () => {
           payload: {
             id: user.id,
             email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.first_name,
+            lastName: user.last_name,
             accounts,
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return {
           id: user.id,
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstName: user.first_name,
+          lastName: user.last_name,
           avatar: null,
           accounts,
         };
@@ -91,9 +92,14 @@ export const registerUsersMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
-        return updatedUser;
+        return {
+          ...updatedUser,
+          firstName: updatedUser.first_name,
+          lastName: updatedUser.last_name,
+        };
       },
     }),
   );

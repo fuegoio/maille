@@ -23,6 +23,11 @@ AccountSchema.implement({
       nullable: true,
       resolve: (parent) => parent.user,
     }),
+    workspace: t.field({
+      type: "UUID",
+      nullable: true,
+      resolve: (parent) => parent.workspace,
+    }),
   }),
 });
 
