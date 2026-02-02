@@ -177,14 +177,9 @@ const deleteAccount = async (accountId: UUID) => {
       <TBtn @click="addNewAccount">Save</TBtn>
     </div>
 
-    <div v-for="user in users" :key="user.id" class="py-2 pl-8">
-      <div class="px-1 text-white text-sm flex items-center pb-2">
-        <UserAvatar :user-id="user.id" class="mr-2 size-5" />
-        <div>{{ user.firstName }} {{ user.lastName }}</div>
-      </div>
-
+    <div class="py-2 pl-8">
       <div
-        v-for="account in sortedAccounts.filter((a) => a.user === user.id)"
+        v-for="account in sortedAccounts"
         :key="account.id"
         class="w-full border my-2 px-4 rounded group"
       >
