@@ -24,6 +24,7 @@ export const registerProjectsMutations = () => {
             .insert(projects)
             .values({
               id: args.id,
+              user: ctx.user,
               name: args.name,
               emoji: args.emoji,
             })
@@ -39,6 +40,7 @@ export const registerProjectsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return { ...project, startDate: null, endDate: null };
@@ -66,7 +68,10 @@ export const registerProjectsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const project = (
-          await db.select().from(projects).where(eq(projects.id, args.id))
+          await db
+            .select()
+            .from(projects)
+            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
@@ -93,7 +98,7 @@ export const registerProjectsMutations = () => {
           await db
             .update(projects)
             .set(updates)
-            .where(eq(projects.id, args.id))
+            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
             .returning()
         )[0];
 
@@ -111,6 +116,7 @@ export const registerProjectsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return {
@@ -136,7 +142,10 @@ export const registerProjectsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const project = (
-          await db.select().from(projects).where(eq(projects.id, args.id))
+          await db
+            .select()
+            .from(projects)
+            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
@@ -145,9 +154,13 @@ export const registerProjectsMutations = () => {
         await db
           .update(activities)
           .set({ project: null })
-          .where(eq(activities.project, args.id));
+          .where(
+            and(eq(activities.project, args.id), eq(activities.user, ctx.user)),
+          );
 
-        await db.delete(projects).where(eq(projects.id, args.id));
+        await db
+          .delete(projects)
+          .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)));
 
         await addEvent({
           type: "deleteProject",
@@ -156,6 +169,7 @@ export const registerProjectsMutations = () => {
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
+          user: ctx.user,
         });
 
         return true;

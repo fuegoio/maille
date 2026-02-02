@@ -9,7 +9,7 @@ export const activities = sqliteTable("activities", {
   name: text("name").notNull(),
   date: integer("date", { mode: "timestamp" }).notNull(),
   description: text("description"),
-  createdBy: text("created_by")
+  user: text("user")
     .notNull()
     .$type<UUID>()
     .references(() => users.id),
@@ -28,12 +28,14 @@ export const activities = sqliteTable("activities", {
 
 export const activityCategories = sqliteTable("activity_categories", {
   id: text("id").primaryKey().$type<UUID>(),
+  user: text("user").notNull().$type<UUID>(),
   name: text("name").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
 });
 
 export const activitySubcategories = sqliteTable("activity_subcategories", {
   id: text("id").primaryKey().$type<UUID>(),
+  user: text("user").notNull().$type<UUID>(),
   name: text("name").notNull(),
   category: text("category")
     .notNull()
@@ -43,6 +45,7 @@ export const activitySubcategories = sqliteTable("activity_subcategories", {
 
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey().$type<UUID>(),
+  user: text("user").notNull().$type<UUID>(),
   name: text("name").notNull(),
   emoji: text("emoji"),
   startDate: integer("start_date", { mode: "timestamp" }),
@@ -83,7 +86,7 @@ export const accounts = sqliteTable("accounts", {
 
 export const movements = sqliteTable("movements", {
   id: text("id").primaryKey().$type<UUID>(),
-  createdBy: text("created_by").notNull().$type<UUID>(),
+  user: text("user").notNull().$type<UUID>(),
   date: integer("date", { mode: "timestamp" }).notNull(),
   amount: integer("amount").notNull(),
   account: text("account")
@@ -95,6 +98,7 @@ export const movements = sqliteTable("movements", {
 
 export const movementsActivities = sqliteTable("movements_activities", {
   id: text("id").primaryKey().$type<UUID>(),
+  user: text("user").notNull().$type<UUID>(),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)
@@ -108,6 +112,7 @@ export const movementsActivities = sqliteTable("movements_activities", {
 
 export const events = sqliteTable("events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  user: text("user").notNull().$type<UUID>(),
   type: text("type").notNull().$type<SyncEvent["type"]>(),
   payload: text("payload").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
@@ -118,7 +123,7 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey().$type<UUID>(),
   avatar: text("avatar"),
   email: text("email").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
+  first_name: text("first_name").notNull(),
+  last_name: text("last_name").notNull(),
   password: text("password").notNull(),
 });

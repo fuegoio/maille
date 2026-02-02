@@ -26,8 +26,11 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activities", (t) =>
     t.field({
       type: [ActivitySchema],
-      resolve: async () => {
-        const accountsQuery = await db.select().from(accounts);
+      resolve: async (root, args, ctx) => {
+        const accountsQuery = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.user, ctx.user));
         const activitiesData = await db
           .select()
           .from(activities)
@@ -35,7 +38,8 @@ export const registerActivitiesQueries = () => {
           .leftJoin(
             movementsActivities,
             and(eq(activities.id, movementsActivities.activity)),
-          );
+          )
+          .where(eq(activities.user, ctx.user));
 
         return activitiesData
           .reduce<Omit<Activity, "amount" | "status">[]>((acc, row) => {
@@ -97,8 +101,11 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activityCategories", (t) =>
     t.field({
       type: [ActivityCategorySchema],
-      resolve: async () => {
-        return await db.select().from(activityCategories);
+      resolve: async (root, args, ctx) => {
+        return await db
+          .select()
+          .from(activityCategories)
+          .where(eq(activityCategories.user, ctx.user));
       },
     }),
   );
@@ -106,8 +113,11 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activitySubcategories", (t) =>
     t.field({
       type: [ActivitySubCategorySchema],
-      resolve: async () => {
-        return await db.select().from(activitySubcategories);
+      resolve: async (root, args, ctx) => {
+        return await db
+          .select()
+          .from(activitySubcategories)
+          .where(eq(activitySubcategories.user, ctx.user));
       },
     }),
   );

@@ -3,6 +3,7 @@ import type { ActivityType } from "#activities/types.ts";
 import type { UUID } from "crypto";
 
 export interface BaseSyncEvent {
+  user: UUID;
   createdAt: Date;
   clientId: UUID;
 }
@@ -12,6 +13,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
   payload: {
     id: UUID;
     number: number;
+    users: UUID[];
     name: string;
     description: string | null;
     date: string;
@@ -40,6 +42,7 @@ export interface UpdateActivityEvent extends BaseSyncEvent {
   payload: {
     id: UUID;
     name?: string;
+    users?: UUID[];
     description?: string | null;
     date?: string;
     type?: ActivityType;
