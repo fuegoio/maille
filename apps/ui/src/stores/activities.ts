@@ -85,8 +85,10 @@ export const useActivitiesStore = defineStore("activities", () => {
     subcategory: UUID | null;
     project: UUID | null;
     transactions: {
-      fromAccount: UUID;
-      toAccount: UUID;
+      fromAccount: UUID | null;
+      fromUser: UUID | null;
+      toAccount: UUID | null;
+      toUser: UUID | null;
       amount: number;
     }[];
     movement?: Movement;
@@ -94,9 +96,7 @@ export const useActivitiesStore = defineStore("activities", () => {
     const transactions = input.transactions.map((t) => {
       return {
         id: window.crypto.randomUUID(),
-        amount: t.amount,
-        fromAccount: t.fromAccount,
-        toAccount: t.toAccount,
+        ...t,
       };
     });
     const movements = [];
