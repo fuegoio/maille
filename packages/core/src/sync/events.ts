@@ -1,6 +1,5 @@
 import type { Account, AccountType } from "#accounts/types.js";
 import type { ActivityType } from "#activities/types.ts";
-import type { Liability } from "#liabilities/types.ts";
 import type { UUID } from "crypto";
 
 export interface BaseSyncEvent {
@@ -22,8 +21,10 @@ export interface CreateActivityEvent extends BaseSyncEvent {
     project: UUID | null;
     transactions: {
       id: UUID;
-      fromAccount: UUID;
-      toAccount: UUID;
+      fromAccount: UUID | null;
+      fromUser: UUID | null;
+      toAccount: UUID | null;
+      toUser: UUID | null;
       amount: number;
     }[];
     movement?: {
@@ -31,7 +32,6 @@ export interface CreateActivityEvent extends BaseSyncEvent {
       amount: number;
       movement: UUID;
     };
-    liabilities: Liability[];
   };
 }
 
@@ -62,9 +62,10 @@ export interface AddTransactionEvent extends BaseSyncEvent {
     activityId: UUID;
     id: UUID;
     amount: number;
-    fromAccount: UUID;
-    toAccount: UUID;
-    liabilities: Liability[];
+    fromAccount: UUID | null;
+    fromUser: UUID | null;
+    toAccount: UUID | null;
+    toUser: UUID | null;
   };
 }
 
@@ -74,9 +75,10 @@ export interface UpdateTransactionEvent extends BaseSyncEvent {
     activityId: UUID;
     id: UUID;
     amount?: number;
-    fromAccount?: UUID;
-    toAccount?: UUID;
-    liabilities: Liability[];
+    fromAccount?: UUID | null;
+    fromUser?: UUID | null;
+    toAccount?: UUID | null;
+    toUser?: UUID | null;
   };
 }
 

@@ -8,7 +8,6 @@ import type {
 } from "@maille/core/activities";
 import type { Liability } from "@maille/core/liabilities";
 import type { UUID } from "crypto";
-import { LiabilitySchema } from "../liabilities/schemas";
 
 export const ActivitySchema = builder.objectRef<
   Activity & { liabilities?: Liability[] }
@@ -55,11 +54,6 @@ ActivitySchema.implement({
       type: [ActivityMovementSchema],
       resolve: (parent) => parent.movements,
     }),
-    liabilities: t.field({
-      type: [LiabilitySchema],
-      resolve: (parent) => parent.liabilities,
-      nullable: true,
-    }),
   }),
 });
 
@@ -93,16 +87,23 @@ TransactionSchema.implement({
     amount: t.exposeFloat("amount"),
     fromAccount: t.field({
       type: "UUID",
+      nullable: true,
       resolve: (parent) => parent.fromAccount,
+    }),
+    fromUser: t.field({
+      type: "UUID",
+      nullable: true,
+      resolve: (parent) => parent.fromUser,
     }),
     toAccount: t.field({
       type: "UUID",
+      nullable: true,
       resolve: (parent) => parent.toAccount,
     }),
-    liabilities: t.field({
-      type: [LiabilitySchema],
-      resolve: (parent) => parent.liabilities,
+    toUser: t.field({
+      type: "UUID",
       nullable: true,
+      resolve: (parent) => parent.toUser,
     }),
   }),
 });

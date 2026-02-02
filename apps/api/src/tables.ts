@@ -26,20 +26,6 @@ export const activities = sqliteTable("activities", {
     .references(() => projects.id),
 });
 
-export const liabilities = sqliteTable("liabilities", {
-  id: text("id").notNull().$type<UUID>(),
-  activity: text("activity")
-    .references(() => activities.id)
-    .$type<UUID>(),
-  account: text("account")
-    .notNull()
-    .references(() => accounts.id)
-    .$type<UUID>(),
-  amount: integer("amount").notNull(),
-  name: text("name").notNull(),
-  date: integer("date", { mode: "timestamp" }).notNull(),
-});
-
 export const activityCategories = sqliteTable("activity_categories", {
   id: text("id").primaryKey().$type<UUID>(),
   name: text("name").notNull(),
@@ -67,13 +53,17 @@ export const transactions = sqliteTable("transactions", {
   id: text("id").primaryKey().$type<UUID>(),
   amount: integer("amount").notNull(),
   fromAccount: text("from_account")
-    .notNull()
     .$type<UUID>()
     .references(() => accounts.id),
+  fromUser: text("from_user")
+    .$type<UUID>()
+    .references(() => users.id),
   toAccount: text("to_account")
-    .notNull()
     .$type<UUID>()
     .references(() => accounts.id),
+  toUser: text("to_user")
+    .$type<UUID>()
+    .references(() => users.id),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)

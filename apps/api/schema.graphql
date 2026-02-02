@@ -15,7 +15,6 @@ type Activity {
   date: Date!
   description: String
   id: UUID!
-  liabilities: [Liability!]
   movements: [ActivityMovement!]!
   name: String!
   number: Int!
@@ -96,15 +95,6 @@ type Event {
   type: String!
 }
 
-type Liability {
-  account: UUID!
-  activity: UUID
-  amount: Float!
-  date: Date!
-  id: UUID!
-  name: String!
-}
-
 type Movement {
   account: UUID!
   activities: [MovementActivity!]!
@@ -122,7 +112,7 @@ type MovementActivity {
 }
 
 type Mutation {
-  addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID!, id: UUID!, toAccount: UUID!): Transaction!
+  addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID, fromUser: UUID, id: UUID!, toAccount: UUID, toUser: UUID): Transaction!
   createAccount(id: UUID!, name: String!, type: String!): Account!
   createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!): Activity!
   createActivityCategory(id: UUID!, name: String!, type: String!): ActivityCategory!
@@ -146,7 +136,7 @@ type Mutation {
   updateMovement(amount: Float, date: Date, id: UUID!): Movement!
   updateMovementActivity(amount: Float!, id: UUID!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: UUID!, name: String, startDate: Date): Project!
-  updateTransaction(activityId: UUID!, amount: Float, fromAccount: UUID, id: UUID!, toAccount: UUID): Transaction!
+  updateTransaction(activityId: UUID!, amount: Float, fromAccount: UUID, fromUser: UUID, id: UUID!, toAccount: UUID, toUser: UUID): Transaction!
   updateUser(avatar: String, firstName: String, lastName: String): User!
 }
 
@@ -164,7 +154,6 @@ type Query {
   activityCategories: [ActivityCategory!]!
   activitySubcategories: [ActivitySubCategory!]!
   events(lastSync: Float!): [Event!]!
-  liabilities: [Liability!]!
   movements: [Movement!]!
   projects: [Project!]!
   settings: Settings!
@@ -183,10 +172,11 @@ type Subscription {
 
 type Transaction {
   amount: Float!
-  fromAccount: UUID!
+  fromAccount: UUID
+  fromUser: UUID
   id: UUID!
-  liabilities: [Liability!]
-  toAccount: UUID!
+  toAccount: UUID
+  toUser: UUID
 }
 
 input TransactionInput {

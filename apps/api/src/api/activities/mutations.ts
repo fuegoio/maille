@@ -19,7 +19,6 @@ import {
   activities,
   activityCategories,
   activitySubcategories,
-  liabilities,
   movements,
   movementsActivities,
   transactions,
@@ -30,9 +29,6 @@ import dayjs from "dayjs";
 import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
-import type { UUID } from "crypto";
-import { AccountType } from "@maille/core/accounts";
-import type { Liability } from "@maille/core/liabilities";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -132,66 +128,6 @@ export const registerActivitiesMutations = () => {
           newTransactions.push(newTransaction);
         });
 
-        // Liabilities
-        const liabilitiesByAccount: { accountId: UUID; amount: number }[] = [];
-        args.transactions?.forEach((transaction) => {
-          const fromAccount = accountsQuery.find(
-            (account) =>
-              account.type === AccountType.LIABILITIES &&
-              account.id === transaction.fromAccount,
-          );
-          const toAccount = accountsQuery.find(
-            (account) =>
-              account.type === AccountType.LIABILITIES &&
-              account.id === transaction.toAccount,
-          );
-
-          if (fromAccount) {
-            const existingLiability = liabilitiesByAccount.find(
-              (liability) => liability.accountId === fromAccount.id,
-            );
-            if (existingLiability) {
-              existingLiability.amount -= transaction.amount;
-            } else {
-              liabilitiesByAccount.push({
-                accountId: fromAccount.id,
-                amount: -transaction.amount,
-              });
-            }
-          }
-
-          if (toAccount) {
-            const existingLiability = liabilitiesByAccount.find(
-              (liability) => liability.accountId === toAccount.id,
-            );
-            if (existingLiability) {
-              existingLiability.amount += transaction.amount;
-            } else {
-              liabilitiesByAccount.push({
-                accountId: toAccount.id,
-                amount: transaction.amount,
-              });
-            }
-          }
-        });
-
-        const activityLiabilities: Liability[] = [];
-        liabilitiesByAccount.forEach(async ({ accountId, amount }) => {
-          const liability = {
-            activity: args.id,
-            account: accountId,
-            name: args.name,
-            date: args.date,
-            amount,
-            id: crypto.randomUUID(),
-          };
-          activityLiabilities.push({
-            ...liability,
-            date: dayjs(liability.date),
-          });
-          await db.insert(liabilities).values(liability);
-        });
-
         // Movements
         let newMovements: ActivityMovement[] = [];
         if (args.movement) {
@@ -219,7 +155,6 @@ export const registerActivitiesMutations = () => {
             project: args.project ?? null,
             transactions: newTransactions,
             movement: args.movement ? { ...args.movement } : undefined,
-            liabilities: activityLiabilities,
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
@@ -262,7 +197,6 @@ export const registerActivitiesMutations = () => {
               };
             },
           ),
-          liabilities: activityLiabilities,
         };
       },
     }),
@@ -353,16 +287,6 @@ export const registerActivitiesMutations = () => {
             .returning()
         )[0];
 
-        if (activityUpdates.name || activityUpdates.date) {
-          await db
-            .update(liabilities)
-            .set({
-              name: activityUpdates.name,
-              date: activityUpdates.date,
-            })
-            .where(eq(liabilities.activity, args.id));
-        }
-
         addEvent({
           type: "updateActivity",
           payload: {
@@ -443,7 +367,6 @@ export const registerActivitiesMutations = () => {
         await db
           .delete(movementsActivities)
           .where(eq(movementsActivities.activity, args.id));
-        await db.delete(liabilities).where(eq(liabilities.activity, args.id));
         await db.delete(activities).where(eq(activities.id, args.id));
 
         await addEvent({
@@ -476,8 +399,10 @@ export const registerActivitiesMutations = () => {
         amount: t.arg({
           type: "Float",
         }),
-        fromAccount: t.arg({ type: "UUID" }),
-        toAccount: t.arg({ type: "UUID" }),
+        fromAccount: t.arg({ type: "UUID", required: false }),
+        toUser: t.arg({ type: "UUID", required: false }),
+        toAccount: t.arg({ type: "UUID", required: false }),
+        fromUser: t.arg({ type: "UUID", required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -497,136 +422,25 @@ export const registerActivitiesMutations = () => {
               id: args.id,
               amount: args.amount,
               fromAccount: args.fromAccount,
+              fromUser: args.fromUser,
               toAccount: args.toAccount,
+              toUser: args.toUser,
               activity: args.activityId,
             })
             .returning()
         )[0];
-
-        // Liabilities
-        const transactionLiabilities: Liability[] = [];
-        const accountsQuery = await db.select().from(accounts);
-        const fromAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === newTransaction.fromAccount,
-        );
-        const toAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === newTransaction.toAccount,
-        );
-
-        if (fromAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.activity, activity.id),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount - newTransaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.activity, activity.id),
-                ),
-              );
-            transactionLiabilities.push({
-              ...existingLiability,
-              date: dayjs(existingLiability.date),
-              amount: existingLiability.amount - newTransaction.amount,
-            });
-          } else {
-            const liability = {
-              id: crypto.randomUUID(),
-              activity: newTransaction.activity,
-              amount: -newTransaction.amount,
-              account: fromAccount.id,
-              name: activity.name,
-              date: activity.date,
-            };
-            transactionLiabilities.push({
-              ...liability,
-              date: dayjs(liability.date),
-            });
-            await db.insert(liabilities).values({
-              ...liability,
-            });
-          }
-        }
-
-        if (toAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, toAccount.id),
-                  eq(liabilities.activity, activity.id),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount + newTransaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, toAccount.id),
-                  eq(liabilities.activity, activity.id),
-                ),
-              );
-            transactionLiabilities.push({
-              ...existingLiability,
-              date: dayjs(existingLiability.date),
-              amount: existingLiability.amount + newTransaction.amount,
-            });
-          } else {
-            const liability = {
-              id: crypto.randomUUID(),
-              activity: newTransaction.activity,
-              amount: newTransaction.amount,
-              account: toAccount.id,
-              name: activity.name,
-              date: activity.date,
-            };
-            transactionLiabilities.push({
-              ...liability,
-              date: dayjs(liability.date),
-            });
-            await db.insert(liabilities).values({
-              ...liability,
-            });
-          }
-        }
 
         addEvent({
           type: "addTransaction",
           payload: {
             activityId: args.activityId,
             ...newTransaction,
-            liabilities: transactionLiabilities,
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
         });
 
-        return { ...newTransaction, liabilities: transactionLiabilities };
+        return newTransaction;
       },
     }),
   );
@@ -651,7 +465,15 @@ export const registerActivitiesMutations = () => {
           type: "UUID",
           required: false,
         }),
+        fromUser: t.arg({
+          type: "UUID",
+          required: false,
+        }),
         toAccount: t.arg({
+          type: "UUID",
+          required: false,
+        }),
+        toUser: t.arg({
           type: "UUID",
           required: false,
         }),
@@ -687,7 +509,9 @@ export const registerActivitiesMutations = () => {
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
         if (args.fromAccount) updatedFields.fromAccount = args.fromAccount;
+        if (args.fromUser) updatedFields.fromUser = args.fromUser;
         if (args.toAccount) updatedFields.toAccount = args.toAccount;
+        if (args.toUser) updatedFields.toUser = args.toUser;
 
         const updatedTransaction = (
           await db
@@ -697,197 +521,18 @@ export const registerActivitiesMutations = () => {
             .returning()
         )[0];
 
-        // Liabilities
-        const transactionLiabilities: Liability[] = [];
-        const accountsQuery = await db.select().from(accounts);
-        const oldFromAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === transaction.fromAccount,
-        );
-        const oldToAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === transaction.toAccount,
-        );
-        const newFromAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === updatedTransaction.fromAccount,
-        );
-        const newToAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === updatedTransaction.toAccount,
-        );
-
-        if (oldFromAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, oldFromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount + transaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, oldFromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-          }
-        }
-
-        if (oldToAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, oldToAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount - transaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, oldToAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-          }
-        }
-
-        if (newFromAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, newFromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount - updatedTransaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, newFromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-            transactionLiabilities.push({
-              ...existingLiability,
-              date: dayjs(existingLiability.date),
-              amount: existingLiability.amount - updatedTransaction.amount,
-            });
-          } else {
-            const liability = {
-              activity: transaction.activity,
-              amount: -updatedTransaction.amount,
-              account: newFromAccount.id,
-              id: crypto.randomUUID(),
-              name: activity.name,
-              date: activity.date,
-            };
-            transactionLiabilities.push({
-              ...liability,
-              date: dayjs(liability.date),
-            });
-            await db.insert(liabilities).values({
-              ...liability,
-            });
-          }
-        }
-
-        if (newToAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, newToAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount + updatedTransaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, newToAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-            transactionLiabilities.push({
-              ...existingLiability,
-              date: dayjs(existingLiability.date),
-              amount: existingLiability.amount + updatedTransaction.amount,
-            });
-          } else {
-            const liability = {
-              activity: transaction.activity,
-              amount: updatedTransaction.amount,
-              account: newToAccount.id,
-              id: crypto.randomUUID(),
-              name: activity.name,
-              date: activity.date,
-            };
-            transactionLiabilities.push({
-              ...liability,
-              date: dayjs(liability.date),
-            });
-            await db.insert(liabilities).values({
-              ...liability,
-            });
-          }
-        }
-
         addEvent({
           type: "updateTransaction",
           payload: {
             activityId: transaction.activity,
             id: args.id,
             ...updatedFields,
-            liabilities: transactionLiabilities,
           },
           createdAt: new Date(),
           clientId: ctx.clientId,
         });
 
-        return { ...updatedTransaction, liabilities: transactionLiabilities };
+        return updatedTransaction;
       },
     }),
   );
@@ -934,75 +579,6 @@ export const registerActivitiesMutations = () => {
         }
 
         await db.delete(transactions).where(eq(transactions.id, args.id));
-
-        // Liabilities
-        const accountsQuery = await db.select().from(accounts);
-        const fromAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === transaction.fromAccount,
-        );
-        const toAccount = accountsQuery.find(
-          (account) =>
-            account.type === AccountType.LIABILITIES &&
-            account.id === transaction.toAccount,
-        );
-
-        if (fromAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount + transaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, fromAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-          }
-        }
-
-        if (toAccount) {
-          const existingLiability = (
-            await db
-              .select()
-              .from(liabilities)
-              .where(
-                and(
-                  eq(liabilities.account, toAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              )
-              .limit(1)
-          )[0];
-          if (existingLiability) {
-            await db
-              .update(liabilities)
-              .set({
-                amount: existingLiability.amount - transaction.amount,
-              })
-              .where(
-                and(
-                  eq(liabilities.account, toAccount.id),
-                  eq(liabilities.activity, transaction.activity),
-                ),
-              );
-          }
-        }
 
         addEvent({
           type: "deleteTransaction",

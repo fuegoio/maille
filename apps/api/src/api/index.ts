@@ -10,7 +10,6 @@ import { registerAccountsMutations } from "./accounts/mutations";
 import { registerSettingsQueries } from "./settings";
 import { registerMovementsQueries } from "./movements/queries";
 import { registerMovementsMutations } from "./movements/mutations";
-import { registerLiabilitiesQueries } from "./liabilities/queries";
 import { registerProjectsQueries } from "./projects/queries";
 import { registerProjectsMutations } from "./projects/mutations";
 import { registerUsersMutations } from "./users/mutations";
@@ -21,7 +20,6 @@ registerActivitiesQueries();
 registerAccountsQueries();
 registerSettingsQueries();
 registerMovementsQueries();
-registerLiabilitiesQueries();
 registerProjectsQueries();
 registerUsersQueries();
 
