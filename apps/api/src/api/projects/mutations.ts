@@ -3,9 +3,10 @@ import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
 import { activities, projects } from "@/tables";
 import { addEvent } from "../events";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import dayjs from "dayjs";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerProjectsMutations = () => {
   builder.mutationField("createProject", (t) =>
@@ -23,12 +24,13 @@ export const registerProjectsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
+        await validateWorkspace(args.workspace, ctx.user.id);
+
         const project = (
           await db
             .insert(projects)
             .values({
               id: args.id,
-              user: ctx.user,
               workspace: args.workspace,
               name: args.name,
               emoji: args.emoji,
@@ -44,8 +46,8 @@ export const registerProjectsMutations = () => {
             emoji: args.emoji ?? null,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return { ...project, startDate: null, endDate: null };
@@ -73,14 +75,13 @@ export const registerProjectsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const project = (
-          await db
-            .select()
-            .from(projects)
-            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
+          await db.select().from(projects).where(eq(projects.id, args.id))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
+
+        await validateWorkspace(project.workspace, ctx.user.id);
 
         const updates: Partial<typeof project> = {};
         if (args.name) {
@@ -103,7 +104,7 @@ export const registerProjectsMutations = () => {
           await db
             .update(projects)
             .set(updates)
-            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
+            .where(eq(projects.id, args.id))
             .returning()
         )[0];
 
@@ -120,8 +121,8 @@ export const registerProjectsMutations = () => {
               updates.endDate === null ? null : updates.endDate?.toISOString(),
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
@@ -147,25 +148,20 @@ export const registerProjectsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const project = (
-          await db
-            .select()
-            .from(projects)
-            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)))
+          await db.select().from(projects).where(eq(projects.id, args.id))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
 
+        await validateWorkspace(project.workspace, ctx.user.id);
+
         await db
           .update(activities)
           .set({ project: null })
-          .where(
-            and(eq(activities.project, args.id), eq(activities.user, ctx.user)),
-          );
+          .where(eq(activities.project, args.id));
 
-        await db
-          .delete(projects)
-          .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user)));
+        await db.delete(projects).where(eq(projects.id, args.id));
 
         await addEvent({
           type: "deleteProject",
@@ -173,8 +169,8 @@ export const registerProjectsMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return true;

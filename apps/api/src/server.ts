@@ -1,6 +1,6 @@
 import { logger } from "@/logger";
-import { login } from "@/api/auth";
 import { yoga } from "@/api";
+import { auth } from "@/auth";
 
 export const startServer = () => {
   logger.info("Starting GraphQL server...");
@@ -8,6 +8,11 @@ export const startServer = () => {
   const server = Bun.serve({
     fetch: async (request, server) => {
       const path = new URL(request.url).pathname;
+
+      // Handle better-auth endpoints
+      if (path.startsWith("/auth")) {
+        return auth.handler(request);
+      }
 
       // Handle GraphQL requests
       if (path.startsWith("/graphql")) {
@@ -20,29 +25,7 @@ export const startServer = () => {
       if (request.method === "OPTIONS") {
         res = new Response("Departed");
       } else {
-        if (path.startsWith("/auth/login")) {
-          if (request.method !== "POST") {
-            res = new Response("Method not allowed", { status: 405 });
-          }
-
-          const body = await request.json();
-          if (body.email && body.password && body.clientId) {
-            try {
-              const { jwt, user } = await login(
-                body.email,
-                body.password,
-                body.clientId,
-              );
-              res = Response.json({ jwt, user });
-            } catch {
-              res = new Response("Unauthorized", { status: 401 });
-            }
-          } else {
-            res = new Response("Bad request", { status: 400 });
-          }
-        } else {
-          res = new Response("Not found", { status: 404 });
-        }
+        res = new Response("Not found", { status: 404 });
       }
 
       // Apply CORS headers to the response

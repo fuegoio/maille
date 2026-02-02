@@ -19,7 +19,7 @@ AccountSchema.implement({
     }),
     movements: t.exposeBoolean("movements"),
     user: t.field({
-      type: "UUID",
+      type: "String",
       nullable: true,
       resolve: (parent) => parent.user,
     }),

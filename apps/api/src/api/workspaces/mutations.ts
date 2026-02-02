@@ -18,7 +18,7 @@ export const registerWorkspaceMutations = () => {
       resolve: async (root, args, ctx) => {
         const workspaceId = args.id || randomUUID();
         const createdAt = new Date();
-        
+
         const [workspace] = await db
           .insert(workspaces)
           .values({
@@ -29,17 +29,18 @@ export const registerWorkspaceMutations = () => {
             createdAt: createdAt,
           })
           .returning();
-        
+
         // Add the creating user to the workspace
         await db.insert(workspaceUsers).values({
           id: randomUUID(),
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: workspaceId,
           createdAt: createdAt,
         });
-        
+
         return {
           ...workspace,
+          users: [{ ...ctx.user, image: ctx.user.image || null }],
           createdAt: workspace.createdAt.toISOString(),
         };
       },
@@ -57,7 +58,7 @@ export const registerWorkspaceMutations = () => {
           .delete(workspaces)
           .where(eq(workspaces.id, args.id))
           .returning();
-        
+
         return result.length > 0;
       },
     }),

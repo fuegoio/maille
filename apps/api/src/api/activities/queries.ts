@@ -32,12 +32,12 @@ export const registerActivitiesQueries = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user);
+        await validateWorkspace(args.workspaceId, ctx.user.id);
 
         const accountsQuery = await db
           .select()
           .from(accounts)
-          .where(eq(accounts.user, ctx.user));
+          .where(eq(accounts.user, ctx.user.id));
         const activitiesData = await db
           .select()
           .from(activities)
@@ -48,7 +48,7 @@ export const registerActivitiesQueries = () => {
           )
           .where(
             and(
-              eq(activities.user, ctx.user),
+              eq(activities.user, ctx.user.id),
               eq(activities.workspace, args.workspaceId),
             ),
           );
@@ -118,17 +118,12 @@ export const registerActivitiesQueries = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user);
+        await validateWorkspace(args.workspaceId, ctx.user.id);
 
         return await db
           .select()
           .from(activityCategories)
-          .where(
-            and(
-              eq(activityCategories.user, ctx.user),
-              eq(activityCategories.workspace, args.workspaceId),
-            ),
-          );
+          .where(eq(activityCategories.workspace, args.workspaceId));
       },
     }),
   );
@@ -141,17 +136,12 @@ export const registerActivitiesQueries = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user);
+        await validateWorkspace(args.workspaceId, ctx.user.id);
 
         return await db
           .select()
           .from(activitySubcategories)
-          .where(
-            and(
-              eq(activitySubcategories.user, ctx.user),
-              eq(activitySubcategories.workspace, args.workspaceId),
-            ),
-          );
+          .where(eq(activitySubcategories.workspace, args.workspaceId));
       },
     }),
   );

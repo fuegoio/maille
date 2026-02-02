@@ -38,7 +38,9 @@ const TransactionInput = builder.inputType("TransactionInput", {
     }),
     amount: t.float(),
     fromAccount: t.field({ type: "UUID" }),
+    fromUser: t.field({ type: "String", required: false }),
     toAccount: t.field({ type: "UUID" }),
+    toUser: t.field({ type: "String", required: false }),
   }),
 });
 
@@ -93,7 +95,7 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user);
+        await validateWorkspace(args.workspace, ctx.user.id);
 
         const ActivityTypeEnum = z.nativeEnum(ActivityType);
         const activityType = ActivityTypeEnum.parse(args.type);
@@ -106,7 +108,7 @@ export const registerActivitiesMutations = () => {
 
         await db.insert(activities).values({
           id: args.id,
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: args.workspace,
           number,
           name: args.name,
@@ -128,7 +130,9 @@ export const registerActivitiesMutations = () => {
                 id: transaction.id,
                 amount: transaction.amount,
                 fromAccount: transaction.fromAccount,
+                fromUser: transaction.fromUser,
                 toAccount: transaction.toAccount,
+                toUser: transaction.toUser,
                 activity: args.id,
               })
               .returning()
@@ -142,7 +146,7 @@ export const registerActivitiesMutations = () => {
         if (args.movement) {
           const movementActivity = {
             id: args.movement.id,
-            user: ctx.user,
+            user: ctx.user.id,
             workspace: args.workspace ?? null,
             activity: args.id,
             movement: args.movement.movement,
@@ -157,7 +161,7 @@ export const registerActivitiesMutations = () => {
           payload: {
             id: args.id,
             number,
-            users: [ctx.user],
+            user: ctx.user.id,
             name: args.name,
             description: args.description ?? null,
             date: args.date.toISOString(),
@@ -169,14 +173,14 @@ export const registerActivitiesMutations = () => {
             movement: args.movement ? { ...args.movement } : undefined,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
           id: args.id,
           number,
-          users: [ctx.user],
+          user: ctx.user.id,
           name: args.name,
           description: args.description ?? null,
           date: dayjs(args.date),
@@ -259,7 +263,7 @@ export const registerActivitiesMutations = () => {
             .select()
             .from(activities)
             .where(
-              and(eq(activities.id, args.id), eq(activities.user, ctx.user)),
+              and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)),
             )
             .limit(1)
         )[0];
@@ -268,7 +272,7 @@ export const registerActivitiesMutations = () => {
         }
 
         // Validate workspace from the activity
-        await validateWorkspace(activity.workspace, ctx.user);
+        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const activityUpdates: Partial<typeof activity> = {};
         if (args.name) {
@@ -315,8 +319,8 @@ export const registerActivitiesMutations = () => {
             date: activityUpdates.date?.toISOString(),
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         const accountsQuery = await db.select().from(accounts);
@@ -386,7 +390,7 @@ export const registerActivitiesMutations = () => {
 
         // Validate workspace from the activity
         if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user);
+          await validateWorkspace(activity.workspace, ctx.user.id);
         }
 
         await db.delete(transactions).where(eq(transactions.activity, args.id));
@@ -401,8 +405,8 @@ export const registerActivitiesMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
@@ -426,10 +430,10 @@ export const registerActivitiesMutations = () => {
         amount: t.arg({
           type: "Float",
         }),
-        fromAccount: t.arg({ type: "UUID", required: false }),
-        toUser: t.arg({ type: "UUID", required: false }),
-        toAccount: t.arg({ type: "UUID", required: false }),
+        fromAccount: t.arg({ type: "UUID" }),
         fromUser: t.arg({ type: "UUID", required: false }),
+        toAccount: t.arg({ type: "UUID" }),
+        toUser: t.arg({ type: "UUID", required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -445,7 +449,7 @@ export const registerActivitiesMutations = () => {
 
         // Validate workspace from the activity
         if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user);
+          await validateWorkspace(activity.workspace, ctx.user.id);
         }
 
         const newTransaction = (
@@ -470,8 +474,8 @@ export const registerActivitiesMutations = () => {
             ...newTransaction,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return newTransaction;
@@ -524,10 +528,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
-        // Validate workspace from the activity
-        if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user);
-        }
+        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const transaction = (
           await db
@@ -568,8 +569,8 @@ export const registerActivitiesMutations = () => {
             ...updatedFields,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return updatedTransaction;
@@ -602,10 +603,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
-        // Validate workspace from the activity
-        if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user);
-        }
+        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const transaction = (
           await db
@@ -632,8 +630,8 @@ export const registerActivitiesMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return { id: args.id, success: true };
@@ -657,14 +655,13 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user);
+        await validateWorkspace(args.workspace, ctx.user.id);
 
         const activityTypeSchema = z.nativeEnum(ActivityType);
         const parsedType = activityTypeSchema.parse(args.type);
 
         const category = {
           id: args.id,
-          user: ctx.user,
           workspace: args.workspace,
           name: args.name,
           type: parsedType,
@@ -675,8 +672,8 @@ export const registerActivitiesMutations = () => {
           type: "createActivityCategory",
           payload: category,
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return category;
@@ -699,22 +696,14 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(
-              and(
-                eq(activityCategories.id, args.id),
-                eq(activityCategories.user, ctx.user),
-              ),
-            )
+            .where(eq(activityCategories.id, args.id))
             .limit(1)
         )[0];
         if (!category) {
           throw new GraphQLError("Activity category not found");
         }
 
-        // Validate workspace from the category
-        if (category.workspace) {
-          await validateWorkspace(category.workspace, ctx.user);
-        }
+        await validateWorkspace(category.workspace, ctx.user.id);
 
         const updatedCategory = await db
           .update(activityCategories)
@@ -731,8 +720,8 @@ export const registerActivitiesMutations = () => {
             name: args.name,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return updatedCategory[0];
@@ -754,12 +743,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(
-              and(
-                eq(activityCategories.id, args.id),
-                eq(activityCategories.user, ctx.user),
-              ),
-            )
+            .where(eq(activityCategories.id, args.id))
             .limit(1)
         )[0];
         if (!category) {
@@ -768,7 +752,7 @@ export const registerActivitiesMutations = () => {
 
         // Validate workspace from the category
         if (category.workspace) {
-          await validateWorkspace(category.workspace, ctx.user);
+          await validateWorkspace(category.workspace, ctx.user.id);
         }
 
         await db
@@ -780,7 +764,7 @@ export const registerActivitiesMutations = () => {
           .where(
             and(
               eq(activities.category, args.id),
-              eq(activities.user, ctx.user),
+              eq(activities.user, ctx.user.id),
             ),
           );
         await db
@@ -793,8 +777,8 @@ export const registerActivitiesMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return { id: args.id, success: true };
@@ -820,11 +804,10 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user);
+        await validateWorkspace(args.workspace, ctx.user.id);
 
         const subcategory = {
           id: args.id,
-          user: ctx.user,
           workspace: args.workspace,
           name: args.name,
           category: args.category,
@@ -835,8 +818,8 @@ export const registerActivitiesMutations = () => {
           type: "createActivitySubCategory",
           payload: subcategory,
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return subcategory;
@@ -859,12 +842,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(
-              and(
-                eq(activitySubcategories.id, args.id),
-                eq(activitySubcategories.user, ctx.user),
-              ),
-            )
+            .where(eq(activitySubcategories.id, args.id))
             .limit(1)
         )[0];
         if (!subcategory) {
@@ -873,7 +851,7 @@ export const registerActivitiesMutations = () => {
 
         // Validate workspace from the subcategory
         if (subcategory.workspace) {
-          await validateWorkspace(subcategory.workspace, ctx.user);
+          await validateWorkspace(subcategory.workspace, ctx.user.id);
         }
 
         const updatedSubCategory = await db
@@ -891,8 +869,8 @@ export const registerActivitiesMutations = () => {
             name: args.name,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return updatedSubCategory[0];
@@ -914,34 +892,21 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(
-              and(
-                eq(activitySubcategories.id, args.id),
-                eq(activitySubcategories.user, ctx.user),
-              ),
-            )
+            .where(eq(activitySubcategories.id, args.id))
             .limit(1)
         )[0];
         if (!subCategory) {
           throw new GraphQLError("Activity subcategory not found");
         }
 
-        // Validate workspace from the subcategory
-        if (subCategory.workspace) {
-          await validateWorkspace(subCategory.workspace, ctx.user);
-        }
+        await validateWorkspace(subCategory.workspace, ctx.user.id);
 
         await db
           .update(activities)
           .set({
             subcategory: null,
           })
-          .where(
-            and(
-              eq(activities.subcategory, args.id),
-              eq(activities.user, ctx.user),
-            ),
-          );
+          .where(eq(activities.subcategory, args.id));
         await db
           .delete(activitySubcategories)
           .where(eq(activitySubcategories.id, args.id));
@@ -952,8 +917,8 @@ export const registerActivitiesMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return { id: args.id, success: true };

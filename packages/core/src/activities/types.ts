@@ -5,10 +5,10 @@ import type { UUID } from "crypto";
 export type Transaction = {
   id: UUID;
   amount: number;
-  fromAccount: UUID | null;
-  fromUser: UUID | null;
-  toAccount: UUID | null;
-  toUser: UUID | null;
+  fromAccount: UUID;
+  fromUser: string | null;
+  toAccount: UUID;
+  toUser: string | null;
 };
 
 export enum ActivityType {
@@ -43,6 +43,7 @@ export type ActivityMovement = {
 
 export type Activity = {
   id: UUID;
+  user: string;
   number: number;
   name: string;
   description: string | null;

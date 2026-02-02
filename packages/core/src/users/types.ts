@@ -1,9 +1,8 @@
 import type { UUID } from "crypto";
 
 export type User = {
-  id: UUID;
+  id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  avatar: string | null;
+  name: string;
+  image: string | null;
 };

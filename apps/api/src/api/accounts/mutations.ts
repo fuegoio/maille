@@ -31,7 +31,7 @@ export const registerAccountsMutations = () => {
           id: args.id,
           name: args.name,
           type: accountType,
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: args.workspace,
         });
 
@@ -43,14 +43,14 @@ export const registerAccountsMutations = () => {
             type: accountType,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
           id: args.id,
           name: args.name,
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: args.workspace ?? null,
           type: accountType,
           default: false,
@@ -117,8 +117,8 @@ export const registerAccountsMutations = () => {
             ...accountUpdates,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return updatedAccount;
@@ -157,8 +157,8 @@ export const registerAccountsMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {

@@ -1,8 +1,104 @@
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
+import { text, integer, sqliteTable, index } from "drizzle-orm/sqlite-core";
 import type { UUID } from "crypto";
 import type { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import type { SyncEvent } from "@maille/core/sync";
+import { relations } from "drizzle-orm";
+
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("email_verified", { mode: "boolean" })
+    .default(false)
+    .notNull(),
+  image: text("image"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = sqliteTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = sqliteTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
 
 export const activities = sqliteTable("activities", {
   id: text("id").primaryKey().$type<UUID>(),
@@ -11,8 +107,7 @@ export const activities = sqliteTable("activities", {
   description: text("description"),
   user: text("user")
     .notNull()
-    .$type<UUID>()
-    .references(() => users.id),
+    .references(() => user.id),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -32,7 +127,6 @@ export const activities = sqliteTable("activities", {
 
 export const activityCategories = sqliteTable("activity_categories", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -43,7 +137,6 @@ export const activityCategories = sqliteTable("activity_categories", {
 
 export const activitySubcategories = sqliteTable("activity_subcategories", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -57,7 +150,6 @@ export const activitySubcategories = sqliteTable("activity_subcategories", {
 
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -72,17 +164,15 @@ export const transactions = sqliteTable("transactions", {
   id: text("id").primaryKey().$type<UUID>(),
   amount: integer("amount").notNull(),
   fromAccount: text("from_account")
+    .notNull()
     .$type<UUID>()
     .references(() => accounts.id),
-  fromUser: text("from_user")
-    .$type<UUID>()
-    .references(() => users.id),
+  fromUser: text("from_user").references(() => user.id),
   toAccount: text("to_account")
+    .notNull()
     .$type<UUID>()
     .references(() => accounts.id),
-  toUser: text("to_user")
-    .$type<UUID>()
-    .references(() => users.id),
+  toUser: text("to_user").references(() => user.id),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)
@@ -91,7 +181,7 @@ export const transactions = sqliteTable("transactions", {
 
 export const accounts = sqliteTable("accounts", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").$type<UUID | null>(),
+  user: text("user"),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -106,7 +196,7 @@ export const accounts = sqliteTable("accounts", {
 
 export const movements = sqliteTable("movements", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
+  user: text("user").notNull(),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -122,7 +212,6 @@ export const movements = sqliteTable("movements", {
 
 export const movementsActivities = sqliteTable("movements_activities", {
   id: text("id").primaryKey().$type<UUID>(),
-  user: text("user").notNull().$type<UUID>(),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()
@@ -140,11 +229,11 @@ export const movementsActivities = sqliteTable("movements_activities", {
 
 export const events = sqliteTable("events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  user: text("user").notNull().$type<UUID>(),
+  user: text("user").notNull(),
   type: text("type").notNull().$type<SyncEvent["type"]>(),
   payload: text("payload").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  clientId: text("client_id").notNull().$type<UUID>(),
+  clientId: text("client_id").notNull(),
 });
 
 export const workspaces = sqliteTable("workspaces", {
@@ -155,21 +244,11 @@ export const workspaces = sqliteTable("workspaces", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey().$type<UUID>(),
-  avatar: text("avatar"),
-  email: text("email").notNull(),
-  first_name: text("first_name").notNull(),
-  last_name: text("last_name").notNull(),
-  password: text("password").notNull(),
-});
-
 export const workspaceUsers = sqliteTable("workspace_users", {
   id: text("id").primaryKey().$type<UUID>(),
   user: text("user")
     .notNull()
-    .$type<UUID>()
-    .references(() => users.id),
+    .references(() => user.id),
   workspace: text("workspace")
     .notNull()
     .$type<UUID>()

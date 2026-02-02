@@ -16,14 +16,14 @@ export const registerMovementsQueries = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user);
+        await validateWorkspace(args.workspaceId, ctx.user.id);
 
         const movementsData = await db
           .select()
           .from(movements)
           .where(
             and(
-              eq(movements.user, ctx.user),
+              eq(movements.user, ctx.user.id),
               eq(movements.workspace, args.workspaceId),
             ),
           )

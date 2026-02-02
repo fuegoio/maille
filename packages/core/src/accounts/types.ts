@@ -23,6 +23,6 @@ export type Account = {
   startingBalance: number | null;
   startingCashBalance: number | null;
   movements: boolean;
-  user: UUID | null;
+  user: string | null;
   workspace: UUID | null;
 };

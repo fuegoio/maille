@@ -34,11 +34,11 @@ export const registerMovementsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user);
+        await validateWorkspace(args.workspace, ctx.user.id);
 
         await db.insert(movements).values({
           id: args.id,
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: args.workspace,
           name: args.name,
           date: new Date(args.date),
@@ -56,13 +56,13 @@ export const registerMovementsMutations = () => {
             account: args.account,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
           id: args.id,
-          user: ctx.user,
+          user: ctx.user.id,
           workspace: args.workspace ?? null,
           name: args.name,
           date: dayjs(args.date),
@@ -72,7 +72,7 @@ export const registerMovementsMutations = () => {
           status: "incomplete" as "incomplete" | "completed",
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("updateMovement", (t) =>
@@ -96,17 +96,16 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user)))
+            .where(
+              and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)),
+            )
             .limit(1)
         )[0];
         if (!movement) {
           throw new GraphQLError("Movement not found");
         }
 
-        // Validate workspace from the movement
-        if (movement.workspace) {
-          await validateWorkspace(movement.workspace, ctx.user);
-        }
+        await validateWorkspace(movement.workspace, ctx.user.id);
 
         const updates: Partial<typeof movement> = {};
         if (args.date) {
@@ -132,8 +131,8 @@ export const registerMovementsMutations = () => {
             date: updates.date?.toISOString(),
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         const activitiesData = await db
@@ -151,7 +150,7 @@ export const registerMovementsMutations = () => {
             : "incomplete") as "incomplete" | "completed",
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("deleteMovement", (t) =>
@@ -167,7 +166,9 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user)))
+            .where(
+              and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)),
+            )
             .limit(1)
         )[0];
         if (!movement) {
@@ -176,7 +177,7 @@ export const registerMovementsMutations = () => {
 
         // Validate workspace from the movement
         if (movement.workspace) {
-          await validateWorkspace(movement.workspace, ctx.user);
+          await validateWorkspace(movement.workspace, ctx.user.id);
         }
 
         await db
@@ -190,8 +191,8 @@ export const registerMovementsMutations = () => {
             id: args.id,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
@@ -199,7 +200,7 @@ export const registerMovementsMutations = () => {
           success: true,
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("createMovementActivity", (t) =>
@@ -223,11 +224,10 @@ export const registerMovementsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user);
+        await validateWorkspace(args.workspace, ctx.user.id);
 
         await db.insert(movementsActivities).values({
           id: args.id,
-          user: ctx.user,
           workspace: args.workspace,
           movement: args.movementId,
           activity: args.activityId,
@@ -243,8 +243,8 @@ export const registerMovementsMutations = () => {
             amount: args.amount,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return {
@@ -255,7 +255,7 @@ export const registerMovementsMutations = () => {
           amount: args.amount,
         };
       },
-    })
+    }),
   );
 
   builder.mutationField("updateMovementActivity", (t) =>
@@ -280,10 +280,7 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("MovementActivity not found");
         }
 
-        // Validate workspace from the movement activity
-        if (movementActivity.workspace) {
-          await validateWorkspace(movementActivity.workspace, ctx.user);
-        }
+        await validateWorkspace(movementActivity.workspace, ctx.user.id);
 
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
@@ -304,13 +301,13 @@ export const registerMovementsMutations = () => {
             amount: args.amount,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return updatedMovementActivity;
       },
-    })
+    }),
   );
 
   builder.mutationField("deleteMovementActivity", (t) =>
@@ -334,10 +331,7 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("MovementActivity not found");
         }
 
-        // Validate workspace from the movement activity
-        if (movementActivity.workspace) {
-          await validateWorkspace(movementActivity.workspace, ctx.user);
-        }
+        await validateWorkspace(movementActivity.workspace, ctx.user.id);
 
         await db
           .delete(movementsActivities)
@@ -350,12 +344,12 @@ export const registerMovementsMutations = () => {
             movement: movementActivity.movement,
           },
           createdAt: new Date(),
-          clientId: ctx.clientId,
-          user: ctx.user,
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         return { id: args.id, success: true };
       },
-    })
+    }),
   );
 };

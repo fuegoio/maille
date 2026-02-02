@@ -1,6 +1,7 @@
 import type { UUID } from "crypto";
 import SchemaBuilder from "@pothos/core";
 import { DateResolver, UUIDResolver } from "graphql-scalars";
+import type { SessionData } from "./auth";
 
 export interface SchemaTypes {
   DefaultFieldNullability: false;
@@ -9,10 +10,7 @@ export interface SchemaTypes {
     UUID: { Input: UUID; Output: UUID };
     Date: { Input: Date; Output: Date };
   };
-  Context: {
-    user: UUID;
-    clientId: UUID;
-  };
+  Context: SessionData;
 }
 
 export type TypesWithDefaults =

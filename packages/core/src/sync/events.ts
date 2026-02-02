@@ -1,11 +1,11 @@
 import type { Account, AccountType } from "#accounts/types.js";
-import type { ActivityType } from "#activities/types.ts";
+import type { ActivityType, Transaction } from "#activities/types.ts";
 import type { UUID } from "crypto";
 
 export interface BaseSyncEvent {
-  user: UUID;
+  user: string;
   createdAt: Date;
-  clientId: UUID;
+  clientId: string;
 }
 
 export interface CreateActivityEvent extends BaseSyncEvent {
@@ -13,7 +13,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
   payload: {
     id: UUID;
     number: number;
-    users: UUID[];
+    user: string;
     name: string;
     description: string | null;
     date: string;
@@ -21,14 +21,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
     category: UUID | null;
     subcategory: UUID | null;
     project: UUID | null;
-    transactions: {
-      id: UUID;
-      fromAccount: UUID | null;
-      fromUser: UUID | null;
-      toAccount: UUID | null;
-      toUser: UUID | null;
-      amount: number;
-    }[];
+    transactions: Transaction[];
     movement?: {
       id: UUID;
       amount: number;
@@ -61,14 +54,8 @@ export interface DeleteActivityEvent extends BaseSyncEvent {
 
 export interface AddTransactionEvent extends BaseSyncEvent {
   type: "addTransaction";
-  payload: {
+  payload: Transaction & {
     activityId: UUID;
-    id: UUID;
-    amount: number;
-    fromAccount: UUID | null;
-    fromUser: UUID | null;
-    toAccount: UUID | null;
-    toUser: UUID | null;
   };
 }
 
@@ -77,12 +64,7 @@ export interface UpdateTransactionEvent extends BaseSyncEvent {
   payload: {
     activityId: UUID;
     id: UUID;
-    amount?: number;
-    fromAccount?: UUID | null;
-    fromUser?: UUID | null;
-    toAccount?: UUID | null;
-    toUser?: UUID | null;
-  };
+  } & Partial<Omit<Transaction, "id">>;
 }
 
 export interface DeleteTransactionEvent extends BaseSyncEvent {

@@ -4,7 +4,6 @@ import { createPubSub } from "graphql-yoga";
 import { db } from "@/database";
 import { events } from "@/tables";
 import { and, eq, gt } from "drizzle-orm";
-import type { UUID } from "crypto";
 import { logger } from "@/logger";
 
 export const EventSchema = builder.objectRef<SyncEvent>("Event");
@@ -21,14 +20,14 @@ EventSchema.implement({
       resolve: (parent) => parent.createdAt.getTime() / 1000,
     }),
     clientId: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.clientId,
     }),
   }),
 });
 
 export const pubSub = createPubSub<{
-  events: [userId: UUID, event: SyncEvent];
+  events: [userId: string, event: SyncEvent];
 }>();
 
 builder.subscriptionType({
@@ -36,7 +35,7 @@ builder.subscriptionType({
     events: t.field({
       type: EventSchema,
       description: "Events related to posts",
-      subscribe: (root, args, ctx) => pubSub.subscribe("events", ctx.user),
+      subscribe: (root, args, ctx) => pubSub.subscribe("events", ctx.user.id),
       resolve: (payload) => payload,
     }),
   }),
@@ -56,11 +55,11 @@ builder.queryField("events", (t) =>
         .select()
         .from(events)
         .where(
-          and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user)),
+          and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user.id)),
         );
 
       logger.info(
-        `[${ctx.user}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
+        `[${ctx.user.id}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
       );
 
       const syncEvents = eventsQuery.map(

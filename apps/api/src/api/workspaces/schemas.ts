@@ -1,6 +1,12 @@
 import { builder } from "@/api/builder";
+import { UserSchema } from "../users/schemas";
+import type { User } from "@maille/core/users";
 
-export const WorkspaceSchema = builder.objectRef<Workspace>("Workspace");
+export const WorkspaceSchema = builder.objectRef<
+  Workspace & {
+    users: User[];
+  }
+>("Workspace");
 
 WorkspaceSchema.implement({
   fields: (t) => ({
@@ -9,6 +15,10 @@ WorkspaceSchema.implement({
     startingDate: t.exposeString("startingDate", { nullable: true }),
     currency: t.exposeString("currency"),
     createdAt: t.exposeString("createdAt"),
+    users: t.field({
+      type: [UserSchema],
+      resolve: (p) => p.users,
+    }),
   }),
 });
 
@@ -18,4 +28,6 @@ export interface Workspace {
   startingDate: string | null;
   currency: string;
   createdAt: string;
+  users?: Array<User>;
 }
+
