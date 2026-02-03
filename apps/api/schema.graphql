@@ -6,7 +6,7 @@ type Account {
   startingBalance: Float
   startingCashBalance: Float
   type: String!
-  user: UUID
+  user: String
   workspace: UUID
 }
 
@@ -24,21 +24,21 @@ type Activity {
   subcategory: UUID
   transactions: [Transaction!]!
   type: String!
-  workspace: UUID
+  user: String!
+  workspace: UUID!
 }
 
 type ActivityCategory {
   id: UUID!
   name: String!
   type: String!
-  workspace: UUID
+  workspace: UUID!
 }
 
 type ActivityMovement {
   amount: Float!
   id: UUID!
   movement: UUID!
-  workspace: UUID
 }
 
 input ActivityMovementInput {
@@ -51,16 +51,7 @@ type ActivitySubCategory {
   category: UUID!
   id: UUID!
   name: String!
-  workspace: UUID
-}
-
-type CreateUser {
-  accounts(workspaceId: UUID): [Account!]!
-  avatar: String
-  email: String!
-  firstName: String!
-  id: UUID!
-  lastName: String!
+  workspace: UUID!
 }
 
 """
@@ -94,7 +85,7 @@ type DeleteTransactionResponse {
 }
 
 type Event {
-  clientId: UUID!
+  clientId: String!
   createdAt: Float!
   payload: String!
   type: String!
@@ -108,28 +99,26 @@ type Movement {
   id: UUID!
   name: String!
   status: String!
-  workspace: UUID
+  workspace: UUID!
 }
 
 type MovementActivity {
   activity: UUID!
   amount: Float!
   id: UUID!
-  workspace: UUID
+  workspace: UUID!
 }
 
 type Mutation {
-  addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID, fromUser: UUID, id: UUID!, toAccount: UUID, toUser: UUID): Transaction!
-  createAccount(id: UUID!, name: String!, type: String!, workspace: UUID): Account!
-  createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!, workspace: UUID): Activity!
-  createActivityCategory(id: UUID!, name: String!, type: String!, workspace: UUID): ActivityCategory!
-  createActivitySubCategory(category: UUID!, id: UUID!, name: String!, workspace: UUID): ActivitySubCategory!
-  createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!, workspace: UUID): Movement!
-  createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!, workspace: UUID): MovementActivity!
-  createProject(emoji: String, id: UUID!, name: String!, workspace: UUID): Project!
-  createUser(email: String!, firstName: String!, lastName: String!, password: String!): CreateUser!
-  createWorkspace(id: UUID, name: String!, startingDate: String, currency: String!): Workspace!
-  deleteWorkspace(id: UUID!): Boolean!
+  addTransaction(activityId: UUID!, amount: Float!, fromAccount: UUID!, fromUser: UUID, id: UUID!, toAccount: UUID!, toUser: UUID): Transaction!
+  createAccount(id: UUID!, name: String!, type: String!, workspace: UUID!): Account!
+  createActivity(category: UUID, date: Date!, description: String, id: UUID!, movement: ActivityMovementInput, name: String!, project: UUID, subcategory: UUID, transactions: [TransactionInput!], type: String!, workspace: UUID!): Activity!
+  createActivityCategory(id: UUID!, name: String!, type: String!, workspace: UUID!): ActivityCategory!
+  createActivitySubCategory(category: UUID!, id: UUID!, name: String!, workspace: UUID!): ActivitySubCategory!
+  createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!, workspace: UUID!): Movement!
+  createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!, workspace: UUID!): MovementActivity!
+  createProject(emoji: String, id: UUID!, name: String!, workspace: UUID!): Project!
+  createWorkspace(currency: String!, id: UUID, name: String!, startingDate: String): Workspace!
   deleteAccount(id: UUID!): DeleteAccountResponse!
   deleteActivity(id: UUID!): DeleteActivityResponse!
   deleteActivityCategory(id: UUID!): DeleteActivityResponse!
@@ -138,6 +127,7 @@ type Mutation {
   deleteMovementActivity(id: UUID!): DeleteMovementActivityResponse!
   deleteProject(id: UUID!): Boolean!
   deleteTransaction(activityId: UUID!, id: UUID!): DeleteTransactionResponse!
+  deleteWorkspace(id: UUID!): Boolean!
   updateAccount(id: UUID!, movements: Boolean, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: UUID, date: Date, description: String, id: UUID!, name: String, project: UUID, subcategory: UUID, type: String): Activity!
   updateActivityCategory(id: UUID!, name: String!): ActivityCategory!
@@ -146,7 +136,6 @@ type Mutation {
   updateMovementActivity(amount: Float!, id: UUID!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: UUID!, name: String, startDate: Date): Project!
   updateTransaction(activityId: UUID!, amount: Float, fromAccount: UUID, fromUser: UUID, id: UUID!, toAccount: UUID, toUser: UUID): Transaction!
-  updateUser(avatar: String, firstName: String, lastName: String): User!
 }
 
 type Project {
@@ -159,36 +148,15 @@ type Project {
 }
 
 type Query {
-  accounts: [Account!]!
-  activities(workspaceId: UUID): [Activity!]!
-  activityCategories(workspaceId: UUID): [ActivityCategory!]!
-  activitySubcategories(workspaceId: UUID): [ActivitySubCategory!]!
+  accounts(workspaceId: UUID!): [Account!]!
+  activities(workspaceId: UUID!): [Activity!]!
+  activityCategories(workspaceId: UUID!): [ActivityCategory!]!
+  activitySubcategories(workspaceId: UUID!): [ActivitySubCategory!]!
   events(lastSync: Float!): [Event!]!
-  movements(workspaceId: UUID): [Movement!]!
-  projects(workspaceId: UUID): [Project!]!
-  settings: Settings!
-  users: [User!]!
-  workspaces: [Workspace!]!
+  movements(workspaceId: UUID!): [Movement!]!
+  projects(workspaceId: UUID!): [Project!]!
   workspace(id: UUID!): Workspace!
-  workspaceSettings(workspaceId: UUID!): WorkspaceSettings!
-}
-
-type Settings {
-  currency: String!
-  startingPeriod: String!
-}
-
-type Workspace {
-  id: UUID!
-  name: String!
-  startingDate: String
-  currency: String!
-  createdAt: String!
-}
-
-type WorkspaceSettings {
-  startingPeriod: String
-  currency: String!
+  workspaces: [Workspace!]!
 }
 
 type Subscription {
@@ -198,18 +166,20 @@ type Subscription {
 
 type Transaction {
   amount: Float!
-  fromAccount: UUID
-  fromUser: UUID
+  fromAccount: UUID!
+  fromUser: String
   id: UUID!
-  toAccount: UUID
-  toUser: UUID
+  toAccount: UUID!
+  toUser: String
 }
 
 input TransactionInput {
   amount: Float!
   fromAccount: UUID!
+  fromUser: String
   id: UUID!
   toAccount: UUID!
+  toUser: String
 }
 
 """
@@ -218,9 +188,17 @@ A field whose value is a generic Universally Unique Identifier: https://en.wikip
 scalar UUID
 
 type User {
-  avatar: String
   email: String!
-  firstName: String!
-  id: UUID!
-  lastName: String!
+  id: String!
+  image: String
+  name: String!
+}
+
+type Workspace {
+  createdAt: String!
+  currency: String!
+  id: ID!
+  name: String!
+  startingDate: String
+  users: [User!]!
 }

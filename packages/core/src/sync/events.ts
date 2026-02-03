@@ -1,4 +1,4 @@
-import type { Account, AccountType } from "#accounts/types.js";
+import type { Account, AccountType } from "#accounts/index.js";
 import type { ActivityType, Transaction } from "#activities/types.ts";
 import type { UUID } from "crypto";
 

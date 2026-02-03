@@ -8,7 +8,7 @@ import {
   type ActivityMovement,
   type Transaction,
 } from "./types.js";
-import { AccountType, type Account } from "../accounts/types.js";
+import { AccountType, type Account } from "../accounts/index.js";
 import type { Movement, MovementWithLink } from "../movements/types.js";
 
 export const getActivityStatus = (

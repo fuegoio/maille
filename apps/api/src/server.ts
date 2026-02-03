@@ -7,7 +7,12 @@ export const startServer = () => {
 
   const server = Bun.serve({
     fetch: async (request, server) => {
-      const path = new URL(request.url).pathname;
+      logger.debug({ url: request.url }, "New request incoming");
+
+      let path = new URL(request.url).pathname;
+
+      // Strip /api
+      path = path.replace(/^\/api/, "");
 
       // Handle better-auth endpoints
       if (path.startsWith("/auth")) {
@@ -45,9 +50,6 @@ export const startServer = () => {
   });
 
   logger.info(
-    `Server is running on ${new URL(
-      yoga.graphqlEndpoint,
-      `http://${server.hostname}:${server.port}`,
-    )}`,
+    `Server is running on ${`http://${server.hostname}:${server.port}`}/api`,
   );
 };
