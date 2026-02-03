@@ -1,20 +1,20 @@
 import * as React from "react";
 import {
+  Banknote,
+  BookMarked,
   BookOpen,
   Bot,
+  Calendar,
+  Folder,
   Frame,
+  LayoutDashboard,
   LifeBuoy,
-  Map,
-  PieChart,
   Send,
   Settings2,
-  SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -22,18 +22,8 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
-import { graphql } from "@/gql";
-import { useQuery } from "@tanstack/react-query";
-import { client } from "@/gql/client";
-
-const WorkspacesQuery = graphql(`
-  query Workspaces {
-    workspaces {
-      id
-      name
-    }
-  }
-`);
+import { useStore } from "zustand";
+import { workspacesStore } from "@/stores/workspaces";
 
 const data = {
   user: {
@@ -41,94 +31,61 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
+  navAnalysis: [
     {
-      title: "Playground",
+      title: "Dashboard",
       url: "#",
-      icon: SquareTerminal,
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Periods",
+      url: "#",
+      icon: Calendar,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Current",
           url: "#",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
+          title: "Past",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Projects",
       url: "#",
-      icon: Bot,
+      icon: Folder,
+    },
+  ],
+  navSource: [
+    {
+      title: "Activities",
+      url: "#",
+      icon: BookMarked,
+      isActive: true,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
+          title: "To reconciliate",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Movements",
       url: "#",
-      icon: BookOpen,
+      icon: Banknote,
+      isActive: true,
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
+          title: "To link",
           url: "#",
         },
       ],
     },
   ],
-  navSecondary: [
+  navFooter: [
     {
       title: "Support",
       url: "#",
@@ -140,46 +97,36 @@ const data = {
       icon: Send,
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: workspaces } = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: async () => {
-      const queryResult = await client.request(WorkspacesQuery);
-      return queryResult.workspaces;
-    },
-  });
+  const availableWorkspaces = useStore(
+    workspacesStore,
+    (state) => state.availableWorkspaces,
+  );
+  const currentWorkspace = useStore(
+    workspacesStore,
+    (state) => state.currentWorkspace,
+  );
+
+  if (!availableWorkspaces || !currentWorkspace) {
+    throw new Error("no workspace available");
+  }
 
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        {workspaces && <WorkspaceSwitcher workspaces={workspaces} />}
+        <WorkspaceSwitcher
+          availableWorkspaces={availableWorkspaces}
+          currentWorkspace={currentWorkspace}
+        />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain title="Analysis" items={data.navAnalysis} />
+        <NavMain title="Source" items={data.navSource} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavSecondary items={data.navFooter} />
       </SidebarFooter>
     </Sidebar>
   );

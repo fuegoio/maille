@@ -13,7 +13,10 @@ WorkspaceSchema.implement({
   fields: (t) => ({
     id: t.exposeID("id"),
     name: t.exposeString("name"),
-    startingDate: t.exposeString("startingDate", { nullable: true }),
+    startingDate: t.field({
+      type: "Date",
+      resolve: (p) => p.startingDate,
+    }),
     currency: t.exposeString("currency"),
     createdAt: t.exposeString("createdAt"),
     users: t.field({

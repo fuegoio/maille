@@ -14,9 +14,11 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "\n  mutation CreateWorkspace(\n    $name: String!\n    $currency: String!\n    $startingDate: Date!\n  ) {\n    createWorkspace(\n      name: $name\n      currency: $currency\n      startingDate: $startingDate\n    ) {\n      id\n      name\n      currency\n      startingDate\n      createdAt\n      users {\n        id\n        email\n        name\n        image\n      }\n    }\n  }\n": typeof types.CreateWorkspaceDocument,
     "\n  query Workspaces {\n    workspaces {\n      id\n      name\n    }\n  }\n": typeof types.WorkspacesDocument,
 };
 const documents: Documents = {
+    "\n  mutation CreateWorkspace(\n    $name: String!\n    $currency: String!\n    $startingDate: Date!\n  ) {\n    createWorkspace(\n      name: $name\n      currency: $currency\n      startingDate: $startingDate\n    ) {\n      id\n      name\n      currency\n      startingDate\n      createdAt\n      users {\n        id\n        email\n        name\n        image\n      }\n    }\n  }\n": types.CreateWorkspaceDocument,
     "\n  query Workspaces {\n    workspaces {\n      id\n      name\n    }\n  }\n": types.WorkspacesDocument,
 };
 
@@ -34,6 +36,10 @@ const documents: Documents = {
  */
 export function graphql(source: string): unknown;
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateWorkspace(\n    $name: String!\n    $currency: String!\n    $startingDate: Date!\n  ) {\n    createWorkspace(\n      name: $name\n      currency: $currency\n      startingDate: $startingDate\n    ) {\n      id\n      name\n      currency\n      startingDate\n      createdAt\n      users {\n        id\n        email\n        name\n        image\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation CreateWorkspace(\n    $name: String!\n    $currency: String!\n    $startingDate: Date!\n  ) {\n    createWorkspace(\n      name: $name\n      currency: $currency\n      startingDate: $startingDate\n    ) {\n      id\n      name\n      currency\n      startingDate\n      createdAt\n      users {\n        id\n        email\n        name\n        image\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -239,7 +239,7 @@ export const events = sqliteTable("events", {
 export const workspaces = sqliteTable("workspaces", {
   id: text("id").primaryKey().$type<UUID>(),
   name: text("name").notNull(),
-  startingDate: text("starting_date"),
+  startingDate: integer("starting_date", { mode: "timestamp" }).notNull(),
   currency: text("currency").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });

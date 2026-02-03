@@ -118,7 +118,7 @@ type Mutation {
   createMovement(account: UUID!, amount: Float!, date: Date!, id: UUID!, name: String!, workspace: UUID!): Movement!
   createMovementActivity(activityId: UUID!, amount: Float!, id: UUID!, movementId: UUID!, workspace: UUID!): MovementActivity!
   createProject(emoji: String, id: UUID!, name: String!, workspace: UUID!): Project!
-  createWorkspace(currency: String!, id: UUID, name: String!, startingDate: String): Workspace!
+  createWorkspace(currency: String!, name: String!, startingDate: Date!): Workspace!
   deleteAccount(id: UUID!): DeleteAccountResponse!
   deleteActivity(id: UUID!): DeleteActivityResponse!
   deleteActivityCategory(id: UUID!): DeleteActivityResponse!
@@ -199,6 +199,6 @@ type Workspace {
   currency: String!
   id: ID!
   name: String!
-  startingDate: String
+  startingDate: Date!
   users: [User!]!
 }

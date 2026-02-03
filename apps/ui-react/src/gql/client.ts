@@ -1,5 +1,5 @@
 import { GraphQLClient } from "graphql-request";
 
-export const client = new GraphQLClient(
+export const graphqlClient = new GraphQLClient(
   `${window.location.origin}/api/graphql`,
 );

@@ -10,13 +10,12 @@ export const registerWorkspaceMutations = () => {
     t.field({
       type: WorkspaceSchema,
       args: {
-        id: t.arg({ type: "UUID", required: false }),
         name: t.arg({ type: "String", required: true }),
-        startingDate: t.arg({ type: "String", required: false }),
+        startingDate: t.arg({ type: "Date", required: true }),
         currency: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
-        const workspaceId = args.id || randomUUID();
+        const workspaceId = randomUUID();
         const createdAt = new Date();
 
         const [workspace] = await db
