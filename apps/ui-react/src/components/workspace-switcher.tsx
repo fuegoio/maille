@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import type { AvailableWorkspace } from "@/stores/workspaces";
 import type { Workspace } from "@maille/core/workspaces";
+import { Link } from "@tanstack/react-router";
 
 export function WorkspaceSwitcher({
   currentWorkspace,
@@ -65,11 +66,13 @@ export function WorkspaceSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground">Create workspace</div>
+            <DropdownMenuItem className="gap-2 p-2" asChild>
+              <Link to="/join">
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Plus className="size-4" />
+                </div>
+                <div className="text-muted-foreground">Create workspace</div>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

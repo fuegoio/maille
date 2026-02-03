@@ -22,61 +22,56 @@ import { useStore } from "zustand";
 import { workspacesStore } from "@/stores/workspaces";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navAnalysis: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/",
       icon: LayoutDashboard,
     },
     {
       title: "Periods",
-      url: "#",
+      url: "/periods",
       icon: Calendar,
       isActive: true,
       items: [
         {
           title: "Current",
-          url: "#",
+          url: "/periods/current",
         },
         {
           title: "Past",
-          url: "#",
+          url: "/periods/past",
         },
       ],
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/projects",
       icon: Folder,
     },
   ],
   navSource: [
     {
       title: "Activities",
-      url: "#",
+      url: "/activities",
       icon: BookMarked,
       isActive: true,
       items: [
         {
           title: "To reconciliate",
-          url: "#",
+          url: "/activities/to-reconciliate",
         },
       ],
     },
     {
       title: "Movements",
-      url: "#",
+      url: "/movements",
       icon: Banknote,
       isActive: true,
       items: [
         {
           title: "To link",
-          url: "#",
+          url: "/movements/to-link",
         },
       ],
     },
