@@ -56,9 +56,11 @@ export function WorkspaceSwitcher({
                 onClick={() => setActiveTeam(workspace)}
                 className="gap-2 p-2"
               >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  Toto
-                </div>
+                <div
+                  className="flex size-6 items-center justify-center rounded-md border
+                  bg-sidebar-primary
+                  "
+                ></div>
                 {workspace.name}
               </DropdownMenuItem>
             ))}

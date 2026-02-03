@@ -2,15 +2,11 @@ import * as React from "react";
 import {
   Banknote,
   BookMarked,
-  BookOpen,
-  Bot,
   Calendar,
   Folder,
-  Frame,
   LayoutDashboard,
   LifeBuoy,
   Send,
-  Settings2,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";

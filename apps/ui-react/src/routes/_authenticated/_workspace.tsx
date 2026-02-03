@@ -14,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
           to: "/join",
         });
       }
+    } else {
+      workspacesState.fetchWorkspaces();
     }
   },
 });
