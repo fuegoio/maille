@@ -51,7 +51,6 @@ const formSchema = z.object({
 });
 
 function RouteComponent() {
-  const navigate = Route.useNavigate();
   const { redirect } = Route.useSearch();
   const [needsVerify, setNeedsVerify] = useState(false);
 

@@ -11,7 +11,10 @@ export const WorkspaceSchema = builder.objectRef<
 
 WorkspaceSchema.implement({
   fields: (t) => ({
-    id: t.exposeID("id"),
+    id: t.field({
+      type: "UUID",
+      resolve: (parent) => parent.id,
+    }),
     name: t.exposeString("name"),
     startingDate: t.field({
       type: "Date",

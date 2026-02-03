@@ -94,6 +94,10 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useStore(authStore, (state) => state.user);
 
+  if (!user) {
+    throw new Error("no user available");
+  }
+
   const availableWorkspaces = useStore(
     workspacesStore,
     (state) => state.availableWorkspaces,

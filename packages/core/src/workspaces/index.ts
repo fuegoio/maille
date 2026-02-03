@@ -1,7 +1,8 @@
 import type { User } from "#users/types.js";
+import type { UUID } from "crypto";
 
 export interface Workspace {
-  id: string;
+  id: UUID;
   name: string;
   startingDate: Date;
   currency: string;

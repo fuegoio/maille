@@ -26,7 +26,7 @@ interface ViewsState {
   activityViews: Record<string, ActivityView>;
   liabilityViews: Record<string, LiabilityView>;
   movementViews: Record<string, MovementView>;
-  
+
   getActivityView: (viewId: string) => ActivityView;
   deleteCategory: (categoryId: UUID) => void;
   deleteSubcategory: (subcategoryId: UUID) => void;
@@ -36,11 +36,11 @@ interface ViewsState {
 
 export const viewsStore = createStore<ViewsState>()(
   persist(
-    (set, get) => ({
+    (_set, get) => ({
       activityViews: {},
       liabilityViews: {},
       movementViews: {},
-      
+
       getActivityView: (viewId: string): ActivityView => {
         const state = get();
         if (!state.activityViews[viewId]) {
@@ -53,7 +53,7 @@ export const viewsStore = createStore<ViewsState>()(
 
         return state.activityViews[viewId];
       },
-      
+
       deleteCategory: (categoryId: UUID) => {
         const state = get();
         Object.values(state.activityViews).forEach((view) => {
@@ -64,7 +64,7 @@ export const viewsStore = createStore<ViewsState>()(
           });
         });
       },
-      
+
       deleteSubcategory: (subcategoryId: UUID) => {
         const state = get();
         Object.values(state.activityViews).forEach((view) => {
@@ -75,7 +75,7 @@ export const viewsStore = createStore<ViewsState>()(
           });
         });
       },
-      
+
       getLiabilityView: (viewId: string): LiabilityView => {
         const state = get();
         if (!state.liabilityViews[viewId]) {
@@ -87,7 +87,7 @@ export const viewsStore = createStore<ViewsState>()(
 
         return state.liabilityViews[viewId];
       },
-      
+
       getMovementView: (viewId: string): MovementView => {
         const state = get();
         if (!state.movementViews[viewId]) {
@@ -105,3 +105,4 @@ export const viewsStore = createStore<ViewsState>()(
     },
   ),
 );
+

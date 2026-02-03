@@ -190,7 +190,7 @@ type User {
 type Workspace {
   createdAt: String!
   currency: String!
-  id: ID!
+  id: UUID!
   name: String!
   startingDate: Date!
   users: [User!]!

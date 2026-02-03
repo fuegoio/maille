@@ -3,9 +3,10 @@ import { persist } from "zustand/middleware";
 import type { Workspace } from "@maille/core/workspaces";
 import { graphqlClient } from "@/gql/client";
 import { graphql } from "@/gql";
+import type { UUID } from "crypto";
 
 export interface AvailableWorkspace {
-  id: string;
+  id: UUID;
   name: string;
 }
 

@@ -21,8 +21,9 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
 
     if (workspacesState.currentWorkspace === null) {
       const firstWorkspace = workspacesStore.getState().availableWorkspaces![0];
-
-      await fetchWorkspaceData(firstWorkspace.id);
+      if (firstWorkspace) {
+        await fetchWorkspaceData(firstWorkspace.id);
+      }
     }
   },
 });
