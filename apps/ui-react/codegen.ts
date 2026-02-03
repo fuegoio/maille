@@ -18,7 +18,7 @@ const config: CodegenConfig = {
   },
   config: {
     scalars: {
-      UUID: "string",
+      UUID: "crypto#UUID",
       Date: "string",
     },
     avoidOptionals: {

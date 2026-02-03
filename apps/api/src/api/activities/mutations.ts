@@ -188,7 +188,6 @@ export const registerActivitiesMutations = () => {
           category: args.category ?? null,
           subcategory: args.subcategory ?? null,
           project: args.project ?? null,
-          workspace: args.workspace ?? null,
           transactions: newTransactions,
           movements: newMovements,
           amount: getActivityTransactionsReconciliationSum(

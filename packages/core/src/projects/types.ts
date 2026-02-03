@@ -7,7 +7,6 @@ export type Project = {
   emoji: string | null;
   startDate: dayjs.Dayjs | null;
   endDate: dayjs.Dayjs | null;
-  workspace: UUID | null;
 };
 
 export type ProjectStatus = "scheduled" | "in progress" | "completed";

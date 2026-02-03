@@ -22,14 +22,12 @@ export type ActivityCategory = {
   id: UUID;
   name: string;
   type: ActivityType;
-  workspace: UUID | null;
 };
 
 export type ActivitySubCategory = {
   id: UUID;
   name: string;
   category: UUID;
-  workspace: UUID | null;
 };
 
 export type ActivityStatus = "scheduled" | "incomplete" | "completed";
@@ -38,7 +36,6 @@ export type ActivityMovement = {
   id: UUID;
   movement: UUID;
   amount: number;
-  workspace: UUID | null;
 };
 
 export type Activity = {
@@ -52,7 +49,6 @@ export type Activity = {
   category: UUID | null;
   subcategory: UUID | null;
   project: UUID | null;
-  workspace: UUID | null;
   transactions: Transaction[];
   movements: ActivityMovement[];
 

@@ -63,7 +63,6 @@ export const registerMovementsMutations = () => {
         return {
           id: args.id,
           user: ctx.user.id,
-          workspace: args.workspace ?? null,
           name: args.name,
           date: dayjs(args.date),
           amount: args.amount,
@@ -249,7 +248,6 @@ export const registerMovementsMutations = () => {
 
         return {
           id: args.id,
-          workspace: args.workspace ?? null,
           movement: args.movementId,
           activity: args.activityId,
           amount: args.amount,

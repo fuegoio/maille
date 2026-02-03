@@ -51,7 +51,6 @@ export const registerAccountsMutations = () => {
           id: args.id,
           name: args.name,
           user: ctx.user.id,
-          workspace: args.workspace ?? null,
           type: accountType,
           default: false,
           startingBalance: null,

@@ -45,15 +45,6 @@ ActivitySchema.implement({
       resolve: (parent) => parent.project,
       nullable: true,
     }),
-    workspace: t.field({
-      type: "UUID",
-      resolve: (parent) => {
-        if (!parent.workspace) {
-          throw new Error("Workspace is required for activities");
-        }
-        return parent.workspace;
-      },
-    }),
     amount: t.exposeFloat("amount"),
     status: t.exposeString("status"),
     transactions: t.field({
@@ -125,15 +116,6 @@ ActivityCategorySchema.implement({
     }),
     name: t.exposeString("name"),
     type: t.exposeString("type"),
-    workspace: t.field({
-      type: "UUID",
-      resolve: (parent) => {
-        if (!parent.workspace) {
-          throw new Error("Workspace is required for activity subcategories");
-        }
-        return parent.workspace;
-      },
-    }),
   }),
 });
 
@@ -151,15 +133,6 @@ ActivitySubCategorySchema.implement({
     category: t.field({
       type: "UUID",
       resolve: (parent) => parent.category,
-    }),
-    workspace: t.field({
-      type: "UUID",
-      resolve: (parent) => {
-        if (!parent.workspace) {
-          throw new Error("Workspace is required for activity categories");
-        }
-        return parent.workspace;
-      },
     }),
   }),
 });

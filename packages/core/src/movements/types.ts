@@ -9,22 +9,22 @@ import type {
   ActivityFilterNameDescriptionOperators,
 } from "../activities/types.js";
 
+export type MovementStatus = "incomplete" | "completed";
+
 export type Movement = {
   id: UUID;
   date: dayjs.Dayjs;
   amount: number;
   account: UUID;
   name: string;
-  workspace: UUID | null;
   activities: MovementActivity[];
-  status: "incomplete" | "completed";
+  status: MovementStatus;
 };
 
 export type MovementActivity = {
   id: UUID;
   activity: UUID;
   amount: number;
-  workspace: UUID | null;
 };
 
 export type MovementWithLink = Movement & {

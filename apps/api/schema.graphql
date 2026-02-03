@@ -7,7 +7,6 @@ type Account {
   startingCashBalance: Float
   type: String!
   user: String
-  workspace: UUID
 }
 
 type Activity {
@@ -25,14 +24,12 @@ type Activity {
   transactions: [Transaction!]!
   type: String!
   user: String!
-  workspace: UUID!
 }
 
 type ActivityCategory {
   id: UUID!
   name: String!
   type: String!
-  workspace: UUID!
 }
 
 type ActivityMovement {
@@ -51,7 +48,6 @@ type ActivitySubCategory {
   category: UUID!
   id: UUID!
   name: String!
-  workspace: UUID!
 }
 
 """
@@ -99,14 +95,12 @@ type Movement {
   id: UUID!
   name: String!
   status: String!
-  workspace: UUID!
 }
 
 type MovementActivity {
   activity: UUID!
   amount: Float!
   id: UUID!
-  workspace: UUID!
 }
 
 type Mutation {
@@ -144,7 +138,6 @@ type Project {
   id: UUID!
   name: String!
   startDate: Date
-  workspace: UUID
 }
 
 type Query {

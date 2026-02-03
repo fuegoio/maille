@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, SearchIcon } from "lucide-react";
 import { useStore } from "zustand";
+import { activitiesStore } from "@/stores/activities";
 
 export const Route = createFileRoute("/_authenticated/_workspace/activities")({
   component: ActivitiesPage,

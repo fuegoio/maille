@@ -24,5 +24,4 @@ export type Account = {
   startingCashBalance: number | null;
   movements: boolean;
   user: string | null;
-  workspace: UUID | null;
 };
