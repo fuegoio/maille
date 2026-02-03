@@ -26,7 +26,7 @@ ActivitySchema.implement({
     date: t.field({
       type: "Date",
       resolve: (parent) => {
-        return parent.date.toDate();
+        return parent.date;
       },
     }),
     type: t.exposeString("type"),

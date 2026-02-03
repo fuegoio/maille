@@ -8,7 +8,6 @@ import {
 import { movements, movementsActivities } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
-import dayjs from "dayjs";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { validateWorkspace } from "@/services/workspaces";
@@ -64,7 +63,7 @@ export const registerMovementsMutations = () => {
           id: args.id,
           user: ctx.user.id,
           name: args.name,
-          date: dayjs(args.date),
+          date: args.date,
           amount: args.amount,
           account: args.account,
           activities: [],
@@ -141,7 +140,7 @@ export const registerMovementsMutations = () => {
 
         return {
           ...updatedMovement,
-          date: dayjs(updatedMovement.date),
+          date: updatedMovement.date,
           activities: activitiesData,
           status: (activitiesData.reduce((sum, ma) => sum + ma.amount, 0) ===
           movement.amount

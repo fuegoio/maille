@@ -1,5 +1,4 @@
-import dayjs, { type ManipulateType } from "dayjs";
-
+import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
 import {
   OperatorsWithoutValue,
   type Activity,
@@ -29,27 +28,25 @@ export const verifyActivityFilter = (
   else if (!hasValue(filter)) return true;
 
   if (filter.field === "date") {
-    let comparator = dayjs().startOf("day");
+    let comparator = startOfDay(new Date());
     if ((filter.value as string).includes("ago")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.subtract(
-        parseInt(number!),
-        period as ManipulateType,
-      );
+      // @ts-ignore
+      comparator = sub(comparator, { [period]: parseInt(number!) });
     } else if ((filter.value as string).includes("from now")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.add(parseInt(number!), period as ManipulateType);
+      // @ts-ignore
+      comparator = add(comparator, { [period]: parseInt(number!) });
     }
 
     if (filter.operator === "before") {
       return (
-        activity.date.isBefore(comparator, "day") ||
-        activity.date.isSame(comparator, "day")
+        isBefore(activity.date, comparator) ||
+        isEqual(activity.date, comparator)
       );
     } else if (filter.operator === "after") {
       return (
-        activity.date.isAfter(comparator, "day") ||
-        activity.date.isSame(comparator, "day")
+        isAfter(activity.date, comparator) || isEqual(activity.date, comparator)
       );
     } else {
       throw Error("operator not valid");
@@ -99,8 +96,8 @@ export const verifyActivityFilter = (
     } else throw Error("operator not valid");
   } else if (filter.field === "from_account") {
     if (filter.operator === "is any of") {
-      return activity.transactions.some((t) =>
-        t.fromAccount !== null && filter.value.includes(t.fromAccount),
+      return activity.transactions.some(
+        (t) => t.fromAccount !== null && filter.value.includes(t.fromAccount),
       );
     } else if (filter.operator === "is not") {
       return activity.transactions.every(
@@ -109,8 +106,8 @@ export const verifyActivityFilter = (
     } else throw Error("operator not valid");
   } else if (filter.field === "to_account") {
     if (filter.operator === "is any of") {
-      return activity.transactions.some((t) =>
-        t.toAccount !== null && filter.value.includes(t.toAccount),
+      return activity.transactions.some(
+        (t) => t.toAccount !== null && filter.value.includes(t.toAccount),
       );
     } else if (filter.operator === "is not") {
       return activity.transactions.every(

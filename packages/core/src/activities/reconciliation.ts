@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import _ from "lodash";
 import type { UUID } from "crypto";
 
@@ -12,13 +11,13 @@ import { AccountType, type Account } from "../accounts/index.js";
 import type { Movement, MovementWithLink } from "../movements/types.js";
 
 export const getActivityStatus = (
-  activityDate: dayjs.Dayjs,
+  activityDate: Date,
   transactions: Transaction[],
   movements: ActivityMovement[],
   accounts: Account[],
   getMovementById: (id: UUID) => Movement | undefined,
 ): ActivityStatus => {
-  if (activityDate > dayjs()) {
+  if (activityDate > new Date()) {
     return "scheduled";
   }
 

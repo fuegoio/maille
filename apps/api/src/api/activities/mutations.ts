@@ -25,7 +25,6 @@ import {
 } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
-import dayjs from "dayjs";
 import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
@@ -183,7 +182,7 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
           name: args.name,
           description: args.description ?? null,
-          date: dayjs(args.date),
+          date: args.date,
           type: activityType,
           category: args.category ?? null,
           subcategory: args.subcategory ?? null,
@@ -196,7 +195,7 @@ export const registerActivitiesMutations = () => {
             accountsQuery,
           ),
           status: getActivityStatus(
-            dayjs(args.date),
+            args.date,
             newTransactions,
             newMovements,
             accountsQuery,
@@ -209,7 +208,7 @@ export const registerActivitiesMutations = () => {
               if (!movement) return;
               return {
                 ...movement,
-                date: dayjs(movement.date),
+                date: movement.date,
                 status: "completed",
                 activities: [],
               };
@@ -334,7 +333,7 @@ export const registerActivitiesMutations = () => {
 
         return {
           ...updatedActivity,
-          date: dayjs(updatedActivity.date),
+          date: updatedActivity.date,
           transactions: transactionsData,
           movements: movementsData,
           amount: getActivityTransactionsReconciliationSum(
@@ -343,7 +342,7 @@ export const registerActivitiesMutations = () => {
             accountsQuery,
           ),
           status: getActivityStatus(
-            dayjs(updatedActivity.date),
+            updatedActivity.date,
             transactionsData,
             movementsData,
             accountsQuery,
@@ -356,7 +355,7 @@ export const registerActivitiesMutations = () => {
               if (!movement) return;
               return {
                 ...movement,
-                date: dayjs(movement.date),
+                date: movement.date,
                 status: "completed",
                 activities: [],
               };

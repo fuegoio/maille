@@ -5,7 +5,6 @@ import { activities, projects } from "@/tables";
 import { addEvent } from "../events";
 import { eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import dayjs from "dayjs";
 import { validateWorkspace } from "@/services/workspaces";
 
 export const registerProjectsMutations = () => {
@@ -127,12 +126,8 @@ export const registerProjectsMutations = () => {
 
         return {
           ...updatedProject,
-          startDate: updatedProject.startDate
-            ? dayjs(updatedProject.startDate)
-            : null,
-          endDate: updatedProject.endDate
-            ? dayjs(updatedProject.endDate)
-            : null,
+          startDate: updatedProject.startDate,
+          endDate: updatedProject.endDate,
         };
       },
     }),

@@ -3,8 +3,8 @@ import { persist } from "zustand/middleware";
 import type { Movement } from "@maille/core/movements";
 import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
-import dayjs from "dayjs";
 import type { Mutation } from "@/mutations";
+import { storage } from "./storage";
 
 interface MovementsState {
   movements: Movement[];
@@ -13,7 +13,7 @@ interface MovementsState {
 
   addMovement: (params: {
     id?: UUID;
-    date: dayjs.Dayjs;
+    date: Date;
     amount: number;
     account: UUID;
     name: string;
@@ -23,7 +23,7 @@ interface MovementsState {
   updateMovement: (
     movementId: UUID,
     update: {
-      date?: dayjs.Dayjs;
+      date?: Date;
       amount?: number;
       account?: UUID;
       name?: string;
@@ -57,7 +57,7 @@ export const movementsStore = createStore<MovementsState>()(
         activities,
       }: {
         id?: UUID;
-        date: dayjs.Dayjs;
+        date: Date;
         amount: number;
         account: UUID;
         name: string;
@@ -83,7 +83,7 @@ export const movementsStore = createStore<MovementsState>()(
       updateMovement: (
         movementId: UUID,
         update: {
-          date?: dayjs.Dayjs;
+          date?: Date;
           amount?: number;
           account?: UUID;
           name?: string;
@@ -143,13 +143,13 @@ export const movementsStore = createStore<MovementsState>()(
         if (event.type === "createMovement") {
           get().addMovement({
             ...event.payload,
-            date: dayjs(event.payload.date),
+            date: new Date(event.payload.date),
             activities: [],
           });
         } else if (event.type === "updateMovement") {
           get().updateMovement(event.payload.id, {
             ...event.payload,
-            date: event.payload.date ? dayjs(event.payload.date) : undefined,
+            date: event.payload.date ? new Date(event.payload.date) : undefined,
           });
         } else if (event.type === "deleteMovement") {
           get().deleteMovement(event.payload.id);
@@ -166,7 +166,7 @@ export const movementsStore = createStore<MovementsState>()(
         } else if (event.name === "updateMovement") {
           get().updateMovement(event.variables.id, {
             ...event.rollbackData,
-            date: dayjs(event.rollbackData.date),
+            date: new Date(event.rollbackData.date),
           });
         } else if (event.name === "deleteMovement") {
           get().restoreMovement(event.rollbackData);
@@ -175,7 +175,7 @@ export const movementsStore = createStore<MovementsState>()(
     }),
     {
       name: "movements",
+      storage: storage,
     },
   ),
 );
-

@@ -1,6 +1,5 @@
-import dayjs, { type ManipulateType } from "dayjs";
-
 import { type Liability, type LiabilityFilter } from "./types.js";
+import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
 
 const hasValue = (
   filter: LiabilityFilter,
@@ -19,27 +18,26 @@ export const verifyLiabilityFilter = (
   else if (!hasValue(filter)) return true;
 
   if (filter.field === "date") {
-    let comparator = dayjs().startOf("day");
+    let comparator = startOfDay(new Date());
     if ((filter.value as string).includes("ago")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.subtract(
-        parseInt(number!),
-        period as ManipulateType,
-      );
+      // @ts-ignore
+      comparator = sub(comparator, { [period]: parseInt(number!) });
     } else if ((filter.value as string).includes("from now")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.add(parseInt(number!), period as ManipulateType);
+      // @ts-ignore
+      comparator = add(comparator, { [period]: parseInt(number!) });
     }
 
     if (filter.operator === "before") {
       return (
-        liability.date.isBefore(comparator, "day") ||
-        liability.date.isSame(comparator, "day")
+        isBefore(liability.date, comparator) ||
+        isEqual(liability.date, comparator)
       );
     } else if (filter.operator === "after") {
       return (
-        liability.date.isAfter(comparator, "day") ||
-        liability.date.isSame(comparator, "day")
+        isAfter(liability.date, comparator) ||
+        isEqual(liability.date, comparator)
       );
     } else {
       throw Error("operator not valid");

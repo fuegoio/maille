@@ -5,6 +5,7 @@ import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import { authStore } from "./auth";
 import type { Mutation } from "@/mutations";
+import { storage } from "./storage";
 
 export const ACCOUNT_TYPES_COLOR = {
   [AccountType.BANK_ACCOUNT]: "bg-indigo-400",
@@ -172,7 +173,7 @@ export const accountsStore = createStore<AccountsState>()(
     }),
     {
       name: "accounts",
+      storage: storage,
     },
   ),
 );
-

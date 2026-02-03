@@ -1,6 +1,5 @@
-import dayjs, { type ManipulateType } from "dayjs";
-
 import { type Movement, type MovementFilter } from "./types.js";
+import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
 
 const hasValue = (
   filter: MovementFilter,
@@ -19,27 +18,25 @@ export const verifyMovementFilter = (
   else if (!hasValue(filter)) return true;
 
   if (filter.field === "date") {
-    let comparator = dayjs().startOf("day");
+    let comparator = startOfDay(new Date());
     if ((filter.value as string).includes("ago")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.subtract(
-        parseInt(number!),
-        period as ManipulateType,
-      );
+      // @ts-ignore
+      comparator = sub(comparator, { [period]: parseInt(number!) });
     } else if ((filter.value as string).includes("from now")) {
       const [number, period] = (filter.value as string).split(" ");
-      comparator = comparator.add(parseInt(number!), period as ManipulateType);
+      // @ts-ignore
+      comparator = add(comparator, { [period]: parseInt(number!) });
     }
 
     if (filter.operator === "before") {
       return (
-        movement.date.isBefore(comparator, "day") ||
-        movement.date.isSame(comparator, "day")
+        isBefore(movement.date, comparator) ||
+        isEqual(movement.date, comparator)
       );
     } else if (filter.operator === "after") {
       return (
-        movement.date.isAfter(comparator, "day") ||
-        movement.date.isSame(comparator, "day")
+        isAfter(movement.date, comparator) || isEqual(movement.date, comparator)
       );
     } else {
       throw Error("operator not valid");
@@ -84,3 +81,4 @@ export const verifyMovementFilter = (
     throw Error("field not valid");
   }
 };
+

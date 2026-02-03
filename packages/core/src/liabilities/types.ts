@@ -6,7 +6,6 @@ import type {
   ActivityFilterNameDescriptionOperators,
 } from "#activities/types.ts";
 import type { UUID } from "crypto";
-import type dayjs from "dayjs";
 
 export type Liability = {
   id: UUID;
@@ -14,7 +13,7 @@ export type Liability = {
   activity: UUID | null;
   account: UUID;
   name: string;
-  date: dayjs.Dayjs;
+  date: Date;
 };
 
 type LiabilityFilterNameDescription = {
@@ -26,7 +25,7 @@ type LiabilityFilterNameDescription = {
 type LiabilityFilterDate = {
   field: "date";
   operator?: (typeof ActivityFilterDateOperators)[number];
-  value?: (typeof ActivityFilterDateValues)[number] | dayjs.Dayjs;
+  value?: (typeof ActivityFilterDateValues)[number] | Date;
 };
 
 type LiabilityFilterAmount = {

@@ -3,9 +3,9 @@ import { persist } from "zustand/middleware";
 import type { Project } from "@maille/core/projects";
 import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
-import dayjs from "dayjs";
 import type { Mutation } from "@/mutations";
 import { activitiesStore } from "./activities";
+import { storage } from "./storage";
 
 interface ProjectsState {
   projects: Project[];
@@ -16,8 +16,8 @@ interface ProjectsState {
     id?: UUID;
     name: string;
     emoji: string | null;
-    startDate: dayjs.Dayjs | null;
-    endDate: dayjs.Dayjs | null;
+    startDate: Date | null;
+    endDate: Date | null;
   }) => Project;
 
   updateProject: (
@@ -25,8 +25,8 @@ interface ProjectsState {
     update: {
       name?: string;
       emoji?: string | null;
-      startDate?: dayjs.Dayjs | null;
-      endDate?: dayjs.Dayjs | null;
+      startDate?: Date | null;
+      endDate?: Date | null;
     },
   ) => void;
 
@@ -57,8 +57,8 @@ export const projectsStore = createStore<ProjectsState>()(
         id?: UUID;
         name: string;
         emoji: string | null;
-        startDate: dayjs.Dayjs | null;
-        endDate: dayjs.Dayjs | null;
+        startDate: Date | null;
+        endDate: Date | null;
       }): Project => {
         const newProject = {
           id: id ?? crypto.randomUUID(),
@@ -81,8 +81,8 @@ export const projectsStore = createStore<ProjectsState>()(
         update: {
           name?: string;
           emoji?: string | null;
-          startDate?: dayjs.Dayjs | null;
-          endDate?: dayjs.Dayjs | null;
+          startDate?: Date | null;
+          endDate?: Date | null;
         },
       ) => {
         set((state) => ({
@@ -143,12 +143,12 @@ export const projectsStore = createStore<ProjectsState>()(
             startDate:
               event.payload.startDate !== null &&
               event.payload.startDate !== undefined
-                ? dayjs(event.payload.startDate)
+                ? new Date(event.payload.startDate)
                 : event.payload.startDate,
             endDate:
               event.payload.endDate !== null &&
               event.payload.endDate !== undefined
-                ? dayjs(event.payload.endDate)
+                ? new Date(event.payload.endDate)
                 : event.payload.endDate,
           });
         } else if (event.type === "deleteProject") {
@@ -174,7 +174,7 @@ export const projectsStore = createStore<ProjectsState>()(
     }),
     {
       name: "projects",
+      storage,
     },
   ),
 );
-

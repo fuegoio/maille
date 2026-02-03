@@ -3,7 +3,6 @@ import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
 import { eq } from "drizzle-orm";
 import { db } from "@/database";
-import dayjs from "dayjs";
 import { validateWorkspace } from "@/services/workspaces";
 
 export const registerProjectsQueries = () => {
@@ -23,8 +22,8 @@ export const registerProjectsQueries = () => {
 
         return projectsQuery.map((project) => ({
           ...project,
-          startDate: project.startDate ? dayjs(project.startDate) : null,
-          endDate: project.endDate ? dayjs(project.endDate) : null,
+          startDate: project.startDate,
+          endDate: project.endDate,
         }));
       },
     }),

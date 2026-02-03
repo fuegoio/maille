@@ -1,6 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User, Session } from "better-auth";
+import { storage } from "./storage";
 
 interface AuthState {
   user: User | null;
@@ -22,6 +23,7 @@ export const authStore = createStore<AuthState>()(
     }),
     {
       name: "auth",
+      storage: storage,
     },
   ),
 );

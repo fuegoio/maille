@@ -5,6 +5,7 @@ import type { UUID } from "crypto";
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";
 import type { MovementFilter } from "@maille/core/movements";
+import { storage } from "./storage";
 
 type ActivityView = {
   id: string;
@@ -102,7 +103,7 @@ export const viewsStore = createStore<ViewsState>()(
     }),
     {
       name: "views",
+      storage: storage,
     },
   ),
 );
-

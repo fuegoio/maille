@@ -20,7 +20,6 @@ import {
   getActivityTransactionsReconciliationSum,
   type Activity,
 } from "@maille/core/activities";
-import dayjs from "dayjs";
 import { validateWorkspace } from "@/services/workspaces";
 
 export const registerActivitiesQueries = () => {
@@ -61,7 +60,7 @@ export const registerActivitiesQueries = () => {
             if (!activity) {
               activity = {
                 ...row.activities,
-                date: dayjs(row.activities.date),
+                date: row.activities.date,
                 transactions: [],
                 movements: [],
               };
@@ -86,7 +85,7 @@ export const registerActivitiesQueries = () => {
               accountsQuery,
             ),
             status: getActivityStatus(
-              dayjs(a.date),
+              a.date,
               a.transactions,
               a.movements,
               accountsQuery,
@@ -99,7 +98,7 @@ export const registerActivitiesQueries = () => {
                 if (!movement) return;
                 return {
                   ...movement,
-                  date: dayjs(movement.date),
+                  date: movement.date,
                   status: "completed",
                   activities: [],
                 };

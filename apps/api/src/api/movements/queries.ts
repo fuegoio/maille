@@ -3,7 +3,6 @@ import { builder } from "../builder";
 import { MovementSchema } from "./schemas";
 import { movements, movementsActivities } from "@/tables";
 import { eq, and } from "drizzle-orm";
-import dayjs from "dayjs";
 import type { Movement } from "@maille/core/movements";
 import { validateWorkspace } from "@/services/workspaces";
 
@@ -38,7 +37,7 @@ export const registerMovementsQueries = () => {
             if (!movement) {
               movement = {
                 ...row.movements,
-                date: dayjs(row.movements.date),
+                date: row.movements.date,
                 activities: [],
               };
               acc.push(movement);

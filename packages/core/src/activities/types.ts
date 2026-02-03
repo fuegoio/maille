@@ -1,5 +1,3 @@
-import type dayjs from "dayjs";
-
 import type { UUID } from "crypto";
 
 export type Transaction = {
@@ -44,7 +42,7 @@ export type Activity = {
   number: number;
   name: string;
   description: string | null;
-  date: dayjs.Dayjs;
+  date: Date;
   type: ActivityType;
   category: UUID | null;
   subcategory: UUID | null;
@@ -144,7 +142,7 @@ type ActivityFilterNameDescription = {
 type ActivityFilterDate = {
   field: "date";
   operator?: (typeof ActivityFilterDateOperators)[number];
-  value?: (typeof ActivityFilterDateValues)[number] | dayjs.Dayjs;
+  value?: (typeof ActivityFilterDateValues)[number] | Date;
 };
 
 type ActivityFilterAmount = {

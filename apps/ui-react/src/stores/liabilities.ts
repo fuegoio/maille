@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import type { Liability } from "@maille/core/liabilities";
 import type { UUID } from "crypto";
 import type { Activity } from "@maille/core/activities";
+import { storage } from "./storage";
 
 interface LiabilitiesState {
   liabilities: Liability[];
@@ -79,6 +80,7 @@ export const liabilitiesStore = createStore<LiabilitiesState>()(
     }),
     {
       name: "liabilities",
+      storage: storage,
     },
   ),
 );

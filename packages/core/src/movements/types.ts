@@ -1,5 +1,4 @@
 import type { UUID } from "crypto";
-import type dayjs from "dayjs";
 
 import type {
   ActivityFilterAmountOperators,
@@ -13,7 +12,7 @@ export type MovementStatus = "incomplete" | "completed";
 
 export type Movement = {
   id: UUID;
-  date: dayjs.Dayjs;
+  date: Date;
   amount: number;
   account: UUID;
   name: string;
@@ -63,7 +62,7 @@ type MovementFilterName = {
 type MovementFilterDate = {
   field: "date";
   operator?: (typeof ActivityFilterDateOperators)[number];
-  value?: (typeof ActivityFilterDateValues)[number] | dayjs.Dayjs;
+  value?: (typeof ActivityFilterDateValues)[number] | Date;
 };
 
 type MovementFilterAmount = {

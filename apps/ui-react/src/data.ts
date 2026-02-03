@@ -6,7 +6,6 @@ import { activitiesStore } from "./stores/activities";
 import { movementsStore } from "./stores/movements";
 import { projectsStore } from "./stores/projects";
 import { liabilitiesStore } from "./stores/liabilities";
-import dayjs from "dayjs";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
 import type { UUID } from "crypto";
@@ -143,7 +142,7 @@ export const fetchWorkspaceData = async (workspaceId: UUID) => {
       number: activity.number,
       name: activity.name,
       description: activity.description,
-      date: dayjs(activity.date),
+      date: new Date(activity.date),
       type: activity.type as ActivityType,
       category: activity.category,
       subcategory: activity.subcategory,
@@ -175,7 +174,7 @@ export const fetchWorkspaceData = async (workspaceId: UUID) => {
   workspaceData.movements.forEach((movement) => {
     movementsStore.getState().addMovement({
       id: movement.id,
-      date: dayjs(movement.date),
+      date: new Date(movement.date),
       amount: movement.amount,
       account: movement.account,
       name: movement.name,

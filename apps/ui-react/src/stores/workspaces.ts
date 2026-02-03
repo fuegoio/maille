@@ -4,6 +4,7 @@ import type { Workspace } from "@maille/core/workspaces";
 import { graphqlClient } from "@/gql/client";
 import { graphql } from "@/gql";
 import type { UUID } from "crypto";
+import { storage } from "./storage";
 
 export interface AvailableWorkspace {
   id: UUID;
@@ -60,6 +61,7 @@ export const workspacesStore = createStore<WorkspacesState>()(
     }),
     {
       name: "workspaces",
+      storage: storage,
     },
   ),
 );

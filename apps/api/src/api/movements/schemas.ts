@@ -12,7 +12,7 @@ MovementSchema.implement({
     }),
     date: t.field({
       type: "Date",
-      resolve: (parent) => parent.date.toDate(),
+      resolve: (parent) => parent.date,
     }),
     amount: t.exposeFloat("amount"),
     account: t.field({

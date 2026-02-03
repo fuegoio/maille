@@ -10,10 +10,10 @@ import {
 } from "@maille/core/activities";
 import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
-import dayjs from "dayjs";
 import { accountsStore } from "./accounts";
 import { movementsStore } from "./movements";
 import type { Mutation } from "@/mutations";
+import { storage } from "./storage";
 
 interface ActivitiesState {
   activities: Activity[];
@@ -32,7 +32,7 @@ interface ActivitiesState {
     number: number;
     name: string;
     description: string | null;
-    date: dayjs.Dayjs;
+    date: Date;
     type: ActivityType;
     category: UUID | null;
     subcategory: UUID | null;
@@ -46,7 +46,7 @@ interface ActivitiesState {
     update: {
       name?: string;
       description?: string | null;
-      date?: dayjs.Dayjs;
+      date?: Date;
       type?: ActivityType;
       category?: UUID | null;
       subcategory?: UUID | null;
@@ -147,7 +147,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         number: number;
         name: string;
         description: string | null;
-        date: dayjs.Dayjs;
+        date: Date;
         type: ActivityType;
         category: UUID | null;
         subcategory: UUID | null;
@@ -197,7 +197,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         update: {
           name?: string;
           description?: string | null;
-          date?: dayjs.Dayjs;
+          date?: Date;
           type?: ActivityType;
           category?: UUID | null;
           subcategory?: UUID | null;
@@ -423,13 +423,13 @@ export const activitiesStore = createStore<ActivitiesState>()(
         if (event.type === "createActivity") {
           get().addActivity({
             ...event.payload,
-            date: dayjs(event.payload.date),
+            date: new Date(event.payload.date),
             movements: event.payload.movement ? [event.payload.movement] : [],
           });
         } else if (event.type === "updateActivity") {
           get().updateActivity(event.payload.id, {
             ...event.payload,
-            date: event.payload.date ? dayjs(event.payload.date) : undefined,
+            date: event.payload.date ? new Date(event.payload.date) : undefined,
           });
         } else if (event.type === "deleteActivity") {
           get().deleteActivity(event.payload.id);
@@ -462,7 +462,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         } else if (event.name === "updateActivity") {
           get().updateActivity(event.variables.id, {
             ...event.rollbackData,
-            date: dayjs(event.rollbackData.date),
+            date: new Date(event.rollbackData.date),
             type: event.rollbackData.type as ActivityType,
           });
         } else if (event.name === "deleteActivity") {
@@ -488,6 +488,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
     }),
     {
       name: "activities",
+      storage: storage,
     },
   ),
 );

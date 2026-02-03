@@ -14,14 +14,14 @@ ProjectSchema.implement({
     startDate: t.field({
       type: "Date",
       resolve: (parent) => {
-        return parent.startDate?.toDate();
+        return parent.startDate;
       },
       nullable: true,
     }),
     endDate: t.field({
       type: "Date",
       resolve: (parent) => {
-        return parent.endDate?.toDate();
+        return parent.endDate;
       },
       nullable: true,
     }),
