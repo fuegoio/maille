@@ -20,6 +20,7 @@ import {
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { useStore } from "zustand";
 import { workspacesStore } from "@/stores/workspaces";
+import { authStore } from "@/stores/auth";
 
 const data = {
   navAnalysis: [
@@ -91,6 +92,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useStore(authStore, (state) => state.user);
+
   const availableWorkspaces = useStore(
     workspacesStore,
     (state) => state.availableWorkspaces,
@@ -108,6 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <WorkspaceSwitcher
+          user={user}
           availableWorkspaces={availableWorkspaces}
           currentWorkspace={currentWorkspace}
         />

@@ -72,7 +72,7 @@
   --sidebar-accent: oklch(0.274 0.006 286.033);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.3715 0 0);
-  --sidebar-ring: oklch(0.7686 0.1647 70.0804);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
 @theme inline {

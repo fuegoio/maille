@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, LogOut, Plus } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -17,11 +17,15 @@ import {
 import type { AvailableWorkspace } from "@/stores/workspaces";
 import type { Workspace } from "@maille/core/workspaces";
 import { Link } from "@tanstack/react-router";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import type { User } from "better-auth";
 
 export function WorkspaceSwitcher({
+  user,
   currentWorkspace,
   availableWorkspaces,
 }: {
+  user: User;
   currentWorkspace: Workspace;
   availableWorkspaces: AvailableWorkspace[];
 }) {
@@ -48,6 +52,24 @@ export function WorkspaceSwitcher({
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs">{user.email}</span>
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <LogOut />
+              Log out
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Workspaces
             </DropdownMenuLabel>
