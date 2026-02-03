@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useStore } from "zustand";
 import { workspacesStore } from "@/stores/workspaces";
+import { fetchWorkspaceData } from "@/data";
 
 export const CreateWorkspaceMutation = graphql(`
   mutation CreateWorkspace(
@@ -97,6 +98,8 @@ function RouteComponent() {
         ...response.createWorkspace,
         startingDate: new Date(response.createWorkspace.startingDate),
       });
+
+      await fetchWorkspaceData(response.createWorkspace.id);
       navigate({ to: "/" });
     } catch (error) {
       console.error("Failed to create workspace:", error);

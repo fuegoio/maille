@@ -23,6 +23,7 @@ interface WorkspacesState {
   availableWorkspaces: AvailableWorkspace[] | null;
   fetchWorkspaces: () => Promise<AvailableWorkspace[]>;
   createWorkspace: (workspace: Workspace) => void;
+  setCurrentWorkspace: (workspace: Workspace) => void;
 }
 
 export const workspacesStore = createStore<WorkspacesState>()(
@@ -47,6 +48,11 @@ export const workspacesStore = createStore<WorkspacesState>()(
               name: workspace.name,
             },
           ]),
+          currentWorkspace: workspace,
+        });
+      },
+      setCurrentWorkspace: (workspace) => {
+        set({
           currentWorkspace: workspace,
         });
       },

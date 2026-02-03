@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { fetchWorkspaceData } from "@/data";
 import { workspacesStore } from "@/stores/workspaces";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
@@ -16,6 +17,12 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
       }
     } else {
       workspacesState.fetchWorkspaces();
+    }
+
+    if (workspacesState.currentWorkspace === null) {
+      const firstWorkspace = workspacesStore.getState().availableWorkspaces![0];
+
+      await fetchWorkspaceData(firstWorkspace.id);
     }
   },
 });
