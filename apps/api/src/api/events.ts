@@ -54,9 +54,7 @@ builder.queryField("events", (t) =>
       const eventsQuery = await db
         .select()
         .from(events)
-        .where(
-          and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user.id)),
-        );
+        .where(and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user.id)));
 
       logger.info(
         `[${ctx.user.id}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,

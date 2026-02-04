@@ -13,8 +13,7 @@ export interface SchemaTypes {
   Context: SessionData;
 }
 
-export type TypesWithDefaults =
-  PothosSchemaTypes.ExtendDefaultTypes<SchemaTypes>;
+export type TypesWithDefaults = PothosSchemaTypes.ExtendDefaultTypes<SchemaTypes>;
 
 export const builder = new SchemaBuilder<TypesWithDefaults>({
   defaultFieldNullability: false,

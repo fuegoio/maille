@@ -35,21 +35,13 @@ export const startServer = () => {
 
       // Apply CORS headers to the response
       res.headers.set("Access-Control-Allow-Origin", "*");
-      res.headers.set(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS",
-      );
-      res.headers.set(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization",
-      );
+      res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
       // Return the response
       return res;
     },
   });
 
-  logger.info(
-    `Server is running on ${`http://${server.hostname}:${server.port}`}/api`,
-  );
+  logger.info(`Server is running on ${`http://${server.hostname}:${server.port}`}/api`);
 };

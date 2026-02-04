@@ -45,10 +45,7 @@ export const registerWorkspaceQueries = () => {
 
         const userIds = workspaceUsersList.map((wu) => wu.user);
 
-        const usersList = await db
-          .select()
-          .from(user)
-          .where(inArray(user.id, userIds));
+        const usersList = await db.select().from(user).where(inArray(user.id, userIds));
 
         const usersData = usersList.map((user) => ({
           id: user.id,

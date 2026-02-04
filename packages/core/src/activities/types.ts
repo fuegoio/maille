@@ -102,10 +102,7 @@ export const ActivityFilterAmountOperators = [
 
 export const ActivityFilterMultipleOperators = ["is any of", "is not"] as const;
 
-export const ActivityFilterCategoryOperators = [
-  "is defined",
-  "is not defined",
-] as const;
+export const ActivityFilterCategoryOperators = ["is defined", "is not defined"] as const;
 
 export const ActivityFilterFields: {
   value: ActivityFilter["field"];

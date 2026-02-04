@@ -46,9 +46,7 @@ function ActivitiesPage() {
           </div>
           <Button size="sm" className="gap-1">
             <PlusIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add Activity
-            </span>
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Add Activity</span>
           </Button>
         </div>
       </header>
@@ -70,15 +68,10 @@ function ActivitiesPage() {
                 </thead>
                 <tbody>
                   {activities.map((activity) => (
-                    <tr
-                      key={activity.id}
-                      className="border-b hover:bg-muted/50"
-                    >
+                    <tr key={activity.id} className="border-b hover:bg-muted/50">
                       <td className="px-4 py-3">{activity.number}</td>
                       <td className="px-4 py-3">{activity.name}</td>
-                      <td className="px-4 py-3">
-                        {activity.date.format("YYYY-MM-DD")}
-                      </td>
+                      <td className="px-4 py-3">{activity.date.format("YYYY-MM-DD")}</td>
                       <td
                         className={`px-4 py-3 ${activity.amount < 0 ? "text-red-500" : "text-green-500"}`}
                       >

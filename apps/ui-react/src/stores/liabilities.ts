@@ -53,9 +53,7 @@ export const liabilitiesStore = createStore<LiabilitiesState>()(
       },
 
       getLiability: (account: UUID, activity: UUID): Liability | undefined => {
-        return get().liabilities.find(
-          (l) => l.account === account && l.activity === activity,
-        );
+        return get().liabilities.find((l) => l.account === account && l.activity === activity);
       },
 
       deleteLiabilitiesActivity: (activity: UUID) => {

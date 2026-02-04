@@ -10,10 +10,7 @@ const hasValue = (
   return filter.value !== undefined;
 };
 
-export const verifyLiabilityFilter = (
-  filter: LiabilityFilter,
-  liability: Liability,
-): boolean => {
+export const verifyLiabilityFilter = (filter: LiabilityFilter, liability: Liability): boolean => {
   if (filter.operator === undefined) return true;
   else if (!hasValue(filter)) return true;
 
@@ -30,35 +27,23 @@ export const verifyLiabilityFilter = (
     }
 
     if (filter.operator === "before") {
-      return (
-        isBefore(liability.date, comparator) ||
-        isEqual(liability.date, comparator)
-      );
+      return isBefore(liability.date, comparator) || isEqual(liability.date, comparator);
     } else if (filter.operator === "after") {
-      return (
-        isAfter(liability.date, comparator) ||
-        isEqual(liability.date, comparator)
-      );
+      return isAfter(liability.date, comparator) || isEqual(liability.date, comparator);
     } else {
       throw Error("operator not valid");
     }
   } else if (filter.field === "amount") {
     if (filter.operator === "less") return liability.amount < filter.value;
-    else if (filter.operator === "less or equal")
-      return liability.amount <= filter.value;
-    else if (filter.operator === "equal")
-      return liability.amount === filter.value;
-    else if (filter.operator === "not equal")
-      return liability.amount !== filter.value;
-    else if (filter.operator === "greater or equal")
-      return liability.amount >= filter.value;
-    else if (filter.operator === "greater")
-      return liability.amount > filter.value;
+    else if (filter.operator === "less or equal") return liability.amount <= filter.value;
+    else if (filter.operator === "equal") return liability.amount === filter.value;
+    else if (filter.operator === "not equal") return liability.amount !== filter.value;
+    else if (filter.operator === "greater or equal") return liability.amount >= filter.value;
+    else if (filter.operator === "greater") return liability.amount > filter.value;
     else throw Error("operator not valid");
   } else if (filter.field === "name") {
     const value = liability[filter.field];
-    if (filter.operator === "is")
-      return value?.toLowerCase() === filter.value.toLowerCase();
+    if (filter.operator === "is") return value?.toLowerCase() === filter.value.toLowerCase();
     else if (filter.operator === "is not")
       return value?.toLowerCase() !== filter.value.toLowerCase();
     else if (filter.operator === "contains")

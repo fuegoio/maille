@@ -118,10 +118,7 @@ export const accountsStore = createStore<AccountsState>()(
                   update.startingCashBalance !== undefined
                     ? update.startingCashBalance
                     : account.startingCashBalance,
-                movements:
-                  update.movements !== undefined
-                    ? update.movements
-                    : account.movements,
+                movements: update.movements !== undefined ? update.movements : account.movements,
               };
             }
             return account;
@@ -131,9 +128,7 @@ export const accountsStore = createStore<AccountsState>()(
 
       deleteAccount: (accountId: UUID) => {
         set((state) => ({
-          accounts: state.accounts.filter(
-            (account) => account.id !== accountId,
-          ),
+          accounts: state.accounts.filter((account) => account.id !== accountId),
         }));
       },
 

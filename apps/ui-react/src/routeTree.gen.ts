@@ -8,187 +8,182 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
-import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
-import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
-import { Route as AuthenticatedWorkspaceActivitiesRouteImport } from './routes/_authenticated/_workspace/activities'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as SignupRouteImport } from "./routes/signup";
+import { Route as LoginRouteImport } from "./routes/login";
+import { Route as AuthenticatedRouteImport } from "./routes/_authenticated";
+import { Route as AuthenticatedJoinRouteImport } from "./routes/_authenticated/join";
+import { Route as AuthenticatedWorkspaceRouteImport } from "./routes/_authenticated/_workspace";
+import { Route as AuthenticatedWorkspaceIndexRouteImport } from "./routes/_authenticated/_workspace/index";
+import { Route as AuthenticatedWorkspaceActivitiesRouteImport } from "./routes/_authenticated/_workspace/activities";
 
 const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
+  id: "/signup",
+  path: "/signup",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+  id: "/login",
+  path: "/login",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+  id: "/_authenticated",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthenticatedJoinRoute = AuthenticatedJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
+  id: "/join",
+  path: "/join",
   getParentRoute: () => AuthenticatedRoute,
-} as any)
+} as any);
 const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
-  id: '/_workspace',
+  id: "/_workspace",
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedWorkspaceIndexRoute =
-  AuthenticatedWorkspaceIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceActivitiesRoute =
-  AuthenticatedWorkspaceActivitiesRouteImport.update({
-    id: '/activities',
-    path: '/activities',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
+} as any);
+const AuthenticatedWorkspaceIndexRoute = AuthenticatedWorkspaceIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => AuthenticatedWorkspaceRoute,
+} as any);
+const AuthenticatedWorkspaceActivitiesRoute = AuthenticatedWorkspaceActivitiesRouteImport.update({
+  id: "/activities",
+  path: "/activities",
+  getParentRoute: () => AuthenticatedWorkspaceRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedWorkspaceIndexRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
-  '/join': typeof AuthenticatedJoinRoute
-  '/activities': typeof AuthenticatedWorkspaceActivitiesRoute
+  "/": typeof AuthenticatedWorkspaceIndexRoute;
+  "/login": typeof LoginRoute;
+  "/signup": typeof SignupRoute;
+  "/join": typeof AuthenticatedJoinRoute;
+  "/activities": typeof AuthenticatedWorkspaceActivitiesRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof AuthenticatedWorkspaceIndexRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
-  '/join': typeof AuthenticatedJoinRoute
-  '/activities': typeof AuthenticatedWorkspaceActivitiesRoute
+  "/": typeof AuthenticatedWorkspaceIndexRoute;
+  "/login": typeof LoginRoute;
+  "/signup": typeof SignupRoute;
+  "/join": typeof AuthenticatedJoinRoute;
+  "/activities": typeof AuthenticatedWorkspaceActivitiesRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupRoute
-  '/_authenticated/_workspace': typeof AuthenticatedWorkspaceRouteWithChildren
-  '/_authenticated/join': typeof AuthenticatedJoinRoute
-  '/_authenticated/_workspace/activities': typeof AuthenticatedWorkspaceActivitiesRoute
-  '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
+  __root__: typeof rootRouteImport;
+  "/_authenticated": typeof AuthenticatedRouteWithChildren;
+  "/login": typeof LoginRoute;
+  "/signup": typeof SignupRoute;
+  "/_authenticated/_workspace": typeof AuthenticatedWorkspaceRouteWithChildren;
+  "/_authenticated/join": typeof AuthenticatedJoinRoute;
+  "/_authenticated/_workspace/activities": typeof AuthenticatedWorkspaceActivitiesRoute;
+  "/_authenticated/_workspace/": typeof AuthenticatedWorkspaceIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup' | '/join' | '/activities'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/join' | '/activities'
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "/login" | "/signup" | "/join" | "/activities";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/login" | "/signup" | "/join" | "/activities";
   id:
-    | '__root__'
-    | '/_authenticated'
-    | '/login'
-    | '/signup'
-    | '/_authenticated/_workspace'
-    | '/_authenticated/join'
-    | '/_authenticated/_workspace/activities'
-    | '/_authenticated/_workspace/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/_authenticated"
+    | "/login"
+    | "/signup"
+    | "/_authenticated/_workspace"
+    | "/_authenticated/join"
+    | "/_authenticated/_workspace/activities"
+    | "/_authenticated/_workspace/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  SignupRoute: typeof SignupRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren;
+  LoginRoute: typeof LoginRoute;
+  SignupRoute: typeof SignupRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/join': {
-      id: '/_authenticated/join'
-      path: '/join'
-      fullPath: '/join'
-      preLoaderRoute: typeof AuthenticatedJoinRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/_workspace': {
-      id: '/_authenticated/_workspace'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/_workspace/': {
-      id: '/_authenticated/_workspace/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
-    }
-    '/_authenticated/_workspace/activities': {
-      id: '/_authenticated/_workspace/activities'
-      path: '/activities'
-      fullPath: '/activities'
-      preLoaderRoute: typeof AuthenticatedWorkspaceActivitiesRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
-    }
+    "/signup": {
+      id: "/signup";
+      path: "/signup";
+      fullPath: "/signup";
+      preLoaderRoute: typeof SignupRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/login": {
+      id: "/login";
+      path: "/login";
+      fullPath: "/login";
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated": {
+      id: "/_authenticated";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof AuthenticatedRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated/join": {
+      id: "/_authenticated/join";
+      path: "/join";
+      fullPath: "/join";
+      preLoaderRoute: typeof AuthenticatedJoinRouteImport;
+      parentRoute: typeof AuthenticatedRoute;
+    };
+    "/_authenticated/_workspace": {
+      id: "/_authenticated/_workspace";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport;
+      parentRoute: typeof AuthenticatedRoute;
+    };
+    "/_authenticated/_workspace/": {
+      id: "/_authenticated/_workspace/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport;
+      parentRoute: typeof AuthenticatedWorkspaceRoute;
+    };
+    "/_authenticated/_workspace/activities": {
+      id: "/_authenticated/_workspace/activities";
+      path: "/activities";
+      fullPath: "/activities";
+      preLoaderRoute: typeof AuthenticatedWorkspaceActivitiesRouteImport;
+      parentRoute: typeof AuthenticatedWorkspaceRoute;
+    };
   }
 }
 
 interface AuthenticatedWorkspaceRouteChildren {
-  AuthenticatedWorkspaceActivitiesRoute: typeof AuthenticatedWorkspaceActivitiesRoute
-  AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
+  AuthenticatedWorkspaceActivitiesRoute: typeof AuthenticatedWorkspaceActivitiesRoute;
+  AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute;
 }
 
-const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
-  {
-    AuthenticatedWorkspaceActivitiesRoute:
-      AuthenticatedWorkspaceActivitiesRoute,
-    AuthenticatedWorkspaceIndexRoute: AuthenticatedWorkspaceIndexRoute,
-  }
+const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren = {
+  AuthenticatedWorkspaceActivitiesRoute: AuthenticatedWorkspaceActivitiesRoute,
+  AuthenticatedWorkspaceIndexRoute: AuthenticatedWorkspaceIndexRoute,
+};
 
-const AuthenticatedWorkspaceRouteWithChildren =
-  AuthenticatedWorkspaceRoute._addFileChildren(
-    AuthenticatedWorkspaceRouteChildren,
-  )
+const AuthenticatedWorkspaceRouteWithChildren = AuthenticatedWorkspaceRoute._addFileChildren(
+  AuthenticatedWorkspaceRouteChildren,
+);
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRouteWithChildren
-  AuthenticatedJoinRoute: typeof AuthenticatedJoinRoute
+  AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRouteWithChildren;
+  AuthenticatedJoinRoute: typeof AuthenticatedJoinRoute;
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWorkspaceRoute: AuthenticatedWorkspaceRouteWithChildren,
   AuthenticatedJoinRoute: AuthenticatedJoinRoute,
-}
+};
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
-)
+);
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

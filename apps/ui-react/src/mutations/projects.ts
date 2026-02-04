@@ -60,7 +60,4 @@ export type DeleteProjectMutation = MutationType<
   { project: Project; activities: UUID[] }
 >;
 
-export type ProjectMutation =
-  | CreateProjectMutation
-  | UpdateProjectMutation
-  | DeleteProjectMutation;
+export type ProjectMutation = CreateProjectMutation | UpdateProjectMutation | DeleteProjectMutation;

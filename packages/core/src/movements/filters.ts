@@ -10,10 +10,7 @@ const hasValue = (
   return filter.value !== undefined;
 };
 
-export const verifyMovementFilter = (
-  filter: MovementFilter,
-  movement: Movement,
-): boolean => {
+export const verifyMovementFilter = (filter: MovementFilter, movement: Movement): boolean => {
   if (filter.operator === undefined) return true;
   else if (!hasValue(filter)) return true;
 
@@ -30,34 +27,23 @@ export const verifyMovementFilter = (
     }
 
     if (filter.operator === "before") {
-      return (
-        isBefore(movement.date, comparator) ||
-        isEqual(movement.date, comparator)
-      );
+      return isBefore(movement.date, comparator) || isEqual(movement.date, comparator);
     } else if (filter.operator === "after") {
-      return (
-        isAfter(movement.date, comparator) || isEqual(movement.date, comparator)
-      );
+      return isAfter(movement.date, comparator) || isEqual(movement.date, comparator);
     } else {
       throw Error("operator not valid");
     }
   } else if (filter.field === "amount") {
     if (filter.operator === "less") return movement.amount < filter.value;
-    else if (filter.operator === "less or equal")
-      return movement.amount <= filter.value;
-    else if (filter.operator === "equal")
-      return movement.amount === filter.value;
-    else if (filter.operator === "not equal")
-      return movement.amount !== filter.value;
-    else if (filter.operator === "greater or equal")
-      return movement.amount >= filter.value;
-    else if (filter.operator === "greater")
-      return movement.amount > filter.value;
+    else if (filter.operator === "less or equal") return movement.amount <= filter.value;
+    else if (filter.operator === "equal") return movement.amount === filter.value;
+    else if (filter.operator === "not equal") return movement.amount !== filter.value;
+    else if (filter.operator === "greater or equal") return movement.amount >= filter.value;
+    else if (filter.operator === "greater") return movement.amount > filter.value;
     else throw Error("operator not valid");
   } else if (filter.field === "name") {
     const value = movement[filter.field];
-    if (filter.operator === "is")
-      return value?.toLowerCase() === filter.value.toLowerCase();
+    if (filter.operator === "is") return value?.toLowerCase() === filter.value.toLowerCase();
     else if (filter.operator === "is not")
       return value?.toLowerCase() !== filter.value.toLowerCase();
     else if (filter.operator === "contains")
@@ -81,4 +67,3 @@ export const verifyMovementFilter = (
     throw Error("field not valid");
   }
 };
-

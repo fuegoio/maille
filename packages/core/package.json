@@ -1,9 +1,8 @@
 {
   "name": "@maille/core",
   "type": "module",
-  "scripts": {
-    "dev": "tsc --watch",
-    "typecheck": "tsc"
+  "imports": {
+    "#*": "./src/*"
   },
   "exports": {
     "./activities": "./src/activities/index.ts",
@@ -16,15 +15,19 @@
     "./users": "./src/users/index.ts",
     "./workspaces": "./src/workspaces/index.ts"
   },
-  "devDependencies": {
-    "typescript": "^5.2.2",
-    "@types/lodash": "^4.14.191"
+  "scripts": {
+    "dev": "tsc --watch",
+    "typecheck": "tsc",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
     "lodash": "^4.17.21"
   },
-  "imports": {
-    "#*": "./src/*"
+  "devDependencies": {
+    "@types/lodash": "^4.14.191"
   }
 }

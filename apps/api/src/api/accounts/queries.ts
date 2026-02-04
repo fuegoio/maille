@@ -18,12 +18,7 @@ export const registerAccountsQueries = () => {
         return await db
           .select()
           .from(accounts)
-          .where(
-            and(
-              eq(accounts.user, ctx.user.id),
-              eq(accounts.workspace, args.workspaceId),
-            ),
-          );
+          .where(and(eq(accounts.user, ctx.user.id), eq(accounts.workspace, args.workspaceId)));
       },
     }),
   );

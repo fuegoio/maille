@@ -73,9 +73,7 @@ export const registerProjectsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const project = (
-          await db.select().from(projects).where(eq(projects.id, args.id))
-        )[0];
+        const project = (await db.select().from(projects).where(eq(projects.id, args.id)))[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
@@ -100,11 +98,7 @@ export const registerProjectsMutations = () => {
         }
 
         const updatedProject = (
-          await db
-            .update(projects)
-            .set(updates)
-            .where(eq(projects.id, args.id))
-            .returning()
+          await db.update(projects).set(updates).where(eq(projects.id, args.id)).returning()
         )[0];
 
         await addEvent({
@@ -112,12 +106,8 @@ export const registerProjectsMutations = () => {
           payload: {
             id: args.id,
             ...updates,
-            startDate:
-              updates.startDate === null
-                ? null
-                : updates.startDate?.toISOString(),
-            endDate:
-              updates.endDate === null ? null : updates.endDate?.toISOString(),
+            startDate: updates.startDate === null ? null : updates.startDate?.toISOString(),
+            endDate: updates.endDate === null ? null : updates.endDate?.toISOString(),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -142,19 +132,14 @@ export const registerProjectsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const project = (
-          await db.select().from(projects).where(eq(projects.id, args.id))
-        )[0];
+        const project = (await db.select().from(projects).where(eq(projects.id, args.id)))[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
 
         await validateWorkspace(project.workspace, ctx.user.id);
 
-        await db
-          .update(activities)
-          .set({ project: null })
-          .where(eq(activities.project, args.id));
+        await db.update(activities).set({ project: null }).where(eq(activities.project, args.id));
 
         await db.delete(projects).where(eq(projects.id, args.id));
 

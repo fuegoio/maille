@@ -1,29 +1,16 @@
 import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
-import {
-  OperatorsWithoutValue,
-  type Activity,
-  type ActivityFilter,
-} from "./types.js";
+import { OperatorsWithoutValue, type Activity, type ActivityFilter } from "./types.js";
 
 const hasValue = (
   filter: ActivityFilter,
 ): filter is ActivityFilter & {
-  operator: Exclude<
-    (typeof filter)["operator"],
-    (typeof OperatorsWithoutValue)[number]
-  >;
+  operator: Exclude<(typeof filter)["operator"], (typeof OperatorsWithoutValue)[number]>;
   value: NonNullable<(typeof filter)["value"]>;
 } => {
-  return (
-    filter.value !== undefined ||
-    OperatorsWithoutValue.includes(filter.operator as any)
-  );
+  return filter.value !== undefined || OperatorsWithoutValue.includes(filter.operator as any);
 };
 
-export const verifyActivityFilter = (
-  filter: ActivityFilter,
-  activity: Activity,
-): boolean => {
+export const verifyActivityFilter = (filter: ActivityFilter, activity: Activity): boolean => {
   if (filter.operator === undefined) return true;
   else if (!hasValue(filter)) return true;
 
@@ -40,34 +27,23 @@ export const verifyActivityFilter = (
     }
 
     if (filter.operator === "before") {
-      return (
-        isBefore(activity.date, comparator) ||
-        isEqual(activity.date, comparator)
-      );
+      return isBefore(activity.date, comparator) || isEqual(activity.date, comparator);
     } else if (filter.operator === "after") {
-      return (
-        isAfter(activity.date, comparator) || isEqual(activity.date, comparator)
-      );
+      return isAfter(activity.date, comparator) || isEqual(activity.date, comparator);
     } else {
       throw Error("operator not valid");
     }
   } else if (filter.field === "amount") {
     if (filter.operator === "less") return activity.amount < filter.value;
-    else if (filter.operator === "less or equal")
-      return activity.amount <= filter.value;
-    else if (filter.operator === "equal")
-      return activity.amount === filter.value;
-    else if (filter.operator === "not equal")
-      return activity.amount !== filter.value;
-    else if (filter.operator === "greater or equal")
-      return activity.amount >= filter.value;
-    else if (filter.operator === "greater")
-      return activity.amount > filter.value;
+    else if (filter.operator === "less or equal") return activity.amount <= filter.value;
+    else if (filter.operator === "equal") return activity.amount === filter.value;
+    else if (filter.operator === "not equal") return activity.amount !== filter.value;
+    else if (filter.operator === "greater or equal") return activity.amount >= filter.value;
+    else if (filter.operator === "greater") return activity.amount > filter.value;
     else throw Error("operator not valid");
   } else if (filter.field === "name" || filter.field === "description") {
     const value = activity[filter.field];
-    if (filter.operator === "is")
-      return value?.toLowerCase() === filter.value.toLowerCase();
+    if (filter.operator === "is") return value?.toLowerCase() === filter.value.toLowerCase();
     else if (filter.operator === "is not")
       return value?.toLowerCase() !== filter.value.toLowerCase();
     else if (filter.operator === "contains")
@@ -76,10 +52,8 @@ export const verifyActivityFilter = (
       return !value?.toLowerCase().includes(filter.value.toLowerCase());
     else throw Error("operator not valid");
   } else if (filter.field === "type") {
-    if (filter.operator === "is any of")
-      return filter.value.includes(activity.type);
-    else if (filter.operator === "is not")
-      return !filter.value.includes(activity.type);
+    if (filter.operator === "is any of") return filter.value.includes(activity.type);
+    else if (filter.operator === "is not") return !filter.value.includes(activity.type);
     else throw Error("operator not valid");
   } else if (filter.field === "category" || filter.field === "subcategory") {
     const value = activity[filter.field];

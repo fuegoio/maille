@@ -200,11 +200,7 @@ export const registerActivitiesMutations = () => {
             newMovements,
             accountsQuery,
             (id) => {
-              const movement = db
-                .select()
-                .from(movements)
-                .where(eq(movements.id, id))
-                .get();
+              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
               if (!movement) return;
               return {
                 ...movement,
@@ -260,9 +256,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(
-              and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)),
-            )
+            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -347,11 +341,7 @@ export const registerActivitiesMutations = () => {
             movementsData,
             accountsQuery,
             (id) => {
-              const movement = db
-                .select()
-                .from(movements)
-                .where(eq(movements.id, id))
-                .get();
+              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
               if (!movement) return;
               return {
                 ...movement,
@@ -376,11 +366,7 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(eq(activities.id, args.id))
-            .limit(1)
+          await db.select().from(activities).where(eq(activities.id, args.id)).limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
@@ -392,9 +378,7 @@ export const registerActivitiesMutations = () => {
         }
 
         await db.delete(transactions).where(eq(transactions.activity, args.id));
-        await db
-          .delete(movementsActivities)
-          .where(eq(movementsActivities.activity, args.id));
+        await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
         await db.delete(activities).where(eq(activities.id, args.id));
 
         await addEvent({
@@ -435,11 +419,7 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(eq(activities.id, args.activityId))
-            .limit(1)
+          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
@@ -516,11 +496,7 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(eq(activities.id, args.activityId))
-            .limit(1)
+          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
@@ -532,12 +508,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(
-              and(
-                eq(transactions.id, args.id),
-                eq(transactions.activity, args.activityId),
-              ),
-            )
+            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
             .limit(1)
         )[0];
         if (!transaction) {
@@ -591,11 +562,7 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(eq(activities.id, args.activityId))
-            .limit(1)
+          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
@@ -607,12 +574,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(
-              and(
-                eq(transactions.id, args.id),
-                eq(transactions.activity, args.activityId),
-              ),
-            )
+            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
             .limit(1)
         )[0];
         if (!transaction) {
@@ -759,15 +721,8 @@ export const registerActivitiesMutations = () => {
             category: null,
             subcategory: null,
           })
-          .where(
-            and(
-              eq(activities.category, args.id),
-              eq(activities.user, ctx.user.id),
-            ),
-          );
-        await db
-          .delete(activityCategories)
-          .where(eq(activityCategories.id, args.id));
+          .where(and(eq(activities.category, args.id), eq(activities.user, ctx.user.id)));
+        await db.delete(activityCategories).where(eq(activityCategories.id, args.id));
 
         await addEvent({
           type: "deleteActivityCategory",
@@ -905,9 +860,7 @@ export const registerActivitiesMutations = () => {
             subcategory: null,
           })
           .where(eq(activities.subcategory, args.id));
-        await db
-          .delete(activitySubcategories)
-          .where(eq(activitySubcategories.id, args.id));
+        await db.delete(activitySubcategories).where(eq(activitySubcategories.id, args.id));
 
         await addEvent({
           type: "deleteActivitySubCategory",

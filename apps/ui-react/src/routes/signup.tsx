@@ -12,12 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Logo } from "@/components/logo";
 
 const searchParamsSchema = z.object({
@@ -39,9 +34,7 @@ export const Route = createFileRoute("/signup")({
 });
 
 const formSchema = z.object({
-  firstName: z
-    .string("First name is required.")
-    .min(1, "First name is required."),
+  firstName: z.string("First name is required.").min(1, "First name is required."),
   lastName: z.string("Last name is required.").min(1, "Last name is required."),
   email: z.string("Email is required.").min(1, "Email is required."),
   password: z.string("Password is required.").min(1, "Password is required."),
@@ -63,12 +56,7 @@ function RouteComponent() {
 
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async ({
-    email,
-    password,
-    firstName,
-    lastName,
-  }: z.infer<typeof formSchema>) => {
+  const onSubmit = async ({ email, password, firstName, lastName }: z.infer<typeof formSchema>) => {
     setLoading(true);
     const { error } = await authClient.signUp.email({
       email,
@@ -102,9 +90,7 @@ function RouteComponent() {
       <Logo className="text-muted size-12" />
       <div className="p-6 flex flex-col justify-center gap-6 max-w-sm w-full bg-card rounded-xl border">
         <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">
-            Create an account
-          </h1>
+          <h1 className="text-xl font-medium text-foreground">Create an account</h1>
           <div className="text-sm text-muted-foreground mt-2">
             Welcome! Create an account to get started.
           </div>
@@ -112,11 +98,7 @@ function RouteComponent() {
 
         <AnimatePresence mode="wait">
           {!needsVerify && (
-            <motion.div
-              key="signup-form"
-              exit={{ opacity: 0 }}
-              className="space-y-5"
-            >
+            <motion.div key="signup-form" exit={{ opacity: 0 }} className="space-y-5">
               <FieldGroup>
                 <Controller
                   name="firstName"
@@ -130,9 +112,7 @@ function RouteComponent() {
                         aria-invalid={fieldState.invalid}
                         className="h-9"
                       />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -149,9 +129,7 @@ function RouteComponent() {
                         aria-invalid={fieldState.invalid}
                         className="h-9"
                       />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -169,9 +147,7 @@ function RouteComponent() {
                         autoComplete="email"
                         className="h-9"
                       />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -190,9 +166,7 @@ function RouteComponent() {
                         autoComplete="new-password"
                         className="h-9"
                       />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -213,9 +187,7 @@ function RouteComponent() {
                           I agree to the Terms and Conditions
                         </Label>
                       </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -279,8 +251,8 @@ function RouteComponent() {
               className="space-y-4"
             >
               <div className="text-foreground text-sm text-center">
-                We sent you an email with a link to verify your email address.
-                Please check your inbox and click the link to verify your email.
+                We sent you an email with a link to verify your email address. Please check your
+                inbox and click the link to verify your email.
               </div>
             </motion.div>
           )}

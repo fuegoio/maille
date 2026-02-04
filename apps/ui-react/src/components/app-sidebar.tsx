@@ -11,12 +11,7 @@ import {
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { useStore } from "zustand";
 import { workspacesStore } from "@/stores/workspaces";
@@ -98,14 +93,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     throw new Error("no user available");
   }
 
-  const availableWorkspaces = useStore(
-    workspacesStore,
-    (state) => state.availableWorkspaces,
-  );
-  const currentWorkspace = useStore(
-    workspacesStore,
-    (state) => state.currentWorkspace,
-  );
+  const availableWorkspaces = useStore(workspacesStore, (state) => state.availableWorkspaces);
+  const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
 
   if (!availableWorkspaces || !currentWorkspace) {
     throw new Error("no workspace available");

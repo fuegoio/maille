@@ -58,8 +58,7 @@ ActivitySchema.implement({
   }),
 });
 
-export const ActivityMovementSchema =
-  builder.objectRef<ActivityMovement>("ActivityMovement");
+export const ActivityMovementSchema = builder.objectRef<ActivityMovement>("ActivityMovement");
 
 ActivityMovementSchema.implement({
   fields: (t) => ({
@@ -105,8 +104,7 @@ TransactionSchema.implement({
   }),
 });
 
-export const ActivityCategorySchema =
-  builder.objectRef<ActivityCategory>("ActivityCategory");
+export const ActivityCategorySchema = builder.objectRef<ActivityCategory>("ActivityCategory");
 
 ActivityCategorySchema.implement({
   fields: (t) => ({
@@ -119,9 +117,8 @@ ActivityCategorySchema.implement({
   }),
 });
 
-export const ActivitySubCategorySchema = builder.objectRef<ActivitySubCategory>(
-  "ActivitySubCategory",
-);
+export const ActivitySubCategorySchema =
+  builder.objectRef<ActivitySubCategory>("ActivitySubCategory");
 
 ActivitySubCategorySchema.implement({
   fields: (t) => ({

@@ -20,12 +20,7 @@ export const validateWorkspace = async (workspaceId: UUID, userId: string) => {
   const workspaceUser = await db
     .select()
     .from(workspaceUsers)
-    .where(
-      and(
-        eq(workspaceUsers.workspace, workspaceId),
-        eq(workspaceUsers.user, userId),
-      ),
-    )
+    .where(and(eq(workspaceUsers.workspace, workspaceId), eq(workspaceUsers.user, userId)))
     .limit(1)
     .then((res) => res[0]);
 

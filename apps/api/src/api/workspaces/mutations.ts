@@ -53,10 +53,7 @@ export const registerWorkspaceMutations = () => {
         id: t.arg({ type: "UUID", required: true }),
       },
       resolve: async (root, args) => {
-        const result = await db
-          .delete(workspaces)
-          .where(eq(workspaces.id, args.id))
-          .returning();
+        const result = await db.delete(workspaces).where(eq(workspaces.id, args.id)).returning();
 
         return result.length > 0;
       },

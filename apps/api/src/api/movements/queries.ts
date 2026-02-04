@@ -20,16 +20,8 @@ export const registerMovementsQueries = () => {
         const movementsData = await db
           .select()
           .from(movements)
-          .where(
-            and(
-              eq(movements.user, ctx.user.id),
-              eq(movements.workspace, args.workspaceId),
-            ),
-          )
-          .leftJoin(
-            movementsActivities,
-            eq(movements.id, movementsActivities.movement),
-          );
+          .where(and(eq(movements.user, ctx.user.id), eq(movements.workspace, args.workspaceId)))
+          .leftJoin(movementsActivities, eq(movements.id, movementsActivities.movement));
 
         return movementsData
           .reduce<Omit<Movement, "status">[]>((acc, row) => {
@@ -51,10 +43,7 @@ export const registerMovementsQueries = () => {
           }, [])
           .map((movement) => ({
             ...movement,
-            status: (movement.activities.reduce(
-              (sum, ma) => sum + ma.amount,
-              0,
-            ) === movement.amount
+            status: (movement.activities.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
               ? "completed"
               : "incomplete") as "incomplete" | "completed",
           }));

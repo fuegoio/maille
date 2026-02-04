@@ -28,8 +28,7 @@ MovementSchema.implement({
   }),
 });
 
-export const MovementActivitySchema =
-  builder.objectRef<MovementActivity>("MovementActivity");
+export const MovementActivitySchema = builder.objectRef<MovementActivity>("MovementActivity");
 
 MovementActivitySchema.implement({
   fields: (t) => ({

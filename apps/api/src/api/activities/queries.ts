@@ -1,10 +1,6 @@
 import { db } from "@/database";
 import { builder } from "../builder";
-import {
-  ActivityCategorySchema,
-  ActivitySchema,
-  ActivitySubCategorySchema,
-} from "./schemas";
+import { ActivityCategorySchema, ActivitySchema, ActivitySubCategorySchema } from "./schemas";
 import {
   accounts,
   activities,
@@ -41,16 +37,8 @@ export const registerActivitiesQueries = () => {
           .select()
           .from(activities)
           .leftJoin(transactions, eq(activities.id, transactions.activity))
-          .leftJoin(
-            movementsActivities,
-            and(eq(activities.id, movementsActivities.activity)),
-          )
-          .where(
-            and(
-              eq(activities.user, ctx.user.id),
-              eq(activities.workspace, args.workspaceId),
-            ),
-          );
+          .leftJoin(movementsActivities, and(eq(activities.id, movementsActivities.activity)))
+          .where(and(eq(activities.user, ctx.user.id), eq(activities.workspace, args.workspaceId)));
 
         return activitiesData
           .reduce<Omit<Activity, "amount" | "status">[]>((acc, row) => {
@@ -79,31 +67,17 @@ export const registerActivitiesQueries = () => {
           }, [])
           .map((a) => ({
             ...a,
-            amount: getActivityTransactionsReconciliationSum(
-              a.type,
-              a.transactions,
-              accountsQuery,
-            ),
-            status: getActivityStatus(
-              a.date,
-              a.transactions,
-              a.movements,
-              accountsQuery,
-              (id) => {
-                const movement = db
-                  .select()
-                  .from(movements)
-                  .where(eq(movements.id, id))
-                  .get();
-                if (!movement) return;
-                return {
-                  ...movement,
-                  date: movement.date,
-                  status: "completed",
-                  activities: [],
-                };
-              },
-            ),
+            amount: getActivityTransactionsReconciliationSum(a.type, a.transactions, accountsQuery),
+            status: getActivityStatus(a.date, a.transactions, a.movements, accountsQuery, (id) => {
+              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
+              if (!movement) return;
+              return {
+                ...movement,
+                date: movement.date,
+                status: "completed",
+                activities: [],
+              };
+            }),
           }));
       },
     }),

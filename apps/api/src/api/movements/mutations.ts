@@ -94,9 +94,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(
-              and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)),
-            )
+            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -114,11 +112,7 @@ export const registerMovementsMutations = () => {
         }
 
         const updatedMovement = (
-          await db
-            .update(movements)
-            .set(updates)
-            .where(eq(movements.id, args.id))
-            .returning()
+          await db.update(movements).set(updates).where(eq(movements.id, args.id)).returning()
         )[0];
 
         await addEvent({
@@ -142,8 +136,7 @@ export const registerMovementsMutations = () => {
           ...updatedMovement,
           date: updatedMovement.date,
           activities: activitiesData,
-          status: (activitiesData.reduce((sum, ma) => sum + ma.amount, 0) ===
-          movement.amount
+          status: (activitiesData.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
             ? "completed"
             : "incomplete") as "incomplete" | "completed",
         };
@@ -164,9 +157,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(
-              and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)),
-            )
+            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -178,9 +169,7 @@ export const registerMovementsMutations = () => {
           await validateWorkspace(movement.workspace, ctx.user.id);
         }
 
-        await db
-          .delete(movementsActivities)
-          .where(eq(movementsActivities.movement, args.id));
+        await db.delete(movementsActivities).where(eq(movementsActivities.movement, args.id));
         await db.delete(movements).where(eq(movements.id, args.id));
 
         await addEvent({
@@ -330,9 +319,7 @@ export const registerMovementsMutations = () => {
 
         await validateWorkspace(movementActivity.workspace, ctx.user.id);
 
-        await db
-          .delete(movementsActivities)
-          .where(eq(movementsActivities.id, args.id));
+        await db.delete(movementsActivities).where(eq(movementsActivities.id, args.id));
 
         await addEvent({
           type: "deleteMovementActivity",

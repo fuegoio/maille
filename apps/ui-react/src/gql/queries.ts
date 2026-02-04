@@ -1,5 +1,5 @@
 // Initial GraphQL query file
-import { gql } from 'graphql-request'
+import { gql } from "graphql-request";
 
 export const GET_INITIAL_DATA = gql`
   query InitialData {
@@ -12,4 +12,4 @@ export const GET_INITIAL_DATA = gql`
       name
     }
   }
-`
+`;

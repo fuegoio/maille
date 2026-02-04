@@ -65,7 +65,4 @@ export type DeleteAccountMutation = MutationType<
   Account
 >;
 
-export type AccountMutation =
-  | CreateAccountMutation
-  | UpdateAccountMutation
-  | DeleteAccountMutation;
+export type AccountMutation = CreateAccountMutation | UpdateAccountMutation | DeleteAccountMutation;

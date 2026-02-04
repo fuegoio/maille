@@ -21,14 +21,7 @@ export const getActivityStatus = (
     return "scheduled";
   }
 
-  if (
-    !getActivityMovementsReconciliated(
-      transactions,
-      movements,
-      accounts,
-      getMovementById,
-    )
-  ) {
+  if (!getActivityMovementsReconciliated(transactions, movements, accounts, getMovementById)) {
     return "incomplete";
   } else {
     return "completed";
@@ -47,15 +40,10 @@ export const getActivityTransactionsReconciliationSum = (
         amountTakenIntoAccount = transaction.amount;
       } else {
         if (transaction.fromAccount === undefined) return s;
-        const fromAccount = accounts.find(
-          (a) => a.id === transaction.fromAccount,
-        );
+        const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
         if (!fromAccount) return s;
 
-        if (
-          activityType === ActivityType.EXPENSE &&
-          fromAccount.type === AccountType.EXPENSE
-        ) {
+        if (activityType === ActivityType.EXPENSE && fromAccount.type === AccountType.EXPENSE) {
           amountTakenIntoAccount += transaction.amount * -1;
         } else if (
           activityType === ActivityType.REVENUE &&
@@ -73,10 +61,7 @@ export const getActivityTransactionsReconciliationSum = (
         const toAccount = accounts.find((a) => a.id === transaction.toAccount);
         if (!toAccount) return s;
 
-        if (
-          activityType === ActivityType.EXPENSE &&
-          toAccount.type === AccountType.EXPENSE
-        ) {
+        if (activityType === ActivityType.EXPENSE && toAccount.type === AccountType.EXPENSE) {
           amountTakenIntoAccount += transaction.amount;
         } else if (
           activityType === ActivityType.REVENUE &&
@@ -106,9 +91,7 @@ export const getActivityMovementsByAccount = (
       const movement = getMovementById(movementActivity.movement);
       if (!movement) return movementsByAccount;
 
-      let movementsOfAccount = movementsByAccount.find(
-        (mvb) => mvb.account === movement.account,
-      );
+      let movementsOfAccount = movementsByAccount.find((mvb) => mvb.account === movement.account);
       if (!movementsOfAccount) {
         movementsOfAccount = {
           account: movement.account,
@@ -141,9 +124,7 @@ export const getActivityTransactionsSumByAccount = (
 ) => {
   return transactions.reduce(
     (transactionsSumByAccount, transaction) => {
-      const fromAccount = accounts.find(
-        (a) => a.id === transaction.fromAccount,
-      );
+      const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
       if (!fromAccount) return transactionsSumByAccount;
 
       const toAccount = accounts.find((a) => a.id === transaction.toAccount);
@@ -189,14 +170,8 @@ export const getActivityMovementsReconciliatedByAccount = (
   accounts: Account[],
   getMovementById: (id: UUID) => Movement | undefined,
 ) => {
-  const transactionsSumByAccount = getActivityTransactionsSumByAccount(
-    transactions,
-    accounts,
-  );
-  const movementsByAccount = getActivityMovementsByAccount(
-    movements,
-    getMovementById,
-  );
+  const transactionsSumByAccount = getActivityTransactionsSumByAccount(transactions, accounts);
+  const movementsByAccount = getActivityMovementsByAccount(movements, getMovementById);
 
   return accounts.reduce(
     (movementsReconciliatedByAccount, account) => {
@@ -216,20 +191,13 @@ export const getActivityMovementsReconciliatedByAccount = (
         movements: [] as MovementWithLink[],
       };
 
-      const movementsOfAccount = movementsByAccount.find(
-        (mvb) => mvb.account === account.id,
-      );
+      const movementsOfAccount = movementsByAccount.find((mvb) => mvb.account === account.id);
       if (movementsOfAccount) {
-        movementsReconciliatedOfAccount.movementTotal =
-          movementsOfAccount.total;
-        movementsReconciliatedOfAccount.movements =
-          movementsOfAccount.movements;
+        movementsReconciliatedOfAccount.movementTotal = movementsOfAccount.total;
+        movementsReconciliatedOfAccount.movements = movementsOfAccount.movements;
       }
 
-      if (
-        !transactionsSumOfAccount &&
-        movementsReconciliatedOfAccount.movements.length === 0
-      ) {
+      if (!transactionsSumOfAccount && movementsReconciliatedOfAccount.movements.length === 0) {
         return movementsReconciliatedByAccount;
       }
 
@@ -260,12 +228,11 @@ export const getActivityMovementsReconciliated = (
   accounts: Account[],
   getMovementById: (id: UUID) => Movement | undefined,
 ): boolean => {
-  const movementsReconciliatedByAccount =
-    getActivityMovementsReconciliatedByAccount(
-      transactions,
-      movements,
-      accounts,
-      getMovementById,
-    );
+  const movementsReconciliatedByAccount = getActivityMovementsReconciliatedByAccount(
+    transactions,
+    movements,
+    accounts,
+    getMovementById,
+  );
   return movementsReconciliatedByAccount.every((mrba) => mrba.reconcilied);
 };

@@ -82,9 +82,7 @@ export const registerAccountsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const account = (
-          await db.select().from(accounts).where(eq(accounts.id, args.id))
-        )[0];
+        const account = (await db.select().from(accounts).where(eq(accounts.id, args.id)))[0];
         if (!account) {
           throw new GraphQLError("Account not found");
         }
@@ -94,19 +92,14 @@ export const registerAccountsMutations = () => {
           accountUpdates.startingBalance = args.startingBalance ?? undefined;
         }
         if (args.startingCashBalance !== undefined) {
-          accountUpdates.startingCashBalance =
-            args.startingCashBalance ?? undefined;
+          accountUpdates.startingCashBalance = args.startingCashBalance ?? undefined;
         }
         if (args.movements !== undefined) {
           accountUpdates.movements = args.movements ?? undefined;
         }
 
         const updatedAccount = (
-          await db
-            .update(accounts)
-            .set(accountUpdates)
-            .where(eq(accounts.id, args.id))
-            .returning()
+          await db.update(accounts).set(accountUpdates).where(eq(accounts.id, args.id)).returning()
         )[0];
 
         await addEvent({
@@ -134,19 +127,13 @@ export const registerAccountsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const account = (
-          await db.select().from(accounts).where(eq(accounts.id, args.id))
-        )[0];
+        const account = (await db.select().from(accounts).where(eq(accounts.id, args.id)))[0];
         if (!account) {
           throw new GraphQLError("Account not found");
         }
 
-        await db
-          .delete(transactions)
-          .where(eq(transactions.toAccount, args.id));
-        await db
-          .delete(transactions)
-          .where(eq(transactions.fromAccount, args.id));
+        await db.delete(transactions).where(eq(transactions.toAccount, args.id));
+        await db.delete(transactions).where(eq(transactions.fromAccount, args.id));
         await db.delete(movements).where(eq(movements.account, args.id));
         await db.delete(accounts).where(eq(accounts.id, args.id));
 

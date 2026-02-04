@@ -102,9 +102,7 @@
       "indexes": {
         "account_userId_idx": {
           "name": "account_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -113,12 +111,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -204,12 +198,8 @@
           "name": "accounts_workspace_workspaces_id_fk",
           "tableFrom": "accounts",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -305,12 +295,8 @@
           "name": "activities_user_user_id_fk",
           "tableFrom": "activities",
           "tableTo": "user",
-          "columnsFrom": [
-            "user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -318,12 +304,8 @@
           "name": "activities_workspace_workspaces_id_fk",
           "tableFrom": "activities",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -331,12 +313,8 @@
           "name": "activities_category_activity_categories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_categories",
-          "columnsFrom": [
-            "category"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -344,12 +322,8 @@
           "name": "activities_subcategory_activity_subcategories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_subcategories",
-          "columnsFrom": [
-            "subcategory"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subcategory"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -357,12 +331,8 @@
           "name": "activities_project_projects_id_fk",
           "tableFrom": "activities",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -409,12 +379,8 @@
           "name": "activity_categories_workspace_workspaces_id_fk",
           "tableFrom": "activity_categories",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -461,12 +427,8 @@
           "name": "activity_subcategories_workspace_workspaces_id_fk",
           "tableFrom": "activity_subcategories",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -474,12 +436,8 @@
           "name": "activity_subcategories_category_activity_categories_id_fk",
           "tableFrom": "activity_subcategories",
           "tableTo": "activity_categories",
-          "columnsFrom": [
-            "category"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -599,12 +557,8 @@
           "name": "movements_workspace_workspaces_id_fk",
           "tableFrom": "movements",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -612,12 +566,8 @@
           "name": "movements_account_accounts_id_fk",
           "tableFrom": "movements",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -671,12 +621,8 @@
           "name": "movements_activities_workspace_workspaces_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -684,12 +630,8 @@
           "name": "movements_activities_activity_activities_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "activities",
-          "columnsFrom": [
-            "activity"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["activity"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -697,12 +639,8 @@
           "name": "movements_activities_movement_movements_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "movements",
-          "columnsFrom": [
-            "movement"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["movement"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -763,12 +701,8 @@
           "name": "projects_workspace_workspaces_id_fk",
           "tableFrom": "projects",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -840,16 +774,12 @@
       "indexes": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": true
         },
         "session_userId_idx": {
           "name": "session_userId_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -858,12 +788,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -931,12 +857,8 @@
           "name": "transactions_from_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "from_account"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["from_account"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -944,12 +866,8 @@
           "name": "transactions_from_user_user_id_fk",
           "tableFrom": "transactions",
           "tableTo": "user",
-          "columnsFrom": [
-            "from_user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["from_user"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -957,12 +875,8 @@
           "name": "transactions_to_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "to_account"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["to_account"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -970,12 +884,8 @@
           "name": "transactions_to_user_user_id_fk",
           "tableFrom": "transactions",
           "tableTo": "user",
-          "columnsFrom": [
-            "to_user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["to_user"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -983,12 +893,8 @@
           "name": "transactions_activity_activities_id_fk",
           "tableFrom": "transactions",
           "tableTo": "activities",
-          "columnsFrom": [
-            "activity"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["activity"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1054,9 +960,7 @@
       "indexes": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },
@@ -1114,9 +1018,7 @@
       "indexes": {
         "verification_identifier_idx": {
           "name": "verification_identifier_idx",
-          "columns": [
-            "identifier"
-          ],
+          "columns": ["identifier"],
           "isUnique": false
         }
       },
@@ -1163,12 +1065,8 @@
           "name": "workspace_users_user_user_id_fk",
           "tableFrom": "workspace_users",
           "tableTo": "user",
-          "columnsFrom": [
-            "user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1176,12 +1074,8 @@
           "name": "workspace_users_workspace_workspaces_id_fk",
           "tableFrom": "workspace_users",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

@@ -34,10 +34,7 @@ export type MovementWithLink = Movement & {
 //
 // Filters
 //
-export const MovementFilterStatusOperators = [
-  "is defined",
-  "is not defined",
-] as const;
+export const MovementFilterStatusOperators = ["is defined", "is not defined"] as const;
 
 export const OperatorsWithoutValue = MovementFilterStatusOperators;
 

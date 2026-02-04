@@ -96,26 +96,18 @@ export const movementsStore = createStore<MovementsState>()(
               return {
                 ...movement,
                 date: update.date !== undefined ? update.date : movement.date,
-                amount:
-                  update.amount !== undefined ? update.amount : movement.amount,
-                account:
-                  update.account !== undefined
-                    ? update.account
-                    : movement.account,
+                amount: update.amount !== undefined ? update.amount : movement.amount,
+                account: update.account !== undefined ? update.account : movement.account,
                 name: update.name !== undefined ? update.name : movement.name,
                 activities:
-                  update.activities !== undefined
-                    ? update.activities
-                    : movement.activities,
+                  update.activities !== undefined ? update.activities : movement.activities,
 
                 status:
                   (update.activities !== undefined
                     ? update.activities
                     : movement.activities
                   ).reduce((sum, ma) => sum + ma.amount, 0) ===
-                  (update.amount !== undefined
-                    ? update.amount
-                    : movement.amount)
+                  (update.amount !== undefined ? update.amount : movement.amount)
                     ? "completed"
                     : "incomplete",
               };
@@ -127,9 +119,7 @@ export const movementsStore = createStore<MovementsState>()(
 
       deleteMovement: (movementId: UUID) => {
         set((state) => ({
-          movements: state.movements.filter(
-            (movement) => movement.id !== movementId,
-          ),
+          movements: state.movements.filter((movement) => movement.id !== movementId),
         }));
       },
 
