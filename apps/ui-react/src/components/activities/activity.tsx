@@ -3,6 +3,8 @@ import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { activitiesStore } from "@/stores/activities";
 import { viewsStore } from "@/stores/views";
+import { eventsStore } from "@/stores/events";
+import { updateActivityMutation, deleteActivityMutation } from "@/mutations/activities";
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -53,7 +55,20 @@ export function Activity({ viewId }: ActivityProps) {
   const deleteActivity = () => {
     if (!activity) return;
 
+    // Create a copy of the activity for rollback
+    const activityToDelete = { ...activity };
+
     activitiesStore.getState().deleteActivity(activity.id);
+
+    eventsStore.getState().sendEvent({
+      name: "deleteActivity",
+      mutation: deleteActivityMutation,
+      variables: {
+        id: activity.id,
+      },
+      rollbackData: activityToDelete,
+    });
+
     close();
     setShowDeleteModal(false);
   };
@@ -68,7 +83,31 @@ export function Activity({ viewId }: ActivityProps) {
     project?: UUID | null;
   }) => {
     if (!activity) return;
+    
+    // Create a copy of the current activity for rollback
+    const oldActivity = { ...activity };
+    
     activitiesStore.getState().updateActivity(activity.id, update);
+
+    eventsStore.getState().sendEvent({
+      name: "updateActivity",
+      mutation: updateActivityMutation,
+      variables: {
+        id: activity.id,
+        ...update,
+        date: update.date?.toISOString(),
+      },
+      rollbackData: {
+        id: activity.id,
+        name: oldActivity.name,
+        description: oldActivity.description,
+        date: oldActivity.date.toISOString(),
+        type: oldActivity.type,
+        category: oldActivity.category,
+        subcategory: oldActivity.subcategory,
+        project: oldActivity.project,
+      },
+    });
   };
 
   // Hotkey to close with Escape

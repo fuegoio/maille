@@ -1,12 +1,16 @@
 import * as React from "react";
 import { useStore } from "zustand";
 import { viewsStore } from "@/stores/views";
+import { activitiesStore } from "@/stores/activities";
+import { searchStore } from "@/stores/search";
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronDown, ChevronUp, MoreHorizontal } from "lucide-react";
+import { ActivityLine } from "./activity-line";
+import { ActivitiesFilters } from "./filters/activities-filters";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useHotkeys } from "react-hotkeys-hook";
+import { verifyActivityFilter } from "@maille/core/activities";
+import type { UUID } from "crypto";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -19,170 +23,268 @@ const ACTIVITY_TYPES_COLOR = {
 interface ActivitiesTableProps {
   viewId: string;
   activities: Activity[];
+  grouping?: "period" | null;
+  accountFilter?: UUID | null;
+  categoryFilter?: UUID | null;
+  subcategoryFilter?: UUID | null;
+  activityTypeFilter?: ActivityType | null;
+  hideProject?: boolean;
 }
 
-export function ActivitiesTable({ viewId, activities }: ActivitiesTableProps) {
+export function ActivitiesTable({
+  viewId,
+  activities,
+  grouping = null,
+  accountFilter = null,
+  categoryFilter = null,
+  subcategoryFilter = null,
+  activityTypeFilter = null,
+  hideProject = false,
+}: ActivitiesTableProps) {
   const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
+  const focusedActivity = useStore(activitiesStore, (state) => state.focusedActivity);
+  const filterStringBySearch = useStore(searchStore, (state) => state.filterStringBySearch);
   const currencyFormatter = getCurrencyFormatter();
 
-  const [sortConfig, setSortConfig] = React.useState<{
-    key: keyof Activity;
-    direction: "ascending" | "descending";
-  } | null>(null);
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      activitiesStore.getState().setFocusedActivity(null);
+    };
+  }, []);
 
-  const sortedActivities = React.useMemo(() => {
-    if (!sortConfig) return activities;
+  const activitiesFiltered = React.useMemo(() => {
+    return activities
+      .filter((activity) => filterStringBySearch(activity.name))
+      .filter((activity) => {
+        if (subcategoryFilter !== null) {
+          return activity.subcategory === subcategoryFilter;
+        }
 
-    return [...activities].sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+        if (categoryFilter !== null) {
+          return activity.category === categoryFilter;
+        }
 
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return sortConfig.direction === "ascending" ? 1 : -1;
-      if (bValue == null) return sortConfig.direction === "ascending" ? -1 : 1;
+        return true;
+      })
+      .filter((activity) => {
+        if (accountFilter !== null) {
+          return (
+            activity.transactions.filter(
+              (t) => t.toAccount === accountFilter || t.fromAccount === accountFilter,
+            ).length > 0
+          );
+        } else {
+          return true;
+        }
+      })
+      .filter((activity) =>
+        activityTypeFilter !== null ? activity.type === activityTypeFilter : true,
+      )
+      .filter((activity) => {
+        if (activityView.filters.length === 0) return true;
 
-      if (aValue < bValue) {
-        return sortConfig.direction === "ascending" ? -1 : 1;
+        return activityView.filters
+          .map((filter) => {
+            return verifyActivityFilter(filter, activity);
+          })
+          .every((f) => f);
+      });
+  }, [
+    activities,
+    filterStringBySearch,
+    subcategoryFilter,
+    categoryFilter,
+    accountFilter,
+    activityTypeFilter,
+    activityView.filters,
+  ]);
+
+  const activitiesSorted = React.useMemo(() => {
+    return [...activitiesFiltered].sort((a, b) => {
+      if (a.date.getTime() !== b.date.getTime()) {
+        return b.date.getTime() - a.date.getTime();
       }
-      if (aValue > bValue) {
-        return sortConfig.direction === "ascending" ? 1 : -1;
-      }
-      return 0;
+      return b.id.localeCompare(a.id);
     });
-  }, [activities, sortConfig]);
+  }, [activitiesFiltered]);
 
-  const requestSort = (key: keyof Activity) => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
+  type Group = {
+    id: string;
+    month: number;
+    year: number;
+    total: {
+      [ActivityType.EXPENSE]?: number;
+      [ActivityType.REVENUE]?: number;
+      [ActivityType.INVESTMENT]?: number;
+    };
+  };
+
+  type ActivityAndGroup = ({ itemType: "group" } & Group) | ({ itemType: "activity" } & Activity);
+
+  const activitiesWithGroups = React.useMemo<ActivityAndGroup[]>(() => {
+    if (!grouping) return activitiesSorted.map((a) => ({ itemType: "activity", ...a }));
+
+    const groups = activitiesSorted.reduce((groups: (Group & { activities: Activity[] })[], a) => {
+      const month = a.date.getMonth();
+      const year = a.date.getFullYear();
+      let group = groups.find((p) => p.month === month && p.year === year);
+
+      if (group) {
+        group.activities.push(a);
+      } else {
+        group = {
+          id: `${month}-${year}`,
+          month,
+          year,
+          total: {},
+          activities: [a],
+        };
+        groups.push(group);
+      }
+
+      if (a.type !== ActivityType.NEUTRAL) {
+        const typeKey = a.type.toLowerCase() as keyof Group["total"];
+        if (group.total[typeKey] === undefined) {
+          group.total[typeKey] = a.amount;
+        } else {
+          group.total[typeKey]! += a.amount;
+        }
+      }
+
+      return groups;
+    }, []);
+
+    return groups
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year;
+        return b.month - a.month;
+      })
+      .reduce((awg: ActivityAndGroup[], group) => {
+        awg.push({
+          itemType: "group",
+          id: group.id,
+          month: group.month,
+          year: group.year,
+          total: group.total,
+        });
+        return awg.concat(group.activities.map((a) => ({ itemType: "activity", ...a })));
+      }, []);
+  }, [activitiesSorted, grouping]);
+
+  const periodFormatter = (month: number, year: number): string => {
+    return new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
+  };
+
+  const handleActivityClick = (activityId: string) => {
+    if (focusedActivity === activityId) {
+      activitiesStore.getState().setFocusedActivity(null);
+    } else {
+      activitiesStore.getState().setFocusedActivity(activityId as UUID);
     }
-    setSortConfig({ key, direction });
   };
 
-  const handleRowClick = (activityId: string) => {
-    if (activityView) {
-      activityView.focusedActivity = activityId;
-    }
-  };
+  // Hotkeys for navigation
+  useHotkeys("k", () => {
+    if (activitiesSorted.length === 0) return;
 
-  const getSortIndicator = (key: keyof Activity) => {
-    if (!sortConfig || sortConfig.key !== key) return null;
-    return sortConfig.direction === "ascending" ? (
-      <ChevronUp className="h-4 w-4 ml-1" />
-    ) : (
-      <ChevronDown className="h-4 w-4 ml-1" />
-    );
-  };
+    const currentIndex = activitiesSorted.findIndex((activity) => activity.id === focusedActivity);
+
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex - 1 + activitiesSorted.length) % activitiesSorted.length;
+
+    activitiesStore.getState().setFocusedActivity(activitiesSorted[nextIndex].id);
+  });
+
+  useHotkeys("j", () => {
+    if (activitiesSorted.length === 0) return;
+
+    const currentIndex = activitiesSorted.findIndex((activity) => activity.id === focusedActivity);
+
+    const nextIndex = (currentIndex + 1) % activitiesSorted.length;
+    activitiesStore.getState().setFocusedActivity(activitiesSorted[nextIndex].id);
+  });
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">
-              <Checkbox />
-            </TableHead>
-            <TableHead className="w-[100px]">
-              <button
-                onClick={() => requestSort("number")}
-                className="flex items-center"
-              >
-                Number {getSortIndicator("number")}
-              </button>
-            </TableHead>
-            <TableHead className="w-[150px]">
-              <button
-                onClick={() => requestSort("date")}
-                className="flex items-center"
-              >
-                Date {getSortIndicator("date")}
-              </button>
-            </TableHead>
-            <TableHead>
-              <button
-                onClick={() => requestSort("name")}
-                className="flex items-center"
-              >
-                Name {getSortIndicator("name")}
-              </button>
-            </TableHead>
-            <TableHead className="w-[120px]">
-              <button
-                onClick={() => requestSort("type")}
-                className="flex items-center"
-              >
-                Type {getSortIndicator("type")}
-              </button>
-            </TableHead>
-            <TableHead className="w-[150px] text-right">
-              <button
-                onClick={() => requestSort("amount")}
-                className="flex items-center justify-end"
-              >
-                Amount {getSortIndicator("amount")}
-              </button>
-            </TableHead>
-            <TableHead className="w-[100px]">
-              <button
-                onClick={() => requestSort("status")}
-                className="flex items-center"
-              >
-                Status {getSortIndicator("status")}
-              </button>
-            </TableHead>
-            <TableHead className="w-[50px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedActivities.map((activity) => (
-            <TableRow
-              key={activity.id}
-              onClick={() => handleRowClick(activity.id)}
-              className="cursor-pointer hover:bg-primary-800"
-            >
-              <TableCell>
-                <Checkbox />
-              </TableCell>
-              <TableCell>{activity.number}</TableCell>
-              <TableCell>
-                {activity.date.toLocaleDateString()}
-              </TableCell>
-              <TableCell>{activity.name}</TableCell>
-              <TableCell>
-                <div className="flex items-center">
-                  <div
-                    className={`h-3 w-3 rounded-full mr-2 bg-${ACTIVITY_TYPES_COLOR[activity.type]}-500`}
-                  />
-                  <span className="capitalize">
-                    {activity.type}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="text-right font-mono">
-                {currencyFormatter.format(activity.amount)}
-              </TableCell>
-              <TableCell>
-                <div
-                  className={`capitalize px-2 py-1 rounded text-xs ${
-                    activity.status === "scheduled"
-                      ? "bg-primary-700 text-primary-100"
-                      : activity.status === "incomplete"
-                      ? "bg-orange-300 text-primary-800"
-                      : "bg-emerald-300 text-primary-800"
-                  }`}
-                >
-                  {activity.status}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ActivitiesFilters viewId={activityView.id} activities={activitiesFiltered} />
+
+      <div className="flex h-full flex-1 overflow-x-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex flex-col overflow-x-hidden sm:min-w-[575px]">
+            {activitiesFiltered.length !== 0 ? (
+              <ScrollArea className="flex-1 pb-40">
+                {grouping
+                  ? activitiesWithGroups.map((item) => (
+                      <React.Fragment key={item.id}>
+                        {item.itemType === "group" ? (
+                          <div className="bg-primary-800 flex h-10 flex-shrink-0 items-center gap-2 border-b pl-5 sm:pl-7">
+                            <i
+                              className="mdi mdi-calendar-blank text-primary-100 mdi-16px"
+                              aria-hidden="true"
+                            />
+                            <div className="text-sm font-medium">
+                              {periodFormatter(item.month, item.year)}
+                            </div>
+                            <div className="flex-1" />
+
+                            {[
+                              ActivityType.INVESTMENT,
+                              ActivityType.REVENUE,
+                              ActivityType.EXPENSE,
+                            ].map((activityType) => {
+                              const typeKey = activityType.toLowerCase() as keyof Group["total"];
+                              return (
+                                item.total[typeKey] && (
+                                  <div
+                                    key={activityType}
+                                    className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
+                                  >
+                                    <div
+                                      className="mt-[2px] mr-3 h-[9px] w-[9px] shrink-0 rounded-xs"
+                                      style={{
+                                        backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
+                                      }}
+                                    />
+                                    {currencyFormatter.format(item.total[typeKey]!)}
+                                  </div>
+                                )
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <ActivityLine
+                            activity={item}
+                            accountFilter={accountFilter}
+                            hideProject={hideProject}
+                            onClick={handleActivityClick}
+                            selected={focusedActivity === item.id}
+                          />
+                        )}
+                      </React.Fragment>
+                    ))
+                  : activitiesSorted.map((activity) => (
+                      <ActivityLine
+                        key={activity.id}
+                        activity={activity}
+                        accountFilter={accountFilter}
+                        hideProject={hideProject}
+                        onClick={handleActivityClick}
+                        selected={focusedActivity === activity.id}
+                      />
+                    ))}
+              </ScrollArea>
+            ) : (
+              <div className="flex flex-1 items-center justify-center overflow-hidden">
+                <div className="text-primary-600">No activity found</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+

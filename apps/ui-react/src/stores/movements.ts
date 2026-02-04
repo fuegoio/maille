@@ -43,6 +43,17 @@ interface MovementsState {
     amount: number
   ) => { id: UUID; activity: UUID; movement: UUID; amount: number };
 
+  updateMovementActivity: (
+    movementId: UUID,
+    movementActivityId: UUID,
+    amount: number
+  ) => void;
+
+  deleteMovementActivity: (
+    movementId: UUID,
+    movementActivityId: UUID
+  ) => void;
+
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
@@ -92,6 +103,59 @@ export const movementsStore = createStore<MovementsState>()(
         }));
 
         return newMovementActivity;
+      },
+
+      updateMovementActivity: (
+        movementId: UUID,
+        movementActivityId: UUID,
+        amount: number
+      ) => {
+        set((state) => ({
+          movements: state.movements.map((movement) => {
+            if (movement.id === movementId) {
+              const updatedActivities = movement.activities.map((ma) =>
+                ma.id === movementActivityId ? { ...ma, amount } : ma
+              );
+
+              return {
+                ...movement,
+                activities: updatedActivities,
+                status:
+                  updatedActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
+                  movement.amount
+                    ? "completed"
+                    : "incomplete",
+              };
+            }
+            return movement;
+          }),
+        }));
+      },
+
+      deleteMovementActivity: (
+        movementId: UUID,
+        movementActivityId: UUID
+      ) => {
+        set((state) => ({
+          movements: state.movements.map((movement) => {
+            if (movement.id === movementId) {
+              const filteredActivities = movement.activities.filter(
+                (ma) => ma.id !== movementActivityId
+              );
+
+              return {
+                ...movement,
+                activities: filteredActivities,
+                status:
+                  filteredActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
+                  movement.amount
+                    ? "completed"
+                    : "incomplete",
+              };
+            }
+            return movement;
+          }),
+        }));
       },
 
       addMovement: ({

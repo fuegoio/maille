@@ -7,6 +7,7 @@ import {
   type ActivityCategory,
   type ActivitySubCategory,
   type ActivityType,
+  type Transaction,
 } from "@maille/core/activities";
 import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
@@ -20,12 +21,17 @@ interface ActivitiesState {
   activityCategories: ActivityCategory[];
   activitySubcategories: ActivitySubCategory[];
   focusedActivity: UUID | null;
+  showTransactions: boolean;
 
   getActivityById: (activityId: UUID) => Activity | undefined;
   getActivityCategoryById: (categoryId: UUID) => ActivityCategory | undefined;
   getActivitySubcategoryById: (subcategoryId: UUID) => ActivitySubCategory | undefined;
 
   setFocusedActivity: (activityId: UUID | null) => void;
+  setShowTransactions: (show: boolean) => void;
+  addNewTransaction: (activityId: UUID, amount: number, fromAccount: UUID, toAccount: UUID) => Transaction;
+  updateTransaction: (activityId: UUID, transactionId: UUID, update: Partial<Transaction>) => void;
+  deleteTransaction: (activityId: UUID, transactionId: UUID) => void;
 
   addActivity: (params: {
     id?: UUID;
@@ -113,6 +119,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
       activityCategories: [],
       activitySubcategories: [],
       focusedActivity: null,
+      showTransactions: false,
 
       getActivityById: (activityId: UUID): Activity | undefined => {
         return get().activities.find((a) => a.id === activityId);
@@ -120,6 +127,65 @@ export const activitiesStore = createStore<ActivitiesState>()(
 
       setFocusedActivity: (activityId: UUID | null) => {
         set({ focusedActivity: activityId });
+      },
+
+      setShowTransactions: (show: boolean) => {
+        set({ showTransactions: show });
+      },
+
+      addNewTransaction: (activityId: UUID, amount: number, fromAccount: UUID, toAccount: UUID) => {
+        const newTransaction: Transaction = {
+          id: crypto.randomUUID(),
+          amount,
+          fromAccount,
+          fromUser: null,
+          toAccount,
+          toUser: null,
+        };
+
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              return {
+                ...activity,
+                transactions: [...activity.transactions, newTransaction],
+              };
+            }
+            return activity;
+          }),
+        }));
+
+        return newTransaction;
+      },
+
+      updateTransaction: (activityId: UUID, transactionId: UUID, update: Partial<Transaction>) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              return {
+                ...activity,
+                transactions: activity.transactions.map((t) =>
+                  t.id === transactionId ? { ...t, ...update } : t
+                ),
+              };
+            }
+            return activity;
+          }),
+        }));
+      },
+
+      deleteTransaction: (activityId: UUID, transactionId: UUID) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              return {
+                ...activity,
+                transactions: activity.transactions.filter((t) => t.id !== transactionId),
+              };
+            }
+            return activity;
+          }),
+        }));
       },
 
       getActivityCategoryById: (categoryId: UUID): ActivityCategory | undefined => {
@@ -463,5 +529,7 @@ export function useActivitiesStore() {
     activities: state.activities,
     categories: state.activityCategories,
     subcategories: state.activitySubcategories,
+    showTransactions: state.showTransactions,
+    focusedActivity: state.focusedActivity,
   };
 }
