@@ -80,17 +80,17 @@ export function AccountSelect({
   return (
     <Select value={getCurrentValue()} onValueChange={handleValueChange} disabled={disabled}>
       <SelectTrigger
-        className={`relative rounded px-3 text-left text-sm h-10 flex items-center group transition-colors ${
+        className={`group relative flex h-10 items-center rounded px-3 text-left text-sm transition-colors ${
           borderless
             ? "border-none bg-transparent hover:bg-transparent"
-            : "border bg-primary-700 hover:bg-primary-600"
+            : "bg-primary-700 hover:bg-primary-600 border"
         } ${disabled ? "bg-gray-100" : ""}`}
       >
-        <div className="flex items-center flex-1">
+        <div className="flex flex-1 items-center">
           {selectedAccount ? (
             <>
               <div
-                className="size-4 rounded-xl mr-2 sm:mr-3 shrink-0 transition-colors -ml-1"
+                className="mr-2 -ml-1 size-4 shrink-0 rounded-xl transition-colors sm:mr-3"
                 style={{ backgroundColor: ACCOUNT_TYPES_COLOR[selectedAccount.type] }}
               />
               <div
@@ -103,11 +103,11 @@ export function AccountSelect({
           ) : (
             <>
               <div
-                className="h-3 w-3 rounded-xl mr-2 sm:mr-3 shrink-0 bg-primary-300 transition-colors"
+                className="bg-primary-300 mr-2 h-3 w-3 shrink-0 rounded-xl transition-colors sm:mr-3"
                 style={{ backgroundColor: borderless ? "inherit" : "#c4b5fd" }}
               />
               <div
-                className="truncate font-medium text-primary-200 transition-colors"
+                className="text-primary-200 truncate font-medium transition-colors"
                 style={{ color: borderless ? "inherit" : "#c4b5fd" }}
               >
                 Account
@@ -117,15 +117,15 @@ export function AccountSelect({
         </div>
         {!borderless && !disabled && <ChevronDown className="size-4 text-muted-foreground" />}
       </SelectTrigger>
-      <SelectContent className="absolute w-56 z-50 max-h-60 overflow-auto rounded-md bg-primary-700 py-1 shadow-lg border focus:outline-none text-sm">
+      <SelectContent className="bg-primary-700 absolute z-50 max-h-60 w-56 overflow-auto rounded-md border py-1 text-sm shadow-lg focus:outline-none">
         {accountTypesToDisplay.map((accountType) => (
           <SelectGroup key={accountType}>
-            <SelectLabel className="flex items-center px-4 py-3 border-t first:border-t-0">
+            <SelectLabel className="flex items-center border-t px-4 py-3 first:border-t-0">
               <div
-                className="h-2 w-2 rounded-xl mr-4 shrink-0"
+                className="mr-4 h-2 w-2 shrink-0 rounded-xl"
                 style={{ backgroundColor: ACCOUNT_TYPES_COLOR[accountType] }}
               />
-              <div className="text-primary-100 font-medium text-xs tracking-wide">
+              <div className="text-primary-100 text-xs font-medium tracking-wide">
                 {ACCOUNT_TYPES_NAME[accountType]}
               </div>
             </SelectLabel>
@@ -133,8 +133,8 @@ export function AccountSelect({
               .filter((a) => a.type === accountType)
               .map((account) => (
                 <SelectItem key={account.id} value={account.id}>
-                  <div className="relative cursor-default select-none py-2 pl-10 pr-4 inline-flex items-center w-full">
-                    <span className="block truncate flex-1">{account.name}</span>
+                  <div className="relative inline-flex w-full cursor-default items-center py-2 pr-4 pl-10 select-none">
+                    <span className="block flex-1 truncate">{account.name}</span>
                   </div>
                 </SelectItem>
               ))}

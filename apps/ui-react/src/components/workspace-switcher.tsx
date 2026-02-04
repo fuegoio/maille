@@ -37,7 +37,7 @@ export function WorkspaceSwitcher({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-5 items-center justify-center rounded-lg"></div>
+              <div className="flex aspect-square size-5 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"></div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{currentWorkspace.name}</span>
               </div>
@@ -68,7 +68,7 @@ export function WorkspaceSwitcher({
               Log out
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
               Workspaces
             </DropdownMenuLabel>
             {availableWorkspaces.map((workspace) => (

@@ -30,7 +30,7 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
 
   return (
     <div
-      className={`py-4 flex flex-col items-center outline-dotted outline-primary-200 outline-2 rounded ${
+      className={`outline-primary-200 flex flex-col items-center rounded py-4 outline-2 outline-dotted ${
         overDrop ? "bg-primary-900" : ""
       }`}
       onDrop={handleDropEvent}
@@ -63,7 +63,7 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
         Select from your computer
       </Button>
 
-      <div className="mt-8 text-xs text-primary-200">File should be a valid CSV.</div>
+      <div className="text-primary-200 mt-8 text-xs">File should be a valid CSV.</div>
     </div>
   );
 }

@@ -54,10 +54,10 @@ export function MovementFilter({ modelValue, onUpdateModelValue, onDelete }: Mov
   if (!movementFilterField) return null;
 
   return (
-    <div className="flex items-center rounded overflow-hidden h-7 border w-fit max-w-full bg-primary-800">
-      <div className="flex items-center px-2 text-sm h-7 text-white border-r font-medium">
+    <div className="bg-primary-800 flex h-7 w-fit max-w-full items-center overflow-hidden rounded border">
+      <div className="flex h-7 items-center border-r px-2 text-sm font-medium text-white">
         <i className={`mdi mt-0.5 ${movementFilterField.icon}`} aria-hidden="true" />
-        <span className="ml-2 mr-1">{movementFilterField.text}</span>
+        <span className="mr-1 ml-2">{movementFilterField.text}</span>
       </div>
 
       <MovementFilterOperatorMenu
@@ -83,11 +83,11 @@ export function MovementFilter({ modelValue, onUpdateModelValue, onDelete }: Mov
       )}
 
       <button
-        className="flex items-center justify-center text-md w-7 h-7 hover:text-white hover:bg-primary-700 transition-colors shrink-0"
+        className="text-md hover:bg-primary-700 flex h-7 w-7 shrink-0 items-center justify-center transition-colors hover:text-white"
         onClick={onDelete}
         aria-label="Delete filter"
       >
-        <X className="size-4 mt-0.5" />
+        <X className="mt-0.5 size-4" />
       </button>
     </div>
   );

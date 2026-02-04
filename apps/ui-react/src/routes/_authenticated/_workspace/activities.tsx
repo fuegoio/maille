@@ -37,7 +37,7 @@ function ActivitiesPage() {
         <div className="flex-1" />
         <div className="flex items-center gap-2 pr-4">
           <div className="relative">
-            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <SearchIcon className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search activities..."
@@ -51,9 +51,9 @@ function ActivitiesPage() {
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Activities List</h2>
+            <h2 className="mb-4 text-lg font-semibold">Activities List</h2>
             <div className="overflow-x-auto">
               <table className="w-full table-auto">
                 <thead>
@@ -80,7 +80,7 @@ function ActivitiesPage() {
                       <td className="px-4 py-3 capitalize">{activity.type}</td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 rounded-full text-xs ${
+                          className={`rounded-full px-2 py-1 text-xs ${
                             activity.status === "completed"
                               ? "bg-green-100 text-green-800"
                               : activity.status === "incomplete"

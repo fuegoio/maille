@@ -18,14 +18,14 @@ export function AccountLabel({ accountId, onlyUser = false }: AccountLabelProps)
   if (!account) return null;
 
   return (
-    <div className="flex items-center min-w-0 shrink-0">
+    <div className="flex min-w-0 shrink-0 items-center">
       {!onlyUser && (
         <div
-          className="size-4.5 rounded-xl shrink-0 -ml-1"
+          className="-ml-1 size-4.5 shrink-0 rounded-xl"
           style={{ backgroundColor: ACCOUNT_TYPES_COLOR[account.type] }}
         />
       )}
-      <div className="font-medium text-ellipsis whitespace-nowrap overflow-hidden text-white ml-2 sm:ml-3">
+      <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap text-white sm:ml-3">
         {account.name}
       </div>
     </div>

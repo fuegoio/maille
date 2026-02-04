@@ -100,12 +100,12 @@ function RouteComponent() {
   };
 
   return (
-    <div className="h-full w-full flex items-center justify-center flex-col gap-4 bg-muted">
-      <Logo className="text-muted size-12" />
-      <div className="p-6 flex flex-col justify-center gap-6 max-w-sm w-full bg-card rounded-xl border">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-muted">
+      <Logo className="size-12 text-muted" />
+      <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
         <div className="text-center">
           <h1 className="text-xl font-medium text-foreground">Create your Workspace</h1>
-          <div className="text-sm text-muted-foreground mt-2">
+          <div className="mt-2 text-sm text-muted-foreground">
             Set up your financial workspace to get started.
           </div>
         </div>

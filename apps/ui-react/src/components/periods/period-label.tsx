@@ -22,5 +22,5 @@ export function PeriodLabel({ period }: PeriodLabelProps) {
     return "bg-primary-100 text-primary-300 border";
   }, [label]);
 
-  return <span className={`px-2.5 py-1 text-xs rounded ${chipClass}`}>{label}</span>;
+  return <span className={`rounded px-2.5 py-1 text-xs ${chipClass}`}>{label}</span>;
 }

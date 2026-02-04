@@ -75,12 +75,12 @@ function RouteComponent() {
   };
 
   return (
-    <div className="h-full w-full flex items-center justify-center flex-col gap-4 bg-muted">
-      <Logo className="text-muted size-12" />
-      <div className="p-6 flex flex-col justify-center gap-6 max-w-sm w-full bg-card rounded-xl border">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-muted">
+      <Logo className="size-12 text-muted" />
+      <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
         <div className="text-center">
           <h1 className="text-xl font-medium text-foreground">Welcome back</h1>
-          <div className="text-sm text-muted-foreground mt-2">
+          <div className="mt-2 text-sm text-muted-foreground">
             Please enter your details to sign in.
           </div>
         </div>
@@ -129,8 +129,8 @@ function RouteComponent() {
             {loading ? <LoaderCircle className="ml-2 h-4 w-4 animate-spin" /> : "Login"}
           </Button>
 
-          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-card text-muted-foreground relative z-10 px-2">
+          <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+            <span className="relative z-10 bg-card px-2 text-muted-foreground">
               Or continue with
             </span>
           </div>

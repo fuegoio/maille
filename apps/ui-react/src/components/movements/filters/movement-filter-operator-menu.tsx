@@ -60,12 +60,12 @@ export const MovementFilterOperatorMenu = forwardRef<
     >
       <SelectTrigger
         ref={selectRef}
-        className={`flex items-center px-2 text-sm h-7 text-primary-100 hover:text-white hover:bg-primary-700 transition-colors border-r min-w-[24px] shrink-0 ${
+        className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] shrink-0 items-center border-r px-2 text-sm transition-colors hover:text-white ${
           open ? "bg-primary-700 text-white" : ""
         }`}
       >
         <SelectValue placeholder="Operator" />
-        <ChevronDown className="size-4 ml-1" />
+        <ChevronDown className="ml-1 size-4" />
       </SelectTrigger>
       <SelectContent className="bg-primary-800 border-primary-600">
         {operators.map((operator) => (

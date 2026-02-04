@@ -54,12 +54,12 @@ export const LiabilityFilterValueMenu = forwardRef<
       >
         <SelectTrigger
           ref={selectRef}
-          className={`flex items-center px-2 text-sm h-7 text-primary-100 hover:text-white hover:bg-primary-700 transition-colors border-r min-w-[24px] ${
+          className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] items-center border-r px-2 text-sm transition-colors hover:text-white ${
             open ? "bg-primary-700 text-white" : ""
           }`}
         >
           <SelectValue placeholder="Date value" />
-          <ChevronDown className="size-4 ml-1" />
+          <ChevronDown className="ml-1 size-4" />
         </SelectTrigger>
         <SelectContent className="bg-primary-800 border-primary-600">
           {ActivityFilterDateValues.map((value) => (
@@ -81,7 +81,7 @@ export const LiabilityFilterValueMenu = forwardRef<
           onUpdateModelValue(value === "" ? undefined : parseFloat(value));
         }}
         onBlur={() => onClose()}
-        className="text-sm px-2 border-r h-7 hover:bg-primary-700 text-primary-100 hover:text-white bg-transparent border-none focus:ring-0"
+        className="hover:bg-primary-700 text-primary-100 h-7 border-r border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "name") {
@@ -99,7 +99,7 @@ export const LiabilityFilterValueMenu = forwardRef<
           onUpdateModelValue(textValue);
           onClose();
         }}
-        className="border-none min-w-0 bg-transparent hover:bg-primary-700 text-sm px-2 h-7 text-primary-100 hover:text-white focus:ring-0"
+        className="hover:bg-primary-700 text-primary-100 h-7 min-w-0 border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "account") {
@@ -111,7 +111,7 @@ export const LiabilityFilterValueMenu = forwardRef<
         }}
         multiple
         borderless
-        className="border-r hover:bg-primary-700"
+        className="hover:bg-primary-700 border-r"
       />
     );
   }
