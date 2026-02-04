@@ -36,18 +36,18 @@ export function Movement({ movementId, onClose }: MovementProps) {
   const [showProperties, setShowProperties] = React.useState(true);
   const [showActivities, setShowActivities] = React.useState(true);
 
-  const movement = useStore(movementsStore, (state) => 
-    state.getMovementById(movementId)
-  );
-  
+  const movement = useStore(movementsStore, (state) => state.getMovementById(movementId));
+
   const activities = useStore(activitiesStore, (state) => state.activities);
 
   const movementActivities = React.useMemo(() => {
     if (!movement) return [];
-    return movement.activities.map((ma) => ({
-      ...ma,
-      activity: activities.find((a) => a.id === ma.activity),
-    })).filter((ma) => ma.activity !== undefined);
+    return movement.activities
+      .map((ma) => ({
+        ...ma,
+        activity: activities.find((a) => a.id === ma.activity),
+      }))
+      .filter((ma) => ma.activity !== undefined);
   }, [movement, activities]);
 
   // Animation logic
@@ -105,17 +105,17 @@ export function Movement({ movementId, onClose }: MovementProps) {
       variables: {
         id: movementId,
         ...update,
-        date: update.date?.toISOString().split('T')[0],
+        date: update.date?.toISOString().split("T")[0],
       },
       rollbackData: {
         ...movementData,
-        date: movementData.date.toISOString().split('T')[0],
+        date: movementData.date.toISOString().split("T")[0],
       },
     });
   };
 
   // Hotkeys
-  useHotkeys('escape', () => {
+  useHotkeys("escape", () => {
     onClose();
   });
 
@@ -124,19 +124,19 @@ export function Movement({ movementId, onClose }: MovementProps) {
   return (
     <div
       ref={mainElement}
-      className="absolute top-0 left-0 @5xl:relative flex flex-col w-full @5xl:w-[575px] max-w-full h-full overflow-hidden border bg-primary-900 shadow-xl rounded"
+      className="bg-primary-900 absolute top-0 left-0 flex h-full w-full max-w-full flex-col overflow-hidden rounded border shadow-xl @5xl:relative @5xl:w-[575px]"
     >
-      <div className="flex items-center px-4 sm:px-6 border-b w-full flex-shrink-0 h-14">
+      <div className="flex h-14 w-full flex-shrink-0 items-center border-b px-4 sm:px-6">
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="w-6 h-8 ml-8 lg:ml-0 mr-4"
+          className="mr-4 ml-8 h-8 w-6 lg:ml-0"
           onClick={onClose}
         >
           <ChevronRight className="h-6 w-6 transition hover:text-white" />
         </Button>
-        <div className="text-white text-sm font-medium">Movement</div>
+        <div className="text-sm font-medium text-white">Movement</div>
 
         <div className="flex-1" />
         <DropdownMenu>
@@ -156,32 +156,34 @@ export function Movement({ movementId, onClose }: MovementProps) {
         </DropdownMenu>
       </div>
 
-      <div className="px-4 sm:px-8 pt-6 mb-4 flex items-center">
+      <div className="mb-4 flex items-center px-4 pt-6 sm:px-8">
         <div className="flex">
-          <div className="text-sm border px-2.5 h-8 flex items-center text-primary-500 rounded -mx-2 bg-primary-700">
+          <div className="text-primary-500 bg-primary-700 -mx-2 flex h-8 items-center rounded border px-2.5 text-sm">
             <AccountLabel accountId={movement.account} />
           </div>
         </div>
       </div>
 
-      <div className="px-4 sm:px-8 pb-6 border-b text-white min-w-0 font-bold text-lg">
+      <div className="min-w-0 border-b px-4 pb-6 text-lg font-bold text-white sm:px-8">
         {movement.name}
       </div>
 
-      <div className="py-6 px-4 sm:px-8 border-b">
+      <div className="border-b px-4 py-6 sm:px-8">
         <div className="flex">
           <button
-            className="-ml-2 text-sm font-medium px-2 rounded h-7 hover:text-white flex items-center gap-2"
+            className="-ml-2 flex h-7 items-center gap-2 rounded px-2 text-sm font-medium hover:text-white"
             onClick={() => setShowProperties(!showProperties)}
           >
             <span>Properties</span>
-            <ChevronRight className={`h-4 w-4 transition-transform ${showProperties ? 'rotate-90' : ''}`} />
+            <ChevronRight
+              className={`h-4 w-4 transition-transform ${showProperties ? "rotate-90" : ""}`}
+            />
           </button>
         </div>
 
         {showProperties && (
-          <div className="pt-4 space-y-4">
-            <div className="flex items-center justify-between mb-2">
+          <div className="space-y-4 pt-4">
+            <div className="mb-2 flex items-center justify-between">
               <div className="text-sm">Date</div>
               <div className="flex-1" />
               <DatePicker
@@ -204,31 +206,29 @@ export function Movement({ movementId, onClose }: MovementProps) {
         )}
       </div>
 
-      <div className="py-6 px-4 sm:px-8">
+      <div className="px-4 py-6 sm:px-8">
         <div className="flex">
           <button
-            className="-ml-2 text-sm font-medium text-primary-100 px-2 rounded h-7 hover:text-white flex items-center gap-2"
+            className="text-primary-100 -ml-2 flex h-7 items-center gap-2 rounded px-2 text-sm font-medium hover:text-white"
             onClick={() => setShowActivities(!showActivities)}
           >
             <span>Activities linked</span>
-            <ChevronRight className={`h-4 w-4 transition-transform ${showActivities ? 'rotate-90' : ''}`} />
+            <ChevronRight
+              className={`h-4 w-4 transition-transform ${showActivities ? "rotate-90" : ""}`}
+            />
           </button>
 
           <div className="flex-1" />
 
           {showActivities && (
-            <AddActivityButton
-              movement={movement}
-              className="-mr-2"
-              onCreate={focusActivity}
-            />
+            <AddActivityButton movement={movement} className="-mr-2" onCreate={focusActivity} />
           )}
         </div>
 
         {showActivities && (
-          <div className="mt-4 mb-2 bg-primary-800 -mx-4 rounded border">
+          <div className="bg-primary-800 -mx-4 mt-4 mb-2 rounded border">
             {movementActivities.length === 0 ? (
-              <div className="flex items-center justify-center text-primary-300 text-xs py-4">
+              <div className="text-primary-300 flex items-center justify-center py-4 text-xs">
                 No activity linked to this movement yet.
               </div>
             ) : (
@@ -236,26 +236,29 @@ export function Movement({ movementId, onClose }: MovementProps) {
                 <div
                   key={movementActivity.id}
                   className={cn(
-                    "h-10 flex items-center justify-center text-sm px-4 hover:bg-primary-600/20",
-                    index !== movementActivities.length - 1 && "border-b"
+                    "hover:bg-primary-600/20 flex h-10 items-center justify-center px-4 text-sm",
+                    index !== movementActivities.length - 1 && "border-b",
                   )}
                   onClick={() => focusActivity(movementActivity.activity!.number)}
                 >
-                  <div className="w-8 text-primary-100 hidden sm:block shrink-0">
+                  <div className="text-primary-100 hidden w-8 shrink-0 sm:block">
                     #{movementActivity.activity!.number}
                   </div>
-                  <div className="hidden sm:block text-primary-100 w-20 shrink-0 ml-2">
-                    {movementActivity.activity!.date.toLocaleDateString('fr-FR')}
+                  <div className="text-primary-100 ml-2 hidden w-20 shrink-0 sm:block">
+                    {movementActivity.activity!.date.toLocaleDateString("fr-FR")}
                   </div>
-                  <div className="sm:hidden text-primary-100 w-10 shrink-0">
-                    {movementActivity.activity!.date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                  <div className="text-primary-100 w-10 shrink-0 sm:hidden">
+                    {movementActivity.activity!.date.toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
                   </div>
 
-                  <div className="ml-1 text-white text-ellipsis overflow-hidden whitespace-nowrap">
+                  <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-white">
                     {movementActivity.activity!.name}
                   </div>
                   <div className="flex-1" />
-                  <div className="w-20 whitespace-nowrap text-right text-white font-mono">
+                  <div className="w-20 text-right font-mono whitespace-nowrap text-white">
                     {getCurrencyFormatter().format(movementActivity.amount)}
                   </div>
                 </div>
@@ -267,8 +270,3 @@ export function Movement({ movementId, onClose }: MovementProps) {
     </div>
   );
 }
-
-
-
-
-

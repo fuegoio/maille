@@ -13,12 +13,14 @@ interface ProjectActivityCategoryLineProps {
   category: ActivityCategory;
 }
 
-export function ProjectActivityCategoryLine({ 
-  projectActivities, 
-  category 
+export function ProjectActivityCategoryLine({
+  projectActivities,
+  category,
 }: ProjectActivityCategoryLineProps) {
   const { viewFilters } = useStore(projectsStore, (state) => ({ viewFilters: state.viewFilters }));
-  const { activitySubcategories } = useStore(activitiesStore, (state) => ({ activitySubcategories: state.activitySubcategories }));
+  const { activitySubcategories } = useStore(activitiesStore, (state) => ({
+    activitySubcategories: state.activitySubcategories,
+  }));
 
   const [expanded, setExpanded] = useState(false);
 
@@ -34,17 +36,13 @@ export function ProjectActivityCategoryLine({
 
   const subcategoriesValues = useMemo(() => {
     const values: Record<UUID, number> = {};
-    
+
     categorySubcategories.forEach((subcategory) => {
       values[subcategory.id] = 0;
     });
 
     projectActivities
-      .filter(
-        (activity) => 
-          activity.category === category.id && 
-          activity.subcategory !== null,
-      )
+      .filter((activity) => activity.category === category.id && activity.subcategory !== null)
       .forEach((activity) => {
         if (values[activity.subcategory!] !== undefined) {
           values[activity.subcategory!] += activity.amount;
@@ -78,20 +76,15 @@ export function ProjectActivityCategoryLine({
 
   return (
     <>
-      <div
-        className={`flex items-center justify-between h-9 rounded px-3 group cursor-pointer $
+      <div className={`group $ flex h-9 cursor-pointer items-center justify-between rounded px-3
           ${viewFilters.category === category.id ? "bg-primary-800" : "hover:bg-primary-800"}
-        `}
-        onClick={selectCategoryToFilterActivities}
-      >
-        <div
-          className={`text-xs font-medium flex items-center $
+        `} onClick={selectCategoryToFilterActivities}>
+        <div className={`$ flex items-center text-xs font-medium
             ${categorySubcategories.length === 0 ? "pl-6" : ""}
-          `}
-        >
+          `}>
           {categorySubcategories.length > 0 && (
             <button
-              className="h-4 w-4 flex items-center mr-2"
+              className="mr-2 flex h-4 w-4 items-center"
               onClick={(e) => {
                 e.stopPropagation();
                 setExpanded(!expanded);
@@ -108,15 +101,11 @@ export function ProjectActivityCategoryLine({
         </div>
 
         <div className="flex items-center">
-          <div
-            className={`mr-4 text-primary-200 text-sm $
+          <div className={`text-primary-200 $ mr-4 text-sm
               ${viewFilters.category === category.id ? "" : "hidden group-hover:block"}
-            `}
-          >
-            {viewFilters.category === category.id ? "Clear filter" : "Filter"}
-          </div>
+            `}>{viewFilters.category === category.id ? "Clear filter" : "Filter"}</div>
 
-          <div className="whitespace-nowrap text-white text-sm font-mono">
+          <div className="font-mono text-sm whitespace-nowrap text-white">
             {getCurrencyFormatter().format(categoryValue)}
           </div>
         </div>
@@ -127,25 +116,19 @@ export function ProjectActivityCategoryLine({
           {categorySubcategories.map((subcategory) => (
             <div
               key={subcategory.id}
-              className={`flex items-center h-9 rounded ml-4 pl-5 pr-3 group justify-between cursor-pointer $
+              className={`group $ ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-5
                 ${viewFilters.subcategory === subcategory.id ? "bg-primary-800" : "hover:bg-primary-800"}
               `}
               onClick={() => selectSubcategoryToFilterActivities(subcategory)}
             >
-              <div className="text-xs font-medium flex items-center">
-                {subcategory.name}
-              </div>
+              <div className="flex items-center text-xs font-medium">{subcategory.name}</div>
 
               <div className="flex items-center">
-                <div
-                  className={`mr-4 text-primary-200 text-sm $
+                <div className={`text-primary-200 $ mr-4 text-sm
                     ${viewFilters.subcategory === subcategory.id ? "" : "hidden group-hover:block"}
-                  `}
-                >
-                  {viewFilters.subcategory === subcategory.id ? "Clear filter" : "Filter"}
-                </div>
+                  `}>{viewFilters.subcategory === subcategory.id ? "Clear filter" : "Filter"}</div>
 
-                <div className="whitespace-nowrap text-white text-sm font-mono">
+                <div className="font-mono text-sm whitespace-nowrap text-white">
                   {getCurrencyFormatter().format(subcategoriesValues[subcategory.id])}
                 </div>
               </div>

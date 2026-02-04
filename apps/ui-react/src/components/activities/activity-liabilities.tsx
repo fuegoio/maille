@@ -7,7 +7,7 @@ interface ActivityLiabilitiesProps {
   activity: Activity;
 }
 
-export function ActivityLiabilities({ }: ActivityLiabilitiesProps) {
+export function ActivityLiabilities({}: ActivityLiabilitiesProps) {
   const currencyFormatter = getCurrencyFormatter();
 
   // For now, we'll show a placeholder since liabilities are not directly part of the activity
@@ -15,29 +15,25 @@ export function ActivityLiabilities({ }: ActivityLiabilitiesProps) {
   const liabilities: any[] = []; // This would come from a store or API
 
   return (
-    <div className="py-6 px-4 sm:px-8">
-      <div className="flex justify-between items-center mb-4">
+    <div className="px-4 py-6 sm:px-8">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-medium text-white">Liabilities</h3>
         <Button variant="outline" size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           <span>Add Liability</span>
         </Button>
       </div>
 
       {liabilities.length === 0 ? (
-        <div className="text-center py-8 text-primary-400">
-          No liabilities for this activity
-        </div>
+        <div className="text-primary-400 py-8 text-center">No liabilities for this activity</div>
       ) : (
         <div className="space-y-4">
           {liabilities.map((liability: any) => (
             <div key={liability.id} className="border-b pb-4">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-white">
-                    {liability.name}
-                  </div>
-                  <div className="text-sm text-primary-400">
+                  <div className="font-medium text-white">{liability.name}</div>
+                  <div className="text-primary-400 text-sm">
                     {currencyFormatter.format(liability.amount)}
                   </div>
                 </div>

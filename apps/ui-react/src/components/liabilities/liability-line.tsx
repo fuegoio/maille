@@ -35,24 +35,20 @@ export function LiabilityLine({ liability, className, onClick }: LiabilityLinePr
 
   return (
     <div
-      className={`h-10 flex items-center gap-2 pr-2 sm:pr-6 border-b text-sm flex-shrink-0 transition-colors hover:bg-primary-800/20 pl-4 sm:pl-2 ${className || ""}`}
+      className={`hover:bg-primary-800/20 flex h-10 flex-shrink-0 items-center gap-2 border-b pr-2 pl-4 text-sm transition-colors sm:pr-6 sm:pl-2 ${className || ""}`}
       onClick={handleClick}
     >
-      <div className="hidden sm:block text-primary-100 w-20 shrink-0 ml-4">
-        {formattedDate}
-      </div>
-      <div className="sm:hidden text-primary-100 w-10 shrink-0">
-        {formattedDateMobile}
-      </div>
+      <div className="text-primary-100 ml-4 hidden w-20 shrink-0 sm:block">{formattedDate}</div>
+      <div className="text-primary-100 w-10 shrink-0 sm:hidden">{formattedDateMobile}</div>
 
       <AccountLabel accountId={liability.account} />
 
-      <div className="ml-1 text-primary-100 text-ellipsis overflow-hidden whitespace-nowrap">
+      <div className="text-primary-100 ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
         {liability.name}
       </div>
 
       <div className="flex-1" />
-      <div className="text-white text-right whitespace-nowrap font-mono">
+      <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(liability.amount)}
       </div>
     </div>

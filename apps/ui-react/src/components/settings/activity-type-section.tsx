@@ -13,7 +13,17 @@ import {
 } from "@/mutations/activities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 
 // Define activity type colors and names similar to the Vue version
@@ -53,10 +63,10 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     deleteActivityCategory: state.deleteActivityCategory,
     deleteActivitySubcategory: state.deleteActivitySubcategory,
   }));
-  
+
   const sendEvent = useStore(eventsStore, (state) => state.sendEvent);
   const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
-  
+
   const [expanded, setExpanded] = useState<UUID | null>(null);
   const [newCategory, setNewCategory] = useState({
     show: false,
@@ -66,34 +76,34 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     show: false,
     name: "",
   });
-  
+
   const toggleExpand = (categoryId: UUID) => {
     setExpanded(expanded === categoryId ? null : categoryId);
     setNewSubCategory({ show: false, name: "" });
   };
-  
+
   const sortedCategories = useMemo(() => {
     return [...activityCategories]
       .filter((c) => c.type === activityType)
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [activityCategories, activityType]);
-  
+
   const cancelNewCategory = () => {
     setNewCategory({ show: false, name: "" });
   };
-  
+
   const cancelNewSubCategory = () => {
     setNewSubCategory({ show: false, name: "" });
   };
-  
+
   const getActivitiesLinkedToCategory = (categoryId: UUID) => {
     return activities.filter((a) => a.category === categoryId).length;
   };
-  
+
   const getActivitiesLinkedToSubCategory = (subcategoryId: UUID) => {
     return activities.filter((a) => a.subcategory === subcategoryId).length;
   };
-  
+
   const handleAddNewCategory = async () => {
     if (!newCategory.name) return;
 
@@ -114,7 +124,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
 
     cancelNewCategory();
   };
-  
+
   const handleAddNewSubCategory = async () => {
     if (!newSubCategory.name || !expanded) return;
 
@@ -135,11 +145,9 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
 
     cancelNewSubCategory();
   };
-  
+
   const handleDeleteCategory = async (categoryId: UUID) => {
-    const categoryActivities = activities
-      .filter((a) => a.category === categoryId)
-      .map((a) => a.id);
+    const categoryActivities = activities.filter((a) => a.category === categoryId).map((a) => a.id);
     const categoryActivitiesSubcategories = activities
       .filter((a) => a.category === categoryId)
       .map((a) => a.subcategory);
@@ -165,7 +173,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
       },
     });
   };
-  
+
   const handleDeleteSubCategory = async (subcategoryId: UUID) => {
     const subcategoryActivities = activities
       .filter((a) => a.subcategory === subcategoryId)
@@ -188,11 +196,11 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
 
   return (
     <div className="pb-10">
-      <div className="flex items-center mb-2 px-2">
+      <div className="mb-2 flex items-center px-2">
         <div
-          className={`size-3 rounded mr-2 sm:mr-3 shrink-0 ${ACTIVITY_TYPES_COLOR[activityType]}`}
+          className={`mr-2 size-3 shrink-0 rounded sm:mr-3 ${ACTIVITY_TYPES_COLOR[activityType]}`}
         />
-        <div className="text-sm font-medium text-primary-400">
+        <div className="text-primary-400 text-sm font-medium">
           {ACTIVITY_TYPES_NAME[activityType]}
         </div>
 
@@ -204,18 +212,18 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
           className="h-8 w-8"
           onClick={() => setNewCategory({ show: true, name: "" })}
         >
-          <Plus className="h-4 w-4 text-primary-500" />
+          <Plus className="text-primary-500 h-4 w-4" />
         </Button>
       </div>
 
       {newCategory.show && (
-        <div className="w-full bg-primary-900 my-2 px-4 rounded h-12 flex items-center border">
+        <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-4">
           <Input
             value={newCategory.name}
             onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
             placeholder="Name"
             autoFocus
-            className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0"
+            className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
           />
 
           <div className="flex-1" />
@@ -227,15 +235,10 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
       )}
 
       {sortedCategories.map((category) => (
-        <div
-          key={category.id}
-          className="w-full border my-2 px-2 rounded group"
-        >
-          <div className="h-10 flex items-center w-full px-2">
-            <div className="text-sm font-medium text-primary-200">
-              {category.name}
-            </div>
-            <div className="text-sm text-primary-600 ml-1">
+        <div key={category.id} className="group my-2 w-full rounded border px-2">
+          <div className="flex h-10 w-full items-center px-2">
+            <div className="text-primary-200 text-sm font-medium">{category.name}</div>
+            <div className="text-primary-600 ml-1 text-sm">
               · {getActivitiesLinkedToCategory(category.id)} activities
             </div>
 
@@ -244,14 +247,15 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <button className="mx-1">
-                  <Trash2 className="h-4 w-4 text-primary-700 hover:text-primary-300" />
+                  <Trash2 className="text-primary-700 hover:text-primary-300 h-4 w-4" />
                 </button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Category</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this category? All activities linked will lose this category and all subcategories will be deleted as well.
+                    Are you sure you want to delete this category? All activities linked will lose
+                    this category and all subcategories will be deleted as well.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -263,22 +267,19 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
               </AlertDialogContent>
             </AlertDialog>
 
-            <button
-              className="ml-2"
-              onClick={() => toggleExpand(category.id)}
-            >
+            <button className="ml-2" onClick={() => toggleExpand(category.id)}>
               {expanded === category.id ? (
-                <ChevronUp className="h-4 w-4 text-primary-500 hover:text-primary-300" />
+                <ChevronUp className="text-primary-500 hover:text-primary-300 h-4 w-4" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-primary-500 hover:text-primary-300" />
+                <ChevronDown className="text-primary-500 hover:text-primary-300 h-4 w-4" />
               )}
             </button>
           </div>
 
           {expanded === category.id && (
             <div className="border-t py-4">
-              <div className="flex items-center mb-2 px-2">
-                <div className="text-xs text-primary-600 font-medium">Subcategories</div>
+              <div className="mb-2 flex items-center px-2">
+                <div className="text-primary-600 text-xs font-medium">Subcategories</div>
                 <div className="flex-1" />
                 <Button
                   type="button"
@@ -287,18 +288,18 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                   className="h-5 w-5"
                   onClick={() => setNewSubCategory({ show: true, name: "" })}
                 >
-                  <Plus className="h-3 w-3 text-primary-500" />
+                  <Plus className="text-primary-500 h-3 w-3" />
                 </Button>
               </div>
 
               {newSubCategory.show && (
-                <div className="w-full bg-primary-900 my-2 px-2 rounded h-12 flex items-center border">
+                <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-2">
                   <Input
                     value={newSubCategory.name}
                     onChange={(e) => setNewSubCategory({ ...newSubCategory, name: e.target.value })}
                     placeholder="Name"
                     autoFocus
-                    className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0"
+                    className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
                   />
 
                   <div className="flex-1" />
@@ -310,7 +311,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
               )}
 
               {activitySubcategories.filter((sc) => sc.category === category.id).length === 0 && (
-                <div className="text-xs text-primary-600 px-2">
+                <div className="text-primary-600 px-2 text-xs">
                   No subcategory for this category.
                 </div>
               )}
@@ -320,12 +321,10 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                 .map((subcategory) => (
                   <div
                     key={subcategory.id}
-                    className="h-10 flex items-center w-full rounded bg-primary-950 px-2 my-2 border"
+                    className="bg-primary-950 my-2 flex h-10 w-full items-center rounded border px-2"
                   >
-                    <div className="text-sm font-medium text-primary-400">
-                      {subcategory.name}
-                    </div>
-                    <div className="text-sm text-primary-600 ml-1">
+                    <div className="text-primary-400 text-sm font-medium">{subcategory.name}</div>
+                    <div className="text-primary-600 ml-1 text-sm">
                       · {getActivitiesLinkedToSubCategory(subcategory.id)} activities
                     </div>
 
@@ -334,19 +333,22 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <button>
-                          <Trash2 className="h-4 w-4 text-primary-700 hover:text-primary-300 mx-1" />
+                          <Trash2 className="text-primary-700 hover:text-primary-300 mx-1 h-4 w-4" />
                         </button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Subcategory</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete this subcategory? All activities linked will lose this subcategory.
+                            Are you sure you want to delete this subcategory? All activities linked
+                            will lose this subcategory.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteSubCategory(subcategory.id)}>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteSubCategory(subcategory.id)}
+                          >
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>

@@ -12,25 +12,49 @@ interface EmojiPickerProps {
 
 // Common emojis for projects
 const commonEmojis = [
-  "📚", "💼", "🏠", "🚀", "💻", "📊", "🎯", "🔧",
-  "📝", "📅", "💰", "🛒", "📦", "🚛", "🏢", "🌱",
-  "🎨", "📈", "🔍", "💡", "🛠️", "📱", "🖥️", "🌐",
-  "📁", "📂", "📃", "📄", "📋", "📌", "📍", "📎",
+  "📚",
+  "💼",
+  "🏠",
+  "🚀",
+  "💻",
+  "📊",
+  "🎯",
+  "🔧",
+  "📝",
+  "📅",
+  "💰",
+  "🛒",
+  "📦",
+  "🚛",
+  "🏢",
+  "🌱",
+  "🎨",
+  "📈",
+  "🔍",
+  "💡",
+  "🛠️",
+  "📱",
+  "🖥️",
+  "🌐",
+  "📁",
+  "📂",
+  "📃",
+  "📄",
+  "📋",
+  "📌",
+  "📍",
+  "📎",
 ];
 
 export function EmojiPicker({ value, onChange, placeholder = "📚", className }: EmojiPickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("h-8 w-8 rounded-full", className)}
-        >
+        <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-full", className)}>
           {value || placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-2 grid grid-cols-8 gap-1">
+      <PopoverContent className="grid w-64 grid-cols-8 gap-1 p-2">
         {commonEmojis.map((emoji) => (
           <Button
             key={emoji}

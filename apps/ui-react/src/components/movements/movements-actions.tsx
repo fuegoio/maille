@@ -12,10 +12,7 @@ interface MovementsActionsProps {
   onClearSelection: () => void;
 }
 
-export function MovementsActions({ 
-  selectedMovements, 
-  onClearSelection 
-}: MovementsActionsProps) {
+export function MovementsActions({ selectedMovements, onClearSelection }: MovementsActionsProps) {
   const movements = useStore(movementsStore, (state) => state.movements);
 
   const show = selectedMovements.length > 0;
@@ -29,14 +26,14 @@ export function MovementsActions({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          transition={{ 
-            duration: 0.12, 
-            type: "keyframes", 
-            ease: "easeInOut"
+          transition={{
+            duration: 0.12,
+            type: "keyframes",
+            ease: "easeInOut",
           }}
-          className="fixed bottom-5 left-0 right-0 flex justify-center z-40"
+          className="fixed right-0 bottom-5 left-0 z-40 flex justify-center"
         >
-          <div className="flex gap-2 p-2 shadow-xl bg-primary-950 rounded items-center">
+          <div className="bg-primary-950 flex items-center gap-2 rounded p-2 shadow-xl">
             <Button
               variant="outline"
               size="sm"
@@ -46,7 +43,7 @@ export function MovementsActions({
               <span>{selectedMovements.length} selected</span>
               <X className="h-4 w-4" />
             </Button>
-            <div className="border-r border-primary-800 h-5 w-[1px]" />
+            <div className="border-primary-800 h-5 w-[1px] border-r" />
 
             <Button
               variant="default"
@@ -54,7 +51,7 @@ export function MovementsActions({
               className="flex items-center gap-1.5"
               onClick={() => console.log("Create activities")}
             >
-              <span className="font-medium text-xs">Create activities</span>
+              <span className="text-xs font-medium">Create activities</span>
             </Button>
           </div>
         </motion.div>

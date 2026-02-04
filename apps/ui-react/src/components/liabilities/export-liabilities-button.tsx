@@ -13,7 +13,11 @@ interface ExportLiabilitiesButtonProps {
   className?: string;
 }
 
-export function ExportLiabilitiesButton({ viewId, liabilities, className }: ExportLiabilitiesButtonProps) {
+export function ExportLiabilitiesButton({
+  viewId,
+  liabilities,
+  className,
+}: ExportLiabilitiesButtonProps) {
   const liabilityView = useStore(viewsStore, (state) => state.getLiabilityView(viewId));
 
   const filteredLiabilities = React.useMemo(() => {
@@ -33,7 +37,7 @@ export function ExportLiabilitiesButton({ viewId, liabilities, className }: Expo
       ["id", "date", "name", "amount", "account"],
       ...filteredLiabilities.map((l) => [
         l.id,
-        l.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+        l.date.toISOString().split("T")[0], // Format date as YYYY-MM-DD
         l.name,
         l.amount,
         l.account,
@@ -52,12 +56,7 @@ export function ExportLiabilitiesButton({ viewId, liabilities, className }: Expo
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className={className}
-          onClick={exportLiabilities}
-        >
+        <Button variant="outline" size="icon" className={className} onClick={exportLiabilities}>
           <Download className="h-4 w-4" />
         </Button>
       </TooltipTrigger>

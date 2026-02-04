@@ -32,12 +32,8 @@ export function FilterLiabilitiesButton({ viewId, className }: FilterLiabilities
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={className}
-        >
-          <Plus className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" className={className}>
+          <Plus className="mr-2 h-4 w-4" />
           <span>Filter</span>
         </Button>
       </DropdownMenuTrigger>

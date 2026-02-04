@@ -287,4 +287,3 @@ export function ActivitiesTable({
     </div>
   );
 }
-

@@ -9,7 +9,12 @@ import { updateTransactionMutation, deleteTransactionMutation } from "@/mutation
 import { AddTransactionButton } from "./add-transaction-button";
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Trash2 } from "lucide-react";
 import type { UUID } from "crypto";
 
@@ -23,16 +28,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
   const transactionsSum = activity.transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  const handleTransactionUpdate = (
-    transaction: Transaction,
-    updateData: Partial<Transaction>
-  ) => {
+  const handleTransactionUpdate = (transaction: Transaction, updateData: Partial<Transaction>) => {
     const oldTransaction = { ...transaction };
-    activitiesStore.getState().updateTransaction(
-      activity.id,
-      transaction.id,
-      updateData
-    );
+    activitiesStore.getState().updateTransaction(activity.id, transaction.id, updateData);
 
     eventsStore.getState().sendEvent({
       name: "updateTransaction",
@@ -64,7 +62,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <button
-          className="-ml-2 text-sm font-medium text-primary-100 px-2 rounded h-7 hover:text-white flex items-center"
+          className="text-primary-100 -ml-2 flex h-7 items-center rounded px-2 text-sm font-medium hover:text-white"
           onClick={() => setShowTransactions(!showTransactions)}
         >
           Transactions
@@ -79,7 +77,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
         {showTransactions && (
           <>
-            <div className="text-sm whitespace-nowrap mr-4 text-primary-100 font-mono">
+            <div className="text-primary-100 mr-4 font-mono text-sm whitespace-nowrap">
               {currencyFormatter.format(transactionsSum)}
             </div>
             <AddTransactionButton activity={activity} />
@@ -88,16 +86,16 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
       </div>
 
       {showTransactions && (
-        <div className="mt-4 mb-2 bg-primary-800 -mx-4 sm:-mx-8 rounded border">
+        <div className="bg-primary-800 -mx-4 mt-4 mb-2 rounded border sm:-mx-8">
           {activity.transactions.length === 0 ? (
-            <div className="text-sm text-primary-300 p-4">
+            <div className="text-primary-300 p-4 text-sm">
               No transaction added for this activity.
             </div>
           ) : (
             activity.transactions.map((transaction, index) => (
               <div
                 key={transaction.id}
-                className={`h-10 flex items-center justify-center text-sm hover:bg-primary-700 px-4 ${
+                className={`hover:bg-primary-700 flex h-10 items-center justify-center px-4 text-sm ${
                   index !== activity.transactions.length - 1 && "border-b"
                 }`}
               >
@@ -109,9 +107,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                     })
                   }
                   borderless
-                  className="pl-0 w-40"
+                  className="w-40 pl-0"
                 />
-                <div className="mx-2 text-center text-primary-200">to</div>
+                <div className="text-primary-200 mx-2 text-center">to</div>
                 <AccountSelect
                   modelValue={transaction.toAccount}
                   onUpdateModelValue={(account) =>
@@ -127,10 +125,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
                 <AmountInput
                   value={transaction.amount}
-                  onChange={(amount) =>
-                    handleTransactionUpdate(transaction, { amount })
-                  }
-                  className="w-24 mr-4"
+                  onChange={(amount) => handleTransactionUpdate(transaction, { amount })}
+                  className="mr-4 w-24"
                 />
 
                 <DropdownMenu>
@@ -152,7 +148,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                   <DropdownMenuContent className="bg-primary-700 border-primary-600">
                     <DropdownMenuItem
                       onClick={() => handleTransactionDelete(transaction)}
-                      className="text-red-400 focus:bg-primary-600 focus:text-red-300"
+                      className="focus:bg-primary-600 text-red-400 focus:text-red-300"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       <span>Delete</span>
@@ -167,4 +163,3 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     </div>
   );
 }
-

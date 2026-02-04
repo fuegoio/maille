@@ -29,7 +29,12 @@ interface ActivitiesState {
 
   setFocusedActivity: (activityId: UUID | null) => void;
   setShowTransactions: (show: boolean) => void;
-  addNewTransaction: (activityId: UUID, amount: number, fromAccount: UUID, toAccount: UUID) => Transaction;
+  addNewTransaction: (
+    activityId: UUID,
+    amount: number,
+    fromAccount: UUID,
+    toAccount: UUID,
+  ) => Transaction;
   updateTransaction: (activityId: UUID, transactionId: UUID, update: Partial<Transaction>) => void;
   deleteTransaction: (activityId: UUID, transactionId: UUID) => void;
 
@@ -165,7 +170,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
               return {
                 ...activity,
                 transactions: activity.transactions.map((t) =>
-                  t.id === transactionId ? { ...t, ...update } : t
+                  t.id === transactionId ? { ...t, ...update } : t,
                 ),
               };
             }

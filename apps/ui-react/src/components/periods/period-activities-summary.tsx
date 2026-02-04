@@ -33,9 +33,7 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
 
   const periodActivityData = useMemo<PeriodActivityData>(() => {
     return periodsActivityData.find(
-      (p) => 
-        p.month === periodDate.getMonth() && 
-        p.year === periodDate.getFullYear()
+      (p) => p.month === periodDate.getMonth() && p.year === periodDate.getFullYear(),
     )!;
   }, [periodsActivityData, periodDate]);
 
@@ -75,70 +73,71 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
     return color;
   };
 
-  const activityTypes = useMemo(() => [
-    {
-      type: ActivityType.REVENUE,
-      value: periodActivityData.revenue,
-    },
-    {
-      type: ActivityType.EXPENSE,
-      value: periodActivityData.expense,
-    },
-    {
-      type: ActivityType.INVESTMENT,
-      value: periodActivityData.investment,
-    },
-  ], [periodActivityData]);
+  const activityTypes = useMemo(
+    () => [
+      {
+        type: ActivityType.REVENUE,
+        value: periodActivityData.revenue,
+      },
+      {
+        type: ActivityType.EXPENSE,
+        value: periodActivityData.expense,
+      },
+      {
+        type: ActivityType.INVESTMENT,
+        value: periodActivityData.investment,
+      },
+    ],
+    [periodActivityData],
+  );
 
   return (
     <div className="space-y-4">
       {activityTypes.map((activityType) => (
-        <div key={activityType.type} className="border-b py-3 px-3 w-full">
+        <div key={activityType.type} className="w-full border-b px-3 py-3">
           <div
-            className={`flex items-center justify-between px-3 rounded group h-9 transition-colors cursor-pointer ${
+            className={`group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors ${
               viewFilters.activityType === activityType.type
-                ? 'bg-primary-800'
-                : 'hover:bg-primary-800'
+                ? "bg-primary-800"
+                : "hover:bg-primary-800"
             }`}
             onClick={() => selectActivityTypeToFilterActivities(activityType.type)}
           >
             <div className="flex items-center">
               <div
-                className={`size-3 rounded shrink-0 mr-3 bg-${ACTIVITY_TYPES_COLOR[activityType.type]}-300`}
+                className={`bg- mr-3 size-3 shrink-0 rounded${ACTIVITY_TYPES_COLOR[activityType.type]}-300`}
               />
-              <span className="text-sm text-white font-medium">
+              <span className="text-sm font-medium text-white">
                 {ACTIVITY_TYPES_NAME[activityType.type]}
               </span>
             </div>
 
             <div className="flex items-center">
               <div
-                className={`mr-4 text-primary-200 text-sm ${
-                  viewFilters.activityType === activityType.type
-                    ? ''
-                    : 'hidden group-hover:block'
+                className={`text-primary-200 mr-4 text-sm ${
+                  viewFilters.activityType === activityType.type ? "" : "hidden group-hover:block"
                 }`}
               >
-                {viewFilters.activityType === activityType.type ? 'Clear filter' : 'Filter'}
+                {viewFilters.activityType === activityType.type ? "Clear filter" : "Filter"}
               </div>
 
-              <div className="whitespace-nowrap text-right text-white text-sm font-medium font-mono">
+              <div className="text-right font-mono text-sm font-medium whitespace-nowrap text-white">
                 {getCurrencyFormatter().format(activityType.value)}
               </div>
             </div>
           </div>
 
-          <div className="px-2 mt-1 mb-2">
+          <div className="mt-1 mb-2 px-2">
             {activityType.value !== 0 && (
-              <div className="w-full h-2 hover:h-4 transition-all rounded-md flex items-center overflow-hidden bg-primary-800">
+              <div className="bg-primary-800 flex h-2 w-full items-center overflow-hidden rounded-md transition-all hover:h-4">
                 {categories
                   .filter((c) => c.type === activityType.type)
                   .map((category, index) => {
-                    const categoryValue = periodActivityData.categories.find(
-                      (c) => c.category === category.id
-                    )?.value ?? 0;
+                    const categoryValue =
+                      periodActivityData.categories.find((c) => c.category === category.id)
+                        ?.value ?? 0;
                     const percentage = (categoryValue / activityType.value) * 100;
-                    
+
                     return (
                       <Tooltip key={category.id}>
                         <TooltipTrigger asChild>
@@ -238,5 +237,11 @@ function hslToHex(hsl: { h: number; s: number; l: number }): string {
     b = hue2rgb(p, q, h - 1 / 3);
   }
 
-  return `#${Math.round(r * 255).toString(16).padStart(2, '0')}${Math.round(g * 255).toString(16).padStart(2, '0')}${Math.round(b * 255).toString(16).padStart(2, '0')}`;
+  return `#${Math.round(r * 255)
+    .toString(16)
+    .padStart(2, "0")}${Math.round(g * 255)
+    .toString(16)
+    .padStart(2, "0")}${Math.round(b * 255)
+    .toString(16)
+    .padStart(2, "0")}`;
 }

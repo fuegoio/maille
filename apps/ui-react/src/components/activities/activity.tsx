@@ -17,10 +17,18 @@ import { ActivityTransactions } from "./activity-transactions";
 import { ActivityMovements } from "./activity-movements";
 import { ActivityLiabilities } from "./activity-liabilities";
 import { SplitActivityModal } from "./split-activity-modal";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { UUID } from "crypto";
-
-
 
 interface ActivityProps {
   viewId: string;
@@ -32,7 +40,7 @@ export function Activity({ viewId }: ActivityProps) {
     activitiesStore,
     useShallow((state) => ({
       activities: state.activities,
-    }))
+    })),
   );
 
   const [showProperties, setShowProperties] = React.useState(true);
@@ -49,8 +57,6 @@ export function Activity({ viewId }: ActivityProps) {
   const close = () => {
     activityView.focusedActivity = null;
   };
-
-
 
   const deleteActivity = () => {
     if (!activity) return;
@@ -83,10 +89,10 @@ export function Activity({ viewId }: ActivityProps) {
     project?: UUID | null;
   }) => {
     if (!activity) return;
-    
+
     // Create a copy of the current activity for rollback
     const oldActivity = { ...activity };
-    
+
     activitiesStore.getState().updateActivity(activity.id, update);
 
     eventsStore.getState().sendEvent({
@@ -121,51 +127,49 @@ export function Activity({ viewId }: ActivityProps) {
     <Sheet open={!!activity} onOpenChange={(open) => !open && close()}>
       <SheetContent
         side="right"
-        className="w-full @5xl:w-[575px] max-w-full h-full overflow-hidden border bg-primary-900 shadow-xl rounded"
+        className="bg-primary-900 h-full w-full max-w-full overflow-hidden rounded border shadow-xl @5xl:w-[575px]"
       >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center px-4 sm:px-6 border-b w-full flex-shrink-0 h-14">
+        <div className="flex h-full flex-col">
+          <div className="flex h-14 w-full flex-shrink-0 items-center border-b px-4 sm:px-6">
             <Button
               variant="ghost"
               size="icon"
-              className="inline-flex items-center justify-center w-6 h-8 ml-8 lg:ml-0 mr-4"
+              className="mr-4 ml-8 inline-flex h-8 w-6 items-center justify-center lg:ml-0"
               onClick={close}
             >
-              <ChevronRight className="h-5 w-5 transition text-primary-100 hover:text-white" />
+              <ChevronRight className="text-primary-100 h-5 w-5 transition hover:text-white" />
             </Button>
-            <div className="text-white text-sm font-medium">
-              Activity #{activity.number}
-            </div>
+            <div className="text-sm font-medium text-white">Activity #{activity.number}</div>
 
-            <div className="flex-1 block sm:hidden" />
+            <div className="block flex-1 sm:hidden" />
 
-            <div className="flex items-center gap-2 ml-auto mr-3">
+            <div className="mr-3 ml-auto flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="inline-flex items-center justify-center w-6 h-8 sm:hidden"
+                className="inline-flex h-8 w-6 items-center justify-center sm:hidden"
                 onClick={() => setShowSplitModal(true)}
               >
-                <Scissors className="h-5 w-5 transition text-primary-100 hover:text-white" />
+                <Scissors className="text-primary-100 h-5 w-5 transition hover:text-white" />
               </Button>
 
               <Button
                 variant="ghost"
                 size="icon"
-                className="inline-flex items-center justify-center w-6 h-8 sm:hidden"
+                className="inline-flex h-8 w-6 items-center justify-center sm:hidden"
                 onClick={() => setShowDeleteModal(true)}
               >
-                <Trash2 className="h-5 w-5 transition text-primary-100 hover:text-white" />
+                <Trash2 className="text-primary-100 h-5 w-5 transition hover:text-white" />
               </Button>
 
-              <div className="hidden sm:flex items-center justify-end gap-3 mr-3">
+              <div className="mr-3 hidden items-center justify-end gap-3 sm:flex">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="inline-flex items-center justify-center w-6 h-8"
+                  className="inline-flex h-8 w-6 items-center justify-center"
                   onClick={() => setShowSplitModal(true)}
                 >
-                  <Scissors className="h-5 w-5 transition text-primary-100 hover:text-white" />
+                  <Scissors className="text-primary-100 h-5 w-5 transition hover:text-white" />
                 </Button>
 
                 <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
@@ -173,9 +177,9 @@ export function Activity({ viewId }: ActivityProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="inline-flex items-center justify-center w-6 h-8"
+                      className="inline-flex h-8 w-6 items-center justify-center"
                     >
-                      <Trash2 className="h-5 w-5 transition text-primary-100 hover:text-white" />
+                      <Trash2 className="text-primary-100 h-5 w-5 transition hover:text-white" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-primary-900 border-primary-700">
@@ -186,12 +190,12 @@ export function Activity({ viewId }: ActivityProps) {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel className="bg-primary-800 border-primary-700 text-white hover:bg-primary-700">
+                      <AlertDialogCancel className="bg-primary-800 border-primary-700 hover:bg-primary-700 text-white">
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={deleteActivity}
-                        className="bg-red-500 hover:bg-red-600 text-white"
+                        className="bg-red-500 text-white hover:bg-red-600"
                       >
                         Delete
                       </AlertDialogAction>
@@ -203,49 +207,45 @@ export function Activity({ viewId }: ActivityProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto pb-20">
-            <div className="py-8 px-4 sm:px-8 border-b">
+            <div className="border-b px-4 py-8 sm:px-8">
               <div
-                className={`flex items-center px-3 rounded-md w-fit h-7 -ml-2 ${
+                className={`-ml-2 flex h-7 w-fit items-center rounded-md px-3 ${
                   activity.status === "scheduled"
                     ? "bg-primary-700"
                     : activity.status === "incomplete"
-                    ? "bg-orange-300"
-                    : "bg-emerald-300"
+                      ? "bg-orange-300"
+                      : "bg-emerald-300"
                 }`}
               >
-                <span className="capitalize text-sm font-medium text-primary-800">
+                <span className="text-primary-800 text-sm font-medium capitalize">
                   {activity.status}
                 </span>
               </div>
 
-              <div className="flex items-start mt-4">
+              <div className="mt-4 flex items-start">
                 <div className="flex-1">
                   <Input
                     type="date"
                     value={activity.date.toISOString().split("T")[0]}
-                    onChange={(e) => 
-                      updateActivity({ date: new Date(e.target.value) })
-                    }
-                    className="font-semibold text-primary-100 text-sm h-8 border-none bg-transparent"
+                    onChange={(e) => updateActivity({ date: new Date(e.target.value) })}
+                    className="text-primary-100 h-8 border-none bg-transparent text-sm font-semibold"
                   />
                   <div className="flex items-start">
                     <Input
                       value={activity.name}
                       onChange={(e) => updateActivity({ name: e.target.value })}
-                      className="border-none text-lg font-medium bg-transparent text-white flex-1"
+                      className="flex-1 border-none bg-transparent text-lg font-medium text-white"
                     />
                     <div className="flex-1" />
-                    <div className="font-semibold text-white text-right text-3xl pl-4 leading-snug whitespace-nowrap font-mono">
+                    <div className="pl-4 text-right font-mono text-3xl leading-snug font-semibold whitespace-nowrap text-white">
                       {currencyFormatter.format(activity.amount)}
                     </div>
                   </div>
 
                   <Textarea
                     value={activity.description || ""}
-                    onChange={(e) => 
-                      updateActivity({ description: e.target.value || null })
-                    }
-                    className="mt-2 text-sm border-none w-full text-primary-100 break-words resize-none bg-transparent placeholder:text-primary-700"
+                    onChange={(e) => updateActivity({ description: e.target.value || null })}
+                    className="text-primary-100 placeholder:text-primary-700 mt-2 w-full resize-none border-none bg-transparent text-sm break-words"
                     placeholder="Add a description ..."
                     rows={3}
                   />
@@ -253,39 +253,39 @@ export function Activity({ viewId }: ActivityProps) {
               </div>
             </div>
 
-            <div className="py-6 px-4 sm:px-8 border-b">
+            <div className="border-b px-4 py-6 sm:px-8">
               <div className="flex">
                 <button
-                  className="-ml-2 text-sm font-medium text-primary-100 px-2 rounded h-7 hover:text-white flex items-center transition-colors"
+                  className="text-primary-100 -ml-2 flex h-7 items-center rounded px-2 text-sm font-medium transition-colors hover:text-white"
                   onClick={() => setShowProperties(!showProperties)}
                 >
                   Properties
                   {showProperties ? (
                     <ChevronRight className="ml-2 h-4 w-4" />
                   ) : (
-                    <ChevronRight className="ml-2 h-4 w-4 transform rotate-90" />
+                    <ChevronRight className="ml-2 h-4 w-4 rotate-90 transform" />
                   )}
                 </button>
               </div>
 
               {showProperties && (
                 <div className="pt-4">
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="text-sm">Activity type</div>
                     {/* Activity type selector would go here */}
                   </div>
 
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="text-sm">Category</div>
                     {/* Category selector would go here */}
                   </div>
 
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="text-sm">Subcategory</div>
                     {/* Subcategory selector would go here */}
                   </div>
 
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="mb-2 flex items-center justify-between">
                     <div className="text-sm">Project</div>
                     {/* Project selector would go here */}
                   </div>

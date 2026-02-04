@@ -3,11 +3,7 @@ import { useRouter, useParams } from "@tanstack/react-router";
 import { usePeriodsStore } from "@/stores/periods";
 import { PeriodLabel } from "./period-label";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarClock, CalendarCheck, CalendarArrowRight } from "lucide-react";
 import type { Period } from "@/types/periods";
 
@@ -35,7 +31,7 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
   }, [period]);
 
   const periodDateString = useMemo(() => {
-    return `${periodDate.getFullYear()}-${String(periodDate.getMonth() + 1).padStart(2, '0')}`;
+    return `${periodDate.getFullYear()}-${String(periodDate.getMonth() + 1).padStart(2, "0")}`;
   }, [periodDate]);
 
   const periodDateLabel = useMemo(() => {
@@ -75,13 +71,13 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
   const getPeriodIcon = (label: string) => {
     switch (label) {
       case "Current":
-        return <CalendarClock className="text-primary-100 text-xl mr-3 mt-1" />;
+        return <CalendarClock className="text-primary-100 mt-1 mr-3 text-xl" />;
       case "Completed":
-        return <CalendarCheck className="text-primary-100 text-xl mr-3 mt-1" />;
+        return <CalendarCheck className="text-primary-100 mt-1 mr-3 text-xl" />;
       case "Future":
-        return <CalendarArrowRight className="text-primary-100 text-xl mr-3 mt-1" />;
+        return <CalendarArrowRight className="text-primary-100 mt-1 mr-3 text-xl" />;
       default:
-        return <CalendarClock className="text-primary-100 text-xl mr-3 mt-1" />;
+        return <CalendarClock className="text-primary-100 mt-1 mr-3 text-xl" />;
     }
   };
 
@@ -90,42 +86,40 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className={`relative rounded px-3 text-left h-8 hover:bg-primary-700 flex items-center mx-2 ${className || ''}`}
+          className={`hover:bg-primary-700 relative mx-2 flex h-8 items-center rounded px-3 text-left ${className || ""}`}
         >
           {getPeriodIcon(periodDateLabel)}
-          <span className="text-white text-sm truncate font-semibold">
-            {periodDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          <span className="truncate text-sm font-semibold text-white">
+            {periodDate.toLocaleString("default", { month: "long", year: "numeric" })}
           </span>
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-80 z-50 max-h-60 overflow-auto rounded-md bg-primary-700 py-1 shadow-lg border focus:outline-none text-sm"
+        className="bg-primary-700 z-50 max-h-60 w-80 overflow-auto rounded-md border py-1 text-sm shadow-lg focus:outline-none"
         align="start"
       >
         {periodsList.map((periodItem, index) => {
-          const isSelected = 
+          const isSelected =
             periodItem.date.getMonth() === periodDate.getMonth() &&
             periodItem.date.getFullYear() === periodDate.getFullYear();
 
           return (
             <div
               key={index}
-              className={`relative select-none py-2 px-4 flex items-center cursor-pointer ${
-                isSelected
-                  ? 'bg-primary-400 text-white'
-                  : 'text-primary-100 hover:bg-primary-600'
+              className={`relative flex cursor-pointer items-center px-4 py-2 select-none ${
+                isSelected ? "bg-primary-400 text-white" : "text-primary-100 hover:bg-primary-600"
               }`}
-              onClick={() => handleInput(`${periodItem.date.getFullYear()}-${String(periodItem.date.getMonth() + 1).padStart(2, '0')}`)}
+              onClick={() =>
+                handleInput(
+                  `${periodItem.date.getFullYear()}-${String(periodItem.date.getMonth() + 1).padStart(2, "0")}`,
+                )
+              }
             >
               {getPeriodIcon(periodItem.label)}
 
-              <span
-                className={`${
-                  isSelected ? 'font-medium' : 'font-normal'
-                } block truncate`}
-              >
-                {periodItem.date.toLocaleString('default', { month: 'long', year: 'numeric' })}
+              <span className={`${isSelected ? "font-medium" : "font-normal"} block truncate`}>
+                {periodItem.date.toLocaleString("default", { month: "long", year: "numeric" })}
               </span>
               <div className="flex-1" />
 

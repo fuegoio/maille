@@ -3,7 +3,13 @@ import { useStore } from "zustand";
 import { activitiesStore } from "@/stores/activities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
 import type { UUID } from "crypto";
@@ -15,9 +21,7 @@ interface SplitActivityModalProps {
 }
 
 export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActivityModalProps) {
-  const activity = useStore(activitiesStore, (state) => 
-    state.getActivityById(activityId as UUID)
-  );
+  const activity = useStore(activitiesStore, (state) => state.getActivityById(activityId as UUID));
   const currencyFormatter = getCurrencyFormatter();
 
   const [splitAmounts, setSplitAmounts] = React.useState<number[]>([activity?.amount || 0]);
@@ -80,13 +84,13 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[625px] bg-primary-900 border-primary-700">
+      <DialogContent className="bg-primary-900 border-primary-700 sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle className="text-white">Split Activity</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <div className="text-sm text-primary-400">
+        <div className="space-y-4 py-4">
+          <div className="text-primary-400 text-sm">
             Original amount: {currencyFormatter.format(originalAmount)}
           </div>
 
@@ -98,14 +102,14 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
                   value={splitNames[index]}
                   onChange={(e) => updateName(index, e.target.value)}
                   placeholder="Split name"
-                  className="flex-1 bg-primary-800 border-primary-700 text-white"
+                  className="bg-primary-800 border-primary-700 flex-1 text-white"
                 />
                 <Input
                   type="number"
                   value={amount}
                   onChange={(e) => updateAmount(index, e.target.value)}
                   placeholder="Amount"
-                  className="w-32 bg-primary-800 border-primary-700 text-white font-mono"
+                  className="bg-primary-800 border-primary-700 w-32 font-mono text-white"
                   step="0.01"
                 />
                 <Button
@@ -120,14 +124,8 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
             ))}
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addSplit}
-            className="mt-2"
-          >
-            <Plus className="h-4 w-4 mr-2" />
+          <Button type="button" variant="outline" size="sm" onClick={addSplit} className="mt-2">
+            <Plus className="mr-2 h-4 w-4" />
             <span>Add Split</span>
           </Button>
 
@@ -144,12 +142,7 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="default"
-            onClick={handleSplit}
-            disabled={difference !== 0}
-          >
+          <Button type="button" variant="default" onClick={handleSplit} disabled={difference !== 0}>
             Split Activity
           </Button>
         </DialogFooter>

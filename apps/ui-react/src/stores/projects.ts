@@ -174,11 +174,13 @@ export const projectsStore = createStore<ProjectsState>()(
       },
 
       resetViewFilters: () => {
-        set({ viewFilters: {
-          category: null,
-          subcategory: null,
-          activityType: null,
-        } });
+        set({
+          viewFilters: {
+            category: null,
+            subcategory: null,
+            activityType: null,
+          },
+        });
       },
     }),
     {

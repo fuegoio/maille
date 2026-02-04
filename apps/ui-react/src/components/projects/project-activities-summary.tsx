@@ -28,7 +28,9 @@ interface ProjectActivitiesSummaryProps {
 
 export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitiesSummaryProps) {
   const { viewFilters } = useStore(projectsStore, (state) => ({ viewFilters: state.viewFilters }));
-  const { activityCategories } = useStore(activitiesStore, (state) => ({ activityCategories: state.activityCategories }));
+  const { activityCategories } = useStore(activitiesStore, (state) => ({
+    activityCategories: state.activityCategories,
+  }));
 
   const activitiesTotal = useMemo(() => {
     const totals: Partial<Record<ActivityType, number>> = {};
@@ -54,52 +56,33 @@ export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitie
     }
   };
 
-  const activityTypesToShow = [
-    ActivityType.REVENUE,
-    ActivityType.EXPENSE,
-    ActivityType.INVESTMENT,
-  ];
+  const activityTypesToShow = [ActivityType.REVENUE, ActivityType.EXPENSE, ActivityType.INVESTMENT];
 
   return (
     <>
       {activityTypesToShow.map((activityType) => (
-        <div key={activityType} className="border-b py-3 px-3 w-full">
-          <div
-            className={`flex items-center justify-between px-3 rounded group h-9 cursor-pointer $
+        <div key={activityType} className="w-full border-b px-3 py-3">
+          <div className={`group $ flex h-9 cursor-pointer items-center justify-between rounded px-3
               ${viewFilters.activityType === activityType ? "bg-primary-800" : "hover:bg-primary-800"}
               ${activitiesTotal[activityType] !== undefined ? "mb-3" : ""}
-            `}
-            onClick={() => selectActivityTypeToFilterActivities(activityType)}
-          >
+            `} onClick={() => selectActivityTypeToFilterActivities(activityType)}>
             <div className="flex items-center">
               <div
-                className={`size-3 rounded shrink-0 mr-3 bg-${ACTIVITY_TYPES_COLOR[activityType]}-300`}
+                className={`bg- mr-3 size-3 shrink-0 rounded${ACTIVITY_TYPES_COLOR[activityType]}-300`}
               />
-              <span
-                className={`text-sm font-medium $
+              <span className={`$ text-sm font-medium
                   ${activitiesTotal[activityType] !== undefined ? "text-white" : "text-primary-600"}
-                `}
-              >
-                {ACTIVITY_TYPES_NAME[activityType]}
-              </span>
+                `}>{ACTIVITY_TYPES_NAME[activityType]}</span>
             </div>
 
             <div className="flex items-center">
-              <div
-                className={`mr-4 text-primary-200 text-sm $
+              <div className={`text-primary-200 $ mr-4 text-sm
                   ${viewFilters.activityType === activityType ? "" : "hidden group-hover:block"}
-                `}
-              >
-                {viewFilters.activityType === activityType ? "Clear filter" : "Filter"}
-              </div>
+                `}>{viewFilters.activityType === activityType ? "Clear filter" : "Filter"}</div>
 
-              <div
-                className={`whitespace-nowrap text-right text-sm font-medium font-mono $
+              <div className={`$ text-right font-mono text-sm font-medium whitespace-nowrap
                   ${activitiesTotal[activityType] !== undefined ? "text-white" : "text-primary-600"}
-                `}
-              >
-                {getCurrencyFormatter().format(activitiesTotal[activityType] ?? 0)}
-              </div>
+                `}>{getCurrencyFormatter().format(activitiesTotal[activityType] ?? 0)}</div>
             </div>
           </div>
 

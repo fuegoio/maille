@@ -21,11 +21,11 @@ interface MovementsTableProps {
   accountFilter?: UUID | null;
 }
 
-export function MovementsTable({ 
-  movements, 
-  viewId, 
-  grouping = null, 
-  accountFilter = null 
+export function MovementsTable({
+  movements,
+  viewId,
+  grouping = null,
+  accountFilter = null,
 }: MovementsTableProps) {
   const focusedMovement = useStore(movementsStore, (state) => state.focusedMovement);
   const focusedActivity = useStore(activitiesStore, (state) => state.focusedActivity);
@@ -55,11 +55,7 @@ export function MovementsTable({
   const movementsFiltered = React.useMemo(() => {
     return movements
       .filter((movement) => filterStringBySearch(movement.name))
-      .filter((movement) => 
-        accountFilter !== null 
-          ? movement.account === accountFilter 
-          : true
-      )
+      .filter((movement) => (accountFilter !== null ? movement.account === accountFilter : true))
       .filter((movement) => {
         if (movementView.filters.length === 0) return true;
         return movementView.filters
@@ -84,9 +80,7 @@ export function MovementsTable({
     movements: Movement[];
   };
 
-  type MovementAndGroup = 
-    | ({ itemType: "group" } & Group)
-    | ({ itemType: "movement" } & Movement);
+  type MovementAndGroup = ({ itemType: "group" } & Group) | ({ itemType: "movement" } & Movement);
 
   const movementsWithGroups = React.useMemo<MovementAndGroup[]>(() => {
     if (!grouping) return movementsSorted.map((m) => ({ itemType: "movement", ...m }));
@@ -122,14 +116,12 @@ export function MovementsTable({
           month: group.month,
           year: group.year,
         });
-        return mwg.concat(
-          group.movements.map((m) => ({ itemType: "movement", ...m })),
-        );
+        return mwg.concat(group.movements.map((m) => ({ itemType: "movement", ...m })));
       }, []);
   }, [movementsSorted, grouping]);
 
   const periodFormatter = (month: number, year: number): string => {
-    return new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' });
+    return new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
   };
 
   const handleMovementClick = (movementId: UUID) => {
@@ -141,88 +133,84 @@ export function MovementsTable({
   };
 
   const selectMovement = (movementId: UUID) => {
-    setSelectedMovements((prev) => 
-      prev.includes(movementId) 
-        ? prev.filter((id) => id !== movementId) 
-        : [...prev, movementId]
+    setSelectedMovements((prev) =>
+      prev.includes(movementId) ? prev.filter((id) => id !== movementId) : [...prev, movementId],
     );
   };
 
   // Hotkeys
-  useHotkeys('k', () => {
+  useHotkeys("k", () => {
     if (movementsSorted.length === 0) return;
-    
-    const currentIndex = movementsSorted.findIndex(
-      (movement) => movement.id === focusedMovement
-    );
-    
-    const nextIndex = currentIndex === -1
-      ? 0
-      : (currentIndex - 1 + movementsSorted.length) % movementsSorted.length;
-    
+
+    const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
+
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex - 1 + movementsSorted.length) % movementsSorted.length;
+
     movementsStore.getState().setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
-  useHotkeys('j', () => {
+  useHotkeys("j", () => {
     if (movementsSorted.length === 0) return;
-    
-    const currentIndex = movementsSorted.findIndex(
-      (movement) => movement.id === focusedMovement
-    );
-    
+
+    const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
+
     const nextIndex = (currentIndex + 1) % movementsSorted.length;
     movementsStore.getState().setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
-  useHotkeys('escape', () => {
+  useHotkeys("escape", () => {
     if (selectedMovements.length > 0) {
       setSelectedMovements([]);
     }
   });
 
-  useHotkeys('ctrl+a,meta+a', () => {
+  useHotkeys("ctrl+a,meta+a", () => {
     setSelectedMovements(movementsFiltered.map((m) => m.id));
   });
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 min-w-0">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <MovementsFilters viewId={viewId} movements={movementsFiltered} />
 
-      <div className="flex-1 flex flex-col sm:min-w-[575px] overflow-x-hidden">
+      <div className="flex flex-1 flex-col overflow-x-hidden sm:min-w-[575px]">
         {movementsFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40">
-            {grouping ? (
-              movementsWithGroups.map((item) => (
-                <React.Fragment key={item.id}>
-                  {item.itemType === 'group' ? (
-                    <div className="bg-primary-800 h-10 flex items-center gap-2 pl-5 sm:pl-7 border-b flex-shrink-0">
-                      <i className="mdi mdi-calendar-blank text-primary-100 mdi-16px" aria-hidden="true" />
-                      <div className="text-sm font-medium">
-                        {periodFormatter(item.month, item.year)}
+            {grouping
+              ? movementsWithGroups.map((item) => (
+                  <React.Fragment key={item.id}>
+                    {item.itemType === "group" ? (
+                      <div className="bg-primary-800 flex h-10 flex-shrink-0 items-center gap-2 border-b pl-5 sm:pl-7">
+                        <i
+                          className="mdi mdi-calendar-blank text-primary-100 mdi-16px"
+                          aria-hidden="true"
+                        />
+                        <div className="text-sm font-medium">
+                          {periodFormatter(item.month, item.year)}
+                        </div>
+                        <div className="flex-1" />
                       </div>
-                      <div className="flex-1" />
-                    </div>
-                  ) : (
-                    <MovementLine
-                      movement={item}
-                      isMovementSelected={selectedMovements.includes(item.id)}
-                      onSelectMovement={() => selectMovement(item.id)}
-                      onClick={() => handleMovementClick(item.id)}
-                    />
-                  )}
-                </React.Fragment>
-              ))
-            ) : (
-              movementsSorted.map((movement) => (
-                <MovementLine
-                  key={movement.id}
-                  movement={movement}
-                  isMovementSelected={selectedMovements.includes(movement.id)}
-                  onSelectMovement={() => selectMovement(movement.id)}
-                  onClick={() => handleMovementClick(movement.id)}
-                />
-              ))
-            )}
+                    ) : (
+                      <MovementLine
+                        movement={item}
+                        isMovementSelected={selectedMovements.includes(item.id)}
+                        onSelectMovement={() => selectMovement(item.id)}
+                        onClick={() => handleMovementClick(item.id)}
+                      />
+                    )}
+                  </React.Fragment>
+                ))
+              : movementsSorted.map((movement) => (
+                  <MovementLine
+                    key={movement.id}
+                    movement={movement}
+                    isMovementSelected={selectedMovements.includes(movement.id)}
+                    onSelectMovement={() => selectMovement(movement.id)}
+                    onClick={() => handleMovementClick(movement.id)}
+                  />
+                ))}
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center overflow-hidden">

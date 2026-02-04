@@ -165,4 +165,3 @@ export function ProjectDates({ projectId }: ProjectDatesProps) {
     </div>
   );
 }
-

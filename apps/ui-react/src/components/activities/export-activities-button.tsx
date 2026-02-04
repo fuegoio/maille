@@ -13,7 +13,11 @@ interface ExportActivitiesButtonProps {
   className?: string;
 }
 
-export function ExportActivitiesButton({ viewId, activities, className }: ExportActivitiesButtonProps) {
+export function ExportActivitiesButton({
+  viewId,
+  activities,
+  className,
+}: ExportActivitiesButtonProps) {
   const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
 
   const filteredActivities = React.useMemo(() => {
@@ -33,7 +37,7 @@ export function ExportActivitiesButton({ viewId, activities, className }: Export
       ["number", "date", "name", "amount"],
       ...filteredActivities.map((a) => [
         a.number,
-        a.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+        a.date.toISOString().split("T")[0], // Format date as YYYY-MM-DD
         a.name,
         a.amount,
       ]),
@@ -51,12 +55,7 @@ export function ExportActivitiesButton({ viewId, activities, className }: Export
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className={className}
-          onClick={exportActivities}
-        >
+        <Button variant="outline" size="icon" className={className} onClick={exportActivities}>
           <Download className="h-4 w-4" />
         </Button>
       </TooltipTrigger>

@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { AccountSelect } from "@/components/accounts/account-select";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { UUID } from "crypto";
 import { parse } from "csv-parse/browser/esm/sync";
 import dayjs from "dayjs";
@@ -30,10 +36,10 @@ interface ImportMovementsButtonProps {
   onImported?: () => void;
 }
 
-export function ImportMovementsButton({ 
-  large = false, 
-  className, 
-  onImported 
+export function ImportMovementsButton({
+  large = false,
+  className,
+  onImported,
 }: ImportMovementsButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
@@ -77,14 +83,13 @@ export function ImportMovementsButton({
 
     records.forEach((record) => {
       const movementName = record[mapping.name!];
-      const movementDate = dayjs(
-        record[mapping.date!],
-        ["DD/MM/YYYY", "D/M/YYYY", "YYYY-MM-DD"]
-      ).toDate();
+      const movementDate = dayjs(record[mapping.date!], [
+        "DD/MM/YYYY",
+        "D/M/YYYY",
+        "YYYY-MM-DD",
+      ]).toDate();
       const movementAmount = parseFloat(
-        record[mapping.amount!]
-          .replace(/ /g, "")
-          .replace(/,/g, ".")
+        record[mapping.amount!].replace(/ /g, "").replace(/,/g, "."),
       );
 
       const existingMovement = movements.find(
@@ -92,7 +97,7 @@ export function ImportMovementsButton({
           m.account === account &&
           m.date.getTime() === movementDate.getTime() &&
           m.amount === movementAmount &&
-          m.name.toLowerCase() === movementName.toLowerCase()
+          m.name.toLowerCase() === movementName.toLowerCase(),
       );
 
       if (!existingMovement) {
@@ -110,7 +115,7 @@ export function ImportMovementsButton({
           variables: {
             id: movement.id,
             name: movement.name,
-            date: movement.date.toISOString().split('T')[0],
+            date: movement.date.toISOString().split("T")[0],
             account: movement.account,
             amount: movement.amount,
           },
@@ -149,7 +154,7 @@ export function ImportMovementsButton({
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>Import movements from a CSV</DialogTitle>
           </DialogHeader>
@@ -160,8 +165,8 @@ export function ImportMovementsButton({
             </div>
           ) : (
             <div className="w-full">
-              <div className="py-4 px-0 flex flex-col sm:flex-row sm:items-center gap-4 border-b">
-                <label className="text-sm text-primary-100 w-32">Account</label>
+              <div className="flex flex-col gap-4 border-b px-0 py-4 sm:flex-row sm:items-center">
+                <label className="text-primary-100 w-32 text-sm">Account</label>
                 <div className="flex-1">
                   <AccountSelect
                     modelValue={account}
@@ -171,9 +176,9 @@ export function ImportMovementsButton({
                 </div>
               </div>
 
-              <div className="py-2 border-b">
-                <div className="py-2 px-0 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-primary-100 w-32">Name field</label>
+              <div className="border-b py-2">
+                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
+                  <label className="text-primary-100 w-32 text-sm">Name field</label>
                   <div className="flex-1">
                     <Select
                       value={mapping.name}
@@ -184,15 +189,17 @@ export function ImportMovementsButton({
                       </SelectTrigger>
                       <SelectContent>
                         {headers.map((header) => (
-                          <SelectItem key={header} value={header}>{header}</SelectItem>
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="py-2 px-0 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-primary-100 w-32">Amount field</label>
+                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
+                  <label className="text-primary-100 w-32 text-sm">Amount field</label>
                   <div className="flex-1">
                     <Select
                       value={mapping.amount}
@@ -203,15 +210,17 @@ export function ImportMovementsButton({
                       </SelectTrigger>
                       <SelectContent>
                         {headers.map((header) => (
-                          <SelectItem key={header} value={header}>{header}</SelectItem>
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="py-2 px-0 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <label className="text-sm text-primary-100 w-32">Date field</label>
+                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
+                  <label className="text-primary-100 w-32 text-sm">Date field</label>
                   <div className="flex-1">
                     <Select
                       value={mapping.date}
@@ -222,7 +231,9 @@ export function ImportMovementsButton({
                       </SelectTrigger>
                       <SelectContent>
                         {headers.map((header) => (
-                          <SelectItem key={header} value={header}>{header}</SelectItem>
+                          <SelectItem key={header} value={header}>
+                            {header}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -230,15 +241,16 @@ export function ImportMovementsButton({
                 </div>
               </div>
 
-              <div className="text-sm text-primary-100 px-0 mt-4 mb-2">
-                CSV data
-              </div>
-              <div className="w-full overflow-auto max-h-44 py-4 px-0">
-                <table className="border-collapse w-full">
+              <div className="text-primary-100 mt-4 mb-2 px-0 text-sm">CSV data</div>
+              <div className="max-h-44 w-full overflow-auto px-0 py-4">
+                <table className="w-full border-collapse">
                   <thead>
                     <tr>
                       {headers.map((header) => (
-                        <th key={header} className="border border-white h-10 px-6 text-white text-sm">
+                        <th
+                          key={header}
+                          className="h-10 border border-white px-6 text-sm text-white"
+                        >
                           {header}
                         </th>
                       ))}
@@ -248,7 +260,10 @@ export function ImportMovementsButton({
                     {records.map((record, index) => (
                       <tr key={index}>
                         {headers.map((header) => (
-                          <td key={header} className="border border-white h-10 px-6 text-primary-100 text-sm whitespace-nowrap">
+                          <td
+                            key={header}
+                            className="text-primary-100 h-10 border border-white px-6 text-sm whitespace-nowrap"
+                          >
                             {record[header]}
                           </td>
                         ))}

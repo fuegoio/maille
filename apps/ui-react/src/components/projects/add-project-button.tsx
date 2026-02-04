@@ -20,12 +20,8 @@ export function AddProjectButton({ onCreate, className }: AddProjectButtonProps)
 
   return (
     <>
-      <Button
-        className={className}
-        size="sm"
-        onClick={() => setShowModal(true)}
-      >
-        <PlusIcon className="h-4 w-4 mr-2" />
+      <Button className={className} size="sm" onClick={() => setShowModal(true)}>
+        <PlusIcon className="mr-2 h-4 w-4" />
         <span>New project</span>
       </Button>
 

@@ -15,16 +15,16 @@ interface MovementLineProps {
   onClick: () => void;
 }
 
-export function MovementLine({ 
-  movement, 
-  isMovementSelected, 
-  onSelectMovement, 
-  onClick 
+export function MovementLine({
+  movement,
+  isMovementSelected,
+  onSelectMovement,
+  onClick,
 }: MovementLineProps) {
   const { focusedMovement } = useStore(movementsStore, (state) => ({
     focusedMovement: state.focusedMovement,
   }));
-  
+
   const currencyFormatter = getCurrencyFormatter();
 
   const handleLongPress = (e: React.PointerEvent) => {
@@ -43,44 +43,44 @@ export function MovementLine({
       key={movement.id}
       {...longPressBind()}
       className={cn(
-        "h-10 flex items-center gap-2 pr-2 sm:pr-6 border-b text-sm flex-shrink-0 transition-colors hover:bg-primary-800/50 pl-4 sm:pl-2",
-        focusedMovement === movement.id && 
-          "bg-primary-800/50 border-l-4 border-l-primary-400 pl-3 sm:pl-1",
-        isMovementSelected && "bg-primary-800/70"
+        "hover:bg-primary-800/50 flex h-10 flex-shrink-0 items-center gap-2 border-b pr-2 pl-4 text-sm transition-colors sm:pr-6 sm:pl-2",
+        focusedMovement === movement.id &&
+          "bg-primary-800/50 border-l-primary-400 border-l-4 pl-3 sm:pl-1",
+        isMovementSelected && "bg-primary-800/70",
       )}
       onClick={onClick}
     >
       <Checkbox
         checked={isMovementSelected}
         className={cn(
-          "size-3.5 hover:opacity-100 transition-opacity hidden sm:block",
-          isMovementSelected ? "opacity-100" : "opacity-0"
+          "hidden size-3.5 transition-opacity hover:opacity-100 sm:block",
+          isMovementSelected ? "opacity-100" : "opacity-0",
         )}
         onClick={(e) => {
           e.stopPropagation();
           onSelectMovement();
         }}
       />
-      <div className="hidden sm:block text-primary-100 w-20 shrink-0">
-        {movement.date.toLocaleDateString('fr-FR')}
+      <div className="text-primary-100 hidden w-20 shrink-0 sm:block">
+        {movement.date.toLocaleDateString("fr-FR")}
       </div>
-      <div className="sm:hidden text-primary-100 w-10 shrink-0">
-        {movement.date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+      <div className="text-primary-100 w-10 shrink-0 sm:hidden">
+        {movement.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
       </div>
 
-      {movement.status === 'incomplete' ? (
+      {movement.status === "incomplete" ? (
         <i className="mdi mdi-progress-helper text-lg text-orange-300" aria-hidden="true" />
       ) : (
         <i className="mdi mdi-check-circle-outline text-lg text-emerald-300" aria-hidden="true" />
       )}
       <AccountLabel accountId={movement.account} />
 
-      <div className="ml-1 text-primary-100 text-ellipsis overflow-hidden whitespace-nowrap">
+      <div className="text-primary-100 ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
         {movement.name}
       </div>
 
       <div className="flex-1" />
-      <div className="text-white text-right whitespace-nowrap font-mono">
+      <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(movement.amount)}
       </div>
     </div>

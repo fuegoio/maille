@@ -27,8 +27,8 @@ export function LiabilitiesFilters({ viewId, liabilities }: LiabilitiesFiltersPr
   if (liabilityView.filters.length === 0) return null;
 
   return (
-    <div className="py-2 flex flex-col md:flex-row md:items-start pl-4 sm:pl-6 pr-4 border-b gap-2 sm:min-w-[575px]">
-      <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-col gap-2 border-b py-2 pr-4 pl-4 sm:min-w-[575px] sm:pl-6 md:flex-row md:items-start">
+      <div className="flex flex-wrap items-center gap-2">
         {liabilityView.filters.map((filter, index) => (
           <LiabilityFilter
             key={index}
@@ -45,11 +45,11 @@ export function LiabilitiesFilters({ viewId, liabilities }: LiabilitiesFiltersPr
         <FilterLiabilitiesButton viewId={viewId} />
       </div>
 
-      <div className="flex items-end sm:items-center flex-1 mt-2 sm:mt-0 sm:ml-2">
-        <div className="flex-1 hidden sm:block" />
+      <div className="mt-2 flex flex-1 items-end sm:mt-0 sm:ml-2 sm:items-center">
+        <div className="hidden flex-1 sm:block" />
 
-        <div className="flex pr-2 mr-4 sm:border-r flex-col sm:flex-row">
-          <div className="text-sm text-right flex items-center px-2 my-1 font-mono">
+        <div className="mr-4 flex flex-col pr-2 sm:flex-row sm:border-r">
+          <div className="my-1 flex items-center px-2 text-right font-mono text-sm">
             {currencyFormatter.format(liabilitiesTotal)}
           </div>
         </div>

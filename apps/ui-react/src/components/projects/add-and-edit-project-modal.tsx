@@ -40,9 +40,7 @@ export function AddAndEditProjectModal({
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState<string | null>(null);
 
-  const project = projectId
-    ? projects.find((p) => p.id === projectId)
-    : undefined;
+  const project = projectId ? projects.find((p) => p.id === projectId) : undefined;
 
   const isEditMode = !!project;
 
@@ -56,7 +54,7 @@ export function AddAndEditProjectModal({
         setName("");
         setEmoji(null);
       }
-      
+
       // Focus the name input when modal opens
       setTimeout(() => {
         if (nameInputRef.current) {
@@ -119,9 +117,9 @@ export function AddAndEditProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-primary-800 border-primary-700 text-white">
+      <DialogContent className="bg-primary-800 border-primary-700 text-white sm:max-w-[600px]">
         <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-sm bg-primary-400 px-2 h-6 flex items-center text-white rounded font-medium">
+          <DialogTitle className="bg-primary-400 flex h-6 items-center rounded px-2 text-sm font-medium text-white">
             {isEditMode ? "Edit project" : "New project"}
           </DialogTitle>
           <Button
@@ -136,23 +134,18 @@ export function AddAndEditProjectModal({
 
         <div className="py-4">
           <div className="flex items-center gap-2">
-            <EmojiPicker
-              value={emoji}
-              onChange={setEmoji}
-              placeholder="📚"
-              className="mr-2"
-            />
+            <EmojiPicker value={emoji} onChange={setEmoji} placeholder="📚" className="mr-2" />
             <Input
               ref={nameInputRef}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Project name"
-              className="text-2xl font-semibold w-full break-words resize-none bg-transparent border-none text-white placeholder-primary-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="placeholder-primary-400 w-full resize-none border-none bg-transparent text-2xl font-semibold break-words text-white focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
         </div>
 
-        <DialogFooter className="border-t border-primary-700 pt-4">
+        <DialogFooter className="border-primary-700 border-t pt-4">
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"

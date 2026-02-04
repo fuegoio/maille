@@ -7,12 +7,7 @@ import { createMovementActivityMutation } from "@/mutations/movements";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
@@ -28,11 +23,7 @@ interface LinkMovementButtonProps {
   className?: string;
 }
 
-export function LinkMovementButton({ 
-  activity, 
-  account, 
-  className 
-}: LinkMovementButtonProps) {
+export function LinkMovementButton({ activity, account, className }: LinkMovementButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [filterAmount, setFilterAmount] = React.useState(true);
@@ -43,10 +34,10 @@ export function LinkMovementButton({
   const filteredMovements = React.useMemo(() => {
     const transactionsSumByAccount = getActivityTransactionsSumByAccount(
       activity.transactions,
-      accounts
+      accounts,
     );
     const transactionsSumOfAccount = transactionsSumByAccount.find(
-      (tba) => tba.account === account
+      (tba) => tba.account === account,
     );
 
     return _.orderBy(
@@ -61,25 +52,19 @@ export function LinkMovementButton({
         )
           return false;
 
-        if (
-          search !== "" &&
-          !searchCompare(search, m.name)
-        )
-          return false;
+        if (search !== "" && !searchCompare(search, m.name)) return false;
 
         return true;
       }),
       ["date"],
-      ["desc"]
+      ["desc"],
     );
   }, [movements, accounts, activity.transactions, account, filterAmount, search]);
 
   const linkMovement = async (movement: Movement) => {
-    const movementActivity = movementsStore.getState().createMovementActivity(
-      activity.id,
-      movement.id,
-      movement.amount
-    );
+    const movementActivity = movementsStore
+      .getState()
+      .createMovementActivity(activity.id, movement.id, movement.amount);
 
     eventsStore.getState().sendEvent({
       name: "createMovementActivity",
@@ -127,10 +112,10 @@ export function LinkMovementButton({
       </Tooltip>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[400px] flex flex-col">
+        <DialogContent className="flex max-h-[400px] flex-col sm:max-w-2xl">
           <DialogHeader>
-            <div className="flex mb-2">
-              <div className="text-xs bg-primary-400 px-2.5 h-6 flex items-center text-white rounded font-medium">
+            <div className="mb-2 flex">
+              <div className="bg-primary-400 flex h-6 items-center rounded px-2.5 text-xs font-medium text-white">
                 #{activity.number} - {activity.name}
               </div>
             </div>
@@ -140,7 +125,7 @@ export function LinkMovementButton({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search for a movement ..."
-                className="pl-1 text-left min-w-0 border-none h-10 text-lg bg-transparent flex-1 text-white outline-none"
+                className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-white outline-none"
                 autoFocus
               />
 
@@ -148,7 +133,7 @@ export function LinkMovementButton({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className={`transition ${filterAmount ? 'text-primary-400' : 'text-primary-400'}`}
+                className={`transition ${filterAmount ? "text-primary-400" : "text-primary-400"}`}
                 onClick={() => setFilterAmount(!filterAmount)}
               >
                 <i className="mdi mdi-currency-eur text-base" aria-hidden="true" />
@@ -156,33 +141,33 @@ export function LinkMovementButton({
             </div>
           </DialogHeader>
 
-          <div className="px-3 py-3 overflow-auto flex-1">
+          <div className="flex-1 overflow-auto px-3 py-3">
             {filteredMovements.map((movement) => (
               <div
                 key={movement.id}
-                className="flex items-center text-sm shrink-0 h-8 rounded hover:bg-primary-600 px-2 my-1 cursor-pointer"
+                className="hover:bg-primary-600 my-1 flex h-8 shrink-0 cursor-pointer items-center rounded px-2 text-sm"
                 onClick={() => linkMovement(movement)}
               >
-                <div className="hidden sm:block text-primary-100 w-20 shrink-0">
-                  {movement.date.toLocaleDateString('fr-FR')}
+                <div className="text-primary-100 hidden w-20 shrink-0 sm:block">
+                  {movement.date.toLocaleDateString("fr-FR")}
                 </div>
-                <div className="sm:hidden text-primary-100 w-10 shrink-0">
-                  {movement.date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                <div className="text-primary-100 w-10 shrink-0 sm:hidden">
+                  {movement.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
                 </div>
 
                 <AccountLabel accountId={movement.account} />
-                <div className="ml-1 text-white text-ellipsis overflow-hidden whitespace-nowrap">
+                <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-white">
                   {movement.name}
                 </div>
                 <div className="flex-1" />
-                <div className="w-20 whitespace-nowrap text-right text-white">
+                <div className="w-20 text-right whitespace-nowrap text-white">
                   {getCurrencyFormatter().format(movement.amount)}
                 </div>
               </div>
             ))}
 
             {filteredMovements.length === 0 && (
-              <div className="flex items-center justify-center w-full text-primary-100 text-sm py-2">
+              <div className="text-primary-100 flex w-full items-center justify-center py-2 text-sm">
                 No movement waiting for reconciliation found.
               </div>
             )}

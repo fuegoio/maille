@@ -287,4 +287,3 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
     </div>
   );
 }
-

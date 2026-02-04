@@ -65,7 +65,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       variables: {
         id: movement.id,
         name: movement.name,
-        date: movement.date.toISOString().split('T')[0],
+        date: movement.date.toISOString().split("T")[0],
         account: movement.account,
         amount: movement.amount,
       },
@@ -76,7 +76,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
   };
 
   // Hotkeys
-  useHotkeys('c', () => {
+  useHotkeys("c", () => {
     openDialog();
   });
 
@@ -106,22 +106,22 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="date" className="text-right text-sm text-primary-100">
+              <label htmlFor="date" className="text-primary-100 text-right text-sm">
                 Date
               </label>
               <div className="col-span-3">
                 <input
                   id="date"
                   type="date"
-                  value={formData.date.toISOString().split('T')[0]}
-                  onChange={(e) => handleInputChange('date', new Date(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-md bg-primary-800 text-white"
+                  value={formData.date.toISOString().split("T")[0]}
+                  onChange={(e) => handleInputChange("date", new Date(e.target.value))}
+                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="amount" className="text-right text-sm text-primary-100">
+              <label htmlFor="amount" className="text-primary-100 text-right text-sm">
                 Amount
               </label>
               <div className="col-span-3">
@@ -129,28 +129,28 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                   id="amount"
                   type="number"
                   value={formData.amount}
-                  onChange={(e) => handleInputChange('amount', parseFloat(e.target.value))}
+                  onChange={(e) => handleInputChange("amount", parseFloat(e.target.value))}
                   step="0.01"
-                  className="w-full px-3 py-2 border rounded-md bg-primary-800 text-white"
+                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="account" className="text-right text-sm text-primary-100">
+              <label htmlFor="account" className="text-primary-100 text-right text-sm">
                 Account
               </label>
               <div className="col-span-3">
                 <AccountSelect
                   modelValue={formData.account}
-                  onUpdateModelValue={(value) => handleInputChange('account', value)}
+                  onUpdateModelValue={(value) => handleInputChange("account", value)}
                   movementsOnly
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-right text-sm text-primary-100">
+              <label htmlFor="name" className="text-primary-100 text-right text-sm">
                 Name
               </label>
               <div className="col-span-3">
@@ -158,9 +158,9 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                   id="name"
                   type="text"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   placeholder="Restaurant"
-                  className="w-full px-3 py-2 border rounded-md bg-primary-800 text-white"
+                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                 />
               </div>
             </div>

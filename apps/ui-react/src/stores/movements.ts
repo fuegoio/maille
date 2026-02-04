@@ -40,19 +40,12 @@ interface MovementsState {
   createMovementActivity: (
     activityId: UUID,
     movementId: UUID,
-    amount: number
+    amount: number,
   ) => { id: UUID; activity: UUID; movement: UUID; amount: number };
 
-  updateMovementActivity: (
-    movementId: UUID,
-    movementActivityId: UUID,
-    amount: number
-  ) => void;
+  updateMovementActivity: (movementId: UUID, movementActivityId: UUID, amount: number) => void;
 
-  deleteMovementActivity: (
-    movementId: UUID,
-    movementActivityId: UUID
-  ) => void;
+  deleteMovementActivity: (movementId: UUID, movementActivityId: UUID) => void;
 
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
@@ -73,11 +66,7 @@ export const movementsStore = createStore<MovementsState>()(
         set({ focusedMovement: movementId });
       },
 
-      createMovementActivity: (
-        activityId: UUID,
-        movementId: UUID,
-        amount: number
-      ) => {
+      createMovementActivity: (activityId: UUID, movementId: UUID, amount: number) => {
         const newMovementActivity = {
           id: crypto.randomUUID(),
           activity: activityId,
@@ -105,24 +94,19 @@ export const movementsStore = createStore<MovementsState>()(
         return newMovementActivity;
       },
 
-      updateMovementActivity: (
-        movementId: UUID,
-        movementActivityId: UUID,
-        amount: number
-      ) => {
+      updateMovementActivity: (movementId: UUID, movementActivityId: UUID, amount: number) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
               const updatedActivities = movement.activities.map((ma) =>
-                ma.id === movementActivityId ? { ...ma, amount } : ma
+                ma.id === movementActivityId ? { ...ma, amount } : ma,
               );
 
               return {
                 ...movement,
                 activities: updatedActivities,
                 status:
-                  updatedActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
-                  movement.amount
+                  updatedActivities.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
                     ? "completed"
                     : "incomplete",
               };
@@ -132,23 +116,19 @@ export const movementsStore = createStore<MovementsState>()(
         }));
       },
 
-      deleteMovementActivity: (
-        movementId: UUID,
-        movementActivityId: UUID
-      ) => {
+      deleteMovementActivity: (movementId: UUID, movementActivityId: UUID) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
               const filteredActivities = movement.activities.filter(
-                (ma) => ma.id !== movementActivityId
+                (ma) => ma.id !== movementActivityId,
               );
 
               return {
                 ...movement,
                 activities: filteredActivities,
                 status:
-                  filteredActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
-                  movement.amount
+                  filteredActivities.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
                     ? "completed"
                     : "incomplete",
               };

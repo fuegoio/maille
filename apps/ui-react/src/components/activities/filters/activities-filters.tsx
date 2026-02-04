@@ -72,16 +72,18 @@ export function ActivitiesFilters({ viewId, activities }: ActivitiesFiltersProps
           {[ActivityType.INVESTMENT, ActivityType.REVENUE, ActivityType.EXPENSE].map(
             (activityType) => {
               const typeKey = activityType.toLowerCase() as keyof typeof activitiesTotal;
-              return activitiesTotal[typeKey] && (
-                <div
-                  key={activityType}
-                  className="my-1 flex items-center px-2 text-right font-mono text-sm"
-                >
+              return (
+                activitiesTotal[typeKey] && (
                   <div
-                    className={`bg- mr-3 h-[9px] w-[9px] shrink-0 rounded-xs${ACTIVITY_TYPES_COLOR[activityType]}-300`}
-                  />
-                  {currencyFormatter.format(activitiesTotal[typeKey]!)}
-                </div>
+                    key={activityType}
+                    className="my-1 flex items-center px-2 text-right font-mono text-sm"
+                  >
+                    <div
+                      className={`bg- mr-3 h-[9px] w-[9px] shrink-0 rounded-xs${ACTIVITY_TYPES_COLOR[activityType]}-300`}
+                    />
+                    {currencyFormatter.format(activitiesTotal[typeKey]!)}
+                  </div>
+                )
               );
             },
           )}
@@ -103,4 +105,3 @@ export function ActivitiesFilters({ viewId, activities }: ActivitiesFiltersProps
     </div>
   );
 }
-
