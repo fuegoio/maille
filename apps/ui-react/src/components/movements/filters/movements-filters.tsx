@@ -2,8 +2,8 @@ import * as React from "react";
 import { useStore } from "zustand";
 import { viewsStore } from "@/stores/views";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { MovementFilter } from "./filters/movement-filter";
-import { FilterMovementsButton } from "./filters/filter-movements-button";
+import { MovementFilter } from "./movement-filter";
+import { FilterMovementsButton } from "./filter-movements-button";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
