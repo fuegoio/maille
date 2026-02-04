@@ -8,6 +8,7 @@ import { storage } from "./storage";
 
 interface MovementsState {
   movements: Movement[];
+  focusedMovement: UUID | null;
 
   getMovementById: (movementId: UUID) => Movement | undefined;
 
@@ -34,6 +35,14 @@ interface MovementsState {
   deleteMovement: (movementId: UUID) => void;
   restoreMovement: (movement: Movement) => void;
 
+  setFocusedMovement: (movementId: UUID | null) => void;
+
+  createMovementActivity: (
+    activityId: UUID,
+    movementId: UUID,
+    amount: number
+  ) => { id: UUID; activity: UUID; movement: UUID; amount: number };
+
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
@@ -43,9 +52,46 @@ export const movementsStore = createStore<MovementsState>()(
   persist(
     (set, get) => ({
       movements: [],
+      focusedMovement: null,
 
       getMovementById: (movementId: UUID): Movement | undefined => {
         return get().movements.find((m) => m.id === movementId);
+      },
+
+      setFocusedMovement: (movementId: UUID | null) => {
+        set({ focusedMovement: movementId });
+      },
+
+      createMovementActivity: (
+        activityId: UUID,
+        movementId: UUID,
+        amount: number
+      ) => {
+        const newMovementActivity = {
+          id: crypto.randomUUID(),
+          activity: activityId,
+          movement: movementId,
+          amount,
+        };
+
+        set((state) => ({
+          movements: state.movements.map((movement) => {
+            if (movement.id === movementId) {
+              return {
+                ...movement,
+                activities: [...movement.activities, newMovementActivity],
+                status:
+                  movement.activities.reduce((sum, ma) => sum + ma.amount, 0) + amount ===
+                  movement.amount
+                    ? "completed"
+                    : "incomplete",
+              };
+            }
+            return movement;
+          }),
+        }));
+
+        return newMovementActivity;
       },
 
       addMovement: ({

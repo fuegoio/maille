@@ -2,8 +2,8 @@ import * as React from "react";
 import { useStore } from "zustand";
 import { viewsStore } from "@/stores/views";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { LiabilityFilter } from "./filters/liability-filter";
-import { FilterLiabilitiesButton } from "./filters/filter-liabilities-button";
+import { LiabilityFilter } from "./liability-filter";
+import { FilterLiabilitiesButton } from "./filter-liabilities-button";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
@@ -33,7 +33,7 @@ export function LiabilitiesFilters({ viewId, liabilities }: LiabilitiesFiltersPr
           <LiabilityFilter
             key={index}
             modelValue={filter}
-            onUpdateModelValue={(newFilter) => {
+            onUpdateModelValue={(newFilter: any) => {
               liabilityView.filters[index] = newFilter;
             }}
             onDelete={() => {

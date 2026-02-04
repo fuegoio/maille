@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { createStore } from "zustand";
+import { searchCompare } from "@/lib/strings";
 
 interface SearchState {
   search: string;
@@ -7,7 +8,7 @@ interface SearchState {
   filterStringBySearch: (text: string) => boolean;
 }
 
-export const useSearchStore = create<SearchState>((set, get) => ({
+export const searchStore = createStore<SearchState>((set, get) => ({
   search: "",
   setSearch: (search) => set({ search }),
   clearSearch: () => set({ search: "" }),
@@ -16,13 +17,3 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     return searchCompare(search, text);
   },
 }));
-
-function escapeAccents(string: string): string {
-  return string.normalize("NFD").replace(/[\u0300-\u036F]/g, "");
-}
-
-export function searchCompare(search: string, value: string): boolean {
-  const valueUniform = escapeAccents(value).toLowerCase();
-  const searchUniform = escapeAccents(search).toLowerCase();
-  return valueUniform.includes(searchUniform.toLowerCase());
-}

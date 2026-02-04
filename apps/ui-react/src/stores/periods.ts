@@ -1,9 +1,16 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Period } from "@/types/periods";
+import type { Period, PeriodActivityData } from "@/types/periods";
 
 interface PeriodsState {
   getPeriodLabel: (period: Period) => "Completed" | "Current" | "Future";
+  periodsAvailable: Period[];
+  periodsActivityData: PeriodActivityData[];
+  viewFilters: {
+    category: string | null;
+    subcategory: string | null;
+    activityType: string | null;
+  };
 }
 
 export const periodsStore = createStore<PeriodsState>()(
@@ -21,6 +28,13 @@ export const periodsStore = createStore<PeriodsState>()(
           return "Future";
         }
       },
+      periodsAvailable: [],
+      periodsActivityData: [],
+      viewFilters: {
+        category: null,
+        subcategory: null,
+        activityType: null,
+      },
     }),
     {
       name: "periods",
@@ -35,7 +49,11 @@ export const periodsStore = createStore<PeriodsState>()(
 
 // Custom hook to use the periods store
 export function usePeriodsStore() {
+  const state = periodsStore.getState();
   return {
-    getPeriodLabel: periodsStore.getState().getPeriodLabel,
+    getPeriodLabel: state.getPeriodLabel,
+    periodsAvailable: state.periodsAvailable,
+    periodsActivityData: state.periodsActivityData,
+    viewFilters: state.viewFilters,
   };
 }

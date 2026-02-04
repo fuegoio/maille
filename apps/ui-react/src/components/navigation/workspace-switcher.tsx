@@ -17,7 +17,7 @@ import {
 import type { AvailableWorkspace } from "@/stores/workspaces";
 import type { Workspace } from "@maille/core/workspaces";
 import { Link } from "@tanstack/react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "better-auth";
 
 export function WorkspaceSwitcher({

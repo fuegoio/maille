@@ -4,11 +4,17 @@ import type { Project } from "@maille/core/projects";
 import type { UUID } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
+import type { ActivityType } from "@maille/core/activities";
 import { activitiesStore } from "./activities";
 import { storage } from "./storage";
 
 interface ProjectsState {
   projects: Project[];
+  viewFilters: {
+    category: UUID | null;
+    subcategory: UUID | null;
+    activityType: ActivityType | null;
+  };
 
   getProjectById: (projectId: UUID) => Project | undefined;
 
@@ -36,12 +42,18 @@ interface ProjectsState {
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
+  resetViewFilters: () => void;
 }
 
 export const projectsStore = createStore<ProjectsState>()(
   persist(
     (set, get) => ({
       projects: [],
+      viewFilters: {
+        category: null,
+        subcategory: null,
+        activityType: null,
+      },
 
       getProjectById: (projectId: UUID): Project | undefined => {
         return get().projects.find((p) => p.id === projectId);
@@ -159,6 +171,14 @@ export const projectsStore = createStore<ProjectsState>()(
         } else if (event.name === "deleteProject") {
           get().restoreProject(event.rollbackData);
         }
+      },
+
+      resetViewFilters: () => {
+        set({ viewFilters: {
+          category: null,
+          subcategory: null,
+          activityType: null,
+        } });
       },
     }),
     {

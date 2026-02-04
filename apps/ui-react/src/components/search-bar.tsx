@@ -1,16 +1,16 @@
 import * as React from "react";
 import { useStore } from "zustand";
-import { useSearchStore } from "@/stores/search";
+import { searchStore } from "@/stores/search";
 import { InputGroup, InputGroupInput, InputGroupButton } from "@/components/ui/input-group";
 import { Search } from "lucide-react";
 
 export function SearchBar() {
   const [show, setShow] = React.useState(false);
   const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
-  
-  const search = useStore(useSearchStore, (state) => state.search);
-  const setSearch = useStore(useSearchStore, (state) => state.setSearch);
-  const clearSearch = useStore(useSearchStore, (state) => state.clearSearch);
+
+  const search = useStore(searchStore, (state) => state.search);
+  const setSearch = useStore(searchStore, (state) => state.setSearch);
+  const clearSearch = useStore(searchStore, (state) => state.clearSearch);
 
   const handleBlur = () => {
     if (search === "") {
@@ -51,7 +51,7 @@ export function SearchBar() {
   if (!show) return null;
 
   return (
-    <div className="px-4 h-14 flex items-center border-b transition-all duration-200 ease-in-out">
+    <div className="flex h-14 items-center border-b px-4 transition-all duration-200 ease-in-out">
       <InputGroup className="w-full">
         <InputGroupInput
           ref={setInputRef}
@@ -74,3 +74,4 @@ export function SearchBar() {
     </div>
   );
 }
+

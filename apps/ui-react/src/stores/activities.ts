@@ -19,10 +19,13 @@ interface ActivitiesState {
   activities: Activity[];
   activityCategories: ActivityCategory[];
   activitySubcategories: ActivitySubCategory[];
+  focusedActivity: UUID | null;
 
   getActivityById: (activityId: UUID) => Activity | undefined;
   getActivityCategoryById: (categoryId: UUID) => ActivityCategory | undefined;
   getActivitySubcategoryById: (subcategoryId: UUID) => ActivitySubCategory | undefined;
+
+  setFocusedActivity: (activityId: UUID | null) => void;
 
   addActivity: (params: {
     id?: UUID;
@@ -109,9 +112,14 @@ export const activitiesStore = createStore<ActivitiesState>()(
       activities: [],
       activityCategories: [],
       activitySubcategories: [],
+      focusedActivity: null,
 
       getActivityById: (activityId: UUID): Activity | undefined => {
         return get().activities.find((a) => a.id === activityId);
+      },
+
+      setFocusedActivity: (activityId: UUID | null) => {
+        set({ focusedActivity: activityId });
       },
 
       getActivityCategoryById: (categoryId: UUID): ActivityCategory | undefined => {
@@ -447,3 +455,13 @@ export const activitiesStore = createStore<ActivitiesState>()(
     },
   ),
 );
+
+// Custom hook to use the activities store
+export function useActivitiesStore() {
+  const state = activitiesStore.getState();
+  return {
+    activities: state.activities,
+    categories: state.activityCategories,
+    subcategories: state.activitySubcategories,
+  };
+}

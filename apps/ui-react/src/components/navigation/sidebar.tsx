@@ -9,8 +9,8 @@ import {
   Send,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+import { NavMain } from "./nav-main";
+import { NavSecondary } from "./nav-secondary";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
 import { useStore } from "zustand";

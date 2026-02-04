@@ -11,6 +11,7 @@ type ActivityView = {
   id: string;
   showTransactions: boolean;
   filters: ActivityFilter[];
+  focusedActivity: string | null;
 };
 
 type LiabilityView = {
@@ -49,6 +50,7 @@ export const viewsStore = createStore<ViewsState>()(
             id: viewId,
             showTransactions: false,
             filters: [] as ActivityFilter[],
+            focusedActivity: null,
           };
         }
 
