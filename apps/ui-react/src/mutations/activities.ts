@@ -7,6 +7,19 @@ import type {
 } from "@maille/core/activities";
 import type { UUID } from "crypto";
 import type { MutationType } from "./type";
+import type {
+  AddTransactionEvent,
+  CreateActivityCategoryEvent,
+  CreateActivityEvent,
+  CreateActivitySubCategoryEvent,
+  DeleteActivityCategoryEvent,
+  DeleteActivityEvent,
+  DeleteActivitySubCategoryEvent,
+  DeleteTransactionEvent,
+  UpdateActivityCategoryEvent,
+  UpdateActivityEvent,
+  UpdateActivitySubCategoryEvent,
+} from "@maille/core/sync";
 
 export const createActivityMutation = graphql(/* GraphQL */ `
   mutation CreateActivity(
@@ -36,6 +49,7 @@ export const createActivityMutation = graphql(/* GraphQL */ `
       type: $type
     ) {
       id
+      user
       number
     }
   }
@@ -78,7 +92,8 @@ export const deleteActivityMutation = graphql(/* GraphQL */ `
 export type CreateActivityMutation = MutationType<
   "createActivity",
   typeof createActivityMutation,
-  undefined
+  undefined,
+  [CreateActivityEvent]
 >;
 
 export type UpdateActivityMutation = MutationType<
@@ -93,13 +108,15 @@ export type UpdateActivityMutation = MutationType<
     category: UUID | null;
     subcategory: UUID | null;
     project: UUID | null;
-  }
+  },
+  [UpdateActivityEvent]
 >;
 
 export type DeleteActivityMutation = MutationType<
   "deleteActivity",
   typeof deleteActivityMutation,
-  Activity
+  Activity,
+  [DeleteActivityEvent]
 >;
 
 export const addTransactionMutation = graphql(/* GraphQL */ `
@@ -153,7 +170,8 @@ export const deleteTransactionMutation = graphql(/* GraphQL */ `
 export type AddTransactionMutation = MutationType<
   "addTransaction",
   typeof addTransactionMutation,
-  undefined
+  undefined,
+  [AddTransactionEvent]
 >;
 
 export type UpdateTransactionMutation = MutationType<
@@ -164,13 +182,15 @@ export type UpdateTransactionMutation = MutationType<
     amount: number;
     fromAccount: UUID;
     toAccount: UUID;
-  }
+  },
+  [UpdateActivityEvent]
 >;
 
 export type DeleteTransactionMutation = MutationType<
   "deleteTransaction",
   typeof deleteTransactionMutation,
-  Transaction
+  Transaction,
+  [DeleteTransactionEvent]
 >;
 
 export const createActivityCategoryMutation = graphql(/* GraphQL */ `
@@ -244,7 +264,8 @@ export const deleteActivitySubCategoryMutation = graphql(/* GraphQL */ `
 export type CreateActivityCategoryMutation = MutationType<
   "createActivityCategory",
   typeof createActivityCategoryMutation,
-  undefined
+  undefined,
+  [CreateActivityCategoryEvent]
 >;
 
 export type UpdateActivityCategoryMutation = MutationType<
@@ -253,7 +274,8 @@ export type UpdateActivityCategoryMutation = MutationType<
   {
     id: UUID;
     name: string;
-  }
+  },
+  [UpdateActivityCategoryEvent]
 >;
 
 export type DeleteActivityCategoryMutation = MutationType<
@@ -263,13 +285,15 @@ export type DeleteActivityCategoryMutation = MutationType<
     category: ActivityCategory;
     activities: UUID[];
     activitiesSubcategories: Record<UUID, UUID>;
-  }
+  },
+  [DeleteActivityCategoryEvent]
 >;
 
 export type CreateActivitySubCategoryMutation = MutationType<
   "createActivitySubCategory",
   typeof createActivitySubCategoryMutation,
-  undefined
+  undefined,
+  [CreateActivitySubCategoryEvent]
 >;
 
 export type UpdateActivitySubCategoryMutation = MutationType<
@@ -278,13 +302,15 @@ export type UpdateActivitySubCategoryMutation = MutationType<
   {
     id: UUID;
     name: string;
-  }
+  },
+  [UpdateActivitySubCategoryEvent]
 >;
 
 export type DeleteActivitySubCategoryMutation = MutationType<
   "deleteActivitySubCategory",
   typeof deleteActivitySubCategoryMutation,
-  { subcategory: ActivitySubCategory; activities: UUID[] }
+  { subcategory: ActivitySubCategory; activities: UUID[] },
+  [DeleteActivitySubCategoryEvent]
 >;
 
 export type ActivityMutation =

@@ -3,7 +3,7 @@ import { builder } from "./builder";
 import { createPubSub } from "graphql-yoga";
 import { db } from "@/database";
 import { events } from "@/tables";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, not } from "drizzle-orm";
 import { logger } from "@/logger";
 
 export const EventSchema = builder.objectRef<SyncEvent>("Event");
@@ -22,6 +22,14 @@ EventSchema.implement({
     clientId: t.field({
       type: "String",
       resolve: (parent) => parent.clientId,
+    }),
+    user: t.field({
+      type: "String",
+      resolve: (parent) => parent.user,
+    }),
+    workspace: t.field({
+      type: "UUID",
+      resolve: (parent) => parent.workspace,
     }),
   }),
 });
@@ -48,13 +56,23 @@ builder.queryField("events", (t) =>
       lastSync: t.arg({
         type: "Float",
       }),
+      workspace: t.arg({
+        type: "UUID",
+      }),
     },
     resolve: async (root, args, ctx) => {
       const lastSyncDate = new Date(args.lastSync * 1000);
       const eventsQuery = await db
         .select()
         .from(events)
-        .where(and(gt(events.createdAt, lastSyncDate), eq(events.user, ctx.user.id)));
+        .where(
+          and(
+            gt(events.createdAt, lastSyncDate),
+            eq(events.user, ctx.user.id),
+            not(eq(events.clientId, ctx.session.id)),
+            eq(events.workspace, args.workspace),
+          ),
+        );
 
       logger.info(
         `[${ctx.user.id}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
@@ -63,11 +81,8 @@ builder.queryField("events", (t) =>
       const syncEvents = eventsQuery.map(
         (event) =>
           ({
-            type: event.type,
+            ...event,
             payload: JSON.parse(event.payload),
-            createdAt: event.createdAt,
-            clientId: event.clientId,
-            user: event.user,
           }) as SyncEvent,
       );
 
@@ -78,11 +93,8 @@ builder.queryField("events", (t) =>
 
 export const addEvent = async (event: SyncEvent) => {
   await db.insert(events).values({
-    type: event.type,
-    user: event.user,
+    ...event,
     payload: JSON.stringify(event.payload),
-    createdAt: event.createdAt,
-    clientId: event.clientId,
   });
   pubSub.publish("events", event.user, event);
   return event;

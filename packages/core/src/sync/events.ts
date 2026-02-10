@@ -4,6 +4,7 @@ import type { UUID } from "crypto";
 
 export interface BaseSyncEvent {
   user: string;
+  workspace: UUID;
   createdAt: Date;
   clientId: string;
 }

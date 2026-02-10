@@ -232,6 +232,10 @@ export const events = sqliteTable("events", {
   payload: text("payload").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   clientId: text("client_id").notNull(),
+  workspace: text("workspace")
+    .notNull()
+    .$type<UUID>()
+    .references(() => workspaces.id),
 });
 
 export const workspaces = sqliteTable("workspaces", {

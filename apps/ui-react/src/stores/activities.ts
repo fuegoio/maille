@@ -214,20 +214,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         project,
         transactions,
         movements,
-      }: {
-        id?: UUID;
-        user: string;
-        number: number;
-        name: string;
-        description: string | null;
-        date: Date;
-        type: ActivityType;
-        category: UUID | null;
-        subcategory: UUID | null;
-        project: UUID | null;
-        transactions: any[];
-        movements: any[];
-      }): Activity => {
+      }) => {
         const accounts = accountsStore.getState().accounts;
         const getMovementById = movementsStore.getState().getMovementById;
 
@@ -386,15 +373,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      addActivitySubcategory: ({
-        id,
-        name,
-        category,
-      }: {
-        id?: UUID;
-        name: string;
-        category: UUID;
-      }): ActivitySubCategory => {
+      addActivitySubcategory: ({ id, name, category }): ActivitySubCategory => {
         const newSubcategory = {
           id: id ?? crypto.randomUUID(),
           name,
@@ -486,37 +465,51 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }
       },
 
-      handleMutationSuccess: (event: Mutation) => {
-        if (!event.result) return;
+      handleMutationSuccess: (mutation: Mutation) => {
+        if (!mutation.result) return;
+        if (mutation.name === "createActivity") {
+          set((state) => ({
+            activities: state.activities.map((activity) => {
+              if (activity.id === mutation.variables.id) {
+                return {
+                  ...activity,
+                  id: mutation.result.createActivity.id,
+                  number: mutation.result.createActivity.number,
+                };
+              }
+              return activity;
+            }),
+          }));
+        }
       },
 
-      handleMutationError: (event: Mutation) => {
-        if (event.name === "createActivity") {
-          get().deleteActivity(event.variables.id);
-        } else if (event.name === "updateActivity") {
-          get().updateActivity(event.variables.id, {
-            ...event.rollbackData,
-            date: new Date(event.rollbackData.date),
-            type: event.rollbackData.type as ActivityType,
+      handleMutationError: (mutation: Mutation) => {
+        if (mutation.name === "createActivity") {
+          get().deleteActivity(mutation.variables.id);
+        } else if (mutation.name === "updateActivity") {
+          get().updateActivity(mutation.variables.id, {
+            ...mutation.rollbackData,
+            date: new Date(mutation.rollbackData.date),
+            type: mutation.rollbackData.type as ActivityType,
           });
-        } else if (event.name === "deleteActivity") {
-          get().restoreActivity(event.rollbackData);
-        } else if (event.name === "createActivityCategory") {
-          get().deleteActivityCategory(event.variables.id);
-        } else if (event.name === "updateActivityCategory") {
-          get().updateActivityCategory(event.variables.id, {
-            ...event.rollbackData,
+        } else if (mutation.name === "deleteActivity") {
+          get().restoreActivity(mutation.rollbackData);
+        } else if (mutation.name === "createActivityCategory") {
+          get().deleteActivityCategory(mutation.variables.id);
+        } else if (mutation.name === "updateActivityCategory") {
+          get().updateActivityCategory(mutation.variables.id, {
+            ...mutation.rollbackData,
           });
-        } else if (event.name === "deleteActivityCategory") {
-          get().restoreActivityCategory(event.rollbackData);
-        } else if (event.name === "createActivitySubCategory") {
-          get().deleteActivitySubcategory(event.variables.id);
-        } else if (event.name === "updateActivitySubCategory") {
-          get().updateActivitySubcategory(event.variables.id, {
-            ...event.rollbackData,
+        } else if (mutation.name === "deleteActivityCategory") {
+          get().restoreActivityCategory(mutation.rollbackData);
+        } else if (mutation.name === "createActivitySubCategory") {
+          get().deleteActivitySubcategory(mutation.variables.id);
+        } else if (mutation.name === "updateActivitySubCategory") {
+          get().updateActivitySubcategory(mutation.variables.id, {
+            ...mutation.rollbackData,
           });
-        } else if (event.name === "deleteActivitySubCategory") {
-          get().restoreActivitySubcategory(event.rollbackData);
+        } else if (mutation.name === "deleteActivitySubCategory") {
+          get().restoreActivitySubcategory(mutation.rollbackData);
         }
       },
     }),

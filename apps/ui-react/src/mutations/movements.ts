@@ -35,7 +35,7 @@ export const updateMovementMutation = graphql(/* GraphQL */ `
 
 export const deleteMovementMutation = graphql(/* GraphQL */ `
   mutation DeleteMovement($id: UUID!) {
-    deleteMovement(id: $id) {
+      deleteMovement(id: $id) {
       success
     }
   }

@@ -3,7 +3,7 @@ import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 import { activitiesStore } from "@/stores/activities";
 import { viewsStore } from "@/stores/views";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { updateActivityMutation, deleteActivityMutation } from "@/mutations/activities";
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
@@ -42,6 +42,7 @@ export function Activity({ viewId }: ActivityProps) {
       activities: state.activities,
     })),
   );
+  const mutate = useStore(syncStore, (state) => state.mutate);
 
   const [showProperties, setShowProperties] = React.useState(true);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
@@ -64,15 +65,21 @@ export function Activity({ viewId }: ActivityProps) {
     // Create a copy of the activity for rollback
     const activityToDelete = { ...activity };
 
-    activitiesStore.getState().deleteActivity(activity.id);
-
-    eventsStore.getState().sendEvent({
+    mutate({
       name: "deleteActivity",
       mutation: deleteActivityMutation,
       variables: {
         id: activity.id,
       },
       rollbackData: activityToDelete,
+      events: [
+        {
+          type: "deleteActivity",
+          payload: {
+            id: activity.id,
+          },
+        },
+      ],
     });
 
     close();
@@ -93,9 +100,7 @@ export function Activity({ viewId }: ActivityProps) {
     // Create a copy of the current activity for rollback
     const oldActivity = { ...activity };
 
-    activitiesStore.getState().updateActivity(activity.id, update);
-
-    eventsStore.getState().sendEvent({
+    mutate({
       name: "updateActivity",
       mutation: updateActivityMutation,
       variables: {
@@ -104,15 +109,19 @@ export function Activity({ viewId }: ActivityProps) {
         date: update.date?.toISOString(),
       },
       rollbackData: {
-        id: activity.id,
-        name: oldActivity.name,
-        description: oldActivity.description,
+        ...oldActivity,
         date: oldActivity.date.toISOString(),
-        type: oldActivity.type,
-        category: oldActivity.category,
-        subcategory: oldActivity.subcategory,
-        project: oldActivity.project,
       },
+      events: [
+        {
+          type: "updateActivity",
+          payload: {
+            id: activity.id,
+            ...update,
+            date: update.date?.toISOString(),
+          },
+        },
+      ],
     });
   };
 

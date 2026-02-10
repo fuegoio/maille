@@ -2,7 +2,7 @@ import * as React from "react";
 import { useStore } from "zustand";
 import { activitiesStore } from "@/stores/activities";
 import { accountsStore } from "@/stores/accounts";
-import { ActivityType } from "@maille/core/activities";
+import { ActivityType, type Activity } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,11 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { X, Plus, Trash2 } from "lucide-react";
-import type { UUID } from "crypto";
+import { randomUUID, type UUID } from "crypto";
 import type { Movement } from "@maille/core/movements";
+import { syncStore } from "@/stores/sync";
+import { createActivityMutation } from "@/mutations/activities";
+import { workspacesStore } from "@/stores/workspaces";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -74,6 +77,7 @@ export function AddActivityModal({
   const categories = useStore(activitiesStore, (state) => state.activityCategories);
   const subcategories = useStore(activitiesStore, (state) => state.activitySubcategories);
   const accounts = useStore(accountsStore, (state) => state.accounts);
+  const mutate = useStore(syncStore, (state) => state.mutate);
 
   // Form state
   const [name, setName] = React.useState("");
@@ -301,24 +305,6 @@ export function AddActivityModal({
 
   // Create a single activity
   const createActivity = () => {
-    const newActivity = activitiesStore.getState().addActivity({
-      user,
-      number: activitiesStore.getState().activities.length + 1,
-      name,
-      description: description || null,
-      date,
-      type,
-      category,
-      subcategory,
-      project,
-      transactions: transactions.map((t) => ({
-        fromAccount: t.fromAccount!,
-        toAccount: t.toAccount!,
-        amount: t.amount,
-      })),
-      movements: movement ? [movement] : [],
-    });
-
     if (onActivityAdded) {
       onActivityAdded(newActivity);
     }
@@ -334,24 +320,47 @@ export function AddActivityModal({
     movements.forEach((movement) => {
       const { fromAccount, toAccount } = guessBestTransaction();
 
-      const newActivity = activitiesStore.getState().addActivity({
+      const newActivity = {
+        id: crypto.randomUUID(),
         user,
         number: activitiesStore.getState().activities.length + 1,
         name: movement.name,
         description: description || null,
-        date: movement.date,
+        date: movement.date.toISOString(),
         type: movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
         category,
         subcategory,
         project,
         transactions: [
           {
+            id: crypto.randomUUID(),
+            fromUser: null,
             fromAccount: fromAccount!,
+            toUser: null,
             toAccount: toAccount!,
             amount: Math.abs(movement.amount),
           },
         ],
-        movements: [movement],
+        movements: [
+          {
+            id: randomUUID(),
+            movement: movement.id,
+            amount: movement.amount,
+          },
+        ],
+      };
+
+      mutate({
+        name: "createActivity",
+        mutation: createActivityMutation,
+        variables: { ...newActivity, workspace: workspacesStore.getState().currentWorkspace!.id },
+        rollbackData: undefined,
+        events: [
+          {
+            type: "createActivity",
+            payload: newActivity,
+          },
+        ],
       });
 
       if (onActivityAdded) {
