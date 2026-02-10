@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
-import { useStore } from "zustand";
-import { projectsStore } from "@/stores/projects";
-import { activitiesStore } from "@/stores/activities";
+import { useProjects } from "@/stores/projects";
+import { useActivities } from "@/stores/activities";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
@@ -16,8 +15,8 @@ export function ProjectActivityCategoryLine({
   projectActivities,
   category,
 }: ProjectActivityCategoryLineProps) {
-  const { viewFilters } = useStore(projectsStore, (state) => ({ viewFilters: state.viewFilters }));
-  const { activitySubcategories } = useStore(activitiesStore, (state) => ({
+  const { viewFilters } = useProjects((state) => ({ viewFilters: state.viewFilters }));
+  const { activitySubcategories } = useActivities((state) => ({
     activitySubcategories: state.activitySubcategories,
   }));
 
@@ -52,22 +51,22 @@ export function ProjectActivityCategoryLine({
   }, [projectActivities, category.id, categorySubcategories]);
 
   const selectCategoryToFilterActivities = () => {
-    projectsStore.getState().viewFilters.subcategory = null;
-    projectsStore.getState().viewFilters.activityType = null;
-    if (projectsStore.getState().viewFilters.category !== category.id) {
-      projectsStore.getState().viewFilters.category = category.id;
+    useProjects.getState().viewFilters.subcategory = null;
+    useProjects.getState().viewFilters.activityType = null;
+    if (useProjects.getState().viewFilters.category !== category.id) {
+      useProjects.getState().viewFilters.category = category.id;
     } else {
-      projectsStore.getState().viewFilters.category = null;
+      useProjects.getState().viewFilters.category = null;
     }
   };
 
   const selectSubcategoryToFilterActivities = (subcategory: ActivitySubCategory) => {
-    projectsStore.getState().viewFilters.category = null;
-    projectsStore.getState().viewFilters.activityType = null;
-    if (projectsStore.getState().viewFilters.subcategory !== subcategory.id) {
-      projectsStore.getState().viewFilters.subcategory = subcategory.id;
+    useProjects.getState().viewFilters.category = null;
+    useProjects.getState().viewFilters.activityType = null;
+    if (useProjects.getState().viewFilters.subcategory !== subcategory.id) {
+      useProjects.getState().viewFilters.subcategory = subcategory.id;
     } else {
-      projectsStore.getState().viewFilters.subcategory = null;
+      useProjects.getState().viewFilters.subcategory = null;
     }
   };
 

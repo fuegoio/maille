@@ -1,18 +1,18 @@
 import type { SyncEvent } from "@maille/core/sync";
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
 import type { Mutation } from "@/mutations";
 
-import { accountsStore } from "./accounts";
-import { activitiesStore } from "./activities";
-import { authStore } from "./auth";
-import { movementsStore } from "./movements";
-import { projectsStore } from "./projects";
+import { useAccounts } from "./accounts";
+import { useActivities } from "./activities";
+import { useAuth } from "./auth";
+import { useMovements } from "./movements";
+import { useProjects } from "./projects";
 import { storage } from "./storage";
-import { useWorkspacesStore } from "./workspaces";
+import { useWorkspaces } from "./workspaces";
 
 interface SyncState {
   lastEventTimestamp: number;
@@ -37,7 +37,7 @@ const missingEventsQuery = graphql(/* GraphQL */ `
   }
 `);
 
-export const syncStore = createStore<SyncState>()(
+export const useSync = create<SyncState>()(
   persist(
     (set, get) => ({
       lastEventTimestamp: 0,
@@ -53,17 +53,17 @@ export const syncStore = createStore<SyncState>()(
           .map((event) => {
             return {
               ...event,
-              user: authStore.getState().user!.id,
-              clientId: authStore.getState().session!.id,
-              workspace: useWorkspacesStore.getState().currentWorkspace!.id,
+              user: useAuth.getState().user!.id,
+              clientId: useAuth.getState().session!.id,
+              workspace: useWorkspaces.getState().currentWorkspace!.id,
               createdAt: new Date(),
             };
           })
           .forEach((event) => {
-            activitiesStore.getState().handleEvent(event);
-            movementsStore.getState().handleEvent(event);
-            accountsStore.getState().handleEvent(event);
-            projectsStore.getState().handleEvent(event);
+            useActivities.getState().handleEvent(event);
+            useMovements.getState().handleEvent(event);
+            useAccounts.getState().handleEvent(event);
+            useProjects.getState().handleEvent(event);
           });
       },
 
@@ -88,19 +88,19 @@ export const syncStore = createStore<SyncState>()(
             mutation.mutation,
             mutation.variables,
           );
-          activitiesStore.getState().handleMutationSuccess({
+          useActivities.getState().handleMutationSuccess({
             ...mutation,
             result,
           } as Mutation);
-          movementsStore.getState().handleMutationSuccess({
+          useMovements.getState().handleMutationSuccess({
             ...mutation,
             result,
           } as Mutation);
-          projectsStore.getState().handleMutationSuccess({
+          useProjects.getState().handleMutationSuccess({
             ...mutation,
             result,
           } as Mutation);
-          accountsStore.getState().handleMutationSuccess({
+          useAccounts.getState().handleMutationSuccess({
             ...mutation,
             result,
           } as Mutation);
@@ -115,10 +115,10 @@ export const syncStore = createStore<SyncState>()(
             mutationsInProcessing: false,
           });
           if (!(e instanceof TypeError)) {
-            activitiesStore.getState().handleMutationError(mutation);
-            movementsStore.getState().handleMutationError(mutation);
-            projectsStore.getState().handleMutationError(mutation);
-            accountsStore.getState().handleMutationError(mutation);
+            useActivities.getState().handleMutationError(mutation);
+            useMovements.getState().handleMutationError(mutation);
+            useProjects.getState().handleMutationError(mutation);
+            useAccounts.getState().handleMutationError(mutation);
           }
         }
       },
@@ -135,7 +135,7 @@ export const syncStore = createStore<SyncState>()(
           lastEventTimestamp: Date.now() / 1000,
         });
 
-        const clientId = authStore.getState().session?.id;
+        const clientId = useAuth.getState().session?.id;
         if (!clientId) {
           throw new Error("session not defined");
         }
@@ -147,15 +147,15 @@ export const syncStore = createStore<SyncState>()(
                 ...event,
                 payload: JSON.parse(event.payload),
                 createdAt: new Date(event.createdAt),
-                user: authStore.getState().user!.id,
+                user: useAuth.getState().user!.id,
                 workspace,
               }) as SyncEvent,
           )
           .forEach((event) => {
-            activitiesStore.getState().handleEvent(event);
-            movementsStore.getState().handleEvent(event);
-            projectsStore.getState().handleEvent(event);
-            accountsStore.getState().handleEvent(event);
+            useActivities.getState().handleEvent(event);
+            useMovements.getState().handleEvent(event);
+            useProjects.getState().handleEvent(event);
+            useAccounts.getState().handleEvent(event);
           });
       },
     }),

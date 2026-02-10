@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { verifyLiabilityFilter } from "@maille/core/liabilities";
 import { stringify } from "csv-stringify/browser/esm/sync";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ export function ExportLiabilitiesButton({
   liabilities,
   className,
 }: ExportLiabilitiesButtonProps) {
-  const liabilityView = useStore(viewsStore, (state) => state.getLiabilityView(viewId));
+  const liabilityView = useViews((state) => state.getLiabilityView(viewId));
 
   const filteredLiabilities = React.useMemo(() => {
     return liabilities.filter((liability) => {

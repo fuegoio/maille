@@ -1,6 +1,5 @@
 import { ActivityType } from "@maille/core/activities";
 import { useMemo } from "react";
-import { useStore } from "zustand";
 
 import {
   Tooltip,
@@ -8,8 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { useActivitiesStore } from "@/stores/activities";
-import { periodsStore } from "@/stores/periods";
+import { useActivities } from "@/stores/activities";
+import { usePeriods } from "@/stores/periods";
 import type { PeriodActivityData } from "@/types/periods";
 
 import { PeriodActivityCategoryLine } from "./period-activity-category-line";
@@ -36,9 +35,9 @@ interface PeriodActivitiesSummaryProps {
 export function PeriodActivitiesSummary({
   periodDate,
 }: PeriodActivitiesSummaryProps) {
-  const { categories } = useActivitiesStore();
-  const viewFilters = useStore(periodsStore, (state) => state.viewFilters);
-  const periodsActivityData = useStore(periodsStore, (state) =>
+  const { categories } = useActivities();
+  const viewFilters = usePeriods((state) => state.viewFilters);
+  const periodsActivityData = usePeriods((state) =>
     state.getPeriodsAvailable(),
   );
 

@@ -4,8 +4,6 @@ import type { Movement } from "@maille/core/movements";
 import _ from "lodash";
 import { Plus } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
-
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
@@ -17,9 +15,9 @@ import {
 import { searchCompare } from "@/lib/strings";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { createMovementActivityMutation } from "@/mutations/movements";
-import { accountsStore } from "@/stores/accounts";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
+import { useAccounts } from "@/stores/accounts";
+import { useMovements } from "@/stores/movements";
+import { useSync } from "@/stores/sync";
 
 interface LinkMovementButtonProps {
   activity: Activity;
@@ -36,8 +34,8 @@ export function LinkMovementButton({
   const [search, setSearch] = React.useState("");
   const [filterAmount, setFilterAmount] = React.useState(true);
 
-  const movements = useStore(movementsStore, (state) => state.movements);
-  const accounts = useStore(accountsStore, (state) => state.accounts);
+  const movements = useMovements((state) => state.movements);
+  const accounts = useAccounts((state) => state.accounts);
 
   const filteredMovements = React.useMemo(() => {
     const transactionsSumByAccount = getActivityTransactionsSumByAccount(
@@ -77,11 +75,11 @@ export function LinkMovementButton({
   ]);
 
   const linkMovement = async (movement: Movement) => {
-    const movementActivity = movementsStore
+    const movementActivity = useMovements
       .getState()
       .createMovementActivity(activity.id, movement.id, movement.amount);
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "createMovementActivity",
       mutation: createMovementActivityMutation,
       variables: {

@@ -1,7 +1,6 @@
 import { useMemo } from "react";
-import { useStore } from "zustand";
 
-import { periodsStore } from "@/stores/periods";
+import { usePeriods } from "@/stores/periods";
 import type { Period } from "@/types/periods";
 
 interface PeriodLabelProps {
@@ -9,8 +8,7 @@ interface PeriodLabelProps {
 }
 
 export function PeriodLabel({ period }: PeriodLabelProps) {
-  const getPeriodLabel = useStore(
-    periodsStore,
+  const getPeriodLabel = usePeriods(
     (state) => state.getPeriodLabel,
   );
 

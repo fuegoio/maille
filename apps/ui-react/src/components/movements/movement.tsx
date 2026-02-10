@@ -5,7 +5,6 @@ import _ from "lodash";
 import { ChevronRight, MoreVertical } from "lucide-react";
 import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useStore } from "zustand";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -23,9 +22,9 @@ import {
   deleteMovementMutation,
   updateMovementMutation,
 } from "@/mutations/movements";
-import { activitiesStore } from "@/stores/activities";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
+import { useActivities } from "@/stores/activities";
+import { useMovements } from "@/stores/movements";
+import { useSync } from "@/stores/sync";
 
 interface MovementProps {
   movementId: string;
@@ -39,11 +38,11 @@ export function Movement({ movementId, onClose }: MovementProps) {
   const [showProperties, setShowProperties] = React.useState(true);
   const [showActivities, setShowActivities] = React.useState(true);
 
-  const movement = useStore(movementsStore, (state) =>
+  const movement = useMovements((state) =>
     state.getMovementById(movementId),
   );
 
-  const activities = useStore(activitiesStore, (state) => state.activities);
+  const activities = useActivities((state) => state.activities);
 
   const movementActivities = React.useMemo(() => {
     if (!movement) return [];
@@ -74,9 +73,9 @@ export function Movement({ movementId, onClose }: MovementProps) {
 
     if (event === "delete") {
       const movementData = _.cloneDeep(movement);
-      movementsStore.getState().deleteMovement(movementId);
+      useMovements.getState().deleteMovement(movementId);
 
-      syncStore.getState().mutate({
+      useSync.getState().mutate({
         name: "deleteMovement",
         mutation: deleteMovementMutation,
         variables: {
@@ -105,9 +104,9 @@ export function Movement({ movementId, onClose }: MovementProps) {
     if (!movement) return;
 
     const movementData = _.cloneDeep(movement);
-    movementsStore.getState().updateMovement(movementId, update);
+    useMovements.getState().updateMovement(movementId, update);
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "updateMovement",
       mutation: updateMovementMutation,
       variables: {

@@ -1,4 +1,4 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Movement } from "@maille/core/movements";
 import { randomstring } from "@/lib/utils";
@@ -52,7 +52,7 @@ interface MovementsState {
   handleMutationError: (event: any) => void;
 }
 
-export const movementsStore = createStore<MovementsState>()(
+export const useMovements = create<MovementsState>()(
   persist(
     (set, get) => ({
       movements: [],

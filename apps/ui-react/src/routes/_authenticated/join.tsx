@@ -5,7 +5,6 @@ import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
-import { useStore } from "zustand";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ import {
 import { fetchWorkspaceData } from "@/data";
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useWorkspaces } from "@/stores/workspaces";
 
 export const CreateWorkspaceMutation = graphql(`
   mutation CreateWorkspace(
@@ -67,7 +66,7 @@ function RouteComponent() {
   const { user } = Route.useRouteContext();
   const navigate = Route.useNavigate();
 
-  const createWorkspace = useWorkspacesStore((state) => state.createWorkspace);
+  const createWorkspace = useWorkspaces((state) => state.createWorkspace);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

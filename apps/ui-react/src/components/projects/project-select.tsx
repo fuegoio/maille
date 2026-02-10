@@ -1,5 +1,4 @@
-import { useStore } from "zustand";
-import { projectsStore } from "@/stores/projects";
+import { useProjects } from "@/stores/projects";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
@@ -10,7 +9,7 @@ interface ProjectSelectProps {
 }
 
 export function ProjectSelect({ modelValue, onUpdateModelValue }: ProjectSelectProps) {
-  const projects = useStore(projectsStore, (state) => state.projects);
+  const projects = useProjects((state) => state.projects);
 
   const allProjects = [{ id: null, name: "No project", emoji: null }, ...projects];
 

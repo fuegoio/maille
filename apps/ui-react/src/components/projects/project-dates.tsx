@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { CalendarIcon, XIcon, ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,17 +10,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { updateProjectMutation } from "@/mutations/projects";
-import { projectsStore } from "@/stores/projects";
-import { syncStore } from "@/stores/sync";
+import { useProjects } from "@/stores/projects";
+import { useSync } from "@/stores/sync";
 
 interface ProjectDatesProps {
   projectId: string;
 }
 
 export function ProjectDates({ projectId }: ProjectDatesProps) {
-  const projects = useStore(projectsStore, (state) => state.projects);
-  const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const mutate = useStore(syncStore, (state) => state.mutate);
+  const projects = useProjects((state) => state.projects);
+  const updateProject = useProjects((state) => state.updateProject);
+  const mutate = useSync((state) => state.mutate);
 
   const project = projects.find((p) => p.id === projectId);
 

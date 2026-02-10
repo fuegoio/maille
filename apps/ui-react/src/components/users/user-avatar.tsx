@@ -1,7 +1,7 @@
-import { useStore } from "zustand";
-import { authStore } from "@/stores/auth";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/stores/auth";
 
 interface UserAvatarProps {
   userId: string;
@@ -9,7 +9,7 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ userId, className }: UserAvatarProps) {
-  const authUser = useStore(authStore, (state) => state.user);
+  const authUser = useAuth((state) => state.user);
 
   const userInitials = useMemo(() => {
     if (!authUser) return "?";

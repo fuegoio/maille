@@ -2,7 +2,6 @@ import { verifyActivityFilter, type Activity } from "@maille/core/activities";
 import { stringify } from "csv-stringify/browser/esm/sync";
 import { Download } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 
 interface ExportActivitiesButtonProps {
   viewId: string;
@@ -23,7 +22,7 @@ export function ExportActivitiesButton({
   activities,
   className,
 }: ExportActivitiesButtonProps) {
-  const activityView = useStore(viewsStore, (state) =>
+  const activityView = useViews((state) =>
     state.getActivityView(viewId),
   );
 

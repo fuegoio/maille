@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { ActivityFilter } from "./activity-filter";
@@ -23,7 +22,7 @@ interface ActivitiesFiltersProps {
 }
 
 export function ActivitiesFilters({ viewId, activities }: ActivitiesFiltersProps) {
-  const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
+  const activityView = useViews((state) => state.getActivityView(viewId));
   const currencyFormatter = getCurrencyFormatter();
 
   const activitiesTotal = React.useMemo(() => {

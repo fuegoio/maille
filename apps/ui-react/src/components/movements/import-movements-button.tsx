@@ -4,7 +4,6 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";
 import { Upload } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { Button } from "@/components/ui/button";
@@ -24,8 +23,8 @@ import {
 } from "@/components/ui/select";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { createMovementMutation } from "@/mutations/movements";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
+import { useMovements } from "@/stores/movements";
+import { useSync } from "@/stores/sync";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -51,7 +50,7 @@ export function ImportMovementsButton({
   });
   const [account, setAccount] = React.useState<string | undefined>(undefined);
 
-  const movements = useStore(movementsStore, (state) => state.movements);
+  const movements = useMovements((state) => state.movements);
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
@@ -101,7 +100,7 @@ export function ImportMovementsButton({
       );
 
       if (!existingMovement) {
-        const movement = movementsStore.getState().addMovement({
+        const movement = useMovements.getState().addMovement({
           date: movementDate,
           amount: movementAmount,
           account: account,
@@ -109,7 +108,7 @@ export function ImportMovementsButton({
           activities: [],
         });
 
-        syncStore.getState().mutate({
+        useSync.getState().mutate({
           name: "createMovement",
           mutation: createMovementMutation,
           variables: {

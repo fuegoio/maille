@@ -2,8 +2,6 @@ import { AccountType, type Account } from "@maille/core/accounts";
 import { format } from "date-fns";
 import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useStore } from "zustand";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,27 +23,27 @@ import {
   updateAccountMutation,
 } from "@/mutations/accounts";
 import {
-  accountsStore,
+  useAccounts,
   ACCOUNT_TYPES_COLOR,
   ACCOUNT_TYPES_NAME,
 } from "@/stores/accounts";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useActivities } from "@/stores/activities";
+import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
 
 interface AccountTypeSectionProps {
   accountType: AccountType;
 }
 
 export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
-  const accounts = useStore(accountsStore, (state) => state.accounts);
-  const addAccount = useStore(accountsStore, (state) => state.addAccount);
-  const updateAccount = useStore(accountsStore, (state) => state.updateAccount);
-  const deleteAccount = useStore(accountsStore, (state) => state.deleteAccount);
-  const mutate = useStore(syncStore, (state) => state.mutate);
+  const accounts = useAccounts((state) => state.accounts);
+  const addAccount = useAccounts((state) => state.addAccount);
+  const updateAccount = useAccounts((state) => state.updateAccount);
+  const deleteAccount = useAccounts((state) => state.deleteAccount);
+  const mutate = useSync((state) => state.mutate);
 
-  const activities = useStore(activitiesStore, (state) => state.activities);
-  const currentWorkspace = useWorkspacesStore(
+  const activities = useActivities((state) => state.activities);
+  const currentWorkspace = useWorkspaces(
     (state) => state.currentWorkspace,
   );
 

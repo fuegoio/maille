@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
+import { useMovements } from "@/stores/movements";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { getCurrencyFormatter } from "@/lib/utils";
@@ -21,7 +20,7 @@ export function MovementLine({
   onSelectMovement,
   onClick,
 }: MovementLineProps) {
-  const { focusedMovement } = useStore(movementsStore, (state) => ({
+  const { focusedMovement } = useMovements((state) => ({
     focusedMovement: state.focusedMovement,
   }));
 

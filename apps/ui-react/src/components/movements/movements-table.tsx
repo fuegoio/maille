@@ -1,9 +1,8 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
-import { viewsStore } from "@/stores/views";
-import { searchStore } from "@/stores/search";
-import { activitiesStore } from "@/stores/activities";
+import { useMovements } from "@/stores/movements";
+import { useViews } from "@/stores/views";
+import { useSearch } from "@/stores/search";
+import { useActivities } from "@/stores/activities";
 import { MovementLine } from "./movement-line";
 import { MovementsFilters } from "./filters/movements-filters";
 import { MovementsActions } from "./movements-actions";
@@ -26,20 +25,20 @@ export function MovementsTable({
   grouping = null,
   accountFilter = null,
 }: MovementsTableProps) {
-  const focusedMovement = useStore(movementsStore, (state) => state.focusedMovement);
-  const focusedActivity = useStore(activitiesStore, (state) => state.focusedActivity);
-  const filterStringBySearch = useStore(searchStore, (state) => state.filterStringBySearch);
-  const movementView = useStore(viewsStore, (state) => state.getMovementView(viewId));
+  const focusedMovement = useMovements((state) => state.focusedMovement);
+  const focusedActivity = useActivities((state) => state.focusedActivity);
+  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
+  const movementView = useViews((state) => state.getMovementView(viewId));
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>([]);
 
   // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       if (focusedMovement) {
-        movementsStore.getState().setFocusedMovement(null);
+        useMovements.getState().setFocusedMovement(null);
       }
       if (focusedActivity) {
-        activitiesStore.getState().setFocusedActivity(null);
+        useActivities.getState().setFocusedActivity(null);
       }
     };
   }, []);
@@ -47,7 +46,7 @@ export function MovementsTable({
   // Reset focused activity when focused movement changes
   React.useEffect(() => {
     if (focusedMovement) {
-      activitiesStore.getState().setFocusedActivity(null);
+      useActivities.getState().setFocusedActivity(null);
     }
   }, [focusedMovement]);
 
@@ -125,9 +124,9 @@ export function MovementsTable({
 
   const handleMovementClick = (movementId: string) => {
     if (focusedMovement === movementId) {
-      movementsStore.getState().setFocusedMovement(null);
+      useMovements.getState().setFocusedMovement(null);
     } else {
-      movementsStore.getState().setFocusedMovement(movementId);
+      useMovements.getState().setFocusedMovement(movementId);
     }
   };
 
@@ -148,7 +147,7 @@ export function MovementsTable({
         ? 0
         : (currentIndex - 1 + movementsSorted.length) % movementsSorted.length;
 
-    movementsStore.getState().setFocusedMovement(movementsSorted[nextIndex].id);
+    useMovements.getState().setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
   useHotkeys("j", () => {
@@ -157,7 +156,7 @@ export function MovementsTable({
     const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
 
     const nextIndex = (currentIndex + 1) % movementsSorted.length;
-    movementsStore.getState().setFocusedMovement(movementsSorted[nextIndex].id);
+    useMovements.getState().setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
   useHotkeys("escape", () => {

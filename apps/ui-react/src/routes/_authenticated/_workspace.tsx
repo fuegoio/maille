@@ -3,12 +3,12 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/navigation/sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { fetchWorkspaceData } from "@/data";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useWorkspaces } from "@/stores/workspaces";
 
 export const Route = createFileRoute("/_authenticated/_workspace")({
   component: RouteComponent,
   beforeLoad: async () => {
-    const workspacesState = useWorkspacesStore.getState();
+    const workspacesState = useWorkspaces.getState();
     if (workspacesState.availableWorkspaces === null) {
       const workspaces = await workspacesState.fetchWorkspaces();
       if (workspaces.length === 0) {
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
 
     if (workspacesState.currentWorkspace === null) {
       const firstWorkspace =
-        useWorkspacesStore.getState().availableWorkspaces![0];
+        useWorkspaces.getState().availableWorkspaces![0];
       if (firstWorkspace) {
         await fetchWorkspaceData(firstWorkspace.id);
       }

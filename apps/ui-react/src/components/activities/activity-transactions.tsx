@@ -17,8 +17,8 @@ import {
   updateTransactionMutation,
   deleteTransactionMutation,
 } from "@/mutations/activities";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
+import { useActivities } from "@/stores/activities";
+import { useSync } from "@/stores/sync";
 
 import { AddTransactionButton } from "./add-transaction-button";
 
@@ -40,11 +40,11 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     updateData: Partial<Transaction>,
   ) => {
     const oldTransaction = { ...transaction };
-    activitiesStore
+    useActivities
       .getState()
       .updateTransaction(activity.id, transaction.id, updateData);
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
       variables: {
@@ -57,9 +57,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   };
 
   const handleTransactionDelete = (transaction: Transaction) => {
-    activitiesStore.getState().deleteTransaction(activity.id, transaction.id);
+    useActivities.getState().deleteTransaction(activity.id, transaction.id);
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "deleteTransaction",
       mutation: deleteTransactionMutation,
       variables: {

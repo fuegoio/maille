@@ -6,7 +6,6 @@ import {
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 import { useState } from "react";
-import { useStore } from "zustand";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { LinkMovementButton } from "@/components/movements/link-movement-button";
@@ -23,9 +22,9 @@ import {
   updateMovementActivityMutation,
   deleteMovementActivityMutation,
 } from "@/mutations/movements";
-import { accountsStore } from "@/stores/accounts";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
+import { useAccounts } from "@/stores/accounts";
+import { useMovements } from "@/stores/movements";
+import { useSync } from "@/stores/sync";
 
 interface ActivityMovementsProps {
   activity: Activity;
@@ -34,21 +33,21 @@ interface ActivityMovementsProps {
 export function ActivityMovements({ activity }: ActivityMovementsProps) {
   const currencyFormatter = getCurrencyFormatter();
   const [showMovements, setShowMovements] = useState(true);
-  const accounts = useStore(accountsStore, (state) => state.accounts);
+  const accounts = useAccounts((state) => state.accounts);
 
   const movementsReconciliatedByAccount =
     getActivityMovementsReconciliatedByAccount(
       activity.transactions,
       activity.movements,
       accounts,
-      movementsStore.getState().getMovementById,
+      useMovements.getState().getMovementById,
     );
 
   const isReconciled = getActivityMovementsReconciliated(
     activity.transactions,
     activity.movements,
     accounts,
-    movementsStore.getState().getMovementById,
+    useMovements.getState().getMovementById,
   );
 
   const handleMovementMenuClick = (
@@ -56,14 +55,14 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     event: string,
   ) => {
     if (event === "unlink") {
-      movementsStore
+      useMovements
         .getState()
         .deleteMovementActivity(
           movementWithLink.id,
           movementWithLink.movementActivityId,
         );
 
-      syncStore.getState().mutate({
+      useSync.getState().mutate({
         name: "deleteMovementActivity",
         mutation: deleteMovementActivityMutation,
         variables: {
@@ -77,7 +76,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         },
       });
     } else if (event === "resetAmount") {
-      movementsStore
+      useMovements
         .getState()
         .updateMovementActivity(
           movementWithLink.id,
@@ -85,7 +84,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
           movementWithLink.amount,
         );
 
-      syncStore.getState().mutate({
+      useSync.getState().mutate({
         name: "updateMovementActivity",
         mutation: updateMovementActivityMutation,
         variables: {
@@ -105,7 +104,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     movementWithLink: any, // TODO: Fix proper typing
     newAmount: number,
   ) => {
-    movementsStore
+    useMovements
       .getState()
       .updateMovementActivity(
         movementWithLink.id,
@@ -113,7 +112,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         newAmount,
       );
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "updateMovementActivity",
       mutation: updateMovementActivityMutation,
       variables: {

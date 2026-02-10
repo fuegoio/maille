@@ -1,7 +1,6 @@
 import { useRouter, useParams } from "@tanstack/react-router";
-import { CalendarClock, CalendarCheck, CalendarArrowRight } from "lucide-react";
+import { CalendarClock, CalendarCheck, CalendarArrowUp } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { periodsStore } from "@/stores/periods";
+import { usePeriods } from "@/stores/periods";
 import type { Period } from "@/types/periods";
 
 import { PeriodLabel } from "./period-label";
@@ -21,11 +20,10 @@ interface PeriodsMenuProps {
 export function PeriodsMenu({ className }: PeriodsMenuProps) {
   const router = useRouter();
   const params = useParams();
-  const periodsAvailable = useStore(periodsStore, (state) =>
+  const periodsAvailable = usePeriods((state) =>
     state.getPeriodsAvailable(),
   );
-  const getPeriodLabel = useStore(
-    periodsStore,
+  const getPeriodLabel = usePeriods(
     (state) => state.getPeriodLabel,
   );
   const [open, setOpen] = useState(false);

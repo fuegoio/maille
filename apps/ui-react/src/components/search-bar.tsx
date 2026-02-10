@@ -1,20 +1,19 @@
 import { Search } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
 
 import {
   InputGroup,
   InputGroupInput,
   InputGroupAddon,
 } from "@/components/ui/input-group";
-import { searchStore } from "@/stores/search";
+import { useSearch } from "@/stores/search";
 
 export function SearchBar() {
   const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
 
-  const search = useStore(searchStore, (state) => state.search);
-  const setSearch = useStore(searchStore, (state) => state.setSearch);
-  const clearSearch = useStore(searchStore, (state) => state.clearSearch);
+  const search = useSearch((state) => state.search);
+  const setSearch = useSearch((state) => state.setSearch);
+  const clearSearch = useSearch((state) => state.clearSearch);
 
   const handleBlur = () => {
     if (search === "") {

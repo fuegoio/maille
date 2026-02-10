@@ -1,4 +1,4 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Liability } from "@maille/core/liabilities";
 import type { Activity } from "@maille/core/activities";
@@ -22,7 +22,7 @@ interface LiabilitiesState {
   ) => void;
 }
 
-export const liabilitiesStore = createStore<LiabilitiesState>()(
+export const useLiabilities = create<LiabilitiesState>()(
   persist(
     (set, get) => ({
       liabilities: [],

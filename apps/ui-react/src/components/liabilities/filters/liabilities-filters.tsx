@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { LiabilityFilter } from "./liability-filter";
 import { FilterLiabilitiesButton } from "./filter-liabilities-button";
@@ -13,7 +12,7 @@ interface LiabilitiesFiltersProps {
 }
 
 export function LiabilitiesFilters({ viewId, liabilities }: LiabilitiesFiltersProps) {
-  const liabilityView = useStore(viewsStore, (state) => state.getLiabilityView(viewId));
+  const liabilityView = useViews((state) => state.getLiabilityView(viewId));
   const currencyFormatter = getCurrencyFormatter();
 
   const liabilitiesTotal = React.useMemo(() => {

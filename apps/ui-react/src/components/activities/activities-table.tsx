@@ -3,13 +3,12 @@ import { verifyActivityFilter } from "@maille/core/activities";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useStore } from "zustand";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { activitiesStore } from "@/stores/activities";
-import { searchStore } from "@/stores/search";
-import { viewsStore } from "@/stores/views";
+import { useActivities } from "@/stores/activities";
+import { useSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
 
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
@@ -43,19 +42,16 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
-  const activityView = useStore(viewsStore, (state) =>
+  const activityView = useViews((state) =>
     state.getActivityView(viewId),
   );
-  const focusedActivity = useStore(
-    activitiesStore,
+  const focusedActivity = useActivities(
     (state) => state.focusedActivity,
   );
-  const filterStringBySearch = useStore(
-    searchStore,
+  const filterStringBySearch = useSearch(
     (state) => state.filterStringBySearch,
   );
-  const setFocusedActivity = useStore(
-    activitiesStore,
+  const setFocusedActivity = useActivities(
     (state) => state.setFocusedActivity,
   );
   const currencyFormatter = getCurrencyFormatter();

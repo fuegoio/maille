@@ -1,8 +1,6 @@
 import type { ActivityType } from "@maille/core/activities";
 import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useStore } from "zustand";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,9 +20,9 @@ import {
   deleteActivityCategoryMutation,
   deleteActivitySubCategoryMutation,
 } from "@/mutations/activities";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useActivities } from "@/stores/activities";
+import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
 
 // Define activity type colors and names similar to the Vue version
 const ACTIVITY_TYPES_COLOR = {
@@ -56,7 +54,7 @@ export function ActivityTypeSection({
     addActivitySubcategory,
     deleteActivityCategory,
     deleteActivitySubcategory,
-  } = useStore(activitiesStore, (state) => ({
+  } = useActivities((state) => ({
     activityCategories: state.activityCategories,
     activitySubcategories: state.activitySubcategories,
     activities: state.activities,
@@ -66,8 +64,8 @@ export function ActivityTypeSection({
     deleteActivitySubcategory: state.deleteActivitySubcategory,
   }));
 
-  const mutate = useStore(syncStore, (state) => state.mutate);
-  const currentWorkspace = useWorkspacesStore(
+  const mutate = useSync((state) => state.mutate);
+  const currentWorkspace = useWorkspaces(
     (state) => state.currentWorkspace,
   );
 

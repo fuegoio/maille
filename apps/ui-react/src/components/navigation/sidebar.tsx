@@ -8,7 +8,6 @@ import {
   Send,
 } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
 
 import {
   Sidebar,
@@ -16,8 +15,8 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { authStore } from "@/stores/auth";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useAuth } from "@/stores/auth";
+import { useWorkspaces } from "@/stores/workspaces";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
@@ -93,16 +92,16 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = useStore(authStore, (state) => state.user);
+  const user = useAuth((state) => state.user);
 
   if (!user) {
     throw new Error("no user available");
   }
 
-  const availableWorkspaces = useWorkspacesStore(
+  const availableWorkspaces = useWorkspaces(
     (state) => state.availableWorkspaces,
   );
-  const currentWorkspace = useWorkspacesStore(
+  const currentWorkspace = useWorkspaces(
     (state) => state.currentWorkspace,
   );
 

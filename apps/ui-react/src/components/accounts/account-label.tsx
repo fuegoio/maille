@@ -1,5 +1,4 @@
-import { useStore } from "zustand";
-import { accountsStore, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
+import { useAccounts, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { useMemo } from "react";
 
 interface AccountLabelProps {
@@ -8,7 +7,7 @@ interface AccountLabelProps {
 }
 
 export function AccountLabel({ accountId, onlyUser = false }: AccountLabelProps) {
-  const accounts = useStore(accountsStore, (state) => state.accounts);
+  const accounts = useAccounts((state) => state.accounts);
 
   const account = useMemo(() => {
     return accounts.find((a) => a.id === accountId);

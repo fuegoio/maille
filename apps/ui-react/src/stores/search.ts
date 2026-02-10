@@ -1,4 +1,4 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { searchCompare } from "@/lib/strings";
 
 interface SearchState {
@@ -8,7 +8,7 @@ interface SearchState {
   filterStringBySearch: (text: string) => boolean;
 }
 
-export const searchStore = createStore<SearchState>((set, get) => ({
+export const useSearch = create<SearchState>((set, get) => ({
   search: "",
   setSearch: (search) => set({ search }),
   clearSearch: () => set({ search: "" }),

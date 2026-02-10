@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { useStore } from "zustand";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
@@ -10,8 +9,8 @@ import { FilterActivitiesButton } from "@/components/activities/filters/filter-a
 import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { activitiesStore } from "@/stores/activities";
-import { viewsStore } from "@/stores/views";
+import { useActivities } from "@/stores/activities";
+import { useViews } from "@/stores/views";
 
 export const Route = createFileRoute(
   "/_authenticated/_workspace/activities/{-$id}",
@@ -21,11 +20,11 @@ export const Route = createFileRoute(
 
 function ActivitiesPage() {
   const params = Route.useParams();
-  const activities = useStore(activitiesStore, (state) => state.activities);
-  const setFocusedActivity = activitiesStore.getState().setFocusedActivity;
+  const activities = useActivities((state) => state.activities);
+  const setFocusedActivity = useActivities.getState().setFocusedActivity;
 
   // Get the activity view based on route parameters
-  const activityView = useStore(viewsStore, (state) =>
+  const activityView = useViews((state) =>
     state.getActivityView(
       params.id === "reconciliation"
         ? "activities-reconciliate-page"

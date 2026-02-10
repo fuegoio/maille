@@ -4,12 +4,11 @@ import type {
 } from "@maille/core/activities";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import { getCurrencyFormatter } from "@/lib/utils";
-import { useActivitiesStore } from "@/stores/activities";
-import { periodsStore } from "@/stores/periods";
+import { useActivities } from "@/stores/activities";
+import { usePeriods } from "@/stores/periods";
 
 interface PeriodActivityCategoryLineProps {
   periodDate: Date;
@@ -20,9 +19,9 @@ export function PeriodActivityCategoryLine({
   periodDate,
   category,
 }: PeriodActivityCategoryLineProps) {
-  const { activities, subcategories } = useActivitiesStore();
-  const viewFilters = useStore(periodsStore, (state) => state.viewFilters);
-  const periodsActivityData = useStore(periodsStore, (state) =>
+  const { activities, subcategories } = useActivities();
+  const viewFilters = usePeriods((state) => state.viewFilters);
+  const periodsActivityData = usePeriods((state) =>
     state.getPeriodsAvailable(),
   );
   const [expanded, setExpanded] = useState(false);

@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { MovementFilter } from "./movement-filter";
 import { FilterMovementsButton } from "./filter-movements-button";
@@ -13,7 +12,7 @@ interface MovementsFiltersProps {
 }
 
 export function MovementsFilters({ viewId, movements }: MovementsFiltersProps) {
-  const movementView = useStore(viewsStore, (state) => state.getMovementView(viewId));
+  const movementView = useViews((state) => state.getMovementView(viewId));
   const currencyFormatter = getCurrencyFormatter();
 
   const movementsTotal = React.useMemo(() => {

@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { LiabilityFilterFields, type LiabilityFilter } from "@maille/core/liabilities";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -17,7 +16,7 @@ interface FilterLiabilitiesButtonProps {
 }
 
 export function FilterLiabilitiesButton({ viewId, className }: FilterLiabilitiesButtonProps) {
-  const liabilityView = useStore(viewsStore, (state) => state.getLiabilityView(viewId));
+  const liabilityView = useViews((state) => state.getLiabilityView(viewId));
   const [open, setOpen] = React.useState(false);
 
   const selectField = (field: LiabilityFilter["field"]) => {

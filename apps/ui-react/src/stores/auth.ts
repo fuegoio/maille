@@ -1,4 +1,4 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User, Session } from "better-auth";
 import { storage } from "./storage";
@@ -9,7 +9,7 @@ interface AuthState {
   setUser: (user: User, session: Session) => void;
 }
 
-export const authStore = createStore<AuthState>()(
+export const useAuth = create<AuthState>()(
   persist(
     (set) => ({
       user: null,

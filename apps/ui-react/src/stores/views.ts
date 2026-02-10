@@ -1,7 +1,7 @@
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";
 import type { MovementFilter } from "@maille/core/movements";
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { storage } from "./storage";
@@ -34,7 +34,7 @@ interface ViewsState {
   getMovementView: (viewId: string) => MovementView;
 }
 
-export const viewsStore = createStore<ViewsState>()(
+export const useViews = create<ViewsState>()(
   persist(
     (_set, get) => ({
       activityViews: {},

@@ -4,7 +4,6 @@ import {
 } from "@maille/core/activities";
 import { ListFilter } from "lucide-react";
 import * as React from "react";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 
 interface FilterActivitiesButtonProps {
   viewId: string;
@@ -24,7 +23,7 @@ export function FilterActivitiesButton({
   viewId,
   className,
 }: FilterActivitiesButtonProps) {
-  const activityView = useStore(viewsStore, (state) =>
+  const activityView = useViews((state) =>
     state.getActivityView(viewId),
   );
   const [open, setOpen] = React.useState(false);

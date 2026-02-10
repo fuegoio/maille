@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+import { useViews } from "@/stores/views";
 import { MovementFilterFields, type MovementFilter } from "@maille/core/movements";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -17,7 +16,7 @@ interface FilterMovementsButtonProps {
 }
 
 export function FilterMovementsButton({ viewId, className }: FilterMovementsButtonProps) {
-  const movementView = useStore(viewsStore, (state) => state.getMovementView(viewId));
+  const movementView = useViews((state) => state.getMovementView(viewId));
   const [open, setOpen] = React.useState(false);
 
   const selectField = (field: MovementFilter["field"]) => {

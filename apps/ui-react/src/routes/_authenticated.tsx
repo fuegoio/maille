@@ -1,17 +1,17 @@
 import { authClient } from "@/lib/auth";
-import { authStore } from "@/stores/auth";
+import { useAuth } from "@/stores/auth";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
   beforeLoad: async ({ location }) => {
-    let session = authStore.getState().session;
-    let user = authStore.getState().user;
+    let session = useAuth.getState().session;
+    let user = useAuth.getState().user;
 
     if (session && user) {
       authClient.getSession().then((res) => {
         if (res.data?.session) {
-          authStore.getState().setUser(res.data.user, res.data.session);
+          useAuth.getState().setUser(res.data.user, res.data.session);
         }
       });
     } else {
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated")({
         });
       }
 
-      authStore.getState().setUser(res.data.user, res.data.session);
+      useAuth.getState().setUser(res.data.user, res.data.session);
       session = res.data.session;
       user = res.data.user;
     }

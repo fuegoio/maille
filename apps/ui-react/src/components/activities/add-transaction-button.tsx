@@ -22,8 +22,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { addTransactionMutation } from "@/mutations/activities";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
+import { useActivities } from "@/stores/activities";
+import { useSync } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -57,7 +57,7 @@ export function AddTransactionButton({
   const { control, handleSubmit, reset } = form;
 
   const handleAddTransaction = (data: FormValues) => {
-    const transaction = activitiesStore
+    const transaction = useActivities
       .getState()
       .addNewTransaction(
         activity.id,
@@ -66,7 +66,7 @@ export function AddTransactionButton({
         data.toAccount,
       );
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "addTransaction",
       mutation: addTransactionMutation,
       variables: {

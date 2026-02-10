@@ -3,7 +3,6 @@ import { XIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +19,8 @@ import {
   createProjectMutation,
   updateProjectMutation,
 } from "@/mutations/projects";
-import { projectsStore } from "@/stores/projects";
-import { syncStore } from "@/stores/sync";
+import { useProjects } from "@/stores/projects";
+import { useSync } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -44,10 +43,10 @@ export function AddAndEditProjectModal({
   projectId,
   onCreate,
 }: AddAndEditProjectModalProps) {
-  const projects = useStore(projectsStore, (state) => state.projects);
-  const addProject = useStore(projectsStore, (state) => state.addProject);
-  const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const mutate = useStore(syncStore, (state) => state.mutate);
+  const projects = useProjects((state) => state.projects);
+  const addProject = useProjects((state) => state.addProject);
+  const updateProject = useProjects((state) => state.updateProject);
+  const mutate = useSync((state) => state.mutate);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 

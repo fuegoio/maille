@@ -1,7 +1,6 @@
 import { useMemo } from "react";
-import { useStore } from "zustand";
-import { projectsStore } from "@/stores/projects";
-import { activitiesStore } from "@/stores/activities";
+import { useProjects } from "@/stores/projects";
+import { useActivities } from "@/stores/activities";
 import { ActivityType } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
@@ -27,8 +26,8 @@ interface ProjectActivitiesSummaryProps {
 }
 
 export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitiesSummaryProps) {
-  const { viewFilters } = useStore(projectsStore, (state) => ({ viewFilters: state.viewFilters }));
-  const { activityCategories } = useStore(activitiesStore, (state) => ({
+  const { viewFilters } = useProjects((state) => ({ viewFilters: state.viewFilters }));
+  const { activityCategories } = useActivities((state) => ({
     activityCategories: state.activityCategories,
   }));
 
@@ -47,12 +46,12 @@ export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitie
   }, [projectActivities]);
 
   const selectActivityTypeToFilterActivities = (activityType: ActivityType) => {
-    projectsStore.getState().viewFilters.category = null;
-    projectsStore.getState().viewFilters.subcategory = null;
-    if (projectsStore.getState().viewFilters.activityType !== activityType) {
-      projectsStore.getState().viewFilters.activityType = activityType;
+    useProjects.getState().viewFilters.category = null;
+    useProjects.getState().viewFilters.subcategory = null;
+    if (useProjects.getState().viewFilters.activityType !== activityType) {
+      useProjects.getState().viewFilters.activityType = activityType;
     } else {
-      projectsStore.getState().viewFilters.activityType = null;
+      useProjects.getState().viewFilters.activityType = null;
     }
   };
 

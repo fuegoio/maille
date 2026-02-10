@@ -1,6 +1,5 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { activitiesStore } from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,7 +19,7 @@ interface SplitActivityModalProps {
 }
 
 export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActivityModalProps) {
-  const activity = useStore(activitiesStore, (state) => state.getActivityById(activityId as string));
+  const activity = useActivities((state) => state.getActivityById(activityId as string));
   const currencyFormatter = getCurrencyFormatter();
 
   const [splitAmounts, setSplitAmounts] = React.useState<number[]>([activity?.amount || 0]);

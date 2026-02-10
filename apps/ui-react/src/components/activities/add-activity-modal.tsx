@@ -8,7 +8,6 @@ import { X, Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
-import { useStore } from "zustand";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,11 +35,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { randomstring } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
-import { accountsStore } from "@/stores/accounts";
-import { activitiesStore } from "@/stores/activities";
-import { authStore } from "@/stores/auth";
-import { syncStore } from "@/stores/sync";
-import { useWorkspacesStore } from "@/stores/workspaces";
+import { useAccounts } from "@/stores/accounts";
+import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
+import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -103,17 +102,15 @@ export function AddActivityModal({
   type: initialType,
   onActivityAdded,
 }: AddActivityModalProps) {
-  const categories = useStore(
-    activitiesStore,
+  const categories = useActivities(
     (state) => state.activityCategories,
   );
-  const subcategories = useStore(
-    activitiesStore,
+  const subcategories = useActivities(
     (state) => state.activitySubcategories,
   );
-  const accounts = useStore(accountsStore, (state) => state.accounts);
-  const mutate = useStore(syncStore, (state) => state.mutate);
-  const currentWorkspace = useWorkspacesStore(
+  const accounts = useAccounts((state) => state.accounts);
+  const mutate = useSync((state) => state.mutate);
+  const currentWorkspace = useWorkspaces(
     (state) => state.currentWorkspace,
   );
 
@@ -341,8 +338,8 @@ export function AddActivityModal({
   const createActivity = (data: FormValues) => {
     const newActivity = {
       id: randomstring(),
-      user: authStore.getState().user!.id,
-      number: activitiesStore.getState().activities.length + 1,
+      user: useAuth.getState().user!.id,
+      number: useActivities.getState().activities.length + 1,
       name: data.name,
       description: data.description || null,
       date: data.date.toISOString(),
@@ -403,7 +400,7 @@ export function AddActivityModal({
       const newActivity = {
         id: randomstring(),
         user,
-        number: activitiesStore.getState().activities.length + 1,
+        number: useActivities.getState().activities.length + 1,
         name: movement.name,
         description: data.description || null,
         date: movement.date.toISOString(),

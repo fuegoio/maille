@@ -1,13 +1,12 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
-import { useStore } from "zustand";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AmountInput } from "@/components/ui/amount-input";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { updateTransactionMutation } from "@/mutations/activities";
-import { activitiesStore } from "@/stores/activities";
-import { projectsStore } from "@/stores/projects";
-import { syncStore } from "@/stores/sync";
+import { useActivities } from "@/stores/activities";
+import { useProjects } from "@/stores/projects";
+import { useSync } from "@/stores/sync";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -33,20 +32,16 @@ export function ActivityLine({
   hideProject = false,
 }: ActivityLineProps) {
   const currencyFormatter = getCurrencyFormatter();
-  const showTransactions = useStore(
-    activitiesStore,
+  const showTransactions = useActivities(
     (state) => state.showTransactions,
   );
-  const categories = useStore(
-    activitiesStore,
+  const categories = useActivities(
     (state) => state.activityCategories,
   );
-  const subcategories = useStore(
-    activitiesStore,
+  const subcategories = useActivities(
     (state) => state.activitySubcategories,
   );
-  const getProjectById = useStore(
-    projectsStore,
+  const getProjectById = useProjects(
     (state) => state.getProjectById,
   );
 
@@ -193,13 +188,13 @@ export function ActivityLine({
                   value={transaction.amount}
                   onChange={(value) => {
                     const oldTransaction = { ...transaction };
-                    activitiesStore
+                    useActivities
                       .getState()
                       .updateTransaction(activity.id, transaction.id, {
                         amount: value,
                       });
 
-                    syncStore.getState().mutate({
+                    useSync.getState().mutate({
                       name: "updateTransaction",
                       mutation: updateTransactionMutation,
                       variables: {

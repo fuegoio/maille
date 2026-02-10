@@ -1,4 +1,4 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   getActivityStatus,
@@ -11,8 +11,8 @@ import {
 } from "@maille/core/activities";
 import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
-import { accountsStore } from "./accounts";
-import { movementsStore } from "./movements";
+import { useAccounts } from "./accounts";
+import { useMovements } from "./movements";
 import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
 
@@ -117,7 +117,7 @@ interface ActivitiesState {
   handleMutationError: (event: any) => void;
 }
 
-export const activitiesStore = createStore<ActivitiesState>()(
+export const useActivities = create<ActivitiesState>()(
   persist(
     (set, get) => ({
       activities: [],
@@ -215,8 +215,8 @@ export const activitiesStore = createStore<ActivitiesState>()(
         transactions,
         movements,
       }) => {
-        const accounts = accountsStore.getState().accounts;
-        const getMovementById = movementsStore.getState().getMovementById;
+        const accounts = useAccounts.getState().accounts;
+        const getMovementById = useMovements.getState().getMovementById;
 
         const newActivity: Activity = {
           id: id ?? randomstring(),
@@ -277,14 +277,14 @@ export const activitiesStore = createStore<ActivitiesState>()(
                 amount: getActivityTransactionsReconciliationSum(
                   update.type ?? activity.type,
                   update.transactions ?? activity.transactions,
-                  accountsStore.getState().accounts,
+                  useAccounts.getState().accounts,
                 ),
                 status: getActivityStatus(
                   update.date ?? activity.date,
                   update.transactions ?? activity.transactions,
                   update.movements ?? activity.movements,
-                  accountsStore.getState().accounts,
-                  movementsStore.getState().getMovementById,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
                 ),
               };
             }
@@ -522,7 +522,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
 
 // Custom hook to use the activities store
 export function useActivitiesStore() {
-  const state = activitiesStore.getState();
+  const state = useActivities.getState();
   return {
     activities: state.activities,
     categories: state.activityCategories,

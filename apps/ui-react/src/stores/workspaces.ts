@@ -29,7 +29,7 @@ interface WorkspacesState {
   setCurrentWorkspace: (workspace: Workspace) => void;
 }
 
-export const useWorkspacesStore = create<WorkspacesState>()(
+export const useWorkspaces = create<WorkspacesState>()(
   persist(
     (set, get) => ({
       currentWorkspace: null,

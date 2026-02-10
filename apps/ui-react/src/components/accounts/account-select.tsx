@@ -1,5 +1,4 @@
-import { useStore } from "zustand";
-import { accountsStore, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
+import { useAccounts, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { AccountType } from "@maille/core/accounts";
 import {
   Select,
@@ -30,7 +29,7 @@ export function AccountSelect({
   borderless = false,
   multiple = false,
 }: AccountSelectProps) {
-  const accounts = useStore(accountsStore, (state) => state.accounts);
+  const accounts = useAccounts((state) => state.accounts);
 
   const accountsToDisplay = useMemo(() => {
     if (movementsOnly) return accounts.filter((a) => a.movements);

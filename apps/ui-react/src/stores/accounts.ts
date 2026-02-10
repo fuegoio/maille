@@ -1,9 +1,9 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { AccountType, type Account } from "@maille/core/accounts";
 import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
-import { authStore } from "./auth";
+import { useAuth } from "./auth";
 import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
 
@@ -51,7 +51,7 @@ interface AccountsState {
   handleMutationError: (event: any) => void;
 }
 
-export const accountsStore = createStore<AccountsState>()(
+export const useAccounts = create<AccountsState>()(
   persist(
     (set, get) => ({
       accounts: [],
@@ -75,7 +75,7 @@ export const accountsStore = createStore<AccountsState>()(
         movements?: boolean;
         user?: string | null;
       }): Account => {
-        const { user: loggedUser } = authStore.getState();
+        const { user: loggedUser } = useAuth.getState();
         if (!loggedUser) throw new Error("User not logged in");
 
         const newAccount = {

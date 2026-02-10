@@ -3,7 +3,7 @@ import type { UUID } from "crypto";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
 import dayjs from "dayjs";
-import { createStore } from "zustand";
+import { create } from "zustand";
 
 import type {
   Period,
@@ -11,10 +11,10 @@ import type {
   PeriodActivityData,
 } from "@/types/periods";
 
-import { accountsStore } from "./accounts";
-import { activitiesStore } from "./activities";
-import { movementsStore } from "./movements";
-import { useWorkspacesStore } from "./workspaces";
+import { useAccounts } from "./accounts";
+import { useActivities } from "./activities";
+import { useMovements } from "./movements";
+import { useWorkspaces } from "./workspaces";
 
 const NUMBER_OF_PERIODS_AVANCE = 12;
 
@@ -37,7 +37,7 @@ interface PeriodsState {
   setViewFilters: (filters: Partial<ViewFilters>) => void;
 }
 
-export const periodsStore = createStore<PeriodsState>()((set, get) => ({
+export const usePeriods = create<PeriodsState>()((set, get) => ({
   viewFilters: {
     category: null,
     subcategory: null,
@@ -58,7 +58,7 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
   },
 
   getPeriodsAvailable: (): Period[] => {
-    const workspace = useWorkspacesStore.getState().currentWorkspace;
+    const workspace = useWorkspaces.getState().currentWorkspace;
     if (!workspace) return [];
 
     const now = dayjs();
@@ -79,9 +79,9 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
   },
 
   getPeriodsActivityData: (): PeriodActivityData[] => {
-    const { accounts } = accountsStore.getState();
+    const { accounts } = useAccounts.getState();
     const { activities, activityCategories: categories } =
-      activitiesStore.getState();
+      useActivities.getState();
     const periodsAvailable = get().getPeriodsAvailable();
 
     const periodsActivityData: PeriodActivityData[] = [];
@@ -146,8 +146,8 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
   },
 
   getPeriodsForecastData: (): PeriodActivityData[] => {
-    const { accounts } = accountsStore.getState();
-    const { activityCategories: categories } = activitiesStore.getState();
+    const { accounts } = useAccounts.getState();
+    const { activityCategories: categories } = useActivities.getState();
     const periodsAvailable = get().getPeriodsAvailable();
     const periodsActivityData = get().getPeriodsActivityData();
 
@@ -228,9 +228,9 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
   },
 
   getPeriodsAccountData: (): PeriodAccountData[] => {
-    const { accounts } = accountsStore.getState();
-    const { activities } = activitiesStore.getState();
-    const { movements } = movementsStore.getState();
+    const { accounts } = useAccounts.getState();
+    const { activities } = useActivities.getState();
+    const { movements } = useMovements.getState();
     const periodsAvailable = get().getPeriodsAvailable();
 
     const periodsAccountData: PeriodAccountData[] = [];

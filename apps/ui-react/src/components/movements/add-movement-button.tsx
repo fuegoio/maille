@@ -22,8 +22,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { createMovementMutation } from "@/mutations/movements";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
+import { useMovements } from "@/stores/movements";
+import { useSync } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -69,7 +69,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
   };
 
   const addNewMovement = async (data: FormValues) => {
-    const movement = movementsStore.getState().addMovement({
+    const movement = useMovements.getState().addMovement({
       date: data.date,
       amount: data.amount,
       account: data.account,
@@ -77,7 +77,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       activities: [],
     });
 
-    syncStore.getState().mutate({
+    useSync.getState().mutate({
       name: "createMovement",
       mutation: createMovementMutation,
       variables: {

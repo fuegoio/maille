@@ -1,7 +1,6 @@
 import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
-import { searchStore } from "@/stores/search";
+import { useViews } from "@/stores/views";
+import { useSearch } from "@/stores/search";
 import { LiabilityLine } from "./liability-line";
 import { LiabilitiesFilters } from "./filters/liabilities-filters";
 import type { Liability } from "@maille/core/liabilities";
@@ -23,8 +22,8 @@ export function LiabilitiesTable({
   accountFilter = null,
   className,
 }: LiabilitiesTableProps) {
-  const liabilityView = useStore(viewsStore, (state) => state.getLiabilityView(viewId));
-  const filterStringBySearch = useStore(searchStore, (state) => state.filterStringBySearch);
+  const liabilityView = useViews((state) => state.getLiabilityView(viewId));
+  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
 
   const liabilitiesFiltered = React.useMemo(() => {
     return liabilities

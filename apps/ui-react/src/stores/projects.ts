@@ -1,11 +1,11 @@
-import { createStore } from "zustand";
+import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Project } from "@maille/core/projects";
 import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import type { ActivityType } from "@maille/core/activities";
-import { activitiesStore } from "./activities";
+import { useActivities } from "./activities";
 import { storage } from "./storage";
 
 interface ProjectsState {
@@ -45,7 +45,7 @@ interface ProjectsState {
   resetViewFilters: () => void;
 }
 
-export const projectsStore = createStore<ProjectsState>()(
+export const useProjects = create<ProjectsState>()(
   persist(
     (set, get) => ({
       projects: [],
@@ -124,9 +124,9 @@ export const projectsStore = createStore<ProjectsState>()(
           projects: [...state.projects, payload.project],
         }));
 
-        activitiesStore.getState().activities.forEach((activity) => {
+        useActivities.getState().activities.forEach((activity) => {
           if (payload.activities.includes(activity.id)) {
-            activitiesStore.getState().updateActivity(activity.id, {
+            useActivities.getState().updateActivity(activity.id, {
               project: payload.project.id,
             });
           }

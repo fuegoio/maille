@@ -3,12 +3,12 @@ import { ActivityType } from "@maille/core/activities";
 
 import { graphql } from "./gql";
 import { graphqlClient } from "./gql/client";
-import { accountsStore } from "./stores/accounts";
-import { activitiesStore } from "./stores/activities";
-import { liabilitiesStore } from "./stores/liabilities";
-import { movementsStore } from "./stores/movements";
-import { projectsStore } from "./stores/projects";
-import { useWorkspacesStore } from "./stores/workspaces";
+import { useAccounts } from "./stores/accounts";
+import { useActivities } from "./stores/activities";
+import { useLiabilities } from "./stores/liabilities";
+import { useMovements } from "./stores/movements";
+import { useProjects } from "./stores/projects";
+import { useWorkspaces } from "./stores/workspaces";
 
 const workspaceDataQuery = graphql(/* GraphQL */ `
   query WorkspaceData($workspace: String!) {
@@ -107,25 +107,25 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Set workspace data
-  useWorkspacesStore.getState().setCurrentWorkspace({
+  useWorkspaces.getState().setCurrentWorkspace({
     ...workspaceData.workspace,
     startingDate: new Date(workspaceData.workspace.startingDate),
   });
 
   // Clear existing data and populate stores
-  accountsStore.setState({ accounts: [] });
-  activitiesStore.setState({
+  useAccounts.setState({ accounts: [] });
+  useActivities.setState({
     activities: [],
     activityCategories: [],
     activitySubcategories: [],
   });
-  movementsStore.setState({ movements: [] });
-  projectsStore.setState({ projects: [] });
-  liabilitiesStore.setState({ liabilities: [] });
+  useMovements.setState({ movements: [] });
+  useProjects.setState({ projects: [] });
+  useLiabilities.setState({ liabilities: [] });
 
   // Populate accounts
   workspaceData.accounts.forEach((account) => {
-    accountsStore.getState().addAccount({
+    useAccounts.getState().addAccount({
       id: account.id,
       name: account.name,
       type: account.type as AccountType,
@@ -136,7 +136,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
 
   // Populate activities
   workspaceData.activities.forEach((activity) => {
-    activitiesStore.getState().addActivity({
+    useActivities.getState().addActivity({
       id: activity.id,
       user: activity.user,
       number: activity.number,
@@ -154,7 +154,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
 
   // Populate activity categories
   workspaceData.activityCategories.forEach((category) => {
-    activitiesStore.getState().addActivityCategory({
+    useActivities.getState().addActivityCategory({
       id: category.id,
       name: category.name,
       type: category.type as ActivityType,
@@ -163,7 +163,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
 
   // Populate activity subcategories
   workspaceData.activitySubcategories.forEach((subcategory) => {
-    activitiesStore.getState().addActivitySubcategory({
+    useActivities.getState().addActivitySubcategory({
       id: subcategory.id,
       name: subcategory.name,
       category: subcategory.category,
@@ -172,7 +172,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
 
   // Populate movements
   workspaceData.movements.forEach((movement) => {
-    movementsStore.getState().addMovement({
+    useMovements.getState().addMovement({
       id: movement.id,
       date: new Date(movement.date),
       amount: movement.amount,
@@ -189,16 +189,16 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
  * Clear all stores data
  */
 export const clearAllStores = () => {
-  accountsStore.setState({ accounts: [] });
-  activitiesStore.setState({
+  useAccounts.setState({ accounts: [] });
+  useActivities.setState({
     activities: [],
     activityCategories: [],
     activitySubcategories: [],
   });
-  movementsStore.setState({ movements: [] });
-  projectsStore.setState({ projects: [] });
-  liabilitiesStore.setState({ liabilities: [] });
-  workspacesStore.setState({
+  useMovements.setState({ movements: [] });
+  useProjects.setState({ projects: [] });
+  useLiabilities.setState({ liabilities: [] });
+  useWorkspaces.setState({
     currentWorkspace: null,
     availableWorkspaces: null,
   });

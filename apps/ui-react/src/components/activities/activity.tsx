@@ -2,7 +2,6 @@ import { ActivityType, type Activity } from "@maille/core/activities";
 import { ChevronRight, Trash2, Scissors } from "lucide-react";
 import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useStore } from "zustand";
 
 import {
   AlertDialog,
@@ -24,8 +23,8 @@ import {
   updateActivityMutation,
   deleteActivityMutation,
 } from "@/mutations/activities";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
+import { useActivities } from "@/stores/activities";
+import { useSync } from "@/stores/sync";
 
 import { ActivityLiabilities } from "./activity-liabilities";
 import { ActivityMovements } from "./activity-movements";
@@ -33,19 +32,16 @@ import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
 
 export function Activity() {
-  const focusedActivity = useStore(
-    activitiesStore,
+  const focusedActivity = useActivities(
     (state) => state.focusedActivity,
   );
-  const getActivityById = useStore(
-    activitiesStore,
+  const getActivityById = useActivities(
     (state) => state.getActivityById,
   );
-  const setFocusedActivity = useStore(
-    activitiesStore,
+  const setFocusedActivity = useActivities(
     (state) => state.setFocusedActivity,
   );
-  const mutate = useStore(syncStore, (state) => state.mutate);
+  const mutate = useSync((state) => state.mutate);
 
   const [showProperties, setShowProperties] = React.useState(true);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
