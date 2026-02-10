@@ -1,16 +1,20 @@
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { authClient } from "@/lib/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth";
 
 const searchParamsSchema = z.object({
   redirect: z.string().optional(),
@@ -100,7 +104,9 @@ function RouteComponent() {
                     autoComplete="email"
                     className="h-9"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -119,14 +125,20 @@ function RouteComponent() {
                     autoComplete="current-password"
                     className="h-9"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
           </FieldGroup>
 
           <Button type="submit" className="w-full" disabled={loading} size="lg">
-            {loading ? <LoaderCircle className="ml-2 h-4 w-4 animate-spin" /> : "Login"}
+            {loading ? (
+              <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Login"
+            )}
           </Button>
 
           <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -154,7 +166,11 @@ function RouteComponent() {
 
           <div className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link to="/signup" className="underline underline-offset-4" search={{ redirect }}>
+            <Link
+              to="/signup"
+              className="underline underline-offset-4"
+              search={{ redirect }}
+            >
               Sign up
             </Link>
           </div>

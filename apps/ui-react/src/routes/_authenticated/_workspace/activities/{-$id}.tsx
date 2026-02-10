@@ -8,7 +8,7 @@ import { ExportActivitiesButton } from "@/components/activities/export-activitie
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useActivities } from "@/stores/activities";
 import { useViews } from "@/stores/views";
 
@@ -61,36 +61,38 @@ function ActivitiesPage() {
 
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
-        <SidebarTrigger className="mr-1" />
-        <div className="truncate font-medium">{title}</div>
-        <div className="flex-1" />
-        <AddActivityButton />
-        <Button className="gap-1" variant="outline">
-          Show transactions
-        </Button>
-        <div className="h-full w-px bg-border" />
-        <ExportActivitiesButton
-          viewId={activityView.id}
-          activities={viewActivities}
-        />
-      </header>
+      <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+          <SidebarTrigger className="mr-1" />
+          <div className="truncate font-medium">{title}</div>
+          <div className="flex-1" />
+          <AddActivityButton />
+          <Button className="gap-1" variant="outline">
+            Show transactions
+          </Button>
+          <div className="h-full w-px bg-border" />
+          <ExportActivitiesButton
+            viewId={activityView.id}
+            activities={viewActivities}
+          />
+        </header>
 
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-11.25">
-        {activityView.filters.length === 0 && (
-          <FilterActivitiesButton viewId={activityView.id} />
-        )}
-        <div className="flex-1" />
-        <SearchBar />
-      </header>
+        <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-11.25">
+          {activityView.filters.length === 0 && (
+            <FilterActivitiesButton viewId={activityView.id} />
+          )}
+          <div className="flex-1" />
+          <SearchBar />
+        </header>
 
-      <div className="flex flex-1 flex-col">
-        <ActivitiesTable
-          viewId={activityView.id}
-          activities={viewActivities}
-          grouping="period"
-        />
-      </div>
+        <div className="flex flex-1 flex-col">
+          <ActivitiesTable
+            viewId={activityView.id}
+            activities={viewActivities}
+            grouping="period"
+          />
+        </div>
+      </SidebarInset>
 
       <Activity />
     </>
