@@ -1,8 +1,10 @@
-import { createStore } from "zustand";
-import { persist } from "zustand/middleware";
 import type { Workspace } from "@maille/core/workspaces";
-import { graphqlClient } from "@/gql/client";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
 import { graphql } from "@/gql";
+import { graphqlClient } from "@/gql/client";
+
 import { storage } from "./storage";
 
 export interface AvailableWorkspace {
@@ -27,7 +29,7 @@ interface WorkspacesState {
   setCurrentWorkspace: (workspace: Workspace) => void;
 }
 
-export const workspacesStore = createStore<WorkspacesState>()(
+export const useWorkspacesStore = create<WorkspacesState>()(
   persist(
     (set, get) => ({
       currentWorkspace: null,

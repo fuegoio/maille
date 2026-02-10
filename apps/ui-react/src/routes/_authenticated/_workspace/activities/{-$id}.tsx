@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SearchIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useStore } from "zustand";
 
@@ -8,8 +7,9 @@ import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { activitiesStore } from "@/stores/activities";
 import { viewsStore } from "@/stores/views";
 
@@ -62,37 +62,27 @@ function ActivitiesPage() {
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b pr-4 pl-14 lg:pl-8">
-        <div className="truncate text-sm font-semibold">{title}</div>
-        <div className="flex-1 sm:hidden" />
-        {activityView.filters.length === 0 && (
-          <>
-            <FilterActivitiesButton
-              viewId={activityView.id}
-              className="ml-4 sm:mr-1"
-            />
-            <ExportActivitiesButton
-              className="hidden sm:flex"
-              viewId={activityView.id}
-              activities={viewActivities}
-            />
-          </>
-        )}
-        <div className="hidden flex-1 sm:block" />
-        <div className="relative">
-          <SearchIcon className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search activities..."
-            className="w-[200px] pl-8 sm:w-[300px]"
-          />
-        </div>
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+        <SidebarTrigger className="mr-1" />
+        <div className="truncate font-medium">{title}</div>
+        <div className="flex-1" />
         <AddActivityButton />
         <Button className="gap-1" variant="outline">
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Show Transactions
-          </span>
+          Show transactions
         </Button>
+        <div className="h-full w-px bg-border" />
+        <ExportActivitiesButton
+          viewId={activityView.id}
+          activities={viewActivities}
+        />
+      </header>
+
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-11.25">
+        {activityView.filters.length === 0 && (
+          <FilterActivitiesButton viewId={activityView.id} />
+        )}
+        <div className="flex-1" />
+        <SearchBar />
       </header>
 
       <div className="flex flex-1 flex-col">
@@ -103,7 +93,7 @@ function ActivitiesPage() {
         />
       </div>
 
-      <Activity viewId={activityView.id} />
+      <Activity />
     </>
   );
 }

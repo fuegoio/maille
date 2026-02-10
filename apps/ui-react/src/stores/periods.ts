@@ -14,7 +14,7 @@ import type {
 import { accountsStore } from "./accounts";
 import { activitiesStore } from "./activities";
 import { movementsStore } from "./movements";
-import { workspacesStore } from "./workspaces";
+import { useWorkspacesStore } from "./workspaces";
 
 const NUMBER_OF_PERIODS_AVANCE = 12;
 
@@ -58,7 +58,7 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
   },
 
   getPeriodsAvailable: (): Period[] => {
-    const workspace = workspacesStore.getState().currentWorkspace;
+    const workspace = useWorkspacesStore.getState().currentWorkspace;
     if (!workspace) return [];
 
     const now = dayjs();
@@ -390,4 +390,3 @@ export const periodsStore = createStore<PeriodsState>()((set, get) => ({
     }));
   },
 }));
-

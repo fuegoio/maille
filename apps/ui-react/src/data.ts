@@ -1,13 +1,14 @@
-import { graphql } from "./gql";
-import { graphqlClient } from "./gql/client";
-import { workspacesStore } from "./stores/workspaces";
-import { accountsStore } from "./stores/accounts";
-import { activitiesStore } from "./stores/activities";
-import { movementsStore } from "./stores/movements";
-import { projectsStore } from "./stores/projects";
-import { liabilitiesStore } from "./stores/liabilities";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
+
+import { graphql } from "./gql";
+import { graphqlClient } from "./gql/client";
+import { accountsStore } from "./stores/accounts";
+import { activitiesStore } from "./stores/activities";
+import { liabilitiesStore } from "./stores/liabilities";
+import { movementsStore } from "./stores/movements";
+import { projectsStore } from "./stores/projects";
+import { useWorkspacesStore } from "./stores/workspaces";
 
 const workspaceDataQuery = graphql(/* GraphQL */ `
   query WorkspaceData($workspace: String!) {
@@ -106,7 +107,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Set workspace data
-  workspacesStore.getState().setCurrentWorkspace({
+  useWorkspacesStore.getState().setCurrentWorkspace({
     ...workspaceData.workspace,
     startingDate: new Date(workspaceData.workspace.startingDate),
   });

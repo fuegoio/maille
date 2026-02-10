@@ -2,7 +2,7 @@ import {
   ActivityFilterFields,
   type ActivityFilter,
 } from "@maille/core/activities";
-import { Plus } from "lucide-react";
+import { ListFilter } from "lucide-react";
 import * as React from "react";
 import { useStore } from "zustand";
 
@@ -41,8 +41,8 @@ export function FilterActivitiesButton({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={className}>
-          <Plus />
+        <Button variant="ghost" className={className} size="sm">
+          <ListFilter />
           Filter
         </Button>
       </DropdownMenuTrigger>

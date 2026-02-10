@@ -1,11 +1,16 @@
-import * as React from "react";
-import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
 import { verifyActivityFilter, type Activity } from "@maille/core/activities";
 import { stringify } from "csv-stringify/browser/esm/sync";
-import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import * as React from "react";
+import { useStore } from "zustand";
+
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { viewsStore } from "@/stores/views";
 
 interface ExportActivitiesButtonProps {
   viewId: string;
@@ -18,7 +23,9 @@ export function ExportActivitiesButton({
   activities,
   className,
 }: ExportActivitiesButtonProps) {
-  const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
+  const activityView = useStore(viewsStore, (state) =>
+    state.getActivityView(viewId),
+  );
 
   const filteredActivities = React.useMemo(() => {
     return activities.filter((activity) => {
@@ -55,7 +62,12 @@ export function ExportActivitiesButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="outline" size="icon" className={className} onClick={exportActivities}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={className}
+          onClick={exportActivities}
+        >
           <Download className="h-4 w-4" />
         </Button>
       </TooltipTrigger>

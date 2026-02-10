@@ -1,22 +1,9 @@
-import * as React from "react";
-import { useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
-import { activitiesStore } from "@/stores/activities";
-import { viewsStore } from "@/stores/views";
-import { syncStore } from "@/stores/sync";
-import { updateActivityMutation, deleteActivityMutation } from "@/mutations/activities";
 import { ActivityType, type Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { ChevronRight, Trash2, Scissors } from "lucide-react";
+import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { ActivityTransactions } from "./activity-transactions";
-import { ActivityMovements } from "./activity-movements";
-import { ActivityLiabilities } from "./activity-liabilities";
-import { SplitActivityModal } from "./split-activity-modal";
+import { useStore } from "zustand";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,18 +15,35 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { getCurrencyFormatter } from "@/lib/utils";
+import {
+  updateActivityMutation,
+  deleteActivityMutation,
+} from "@/mutations/activities";
+import { activitiesStore } from "@/stores/activities";
+import { syncStore } from "@/stores/sync";
 
-interface ActivityProps {
-  viewId: string;
-}
+import { ActivityLiabilities } from "./activity-liabilities";
+import { ActivityMovements } from "./activity-movements";
+import { ActivityTransactions } from "./activity-transactions";
+import { SplitActivityModal } from "./split-activity-modal";
 
-export function Activity({ viewId }: ActivityProps) {
-  const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
-  const { activities } = useStore(
+export function Activity() {
+  const focusedActivity = useStore(
     activitiesStore,
-    useShallow((state) => ({
-      activities: state.activities,
-    })),
+    (state) => state.focusedActivity,
+  );
+  const getActivityById = useStore(
+    activitiesStore,
+    (state) => state.getActivityById,
+  );
+  const setFocusedActivity = useStore(
+    activitiesStore,
+    (state) => state.setFocusedActivity,
   );
   const mutate = useStore(syncStore, (state) => state.mutate);
 
@@ -48,14 +52,14 @@ export function Activity({ viewId }: ActivityProps) {
   const [showSplitModal, setShowSplitModal] = React.useState(false);
 
   const activity = React.useMemo(() => {
-    if (!activityView.focusedActivity) return null;
-    return activitiesStore.getState().getActivityById(activityView.focusedActivity as string);
-  }, [activityView.focusedActivity, activities]);
+    if (!focusedActivity) return null;
+    return getActivityById(focusedActivity);
+  }, [focusedActivity, getActivityById]);
 
   const currencyFormatter = getCurrencyFormatter();
 
   const close = () => {
-    activityView.focusedActivity = null;
+    setFocusedActivity(null);
   };
 
   const deleteActivity = () => {
@@ -147,7 +151,9 @@ export function Activity({ viewId }: ActivityProps) {
             >
               <ChevronRight className="text-primary-100 h-5 w-5 transition hover:text-white" />
             </Button>
-            <div className="text-sm font-medium text-white">Activity #{activity.number}</div>
+            <div className="text-sm font-medium text-white">
+              Activity #{activity.number}
+            </div>
 
             <div className="block flex-1 sm:hidden" />
 
@@ -180,7 +186,10 @@ export function Activity({ viewId }: ActivityProps) {
                   <Scissors className="text-primary-100 h-5 w-5 transition hover:text-white" />
                 </Button>
 
-                <AlertDialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+                <AlertDialog
+                  open={showDeleteModal}
+                  onOpenChange={setShowDeleteModal}
+                >
                   <AlertDialogTrigger asChild>
                     <Button
                       variant="ghost"
@@ -192,9 +201,12 @@ export function Activity({ viewId }: ActivityProps) {
                   </AlertDialogTrigger>
                   <AlertDialogContent className="bg-primary-900 border-primary-700">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-white">Delete Activity</AlertDialogTitle>
+                      <AlertDialogTitle className="text-white">
+                        Delete Activity
+                      </AlertDialogTitle>
                       <AlertDialogDescription className="text-primary-100">
-                        Are you sure you want to delete this activity? This action cannot be undone.
+                        Are you sure you want to delete this activity? This
+                        action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -235,7 +247,9 @@ export function Activity({ viewId }: ActivityProps) {
                   <Input
                     type="date"
                     value={activity.date.toISOString().split("T")[0]}
-                    onChange={(e) => updateActivity({ date: new Date(e.target.value) })}
+                    onChange={(e) =>
+                      updateActivity({ date: new Date(e.target.value) })
+                    }
                     className="text-primary-100 h-8 border-none bg-transparent text-sm font-semibold"
                   />
                   <div className="flex items-start">
@@ -252,7 +266,9 @@ export function Activity({ viewId }: ActivityProps) {
 
                   <Textarea
                     value={activity.description || ""}
-                    onChange={(e) => updateActivity({ description: e.target.value || null })}
+                    onChange={(e) =>
+                      updateActivity({ description: e.target.value || null })
+                    }
                     className="text-primary-100 placeholder:text-primary-700 mt-2 w-full resize-none border-none bg-transparent text-sm break-words"
                     placeholder="Add a description ..."
                     rows={3}

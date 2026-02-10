@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Banknote,
   BookMarked,
@@ -8,14 +7,21 @@ import {
   LifeBuoy,
   Send,
 } from "lucide-react";
+import * as React from "react";
+import { useStore } from "zustand";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+} from "@/components/ui/sidebar";
+import { authStore } from "@/stores/auth";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { WorkspaceSwitcher } from "./workspace-switcher";
-import { useStore } from "zustand";
-import { workspacesStore } from "@/stores/workspaces";
-import { authStore } from "@/stores/auth";
 
 const data = {
   navAnalysis: [
@@ -93,8 +99,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     throw new Error("no user available");
   }
 
-  const availableWorkspaces = useStore(workspacesStore, (state) => state.availableWorkspaces);
-  const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
+  const availableWorkspaces = useWorkspacesStore(
+    (state) => state.availableWorkspaces,
+  );
+  const currentWorkspace = useWorkspacesStore(
+    (state) => state.currentWorkspace,
+  );
 
   if (!availableWorkspaces || !currentWorkspace) {
     throw new Error("no workspace available");

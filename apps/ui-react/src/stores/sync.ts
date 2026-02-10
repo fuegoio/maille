@@ -12,7 +12,7 @@ import { authStore } from "./auth";
 import { movementsStore } from "./movements";
 import { projectsStore } from "./projects";
 import { storage } from "./storage";
-import { workspacesStore } from "./workspaces";
+import { useWorkspacesStore } from "./workspaces";
 
 interface SyncState {
   lastEventTimestamp: number;
@@ -55,7 +55,7 @@ export const syncStore = createStore<SyncState>()(
               ...event,
               user: authStore.getState().user!.id,
               clientId: authStore.getState().session!.id,
-              workspace: workspacesStore.getState().currentWorkspace!.id,
+              workspace: useWorkspacesStore.getState().currentWorkspace!.id,
               createdAt: new Date(),
             };
           })

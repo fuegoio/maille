@@ -1,23 +1,31 @@
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute } from "@tanstack/react-router";
-import { LoaderCircle } from "lucide-react";
-import z from "zod";
-
-import { graphqlClient } from "@/gql/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Logo } from "@/components/logo";
-import { graphql } from "@/gql";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import z from "zod";
 import { useStore } from "zustand";
-import { workspacesStore } from "@/stores/workspaces";
+
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { fetchWorkspaceData } from "@/data";
+import { graphql } from "@/gql";
+import { graphqlClient } from "@/gql/client";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 export const CreateWorkspaceMutation = graphql(`
   mutation CreateWorkspace(
@@ -59,7 +67,7 @@ function RouteComponent() {
   const { user } = Route.useRouteContext();
   const navigate = Route.useNavigate();
 
-  const createWorkspace = useStore(workspacesStore, (state) => state.createWorkspace);
+  const createWorkspace = useWorkspacesStore((state) => state.createWorkspace);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,7 +100,8 @@ function RouteComponent() {
     } catch (error) {
       console.error("Failed to create workspace:", error);
       form.setError("name", {
-        message: error instanceof Error ? error.message : "Failed to create workspace",
+        message:
+          error instanceof Error ? error.message : "Failed to create workspace",
       });
     } finally {
       setLoading(false);
@@ -104,7 +113,9 @@ function RouteComponent() {
       <Logo className="size-12 text-muted" />
       <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
         <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">Create your Workspace</h1>
+          <h1 className="text-xl font-medium text-foreground">
+            Create your Workspace
+          </h1>
           <div className="mt-2 text-sm text-muted-foreground">
             Set up your financial workspace to get started.
           </div>
@@ -126,7 +137,9 @@ function RouteComponent() {
                     className="h-9"
                     placeholder={user.name}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -144,7 +157,9 @@ function RouteComponent() {
                     className="h-9"
                     placeholder="EUR"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -162,7 +177,11 @@ function RouteComponent() {
                         id="startingDate"
                         className="justify-start font-normal"
                       >
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -174,18 +193,25 @@ function RouteComponent() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
           </FieldGroup>
 
           <Button type="submit" className="w-full" disabled={loading} size="lg">
-            {loading ? <LoaderCircle className="ml-2 h-4 w-4 animate-spin" /> : "Create Workspace"}
+            {loading ? (
+              <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Create Workspace"
+            )}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
-            Already have a workspace? You'll be able to switch between them later.
+            Already have a workspace? You'll be able to switch between them
+            later.
           </div>
         </form>
       </div>

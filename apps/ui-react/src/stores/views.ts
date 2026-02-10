@@ -1,16 +1,15 @@
-import { createStore } from "zustand";
-import { persist } from "zustand/middleware";
-
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";
 import type { MovementFilter } from "@maille/core/movements";
+import { createStore } from "zustand";
+import { persist } from "zustand/middleware";
+
 import { storage } from "./storage";
 
 type ActivityView = {
   id: string;
   showTransactions: boolean;
   filters: ActivityFilter[];
-  focusedActivity: string | null;
 };
 
 type LiabilityView = {
@@ -49,7 +48,6 @@ export const viewsStore = createStore<ViewsState>()(
             id: viewId,
             showTransactions: false,
             filters: [] as ActivityFilter[],
-            focusedActivity: null,
           };
         }
 

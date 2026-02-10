@@ -24,7 +24,7 @@ import {
 } from "@/mutations/activities";
 import { activitiesStore } from "@/stores/activities";
 import { syncStore } from "@/stores/sync";
-import { workspacesStore } from "@/stores/workspaces";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 // Define activity type colors and names similar to the Vue version
 const ACTIVITY_TYPES_COLOR = {
@@ -67,8 +67,7 @@ export function ActivityTypeSection({
   }));
 
   const mutate = useStore(syncStore, (state) => state.mutate);
-  const currentWorkspace = useStore(
-    workspacesStore,
+  const currentWorkspace = useWorkspacesStore(
     (state) => state.currentWorkspace,
   );
 

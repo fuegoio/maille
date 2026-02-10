@@ -1,5 +1,6 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
+import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useStore } from "zustand";
@@ -53,12 +54,16 @@ export function ActivitiesTable({
     searchStore,
     (state) => state.filterStringBySearch,
   );
+  const setFocusedActivity = useStore(
+    activitiesStore,
+    (state) => state.setFocusedActivity,
+  );
   const currencyFormatter = getCurrencyFormatter();
 
   // Cleanup on unmount
   React.useEffect(() => {
     return () => {
-      activitiesStore.getState().setFocusedActivity(null);
+      setFocusedActivity(null);
     };
   }, []);
 
@@ -202,9 +207,9 @@ export function ActivitiesTable({
 
   const handleActivityClick = (activityId: string) => {
     if (focusedActivity === activityId) {
-      activitiesStore.getState().setFocusedActivity(null);
+      setFocusedActivity(null);
     } else {
-      activitiesStore.getState().setFocusedActivity(activityId as string);
+      setFocusedActivity(activityId);
     }
   };
 
@@ -222,9 +227,7 @@ export function ActivitiesTable({
         : (currentIndex - 1 + activitiesSorted.length) %
           activitiesSorted.length;
 
-    activitiesStore
-      .getState()
-      .setFocusedActivity(activitiesSorted[nextIndex].id);
+    setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
   useHotkeys("j", () => {
@@ -235,9 +238,7 @@ export function ActivitiesTable({
     );
 
     const nextIndex = (currentIndex + 1) % activitiesSorted.length;
-    activitiesStore
-      .getState()
-      .setFocusedActivity(activitiesSorted[nextIndex].id);
+    setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
   return (
@@ -256,12 +257,10 @@ export function ActivitiesTable({
                   ? activitiesWithGroups.map((item) => (
                       <React.Fragment key={item.id}>
                         {item.itemType === "group" ? (
-                          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-5 sm:pl-6">
-                            <i
-                              className="mdi mdi-calendar-blank text-primary-100 mdi-16px"
-                              aria-hidden="true"
-                            />
-                            <div className="text-sm font-medium">
+                          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-6">
+                            <ChevronDown className="mr-3 size-3 opacity-20 transition-opacity hover:opacity-100" />
+                            <Calendar className="size-4" />
+                            <div className="text-sm">
                               {periodFormatter(item.month, item.year)}
                             </div>
                             <div className="flex-1" />
@@ -279,7 +278,7 @@ export function ActivitiesTable({
                                   className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
                                 >
                                   <div
-                                    className="mt-[2px] mr-3 h-[9px] w-[9px] shrink-0 rounded-xs"
+                                    className="mt-0.5 mr-3 size-[9px] shrink-0 rounded-xs"
                                     style={{
                                       backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
                                     }}

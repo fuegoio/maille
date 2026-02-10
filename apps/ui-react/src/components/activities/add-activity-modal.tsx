@@ -40,7 +40,7 @@ import { accountsStore } from "@/stores/accounts";
 import { activitiesStore } from "@/stores/activities";
 import { authStore } from "@/stores/auth";
 import { syncStore } from "@/stores/sync";
-import { workspacesStore } from "@/stores/workspaces";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -113,6 +113,9 @@ export function AddActivityModal({
   );
   const accounts = useStore(accountsStore, (state) => state.accounts);
   const mutate = useStore(syncStore, (state) => state.mutate);
+  const currentWorkspace = useWorkspacesStore(
+    (state) => state.currentWorkspace,
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -371,7 +374,7 @@ export function AddActivityModal({
       mutation: createActivityMutation,
       variables: {
         ...newActivity,
-        workspace: workspacesStore.getState().currentWorkspace!.id,
+        workspace: currentWorkspace!.id,
       },
       rollbackData: undefined,
       events: [
@@ -432,7 +435,7 @@ export function AddActivityModal({
         mutation: createActivityMutation,
         variables: {
           ...newActivity,
-          workspace: workspacesStore.getState().currentWorkspace!.id,
+          workspace: currentWorkspace!.id,
         },
         rollbackData: undefined,
         events: [

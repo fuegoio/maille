@@ -1,13 +1,14 @@
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+
 import { AppSidebar } from "@/components/navigation/sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { fetchWorkspaceData } from "@/data";
-import { workspacesStore } from "@/stores/workspaces";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 export const Route = createFileRoute("/_authenticated/_workspace")({
   component: RouteComponent,
   beforeLoad: async () => {
-    const workspacesState = workspacesStore.getState();
+    const workspacesState = useWorkspacesStore.getState();
     if (workspacesState.availableWorkspaces === null) {
       const workspaces = await workspacesState.fetchWorkspaces();
       if (workspaces.length === 0) {
@@ -16,11 +17,12 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
         });
       }
     } else {
-      workspacesState.fetchWorkspaces();
+      void workspacesState.fetchWorkspaces();
     }
 
     if (workspacesState.currentWorkspace === null) {
-      const firstWorkspace = workspacesStore.getState().availableWorkspaces![0];
+      const firstWorkspace =
+        useWorkspacesStore.getState().availableWorkspaces![0];
       if (firstWorkspace) {
         await fetchWorkspaceData(firstWorkspace.id);
       }

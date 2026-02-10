@@ -31,7 +31,7 @@ import {
 } from "@/stores/accounts";
 import { activitiesStore } from "@/stores/activities";
 import { syncStore } from "@/stores/sync";
-import { workspacesStore } from "@/stores/workspaces";
+import { useWorkspacesStore } from "@/stores/workspaces";
 
 interface AccountTypeSectionProps {
   accountType: AccountType;
@@ -45,8 +45,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const mutate = useStore(syncStore, (state) => state.mutate);
 
   const activities = useStore(activitiesStore, (state) => state.activities);
-  const currentWorkspace = useStore(
-    workspacesStore,
+  const currentWorkspace = useWorkspacesStore(
     (state) => state.currentWorkspace,
   );
 

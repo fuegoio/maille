@@ -87,10 +87,10 @@ export function ActivityLine({
 
   return (
     <div
-      className={`group block flex-shrink-0 overflow-hidden border-b transition-colors ${
+      className={`group block shrink-0 overflow-hidden border-b transition-colors ${
         selected
-          ? "bg-primary-800/50 border-l-4 border-l-accent"
-          : "hover:bg-primary-800/50 pl-1"
+          ? "border-l-4 border-l-primary bg-accent"
+          : "pl-1 hover:bg-accent"
       }`}
       style={{
         height: showTransactions
@@ -99,11 +99,11 @@ export function ActivityLine({
       }}
       onClick={handleClick}
     >
-      <div className="flex h-10 items-center gap-2 pr-2 pl-3 text-sm lg:pr-6 lg:pl-1">
-        <div className="text-primary-100 ml-4 hidden w-20 shrink-0 lg:block">
+      <div className="flex h-10 items-center gap-2 pr-2 pl-7 text-sm lg:pr-6">
+        <div className="ml-6 hidden w-20 shrink-0 text-muted-foreground lg:block">
           {activity.date.toLocaleDateString()}
         </div>
-        <div className="text-primary-100 w-10 shrink-0 lg:hidden">
+        <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
           {activity.date.toLocaleDateString(undefined, {
             month: "2-digit",
             day: "2-digit",
@@ -112,7 +112,7 @@ export function ActivityLine({
 
         {getStatusIcon()}
 
-        <div className="mr-1 min-w-0 overflow-hidden font-medium text-ellipsis whitespace-nowrap text-white">
+        <div className="mr-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
           {activity.name}
         </div>
 
@@ -122,7 +122,7 @@ export function ActivityLine({
           {activity.project !== null &&
             !hideProject &&
             getProjectById(activity.project) && (
-              <div className="hover:bg-primary-900 mr-4 flex h-6 min-w-0 items-center rounded-xl border px-2 text-xs tracking-wide text-white transition-colors hover:border-gray-300">
+              <div className="mr-4 flex h-6 min-w-0 items-center rounded-xl border px-2 text-xs tracking-wide transition-colors hover:border-gray-300 hover:bg-accent">
                 <span className="mr-2">
                   {getProjectById(activity.project)!.emoji}
                 </span>
@@ -143,8 +143,8 @@ export function ActivityLine({
 
           {activity.category !== null && getCategoryName() && (
             <>
-              <i className="mdi mdi-chevron-right text-primary-100 mx-1" />
-              <div className="hover:text-primary-200 overflow-hidden text-ellipsis whitespace-nowrap text-white">
+              <i className="mdi mdi-chevron-right mx-1" />
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap hover:text-accent-foreground">
                 {getCategoryName()}
               </div>
             </>
@@ -152,8 +152,8 @@ export function ActivityLine({
 
           {activity.subcategory !== null && getSubcategoryName() && (
             <>
-              <i className="mdi mdi-chevron-right text-primary-100 mx-1" />
-              <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
+              <i className="mdi mdi-chevron-right mx-1" />
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                 {getSubcategoryName()}
               </div>
             </>
@@ -182,7 +182,7 @@ export function ActivityLine({
               <div className="hidden w-7 shrink-0 lg:block" />
               <div className="shrink-0 lg:w-20" />
 
-              <div className="flex h-10 flex-grow items-center gap-2 border-l-2">
+              <div className="flex h-10 grow items-center gap-2 border-l-2">
                 <AccountLabel accountId={transaction.fromAccount} />
                 <div className="text-primary-100 mx-2 text-center">to</div>
                 <AccountLabel accountId={transaction.toAccount} />
