@@ -1,11 +1,18 @@
-import { useState, useMemo } from "react";
 import { useRouter, useParams } from "@tanstack/react-router";
-import { usePeriodsStore } from "@/stores/periods";
-import { PeriodLabel } from "./period-label";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarClock, CalendarCheck, CalendarArrowRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useStore } from "zustand";
+
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { periodsStore } from "@/stores/periods";
 import type { Period } from "@/types/periods";
+
+import { PeriodLabel } from "./period-label";
 
 interface PeriodsMenuProps {
   className?: string;
@@ -14,7 +21,13 @@ interface PeriodsMenuProps {
 export function PeriodsMenu({ className }: PeriodsMenuProps) {
   const router = useRouter();
   const params = useParams();
-  const { periodsAvailable, getPeriodLabel } = usePeriodsStore();
+  const periodsAvailable = useStore(periodsStore, (state) =>
+    state.getPeriodsAvailable(),
+  );
+  const getPeriodLabel = useStore(
+    periodsStore,
+    (state) => state.getPeriodLabel,
+  );
   const [open, setOpen] = useState(false);
 
   const period = params.period as string;
@@ -30,10 +43,6 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
     return periodDate;
   }, [period]);
 
-  const periodDateString = useMemo(() => {
-    return `${periodDate.getFullYear()}-${String(periodDate.getMonth() + 1).padStart(2, "0")}`;
-  }, [periodDate]);
-
   const periodDateLabel = useMemo(() => {
     return getPeriodLabel({
       month: periodDate.getMonth(),
@@ -41,7 +50,9 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
     });
   }, [periodDate, getPeriodLabel]);
 
-  const periodsList = useMemo<(Period & { label: string; date: Date })[]>(() => {
+  const periodsList = useMemo<
+    (Period & { label: string; date: Date })[]
+  >(() => {
     return periodsAvailable
       .sort((a, b) => b.year - a.year || b.month - a.month)
       .filter((p, i, arr) => {
@@ -75,7 +86,9 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
       case "Completed":
         return <CalendarCheck className="text-primary-100 mt-1 mr-3 text-xl" />;
       case "Future":
-        return <CalendarArrowRight className="text-primary-100 mt-1 mr-3 text-xl" />;
+        return (
+          <CalendarArrowRight className="text-primary-100 mt-1 mr-3 text-xl" />
+        );
       default:
         return <CalendarClock className="text-primary-100 mt-1 mr-3 text-xl" />;
     }
@@ -90,7 +103,10 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
         >
           {getPeriodIcon(periodDateLabel)}
           <span className="truncate text-sm font-semibold text-white">
-            {periodDate.toLocaleString("default", { month: "long", year: "numeric" })}
+            {periodDate.toLocaleString("default", {
+              month: "long",
+              year: "numeric",
+            })}
           </span>
         </Button>
       </PopoverTrigger>
@@ -108,7 +124,9 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
             <div
               key={index}
               className={`relative flex cursor-pointer items-center px-4 py-2 select-none ${
-                isSelected ? "bg-primary-400 text-white" : "text-primary-100 hover:bg-primary-600"
+                isSelected
+                  ? "bg-primary-400 text-white"
+                  : "text-primary-100 hover:bg-primary-600"
               }`}
               onClick={() =>
                 handleInput(
@@ -118,8 +136,13 @@ export function PeriodsMenu({ className }: PeriodsMenuProps) {
             >
               {getPeriodIcon(periodItem.label)}
 
-              <span className={`${isSelected ? "font-medium" : "font-normal"} block truncate`}>
-                {periodItem.date.toLocaleString("default", { month: "long", year: "numeric" })}
+              <span
+                className={`${isSelected ? "font-medium" : "font-normal"} block truncate`}
+              >
+                {periodItem.date.toLocaleString("default", {
+                  month: "long",
+                  year: "numeric",
+                })}
               </span>
               <div className="flex-1" />
 

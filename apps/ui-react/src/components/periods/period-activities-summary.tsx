@@ -1,12 +1,18 @@
-import { useMemo } from "react";
-import { useActivitiesStore } from "@/stores/activities";
-import { usePeriodsStore } from "@/stores/periods";
-import { PeriodActivityCategoryLine } from "./period-activity-category-line";
-import { getCurrencyFormatter } from "@/lib/utils";
 import { ActivityType } from "@maille/core/activities";
+import { useMemo } from "react";
+import { useStore } from "zustand";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { getCurrencyFormatter } from "@/lib/utils";
+import { useActivitiesStore } from "@/stores/activities";
+import { periodsStore } from "@/stores/periods";
 import type { PeriodActivityData } from "@/types/periods";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Progress } from "@/components/ui/progress";
+
+import { PeriodActivityCategoryLine } from "./period-activity-category-line";
 
 // Color mapping for activity types
 const ACTIVITY_TYPES_COLOR: Record<ActivityType, string> = {
@@ -27,13 +33,20 @@ interface PeriodActivitiesSummaryProps {
   periodDate: Date;
 }
 
-export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryProps) {
+export function PeriodActivitiesSummary({
+  periodDate,
+}: PeriodActivitiesSummaryProps) {
   const { categories } = useActivitiesStore();
-  const { viewFilters, periodsActivityData } = usePeriodsStore();
+  const viewFilters = useStore(periodsStore, (state) => state.viewFilters);
+  const periodsActivityData = useStore(periodsStore, (state) =>
+    state.getPeriodsAvailable(),
+  );
 
   const periodActivityData = useMemo<PeriodActivityData>(() => {
     return periodsActivityData.find(
-      (p) => p.month === periodDate.getMonth() && p.year === periodDate.getFullYear(),
+      (p) =>
+        p.month === periodDate.getMonth() &&
+        p.year === periodDate.getFullYear(),
     )!;
   }, [periodsActivityData, periodDate]);
 
@@ -53,7 +66,10 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
     }
   };
 
-  const getProgressBarColor = (index: number, activityType: ActivityType): string => {
+  const getProgressBarColor = (
+    index: number,
+    activityType: ActivityType,
+  ): string => {
     const baseColors = {
       [ActivityType.REVENUE]: "#4ade80",
       [ActivityType.EXPENSE]: "#f87171",
@@ -67,7 +83,10 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
     if (rgb) {
       const { r, g, b } = rgb;
       const hsl = rgbToHsl(r, g, b);
-      hsl.l = 80 + (index / categories.filter((c) => c.type === activityType).length) * -50;
+      hsl.l =
+        80 +
+        (index / categories.filter((c) => c.type === activityType).length) *
+          -50;
       return hslToHex(hsl);
     }
     return color;
@@ -101,7 +120,9 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
                 ? "bg-primary-800"
                 : "hover:bg-primary-800"
             }`}
-            onClick={() => selectActivityTypeToFilterActivities(activityType.type)}
+            onClick={() =>
+              selectActivityTypeToFilterActivities(activityType.type)
+            }
           >
             <div className="flex items-center">
               <div
@@ -115,10 +136,14 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
             <div className="flex items-center">
               <div
                 className={`text-primary-200 mr-4 text-sm ${
-                  viewFilters.activityType === activityType.type ? "" : "hidden group-hover:block"
+                  viewFilters.activityType === activityType.type
+                    ? ""
+                    : "hidden group-hover:block"
                 }`}
               >
-                {viewFilters.activityType === activityType.type ? "Clear filter" : "Filter"}
+                {viewFilters.activityType === activityType.type
+                  ? "Clear filter"
+                  : "Filter"}
               </div>
 
               <div className="text-right font-mono text-sm font-medium whitespace-nowrap text-white">
@@ -134,9 +159,11 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
                   .filter((c) => c.type === activityType.type)
                   .map((category, index) => {
                     const categoryValue =
-                      periodActivityData.categories.find((c) => c.category === category.id)
-                        ?.value ?? 0;
-                    const percentage = (categoryValue / activityType.value) * 100;
+                      periodActivityData.categories.find(
+                        (c) => c.category === category.id,
+                      )?.value ?? 0;
+                    const percentage =
+                      (categoryValue / activityType.value) * 100;
 
                     return (
                       <Tooltip key={category.id}>
@@ -144,13 +171,17 @@ export function PeriodActivitiesSummary({ periodDate }: PeriodActivitiesSummaryP
                           <div
                             className="h-full transition-all hover:opacity-50"
                             style={{
-                              backgroundColor: getProgressBarColor(index, activityType.type),
+                              backgroundColor: getProgressBarColor(
+                                index,
+                                activityType.type,
+                              ),
                               width: `${percentage}%`,
                             }}
                           />
                         </TooltipTrigger>
                         <TooltipContent>
-                          {category.name} ({Math.round(percentage * 100) / 100}%)
+                          {category.name} ({Math.round(percentage * 100) / 100}
+                          %)
                         </TooltipContent>
                       </Tooltip>
                     );
@@ -184,7 +215,11 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     : null;
 }
 
-function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number } {
+function rgbToHsl(
+  r: number,
+  g: number,
+  b: number,
+): { h: number; s: number; l: number } {
   r /= 255;
   g /= 255;
   b /= 255;

@@ -69,7 +69,7 @@ function ActivitiesPage() {
           <>
             <FilterActivitiesButton
               viewId={activityView.id}
-              className="ml-4 sm:mr-2"
+              className="ml-4 sm:mr-1"
             />
             <ExportActivitiesButton
               className="hidden sm:flex"
@@ -88,7 +88,7 @@ function ActivitiesPage() {
           />
         </div>
         <AddActivityButton />
-        <Button size="sm" className="gap-1">
+        <Button className="gap-1" variant="outline">
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Show Transactions
           </span>

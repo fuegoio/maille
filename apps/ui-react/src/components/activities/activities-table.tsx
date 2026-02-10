@@ -1,15 +1,17 @@
+import { ActivityType, type Activity } from "@maille/core/activities";
+import { verifyActivityFilter } from "@maille/core/activities";
 import * as React from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useStore } from "zustand";
-import { viewsStore } from "@/stores/views";
+
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { getCurrencyFormatter } from "@/lib/utils";
 import { activitiesStore } from "@/stores/activities";
 import { searchStore } from "@/stores/search";
-import { ActivityType, type Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { viewsStore } from "@/stores/views";
+
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useHotkeys } from "react-hotkeys-hook";
-import { verifyActivityFilter } from "@maille/core/activities";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -40,9 +42,17 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
-  const activityView = useStore(viewsStore, (state) => state.getActivityView(viewId));
-  const focusedActivity = useStore(activitiesStore, (state) => state.focusedActivity);
-  const filterStringBySearch = useStore(searchStore, (state) => state.filterStringBySearch);
+  const activityView = useStore(viewsStore, (state) =>
+    state.getActivityView(viewId),
+  );
+  const focusedActivity = useStore(
+    activitiesStore,
+    (state) => state.focusedActivity,
+  );
+  const filterStringBySearch = useStore(
+    searchStore,
+    (state) => state.filterStringBySearch,
+  );
   const currencyFormatter = getCurrencyFormatter();
 
   // Cleanup on unmount
@@ -70,7 +80,9 @@ export function ActivitiesTable({
         if (accountFilter !== null) {
           return (
             activity.transactions.filter(
-              (t) => t.toAccount === accountFilter || t.fromAccount === accountFilter,
+              (t) =>
+                t.toAccount === accountFilter ||
+                t.fromAccount === accountFilter,
             ).length > 0
           );
         } else {
@@ -78,7 +90,9 @@ export function ActivitiesTable({
         }
       })
       .filter((activity) =>
-        activityTypeFilter !== null ? activity.type === activityTypeFilter : true,
+        activityTypeFilter !== null
+          ? activity.type === activityTypeFilter
+          : true,
       )
       .filter((activity) => {
         if (activityView.filters.length === 0) return true;
@@ -119,40 +133,46 @@ export function ActivitiesTable({
     };
   };
 
-  type ActivityAndGroup = ({ itemType: "group" } & Group) | ({ itemType: "activity" } & Activity);
+  type ActivityAndGroup =
+    | ({ itemType: "group" } & Group)
+    | ({ itemType: "activity" } & Activity);
 
   const activitiesWithGroups = React.useMemo<ActivityAndGroup[]>(() => {
-    if (!grouping) return activitiesSorted.map((a) => ({ itemType: "activity", ...a }));
+    if (!grouping)
+      return activitiesSorted.map((a) => ({ itemType: "activity", ...a }));
 
-    const groups = activitiesSorted.reduce((groups: (Group & { activities: Activity[] })[], a) => {
-      const month = a.date.getMonth();
-      const year = a.date.getFullYear();
-      let group = groups.find((p) => p.month === month && p.year === year);
+    const groups = activitiesSorted.reduce(
+      (groups: (Group & { activities: Activity[] })[], a) => {
+        const month = a.date.getMonth();
+        const year = a.date.getFullYear();
+        let group = groups.find((p) => p.month === month && p.year === year);
 
-      if (group) {
-        group.activities.push(a);
-      } else {
-        group = {
-          id: `${month}-${year}`,
-          month,
-          year,
-          total: {},
-          activities: [a],
-        };
-        groups.push(group);
-      }
-
-      if (a.type !== ActivityType.NEUTRAL) {
-        const typeKey = a.type.toLowerCase() as keyof Group["total"];
-        if (group.total[typeKey] === undefined) {
-          group.total[typeKey] = a.amount;
+        if (group) {
+          group.activities.push(a);
         } else {
-          group.total[typeKey]! += a.amount;
+          group = {
+            id: `${month}-${year}`,
+            month,
+            year,
+            total: {},
+            activities: [a],
+          };
+          groups.push(group);
         }
-      }
 
-      return groups;
-    }, []);
+        if (a.type !== ActivityType.NEUTRAL) {
+          const typeKey = a.type.toLowerCase() as keyof Group["total"];
+          if (group.total[typeKey] === undefined) {
+            group.total[typeKey] = a.amount;
+          } else {
+            group.total[typeKey]! += a.amount;
+          }
+        }
+
+        return groups;
+      },
+      [],
+    );
 
     return groups
       .sort((a, b) => {
@@ -167,12 +187,17 @@ export function ActivitiesTable({
           year: group.year,
           total: group.total,
         });
-        return awg.concat(group.activities.map((a) => ({ itemType: "activity", ...a })));
+        return awg.concat(
+          group.activities.map((a) => ({ itemType: "activity", ...a })),
+        );
       }, []);
   }, [activitiesSorted, grouping]);
 
   const periodFormatter = (month: number, year: number): string => {
-    return new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
+    return new Date(year, month).toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
   };
 
   const handleActivityClick = (activityId: string) => {
@@ -187,28 +212,40 @@ export function ActivitiesTable({
   useHotkeys("k", () => {
     if (activitiesSorted.length === 0) return;
 
-    const currentIndex = activitiesSorted.findIndex((activity) => activity.id === focusedActivity);
+    const currentIndex = activitiesSorted.findIndex(
+      (activity) => activity.id === focusedActivity,
+    );
 
     const nextIndex =
       currentIndex === -1
         ? 0
-        : (currentIndex - 1 + activitiesSorted.length) % activitiesSorted.length;
+        : (currentIndex - 1 + activitiesSorted.length) %
+          activitiesSorted.length;
 
-    activitiesStore.getState().setFocusedActivity(activitiesSorted[nextIndex].id);
+    activitiesStore
+      .getState()
+      .setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
   useHotkeys("j", () => {
     if (activitiesSorted.length === 0) return;
 
-    const currentIndex = activitiesSorted.findIndex((activity) => activity.id === focusedActivity);
+    const currentIndex = activitiesSorted.findIndex(
+      (activity) => activity.id === focusedActivity,
+    );
 
     const nextIndex = (currentIndex + 1) % activitiesSorted.length;
-    activitiesStore.getState().setFocusedActivity(activitiesSorted[nextIndex].id);
+    activitiesStore
+      .getState()
+      .setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <ActivitiesFilters viewId={activityView.id} activities={activitiesFiltered} />
+      <ActivitiesFilters
+        viewId={activityView.id}
+        activities={activitiesFiltered}
+      />
 
       <div className="flex h-full flex-1 overflow-x-hidden">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -219,7 +256,7 @@ export function ActivitiesTable({
                   ? activitiesWithGroups.map((item) => (
                       <React.Fragment key={item.id}>
                         {item.itemType === "group" ? (
-                          <div className="bg-primary-800 flex h-10 flex-shrink-0 items-center gap-2 border-b pl-5 sm:pl-7">
+                          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-5 sm:pl-6">
                             <i
                               className="mdi mdi-calendar-blank text-primary-100 mdi-16px"
                               aria-hidden="true"
@@ -234,23 +271,24 @@ export function ActivitiesTable({
                               ActivityType.REVENUE,
                               ActivityType.EXPENSE,
                             ].map((activityType) => {
-                              const typeKey = activityType.toLowerCase() as keyof Group["total"];
-                              return (
-                                item.total[typeKey] && (
+                              const typeKey =
+                                activityType.toLowerCase() as keyof Group["total"];
+                              return item.total[typeKey] ? (
+                                <div
+                                  key={activityType}
+                                  className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
+                                >
                                   <div
-                                    key={activityType}
-                                    className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
-                                  >
-                                    <div
-                                      className="mt-[2px] mr-3 h-[9px] w-[9px] shrink-0 rounded-xs"
-                                      style={{
-                                        backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
-                                      }}
-                                    />
-                                    {currencyFormatter.format(item.total[typeKey]!)}
-                                  </div>
-                                )
-                              );
+                                    className="mt-[2px] mr-3 h-[9px] w-[9px] shrink-0 rounded-xs"
+                                    style={{
+                                      backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
+                                    }}
+                                  />
+                                  {currencyFormatter.format(
+                                    item.total[typeKey]!,
+                                  )}
+                                </div>
+                              ) : null;
                             })}
                           </div>
                         ) : (

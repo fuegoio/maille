@@ -1,10 +1,15 @@
-import { useState, useMemo } from "react";
-import { usePeriodsStore } from "@/stores/periods";
-import { useActivitiesStore } from "@/stores/activities";
-import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+import type {
+  ActivityCategory,
+  ActivitySubCategory,
+} from "@maille/core/activities";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useStore } from "zustand";
+
 import { Button } from "@/components/ui/button";
+import { getCurrencyFormatter } from "@/lib/utils";
+import { useActivitiesStore } from "@/stores/activities";
+import { periodsStore } from "@/stores/periods";
 
 interface PeriodActivityCategoryLineProps {
   periodDate: Date;
@@ -16,13 +21,20 @@ export function PeriodActivityCategoryLine({
   category,
 }: PeriodActivityCategoryLineProps) {
   const { activities, subcategories } = useActivitiesStore();
-  const { viewFilters, periodsActivityData } = usePeriodsStore();
+  const viewFilters = useStore(periodsStore, (state) => state.viewFilters);
+  const periodsActivityData = useStore(periodsStore, (state) =>
+    state.getPeriodsAvailable(),
+  );
   const [expanded, setExpanded] = useState(false);
 
   const periodActivityCategoryValue = useMemo<number>(() => {
     return (
       periodsActivityData
-        .find((p) => p.month === periodDate.getMonth() && p.year === periodDate.getFullYear())
+        .find(
+          (p) =>
+            p.month === periodDate.getMonth() &&
+            p.year === periodDate.getFullYear(),
+        )
         ?.categories.find((c) => c.category === category.id)?.value ?? 0
     );
   }, [periodsActivityData, periodDate, category.id]);
@@ -64,7 +76,9 @@ export function PeriodActivityCategoryLine({
     }
   };
 
-  const selectSubcategoryToFilterActivities = (subcategory: ActivitySubCategory) => {
+  const selectSubcategoryToFilterActivities = (
+    subcategory: ActivitySubCategory,
+  ) => {
     viewFilters.category = null;
     viewFilters.activityType = null;
     if (viewFilters.subcategory !== subcategory.id) {
@@ -78,7 +92,9 @@ export function PeriodActivityCategoryLine({
     <div className="space-y-2">
       <div
         className={`group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors ${
-          viewFilters.category === category.id ? "bg-primary-800" : "hover:bg-primary-800"
+          viewFilters.category === category.id
+            ? "bg-primary-800"
+            : "hover:bg-primary-800"
         }`}
         onClick={selectCategoryToFilterActivities}
       >
@@ -110,7 +126,9 @@ export function PeriodActivityCategoryLine({
         <div className="flex items-center">
           <div
             className={`text-primary-200 mr-4 text-sm ${
-              viewFilters.category === category.id ? "" : "hidden group-hover:block"
+              viewFilters.category === category.id
+                ? ""
+                : "hidden group-hover:block"
             }`}
           >
             {viewFilters.category === category.id ? "Clear filter" : "Filter"}
@@ -141,14 +159,20 @@ export function PeriodActivityCategoryLine({
               <div className="flex items-center">
                 <div
                   className={`text-primary-300 mr-4 text-sm ${
-                    viewFilters.subcategory === subcategory.id ? "" : "hidden group-hover:block"
+                    viewFilters.subcategory === subcategory.id
+                      ? ""
+                      : "hidden group-hover:block"
                   }`}
                 >
-                  {viewFilters.subcategory === subcategory.id ? "Clear filter" : "Filter"}
+                  {viewFilters.subcategory === subcategory.id
+                    ? "Clear filter"
+                    : "Filter"}
                 </div>
 
                 <div className="text-primary-300 text-sm whitespace-nowrap">
-                  {getCurrencyFormatter().format(subcategoriesValues[subcategory.id])}
+                  {getCurrencyFormatter().format(
+                    subcategoriesValues[subcategory.id],
+                  )}
                 </div>
               </div>
             </div>

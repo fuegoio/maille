@@ -1,13 +1,18 @@
-import { usePeriodsStore } from "@/stores/periods";
-import type { Period } from "@/types/periods";
 import { useMemo } from "react";
+import { useStore } from "zustand";
+
+import { periodsStore } from "@/stores/periods";
+import type { Period } from "@/types/periods";
 
 interface PeriodLabelProps {
   period: Period;
 }
 
 export function PeriodLabel({ period }: PeriodLabelProps) {
-  const { getPeriodLabel } = usePeriodsStore();
+  const getPeriodLabel = useStore(
+    periodsStore,
+    (state) => state.getPeriodLabel,
+  );
 
   const label = useMemo(() => {
     return getPeriodLabel(period);
@@ -22,5 +27,7 @@ export function PeriodLabel({ period }: PeriodLabelProps) {
     return "bg-primary-100 text-primary-300 border";
   }, [label]);
 
-  return <span className={`rounded px-2.5 py-1 text-xs ${chipClass}`}>{label}</span>;
+  return (
+    <span className={`rounded px-2.5 py-1 text-xs ${chipClass}`}>{label}</span>
+  );
 }
