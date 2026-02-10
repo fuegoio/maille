@@ -473,8 +473,8 @@ export const activitiesStore = createStore<ActivitiesState>()(
               if (activity.id === mutation.variables.id) {
                 return {
                   ...activity,
-                  id: mutation.result.createActivity.id,
-                  number: mutation.result.createActivity.number,
+                  id: mutation.result!.createActivity.id,
+                  number: mutation.result!.createActivity.number,
                 };
               }
               return activity;

@@ -59,7 +59,7 @@ interface AddActivityModalProps {
   name?: string;
   date?: Date;
   type?: ActivityType;
-  onActivityAdded?: (activity: any) => void;
+  onActivityAdded?: (activity: Activity) => void;
 }
 
 export function AddActivityModal({
@@ -305,6 +305,42 @@ export function AddActivityModal({
 
   // Create a single activity
   const createActivity = () => {
+    const newActivity = {
+      id: crypto.randomUUID(),
+      user,
+      number: activitiesStore.getState().activities.length + 1,
+      name,
+      description,
+      date: date!.toISOString(),
+      type,
+      category,
+      subcategory,
+      project,
+      transactions,
+      movements: movement
+        ? [
+            {
+              id: randomUUID(),
+              movement: movement.id,
+              amount: movement.amount,
+            },
+          ]
+        : [],
+    };
+
+    mutate({
+      name: "createActivity",
+      mutation: createActivityMutation,
+      variables: { ...newActivity, workspace: workspacesStore.getState().currentWorkspace!.id },
+      rollbackData: undefined,
+      events: [
+        {
+          type: "createActivity",
+          payload: newActivity,
+        },
+      ],
+    });
+
     if (onActivityAdded) {
       onActivityAdded(newActivity);
     }
