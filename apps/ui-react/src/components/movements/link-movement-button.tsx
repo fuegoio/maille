@@ -1,21 +1,25 @@
+import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
+import type { Activity } from "@maille/core/activities";
+import type { Movement } from "@maille/core/movements";
+import _ from "lodash";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
-import { accountsStore } from "@/stores/accounts";
-import { syncStore } from "@/stores/sync";
-import { createMovementActivityMutation } from "@/mutations/movements";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { AccountLabel } from "@/components/accounts/account-label";
-import { getCurrencyFormatter } from "@/lib/utils";
-import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { searchCompare } from "@/lib/strings";
-import type { Movement } from "@maille/core/movements";
-import type { Activity } from "@maille/core/activities";
-import type { string } from "crypto";
-import _ from "lodash";
+import { getCurrencyFormatter } from "@/lib/utils";
+import { createMovementActivityMutation } from "@/mutations/movements";
+import { accountsStore } from "@/stores/accounts";
+import { movementsStore } from "@/stores/movements";
+import { syncStore } from "@/stores/sync";
 
 interface LinkMovementButtonProps {
   activity: Activity;
@@ -23,7 +27,11 @@ interface LinkMovementButtonProps {
   className?: string;
 }
 
-export function LinkMovementButton({ activity, account, className }: LinkMovementButtonProps) {
+export function LinkMovementButton({
+  activity,
+  account,
+  className,
+}: LinkMovementButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [filterAmount, setFilterAmount] = React.useState(true);
@@ -59,14 +67,21 @@ export function LinkMovementButton({ activity, account, className }: LinkMovemen
       ["date"],
       ["desc"],
     );
-  }, [movements, accounts, activity.transactions, account, filterAmount, search]);
+  }, [
+    movements,
+    accounts,
+    activity.transactions,
+    account,
+    filterAmount,
+    search,
+  ]);
 
   const linkMovement = async (movement: Movement) => {
     const movementActivity = movementsStore
       .getState()
       .createMovementActivity(activity.id, movement.id, movement.amount);
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "createMovementActivity",
       mutation: createMovementActivityMutation,
       variables: {
@@ -136,7 +151,10 @@ export function LinkMovementButton({ activity, account, className }: LinkMovemen
                 className={`transition ${filterAmount ? "text-primary-400" : "text-primary-400"}`}
                 onClick={() => setFilterAmount(!filterAmount)}
               >
-                <i className="mdi mdi-currency-eur text-base" aria-hidden="true" />
+                <i
+                  className="mdi mdi-currency-eur text-base"
+                  aria-hidden="true"
+                />
               </Button>
             </div>
           </DialogHeader>
@@ -152,7 +170,10 @@ export function LinkMovementButton({ activity, account, className }: LinkMovemen
                   {movement.date.toLocaleDateString("fr-FR")}
                 </div>
                 <div className="text-primary-100 w-10 shrink-0 sm:hidden">
-                  {movement.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
+                  {movement.date.toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                  })}
                 </div>
 
                 <AccountLabel accountId={movement.account} />

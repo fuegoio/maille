@@ -1,5 +1,15 @@
-import { graphql } from "@/gql";
 import type { Movement, MovementActivity } from "@maille/core/movements";
+import type {
+  CreateMovementActivityEvent,
+  CreateMovementEvent,
+  DeleteMovementActivityEvent,
+  DeleteMovementEvent,
+  UpdateMovementActivityEvent,
+  UpdateMovementEvent,
+} from "@maille/core/sync";
+
+import { graphql } from "@/gql";
+
 import type { MutationType } from "./type";
 
 export const createMovementMutation = graphql(/* GraphQL */ `
@@ -43,7 +53,8 @@ export const deleteMovementMutation = graphql(/* GraphQL */ `
 export type CreateMovementMutation = MutationType<
   "createMovement",
   typeof createMovementMutation,
-  undefined
+  undefined,
+  [CreateMovementEvent]
 >;
 
 export type UpdateMovementMutation = MutationType<
@@ -53,13 +64,15 @@ export type UpdateMovementMutation = MutationType<
     id: string;
     date: string;
     amount: number;
-  }
+  },
+  [UpdateMovementEvent]
 >;
 
 export type DeleteMovementMutation = MutationType<
   "deleteMovement",
   typeof deleteMovementMutation,
-  Movement
+  Movement,
+  [DeleteMovementEvent]
 >;
 
 export const createMovementActivityMutation = graphql(/* GraphQL */ `
@@ -101,7 +114,8 @@ export const deleteMovementActivityMutation = graphql(/* GraphQL */ `
 export type CreateMovementActivityMutation = MutationType<
   "createMovementActivity",
   typeof createMovementActivityMutation,
-  undefined
+  undefined,
+  [CreateMovementActivityEvent]
 >;
 
 export type UpdateMovementActivityMutation = MutationType<
@@ -111,13 +125,15 @@ export type UpdateMovementActivityMutation = MutationType<
     id: string;
     movement: string;
     amount: number;
-  }
+  },
+  [UpdateMovementActivityEvent]
 >;
 
 export type DeleteMovementActivityMutation = MutationType<
   "deleteMovementActivity",
   typeof deleteMovementActivityMutation,
-  MovementActivity & { movement: string }
+  MovementActivity & { movement: string },
+  [DeleteMovementActivityEvent]
 >;
 
 export type MovementMutation =

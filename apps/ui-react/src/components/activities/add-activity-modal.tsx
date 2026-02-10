@@ -1,12 +1,30 @@
-import * as React from "react";
-import { useStore } from "zustand";
-import { activitiesStore } from "@/stores/activities";
-import { accountsStore } from "@/stores/accounts";
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
+import { ActivityType, type Activity } from "@maille/core/activities";
+import type { Movement } from "@maille/core/movements";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
+import * as React from "react";
+import { useForm, Controller } from "react-hook-form";
+import z from "zod";
+import { useStore } from "zustand";
+
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -14,22 +32,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { X, Plus, Trash2 } from "lucide-react";
-import { randomstring } from "crypto";
-import type { Movement } from "@maille/core/movements";
-import { syncStore } from "@/stores/sync";
+import { randomstring } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
+import { accountsStore } from "@/stores/accounts";
+import { activitiesStore } from "@/stores/activities";
+import { authStore } from "@/stores/auth";
+import { syncStore } from "@/stores/sync";
 import { workspacesStore } from "@/stores/workspaces";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -72,7 +83,6 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddActivityModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: string;
   movement?: Movement;
   movements?: Movement[];
   amount?: number;
@@ -85,7 +95,6 @@ interface AddActivityModalProps {
 export function AddActivityModal({
   open,
   onOpenChange,
-  user,
   movement,
   movements,
   amount: initialAmount,
@@ -94,8 +103,14 @@ export function AddActivityModal({
   type: initialType,
   onActivityAdded,
 }: AddActivityModalProps) {
-  const categories = useStore(activitiesStore, (state) => state.activityCategories);
-  const subcategories = useStore(activitiesStore, (state) => state.activitySubcategories);
+  const categories = useStore(
+    activitiesStore,
+    (state) => state.activityCategories,
+  );
+  const subcategories = useStore(
+    activitiesStore,
+    (state) => state.activitySubcategories,
+  );
   const accounts = useStore(accountsStore, (state) => state.accounts);
   const mutate = useStore(syncStore, (state) => state.mutate);
 
@@ -162,7 +177,8 @@ export function AddActivityModal({
       if (movement) {
         initialValues.name = movement.name || "";
         initialValues.date = movement.date;
-        initialValues.type = movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE;
+        initialValues.type =
+          movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE;
         initialValues.transactions = [
           {
             fromAccount: "",
@@ -196,7 +212,16 @@ export function AddActivityModal({
         }
       }, 100);
     }
-  }, [open, movement, movements, initialName, initialDate, initialType, initialAmount, reset]);
+  }, [
+    open,
+    movement,
+    movements,
+    initialName,
+    initialDate,
+    initialType,
+    initialAmount,
+    reset,
+  ]);
 
   // Add transaction when form becomes valid and has no transactions
   React.useEffect(() => {
@@ -230,7 +255,9 @@ export function AddActivityModal({
     let toAccount: string | undefined;
 
     if (type === ActivityType.EXPENSE) {
-      fromAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
+      fromAccount = accounts.find(
+        (a) => a.type === AccountType.BANK_ACCOUNT,
+      )?.id;
       toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
 
       if (movement) {
@@ -254,8 +281,12 @@ export function AddActivityModal({
         }
       }
     } else if (type === ActivityType.INVESTMENT) {
-      fromAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
-      toAccount = accounts.find((a) => a.type === AccountType.INVESTMENT_ACCOUNT)?.id;
+      fromAccount = accounts.find(
+        (a) => a.type === AccountType.BANK_ACCOUNT,
+      )?.id;
+      toAccount = accounts.find(
+        (a) => a.type === AccountType.INVESTMENT_ACCOUNT,
+      )?.id;
     }
 
     return { fromAccount, toAccount };
@@ -306,8 +337,8 @@ export function AddActivityModal({
   // Create a single activity
   const createActivity = (data: FormValues) => {
     const newActivity = {
-      id: crypto.randomstring(),
-      user,
+      id: randomstring(),
+      user: authStore.getState().user!.id,
       number: activitiesStore.getState().activities.length + 1,
       name: data.name,
       description: data.description || null,
@@ -317,7 +348,7 @@ export function AddActivityModal({
       subcategory: data.subcategory || null,
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
-        id: crypto.randomstring(),
+        id: randomstring(),
         fromUser: null,
         fromAccount: t.fromAccount,
         toUser: null,
@@ -338,7 +369,10 @@ export function AddActivityModal({
     mutate({
       name: "createActivity",
       mutation: createActivityMutation,
-      variables: { ...newActivity, workspace: workspacesStore.getState().currentWorkspace!.id },
+      variables: {
+        ...newActivity,
+        workspace: workspacesStore.getState().currentWorkspace!.id,
+      },
       rollbackData: undefined,
       events: [
         {
@@ -364,7 +398,7 @@ export function AddActivityModal({
       const { fromAccount, toAccount } = guessBestTransaction();
 
       const newActivity = {
-        id: crypto.randomstring(),
+        id: randomstring(),
         user,
         number: activitiesStore.getState().activities.length + 1,
         name: movement.name,
@@ -376,7 +410,7 @@ export function AddActivityModal({
         project: data.project || null,
         transactions: [
           {
-            id: crypto.randomstring(),
+            id: randomstring(),
             fromUser: null,
             fromAccount: fromAccount!,
             toUser: null,
@@ -396,7 +430,10 @@ export function AddActivityModal({
       mutate({
         name: "createActivity",
         mutation: createActivityMutation,
-        variables: { ...newActivity, workspace: workspacesStore.getState().currentWorkspace!.id },
+        variables: {
+          ...newActivity,
+          workspace: workspacesStore.getState().currentWorkspace!.id,
+        },
         rollbackData: undefined,
         events: [
           {
@@ -423,8 +460,9 @@ export function AddActivityModal({
           <div className="flex items-center gap-2">
             {movement && (
               <div className="bg-primary-400 text-primary-900 rounded px-3 py-1 text-sm font-medium">
-                {accounts.find((a) => a.id === movement.account)?.name || movement.account} -{" "}
-                {movement.name}
+                {accounts.find((a) => a.id === movement.account)?.name ||
+                  movement.account}{" "}
+                - {movement.name}
               </div>
             )}
             {movements && (
@@ -453,184 +491,201 @@ export function AddActivityModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FieldGroup>
             {/* Date picker */}
-          {!movements && (
+            {!movements && (
+              <Controller
+                name="date"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="date">Date</FieldLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          id="date"
+                          className={cn(
+                            "bg-primary-700 border-primary-600 h-8 justify-start text-left font-normal text-white",
+                            !field.value && "text-muted-foreground",
+                          )}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="bg-primary-800 border-primary-700 w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          className="bg-primary-800 text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
+            {movements && (
+              <div className="text-primary-400 text-sm">
+                Date of the movement
+              </div>
+            )}
+
+            {/* Name input */}
             <Controller
-              name="date"
+              name="name"
               control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="date">Date</FieldLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        id="date"
-                        className={cn(
-                          "bg-primary-700 border-primary-600 h-8 justify-start text-left font-normal text-white",
-                          !field.value && "text-muted-foreground",
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <CalendarIcon className="mr-2 h-3 w-3" />
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="bg-primary-800 border-primary-700 w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        className="bg-primary-800 text-white"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              render={({ field }) => (
+                <Field data-invalid={!!errors.name}>
+                  <FieldLabel htmlFor="name">Activity name</FieldLabel>
+                  <Input
+                    {...field}
+                    ref={nameInputRef}
+                    id="name"
+                    className="bg-primary-700 border-primary-600 flex-1 text-white"
+                    placeholder="Activity name"
+                    autoFocus
+                  />
+                  {errors.name && <FieldError errors={[errors.name]} />}
                 </Field>
               )}
             />
-          )}
-          {movements && <div className="text-primary-400 text-sm">Date of the movement</div>}
 
-          {/* Name input */}
-          <Controller
-            name="name"
-            control={control}
-            render={({ field }) => (
-              <Field data-invalid={!!errors.name}>
-                <FieldLabel htmlFor="name">Activity name</FieldLabel>
-                <Input
-                  {...field}
-                  ref={nameInputRef}
-                  id="name"
-                  className="bg-primary-700 border-primary-600 flex-1 text-white"
-                  placeholder="Activity name"
-                  autoFocus
-                />
-                {errors.name && <FieldError errors={[errors.name]} />}
-              </Field>
-            )}
-          />
-
-          {/* Description */}
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <Field data-invalid={!!errors.description}>
-                <FieldLabel htmlFor="description">Description</FieldLabel>
-                <Textarea
-                  {...field}
-                  id="description"
-                  className="bg-primary-700 border-primary-600 resize-none text-sm text-white"
-                  placeholder="Description (optional)"
-                  rows={3}
-                />
-                {errors.description && <FieldError errors={[errors.description]} />}
-              </Field>
-            )}
-          />
-
-          {/* Type, Category, Subcategory, Project selectors */}
-          <div className="flex flex-wrap items-center gap-2">
+            {/* Description */}
             <Controller
-              name="type"
+              name="description"
               control={control}
               render={({ field }) => (
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value as ActivityType);
-                    setValue("category", undefined); // Reset category when type changes
-                  }}
-                  value={field.value}
-                >
-                  <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
-                    <SelectValue placeholder="Activity type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-primary-800 border-primary-700">
-                    {Object.values(ActivityType).map((activityType) => (
-                      <SelectItem key={activityType} value={activityType}>
-                        <div className="flex items-center">
-                          <div
-                            className={`mr-2 h-3 w-3 rounded-full ${ACTIVITY_TYPES_COLOR[activityType]}-500`}
-                          />
-                          <span className="text-sm">{ACTIVITY_TYPES_NAME[activityType]}</span>
-                        </div>
+                <Field data-invalid={!!errors.description}>
+                  <FieldLabel htmlFor="description">Description</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="description"
+                    className="bg-primary-700 border-primary-600 resize-none text-sm text-white"
+                    placeholder="Description (optional)"
+                    rows={3}
+                  />
+                  {errors.description && (
+                    <FieldError errors={[errors.description]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            {/* Type, Category, Subcategory, Project selectors */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value as ActivityType);
+                      setValue("category", undefined); // Reset category when type changes
+                    }}
+                    value={field.value}
+                  >
+                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-primary-800 border-primary-700">
+                      {Object.values(ActivityType).map((activityType) => (
+                        <SelectItem key={activityType} value={activityType}>
+                          <div className="flex items-center">
+                            <div
+                              className={`mr-2 h-3 w-3 rounded-full ${ACTIVITY_TYPES_COLOR[activityType]}-500`}
+                            />
+                            <span className="text-sm">
+                              {ACTIVITY_TYPES_NAME[activityType]}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!type || filteredCategories.length === 0}
+                  >
+                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-primary-800 border-primary-700">
+                      {filteredCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          <span className="text-sm">{cat.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              <Controller
+                name="subcategory"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!category || filteredSubcategories.length === 0}
+                  >
+                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                      <SelectValue placeholder="Subcategory" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-primary-800 border-primary-700">
+                      {filteredSubcategories.map((subcat) => (
+                        <SelectItem key={subcat.id} value={subcat.id}>
+                          <span className="text-sm">{subcat.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              {/* Project Select */}
+              <Controller
+                name="project"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled
+                  >
+                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                      <SelectValue placeholder="Project" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-primary-800 border-primary-700">
+                      {/* Project options would go here - disabled for now */}
+                      <SelectItem value="placeholder" disabled>
+                        Projects not implemented yet
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
-            <Controller
-              name="category"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={!type || filteredCategories.length === 0}
-                >
-                  <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-primary-800 border-primary-700">
-                    {filteredCategories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        <span className="text-sm">{cat.name}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
-            <Controller
-              name="subcategory"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  disabled={!category || filteredSubcategories.length === 0}
-                >
-                  <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
-                    <SelectValue placeholder="Subcategory" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-primary-800 border-primary-700">
-                    {filteredSubcategories.map((subcat) => (
-                      <SelectItem key={subcat.id} value={subcat.id}>
-                        <span className="text-sm">{subcat.name}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
-            {/* Project Select */}
-            <Controller
-              name="project"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value} disabled>
-                  <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
-                    <SelectValue placeholder="Project" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-primary-800 border-primary-700">
-                    {/* Project options would go here - disabled for now */}
-                    <SelectItem value="placeholder" disabled>
-                      Projects not implemented yet
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
           </FieldGroup>
 
           {/* Transactions section */}
@@ -666,10 +721,16 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <FieldLabel htmlFor={`transactions.${index}.fromAccount`} className="sr-only">
+                      <FieldLabel
+                        htmlFor={`transactions.${index}.fromAccount`}
+                        className="sr-only"
+                      >
                         From account
                       </FieldLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
                           <SelectValue placeholder="From account" />
                         </SelectTrigger>
@@ -681,7 +742,9 @@ export function AddActivityModal({
                           ))}
                         </SelectContent>
                       </Select>
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -694,10 +757,16 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <FieldLabel htmlFor={`transactions.${index}.toAccount`} className="sr-only">
+                      <FieldLabel
+                        htmlFor={`transactions.${index}.toAccount`}
+                        className="sr-only"
+                      >
                         To account
                       </FieldLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
                           <SelectValue placeholder="To account" />
                         </SelectTrigger>
@@ -709,7 +778,9 @@ export function AddActivityModal({
                           ))}
                         </SelectContent>
                       </Select>
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -720,18 +791,25 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="w-24">
-                      <FieldLabel htmlFor={`transactions.${index}.amount`} className="sr-only">
+                      <FieldLabel
+                        htmlFor={`transactions.${index}.amount`}
+                        className="sr-only"
+                      >
                         Amount
                       </FieldLabel>
                       <Input
                         type="number"
                         id={`transactions.${index}.amount`}
                         value={field.value}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value) || 0)
+                        }
                         className="bg-primary-700 border-primary-600 h-8 w-24 font-mono text-sm text-white"
                         step="0.01"
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -762,7 +840,10 @@ export function AddActivityModal({
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-primary-600 hover:bg-primary-500 text-white">
+            <Button
+              type="submit"
+              className="bg-primary-600 hover:bg-primary-500 text-white"
+            >
               {movements ? "Create activities" : "Create activity"}
             </Button>
           </div>

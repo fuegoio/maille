@@ -10,7 +10,6 @@ import { ActivitiesFilters } from "./filters/activities-filters";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHotkeys } from "react-hotkeys-hook";
 import { verifyActivityFilter } from "@maille/core/activities";
-import type { string } from "crypto";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {

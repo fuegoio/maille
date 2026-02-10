@@ -1,17 +1,18 @@
+import type { SyncEvent } from "@maille/core/sync";
 import { createStore } from "zustand";
-import type { Mutation } from "@/mutations";
+import { persist } from "zustand/middleware";
+
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
+import type { Mutation } from "@/mutations";
+
+import { accountsStore } from "./accounts";
 import { activitiesStore } from "./activities";
+import { authStore } from "./auth";
 import { movementsStore } from "./movements";
 import { projectsStore } from "./projects";
-import { accountsStore } from "./accounts";
-import { authStore } from "./auth";
-import type { string } from "crypto";
-import type { SyncEvent } from "@maille/core/sync";
-import { workspacesStore } from "./workspaces";
-import { persist } from "zustand/middleware";
 import { storage } from "./storage";
+import { workspacesStore } from "./workspaces";
 
 interface SyncState {
   lastEventTimestamp: number;
@@ -25,8 +26,8 @@ interface SyncState {
 const missingEventsQuery = graphql(/* GraphQL */ `
   query MissingEvents(
       $lastSync: Float!,
-      $workspace: string!
-    ) {
+      $workspace: String!
+  ) {
     events(lastSync: $lastSync, workspace: $workspace) {
       type
       payload
@@ -83,7 +84,10 @@ export const syncStore = createStore<SyncState>()(
         console.log("Dequeueing mutations", mutation);
 
         try {
-          const result = await graphqlClient.request(mutation.mutation, mutation.variables);
+          const result = await graphqlClient.request(
+            mutation.mutation,
+            mutation.variables,
+          );
           activitiesStore.getState().handleMutationSuccess({
             ...mutation,
             result,
@@ -120,10 +124,13 @@ export const syncStore = createStore<SyncState>()(
       },
 
       fetchMissingEvents: async (workspace) => {
-        const missingEventsRequest = await graphqlClient.request(missingEventsQuery, {
-          lastSync: get().lastEventTimestamp,
-          workspace,
-        });
+        const missingEventsRequest = await graphqlClient.request(
+          missingEventsQuery,
+          {
+            lastSync: get().lastEventTimestamp,
+            workspace,
+          },
+        );
         set({
           lastEventTimestamp: Date.now() / 1000,
         });
@@ -157,7 +164,9 @@ export const syncStore = createStore<SyncState>()(
       storage: storage,
       partialize: (state) =>
         Object.fromEntries(
-          Object.entries(state).filter(([key]) => !["mutationsInProcessing"].includes(key)),
+          Object.entries(state).filter(
+            ([key]) => !["mutationsInProcessing"].includes(key),
+          ),
         ),
     },
   ),

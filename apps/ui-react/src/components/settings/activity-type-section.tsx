@@ -1,18 +1,8 @@
-import { useStore } from "zustand";
-import { useState, useMemo } from "react";
-import type { string } from "crypto";
 import type { ActivityType } from "@maille/core/activities";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { workspacesStore } from "@/stores/workspaces";
-import {
-  createActivityCategoryMutation,
-  createActivitySubCategoryMutation,
-  deleteActivityCategoryMutation,
-  deleteActivitySubCategoryMutation,
-} from "@/mutations/activities";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useStore } from "zustand";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +14,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  createActivityCategoryMutation,
+  createActivitySubCategoryMutation,
+  deleteActivityCategoryMutation,
+  deleteActivitySubCategoryMutation,
+} from "@/mutations/activities";
+import { activitiesStore } from "@/stores/activities";
+import { syncStore } from "@/stores/sync";
+import { workspacesStore } from "@/stores/workspaces";
 
 // Define activity type colors and names similar to the Vue version
 const ACTIVITY_TYPES_COLOR = {
@@ -45,7 +45,9 @@ interface ActivityTypeSectionProps {
   activityType: ActivityType;
 }
 
-export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) {
+export function ActivityTypeSection({
+  activityType,
+}: ActivityTypeSectionProps) {
   const {
     activityCategories,
     activitySubcategories,
@@ -64,8 +66,11 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     deleteActivitySubcategory: state.deleteActivitySubcategory,
   }));
 
-  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
-  const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
+  const mutate = useStore(syncStore, (state) => state.mutate);
+  const currentWorkspace = useStore(
+    workspacesStore,
+    (state) => state.currentWorkspace,
+  );
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({
@@ -112,7 +117,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
       type: activityType,
     });
 
-    sendEvent({
+    mutate({
       name: "createActivityCategory",
       mutation: createActivityCategoryMutation,
       variables: {
@@ -133,7 +138,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
       category: expanded,
     });
 
-    sendEvent({
+    mutate({
       name: "createActivitySubCategory",
       mutation: createActivitySubCategoryMutation,
       variables: {
@@ -147,7 +152,9 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
   };
 
   const handleDeleteCategory = async (categoryId: string) => {
-    const categoryActivities = activities.filter((a) => a.category === categoryId).map((a) => a.id);
+    const categoryActivities = activities
+      .filter((a) => a.category === categoryId)
+      .map((a) => a.id);
     const categoryActivitiesSubcategories = activities
       .filter((a) => a.category === categoryId)
       .map((a) => a.subcategory);
@@ -156,7 +163,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
 
     deleteActivityCategory(categoryId);
 
-    sendEvent({
+    mutate({
       name: "deleteActivityCategory",
       mutation: deleteActivityCategoryMutation,
       variables: { id: category.id },
@@ -178,12 +185,14 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     const subcategoryActivities = activities
       .filter((a) => a.subcategory === subcategoryId)
       .map((a) => a.id);
-    const subcategory = activitySubcategories.find((c) => c.id === subcategoryId);
+    const subcategory = activitySubcategories.find(
+      (c) => c.id === subcategoryId,
+    );
     if (!subcategory) return;
 
     deleteActivitySubcategory(subcategoryId);
 
-    sendEvent({
+    mutate({
       name: "deleteActivitySubCategory",
       mutation: deleteActivitySubCategoryMutation,
       variables: { id: subcategory.id },
@@ -220,14 +229,20 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
         <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-4">
           <Input
             value={newCategory.name}
-            onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+            onChange={(e) =>
+              setNewCategory({ ...newCategory, name: e.target.value })
+            }
             placeholder="Name"
             autoFocus
             className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
           />
 
           <div className="flex-1" />
-          <Button variant="outline" className="mr-2" onClick={cancelNewCategory}>
+          <Button
+            variant="outline"
+            className="mr-2"
+            onClick={cancelNewCategory}
+          >
             Cancel
           </Button>
           <Button onClick={handleAddNewCategory}>Save</Button>
@@ -235,9 +250,14 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
       )}
 
       {sortedCategories.map((category) => (
-        <div key={category.id} className="group my-2 w-full rounded border px-2">
+        <div
+          key={category.id}
+          className="group my-2 w-full rounded border px-2"
+        >
           <div className="flex h-10 w-full items-center px-2">
-            <div className="text-primary-200 text-sm font-medium">{category.name}</div>
+            <div className="text-primary-200 text-sm font-medium">
+              {category.name}
+            </div>
             <div className="text-primary-600 ml-1 text-sm">
               · {getActivitiesLinkedToCategory(category.id)} activities
             </div>
@@ -254,13 +274,16 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Category</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this category? All activities linked will lose
-                    this category and all subcategories will be deleted as well.
+                    Are you sure you want to delete this category? All
+                    activities linked will lose this category and all
+                    subcategories will be deleted as well.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDeleteCategory(category.id)}>
+                  <AlertDialogAction
+                    onClick={() => handleDeleteCategory(category.id)}
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -279,7 +302,9 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
           {expanded === category.id && (
             <div className="border-t py-4">
               <div className="mb-2 flex items-center px-2">
-                <div className="text-primary-600 text-xs font-medium">Subcategories</div>
+                <div className="text-primary-600 text-xs font-medium">
+                  Subcategories
+                </div>
                 <div className="flex-1" />
                 <Button
                   type="button"
@@ -296,21 +321,31 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                 <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-2">
                   <Input
                     value={newSubCategory.name}
-                    onChange={(e) => setNewSubCategory({ ...newSubCategory, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewSubCategory({
+                        ...newSubCategory,
+                        name: e.target.value,
+                      })
+                    }
                     placeholder="Name"
                     autoFocus
                     className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
                   />
 
                   <div className="flex-1" />
-                  <Button variant="outline" className="mr-2" onClick={cancelNewSubCategory}>
+                  <Button
+                    variant="outline"
+                    className="mr-2"
+                    onClick={cancelNewSubCategory}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleAddNewSubCategory}>Save</Button>
                 </div>
               )}
 
-              {activitySubcategories.filter((sc) => sc.category === category.id).length === 0 && (
+              {activitySubcategories.filter((sc) => sc.category === category.id)
+                .length === 0 && (
                 <div className="text-primary-600 px-2 text-xs">
                   No subcategory for this category.
                 </div>
@@ -323,9 +358,12 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                     key={subcategory.id}
                     className="bg-primary-950 my-2 flex h-10 w-full items-center rounded border px-2"
                   >
-                    <div className="text-primary-400 text-sm font-medium">{subcategory.name}</div>
+                    <div className="text-primary-400 text-sm font-medium">
+                      {subcategory.name}
+                    </div>
                     <div className="text-primary-600 ml-1 text-sm">
-                      · {getActivitiesLinkedToSubCategory(subcategory.id)} activities
+                      · {getActivitiesLinkedToSubCategory(subcategory.id)}{" "}
+                      activities
                     </div>
 
                     <div className="flex-1" />
@@ -338,16 +376,20 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Subcategory</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Delete Subcategory
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete this subcategory? All activities linked
-                            will lose this subcategory.
+                            Are you sure you want to delete this subcategory?
+                            All activities linked will lose this subcategory.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => handleDeleteSubCategory(subcategory.id)}
+                            onClick={() =>
+                              handleDeleteSubCategory(subcategory.id)
+                            }
                           >
                             Delete
                           </AlertDialogAction>

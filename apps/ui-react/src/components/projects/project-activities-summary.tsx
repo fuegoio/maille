@@ -4,7 +4,7 @@ import { projectsStore } from "@/stores/projects";
 import { activitiesStore } from "@/stores/activities";
 import { ActivityType } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/utils/currency";
+import { getCurrencyFormatter } from "@/lib/utils";
 import { ProjectActivityCategoryLine } from "./project-activity-category-line";
 
 // Color mapping for activity types

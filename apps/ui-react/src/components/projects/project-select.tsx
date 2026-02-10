@@ -1,5 +1,4 @@
 import { useStore } from "zustand";
-import type { string } from "crypto";
 import { projectsStore } from "@/stores/projects";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useMemo } from "react";

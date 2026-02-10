@@ -1,11 +1,7 @@
-import * as React from "react";
-import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
-import type { string } from "crypto";
 
 interface MovementsActionsProps {
   selectedMovements: string[];
@@ -13,8 +9,6 @@ interface MovementsActionsProps {
 }
 
 export function MovementsActions({ selectedMovements, onClearSelection }: MovementsActionsProps) {
-  const movements = useStore(movementsStore, (state) => state.movements);
-
   const show = selectedMovements.length > 0;
 
   if (!show) return null;

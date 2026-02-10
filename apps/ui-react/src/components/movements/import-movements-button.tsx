@@ -1,10 +1,13 @@
+import { parse } from "csv-parse/browser/esm/sync";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
+import { Upload } from "lucide-react";
 import * as React from "react";
 import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
-import { createMovementMutation } from "@/mutations/movements";
+
+import { AccountSelect } from "@/components/accounts/account-select";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +15,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { UploadDropZone } from "@/components/upload-drop-zone";
-import { AccountSelect } from "@/components/accounts/account-select";
 import {
   Select,
   SelectContent,
@@ -21,11 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { string } from "crypto";
-import { parse } from "csv-parse/browser/esm/sync";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import utc from "dayjs/plugin/utc";
+import { UploadDropZone } from "@/components/upload-drop-zone";
+import { createMovementMutation } from "@/mutations/movements";
+import { movementsStore } from "@/stores/movements";
+import { syncStore } from "@/stores/sync";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -109,7 +109,7 @@ export function ImportMovementsButton({
           activities: [],
         });
 
-        syncStore.getState().sendEvent({
+        syncStore.getState().mutate({
           name: "createMovement",
           mutation: createMovementMutation,
           variables: {
@@ -178,11 +178,15 @@ export function ImportMovementsButton({
 
               <div className="border-b py-2">
                 <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">Name field</label>
+                  <label className="text-primary-100 w-32 text-sm">
+                    Name field
+                  </label>
                   <div className="flex-1">
                     <Select
                       value={mapping.name}
-                      onValueChange={(value) => setMapping((prev) => ({ ...prev, name: value }))}
+                      onValueChange={(value) =>
+                        setMapping((prev) => ({ ...prev, name: value }))
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select name field" />
@@ -199,11 +203,15 @@ export function ImportMovementsButton({
                 </div>
 
                 <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">Amount field</label>
+                  <label className="text-primary-100 w-32 text-sm">
+                    Amount field
+                  </label>
                   <div className="flex-1">
                     <Select
                       value={mapping.amount}
-                      onValueChange={(value) => setMapping((prev) => ({ ...prev, amount: value }))}
+                      onValueChange={(value) =>
+                        setMapping((prev) => ({ ...prev, amount: value }))
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select amount field" />
@@ -220,11 +228,15 @@ export function ImportMovementsButton({
                 </div>
 
                 <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">Date field</label>
+                  <label className="text-primary-100 w-32 text-sm">
+                    Date field
+                  </label>
                   <div className="flex-1">
                     <Select
                       value={mapping.date}
-                      onValueChange={(value) => setMapping((prev) => ({ ...prev, date: value }))}
+                      onValueChange={(value) =>
+                        setMapping((prev) => ({ ...prev, date: value }))
+                      }
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select date field" />
@@ -241,7 +253,9 @@ export function ImportMovementsButton({
                 </div>
               </div>
 
-              <div className="text-primary-100 mt-4 mb-2 px-0 text-sm">CSV data</div>
+              <div className="text-primary-100 mt-4 mb-2 px-0 text-sm">
+                CSV data
+              </div>
               <div className="max-h-44 w-full overflow-auto px-0 py-4">
                 <table className="w-full border-collapse">
                   <thead>

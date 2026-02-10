@@ -1,5 +1,4 @@
 import { useStore } from "zustand";
-import type { string } from "crypto";
 import { accountsStore, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { AccountType } from "@maille/core/accounts";
 import {

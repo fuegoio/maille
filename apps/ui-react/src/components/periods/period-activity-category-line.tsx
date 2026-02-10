@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
 import { usePeriodsStore } from "@/stores/periods";
 import { useActivitiesStore } from "@/stores/activities";
-import { getCurrencyFormatter } from "@/utils/currency";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
-import type { string } from "crypto";
+import { getCurrencyFormatter } from "@/lib/utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

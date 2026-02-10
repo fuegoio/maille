@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useStore } from "zustand";
 import { viewsStore } from "@/stores/views";
-import { verifyActivityFilter } from "@maille/core/activities";
+import { verifyActivityFilter, type Activity } from "@maille/core/activities";
 import { stringify } from "csv-stringify/browser/esm/sync";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 interface ExportActivitiesButtonProps {
   viewId: string;
-  activities: any[]; // Replace with proper Activity type
+  activities: Activity[];
   className?: string;
 }
 

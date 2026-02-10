@@ -1,6 +1,13 @@
-import { graphql } from "@/gql";
-import type { MutationType } from "./type";
 import type { Project } from "@maille/core/projects";
+import type {
+  CreateProjectEvent,
+  DeleteProjectEvent,
+  UpdateProjectEvent,
+} from "@maille/core/sync";
+
+import { graphql } from "@/gql";
+
+import type { MutationType } from "./type";
 
 export const createProjectMutation = graphql(/* GraphQL */ `
   mutation CreateProject(
@@ -44,19 +51,25 @@ export const deleteProjectMutation = graphql(/* GraphQL */ `
 export type CreateProjectMutation = MutationType<
   "createProject",
   typeof createProjectMutation,
-  undefined
+  undefined,
+  [CreateProjectEvent]
 >;
 
 export type UpdateProjectMutation = MutationType<
   "updateProject",
   typeof updateProjectMutation,
-  Project
+  Project,
+  [UpdateProjectEvent]
 >;
 
 export type DeleteProjectMutation = MutationType<
   "deleteProject",
   typeof deleteProjectMutation,
-  { project: Project; activities: string[] }
+  { project: Project; activities: string[] },
+  [DeleteProjectEvent]
 >;
 
-export type ProjectMutation = CreateProjectMutation | UpdateProjectMutation | DeleteProjectMutation;
+export type ProjectMutation =
+  | CreateProjectMutation
+  | UpdateProjectMutation
+  | DeleteProjectMutation;

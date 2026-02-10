@@ -1,6 +1,13 @@
-import { graphql } from "@/gql";
-import type { MutationType } from "./type";
 import type { Account } from "@maille/core/accounts";
+import type {
+  CreateAccountEvent,
+  DeleteAccountEvent,
+  UpdateAccountEvent,
+} from "@maille/core/sync";
+
+import { graphql } from "@/gql";
+
+import type { MutationType } from "./type";
 
 export const createAccountMutation = graphql(/* GraphQL */ `
   mutation CreateAccount(
@@ -18,7 +25,8 @@ export const createAccountMutation = graphql(/* GraphQL */ `
 export type CreateAccountMutation = MutationType<
   "createAccount",
   typeof createAccountMutation,
-  undefined
+  undefined,
+  [CreateAccountEvent]
 >;
 
 export const updateAccountMutation = graphql(/* GraphQL */ `
@@ -47,7 +55,8 @@ export type UpdateAccountMutation = MutationType<
     startingBalance: number | null;
     startingCashBalance: number | null;
     movements: boolean;
-  }
+  },
+  [UpdateAccountEvent]
 >;
 
 export const deleteAccountMutation = graphql(/* GraphQL */ `
@@ -61,7 +70,11 @@ export const deleteAccountMutation = graphql(/* GraphQL */ `
 export type DeleteAccountMutation = MutationType<
   "deleteAccount",
   typeof deleteAccountMutation,
-  Account
+  Account,
+  [DeleteAccountEvent]
 >;
 
-export type AccountMutation = CreateAccountMutation | UpdateAccountMutation | DeleteAccountMutation;
+export type AccountMutation =
+  | CreateAccountMutation
+  | UpdateAccountMutation
+  | DeleteAccountMutation;

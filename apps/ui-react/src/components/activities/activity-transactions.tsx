@@ -1,22 +1,26 @@
 import { type Activity, type Transaction } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { updateTransactionMutation, deleteTransactionMutation } from "@/mutations/activities";
-import { AddTransactionButton } from "./add-transaction-button";
+
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Trash2 } from "lucide-react";
-import type { string } from "crypto";
+import { getCurrencyFormatter } from "@/lib/utils";
+import {
+  updateTransactionMutation,
+  deleteTransactionMutation,
+} from "@/mutations/activities";
+import { activitiesStore } from "@/stores/activities";
+import { syncStore } from "@/stores/sync";
+
+import { AddTransactionButton } from "./add-transaction-button";
 
 interface ActivityTransactionsProps {
   activity: Activity;
@@ -26,13 +30,21 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   const currencyFormatter = getCurrencyFormatter();
   const [showTransactions, setShowTransactions] = useState(true);
 
-  const transactionsSum = activity.transactions.reduce((sum, t) => sum + t.amount, 0);
+  const transactionsSum = activity.transactions.reduce(
+    (sum, t) => sum + t.amount,
+    0,
+  );
 
-  const handleTransactionUpdate = (transaction: Transaction, updateData: Partial<Transaction>) => {
+  const handleTransactionUpdate = (
+    transaction: Transaction,
+    updateData: Partial<Transaction>,
+  ) => {
     const oldTransaction = { ...transaction };
-    activitiesStore.getState().updateTransaction(activity.id, transaction.id, updateData);
+    activitiesStore
+      .getState()
+      .updateTransaction(activity.id, transaction.id, updateData);
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
       variables: {
@@ -47,7 +59,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   const handleTransactionDelete = (transaction: Transaction) => {
     activitiesStore.getState().deleteTransaction(activity.id, transaction.id);
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "deleteTransaction",
       mutation: deleteTransactionMutation,
       variables: {
@@ -125,7 +137,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
                 <AmountInput
                   value={transaction.amount}
-                  onChange={(amount) => handleTransactionUpdate(transaction, { amount })}
+                  onChange={(amount) =>
+                    handleTransactionUpdate(transaction, { amount })
+                  }
                   className="mr-4 w-24"
                 />
 

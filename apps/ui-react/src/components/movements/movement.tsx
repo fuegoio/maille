@@ -1,28 +1,31 @@
-import * as React from "react";
-import { useStore } from "zustand";
-import { movementsStore } from "@/stores/movements";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { AccountLabel } from "@/components/accounts/account-label";
-import { getCurrencyFormatter, cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ChevronRight, MoreVertical } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useHotkeys } from "react-hotkeys-hook";
-import { deleteMovementMutation, updateMovementMutation } from "@/mutations/movements";
-import { useRouter } from "@tanstack/react-router";
 import type { Movement } from "@maille/core/movements";
-import type { string } from "crypto";
+import { useRouter } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "framer-motion";
 import _ from "lodash";
+import { ChevronRight, MoreVertical } from "lucide-react";
+import * as React from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useStore } from "zustand";
+
+import { AccountLabel } from "@/components/accounts/account-label";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { AmountInput } from "@/components/ui/amount-input";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DatePicker } from "@/components/ui/date-picker";
-import { AmountInput } from "@/components/ui/amount-input";
-import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { getCurrencyFormatter, cn } from "@/lib/utils";
+import {
+  deleteMovementMutation,
+  updateMovementMutation,
+} from "@/mutations/movements";
+import { activitiesStore } from "@/stores/activities";
+import { movementsStore } from "@/stores/movements";
+import { syncStore } from "@/stores/sync";
 
 interface MovementProps {
   movementId: string;
@@ -36,7 +39,9 @@ export function Movement({ movementId, onClose }: MovementProps) {
   const [showProperties, setShowProperties] = React.useState(true);
   const [showActivities, setShowActivities] = React.useState(true);
 
-  const movement = useStore(movementsStore, (state) => state.getMovementById(movementId));
+  const movement = useStore(movementsStore, (state) =>
+    state.getMovementById(movementId),
+  );
 
   const activities = useStore(activitiesStore, (state) => state.activities);
 
@@ -71,7 +76,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
       const movementData = _.cloneDeep(movement);
       movementsStore.getState().deleteMovement(movementId);
 
-      syncStore.getState().sendEvent({
+      syncStore.getState().mutate({
         name: "deleteMovement",
         mutation: deleteMovementMutation,
         variables: {
@@ -85,7 +90,10 @@ export function Movement({ movementId, onClose }: MovementProps) {
   };
 
   const focusActivity = (activityNumber: number) => {
-    router.navigate({ to: "/activities/$id", params: { id: activityNumber.toString() } });
+    router.navigate({
+      to: "/activities/$id",
+      params: { id: activityNumber.toString() },
+    });
   };
 
   const updateMovement = (update: {
@@ -99,7 +107,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
     const movementData = _.cloneDeep(movement);
     movementsStore.getState().updateMovement(movementId, update);
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "updateMovement",
       mutation: updateMovementMutation,
       variables: {
@@ -146,9 +154,14 @@ export function Movement({ movementId, onClose }: MovementProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onSelect={() => handleMovementMenuClick("delete")}>
+            <DropdownMenuItem
+              onSelect={() => handleMovementMenuClick("delete")}
+            >
               <div className="flex items-center gap-2">
-                <i className="mdi mdi-delete text-destructive" aria-hidden="true" />
+                <i
+                  className="mdi mdi-delete text-destructive"
+                  aria-hidden="true"
+                />
                 <span>Delete</span>
               </div>
             </DropdownMenuItem>
@@ -221,7 +234,11 @@ export function Movement({ movementId, onClose }: MovementProps) {
           <div className="flex-1" />
 
           {showActivities && (
-            <AddActivityButton movement={movement} className="-mr-2" onCreate={focusActivity} />
+            <AddActivityButton
+              movement={movement}
+              className="-mr-2"
+              onCreate={focusActivity}
+            />
           )}
         </div>
 
@@ -239,19 +256,26 @@ export function Movement({ movementId, onClose }: MovementProps) {
                     "hover:bg-primary-600/20 flex h-10 items-center justify-center px-4 text-sm",
                     index !== movementActivities.length - 1 && "border-b",
                   )}
-                  onClick={() => focusActivity(movementActivity.activity!.number)}
+                  onClick={() =>
+                    focusActivity(movementActivity.activity!.number)
+                  }
                 >
                   <div className="text-primary-100 hidden w-8 shrink-0 sm:block">
                     #{movementActivity.activity!.number}
                   </div>
                   <div className="text-primary-100 ml-2 hidden w-20 shrink-0 sm:block">
-                    {movementActivity.activity!.date.toLocaleDateString("fr-FR")}
+                    {movementActivity.activity!.date.toLocaleDateString(
+                      "fr-FR",
+                    )}
                   </div>
                   <div className="text-primary-100 w-10 shrink-0 sm:hidden">
-                    {movementActivity.activity!.date.toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                    })}
+                    {movementActivity.activity!.date.toLocaleDateString(
+                      "fr-FR",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                      },
+                    )}
                   </div>
 
                   <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-white">

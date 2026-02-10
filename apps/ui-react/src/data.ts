@@ -8,10 +8,9 @@ import { projectsStore } from "./stores/projects";
 import { liabilitiesStore } from "./stores/liabilities";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
-import type { string } from "crypto";
 
 const workspaceDataQuery = graphql(/* GraphQL */ `
-  query WorkspaceData($workspace: string!) {
+  query WorkspaceData($workspace: String!) {
     workspace(id: $workspace) {
       id
       name

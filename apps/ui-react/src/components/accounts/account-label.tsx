@@ -1,5 +1,4 @@
 import { useStore } from "zustand";
-import type { string } from "crypto";
 import { accountsStore, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { useMemo } from "react";
 

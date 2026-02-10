@@ -1,15 +1,18 @@
+import { format } from "date-fns";
+import { CalendarIcon, XIcon, ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
 import { useStore } from "zustand";
-import { projectsStore } from "@/stores/projects";
-import { syncStore } from "@/stores/sync";
-import { updateProjectMutation } from "@/mutations/projects";
-import type { string } from "crypto";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, XIcon, ArrowRightIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { updateProjectMutation } from "@/mutations/projects";
+import { projectsStore } from "@/stores/projects";
+import { syncStore } from "@/stores/sync";
 
 interface ProjectDatesProps {
   projectId: string;
@@ -18,7 +21,7 @@ interface ProjectDatesProps {
 export function ProjectDates({ projectId }: ProjectDatesProps) {
   const projects = useStore(projectsStore, (state) => state.projects);
   const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
+  const mutate = useStore(syncStore, (state) => state.mutate);
 
   const project = projects.find((p) => p.id === projectId);
 
@@ -36,12 +39,14 @@ export function ProjectDates({ projectId }: ProjectDatesProps) {
       endDate: newEndDate,
     });
 
-    sendEvent({
+    mutate({
       name: "updateProject",
       mutation: updateProjectMutation,
       variables: {
         id: project.id,
-        startDate: newStartDate ? newStartDate.toISOString().split("T")[0] : null,
+        startDate: newStartDate
+          ? newStartDate.toISOString().split("T")[0]
+          : null,
         endDate: newEndDate ? newEndDate.toISOString().split("T")[0] : null,
       },
       rollbackData: { ...project },
@@ -55,7 +60,7 @@ export function ProjectDates({ projectId }: ProjectDatesProps) {
       endDate: newEndDate,
     });
 
-    sendEvent({
+    mutate({
       name: "updateProject",
       mutation: updateProjectMutation,
       variables: {
@@ -83,7 +88,9 @@ export function ProjectDates({ projectId }: ProjectDatesProps) {
                 project.startDate ? "text-white" : "text-primary-200"
               }`}
             >
-              {project.startDate ? format(project.startDate, "MMM dd") : "Start date"}
+              {project.startDate
+                ? format(project.startDate, "MMM dd")
+                : "Start date"}
             </span>
             {startDateOpen && project.startDate && (
               <Button
@@ -120,13 +127,17 @@ export function ProjectDates({ projectId }: ProjectDatesProps) {
             size="sm"
             className={`flex h-8 items-center gap-1 px-2 ${
               (endDateOpen ? "bg-primary-600" : "",
-              project.startDate === null ? "cursor-not-allowed opacity-50" : "hover:bg-primary-600")
+              project.startDate === null
+                ? "cursor-not-allowed opacity-50"
+                : "hover:bg-primary-600")
             }`}
             disabled={project.startDate === null}
           >
             <CalendarIcon
               className={`h-4 w-4 ${
-                project.startDate === null ? "text-primary-400" : "text-primary-200"
+                project.startDate === null
+                  ? "text-primary-400"
+                  : "text-primary-200"
               }`}
             />
             <span

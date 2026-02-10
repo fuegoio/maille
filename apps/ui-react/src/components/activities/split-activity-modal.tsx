@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
-import type { string } from "crypto";
 
 interface SplitActivityModalProps {
   open: boolean;

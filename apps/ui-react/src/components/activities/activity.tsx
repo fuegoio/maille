@@ -28,7 +28,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { string } from "crypto";
 
 interface ActivityProps {
   viewId: string;

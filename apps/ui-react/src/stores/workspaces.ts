@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 import type { Workspace } from "@maille/core/workspaces";
 import { graphqlClient } from "@/gql/client";
 import { graphql } from "@/gql";
-import type { string } from "crypto";
 import { storage } from "./storage";
 
 export interface AvailableWorkspace {

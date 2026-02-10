@@ -1,13 +1,13 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
 import { useStore } from "zustand";
+
+import { AccountLabel } from "@/components/accounts/account-label";
+import { AmountInput } from "@/components/ui/amount-input";
+import { getCurrencyFormatter } from "@/lib/utils";
+import { updateTransactionMutation } from "@/mutations/activities";
 import { activitiesStore } from "@/stores/activities";
 import { projectsStore } from "@/stores/projects";
 import { syncStore } from "@/stores/sync";
-import { updateTransactionMutation } from "@/mutations/activities";
-import { AccountLabel } from "@/components/accounts/account-label";
-import { AmountInput } from "@/components/ui/amount-input";
-import type { string } from "crypto";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -33,10 +33,22 @@ export function ActivityLine({
   hideProject = false,
 }: ActivityLineProps) {
   const currencyFormatter = getCurrencyFormatter();
-  const showTransactions = useStore(activitiesStore, (state) => state.showTransactions);
-  const categories = useStore(activitiesStore, (state) => state.activityCategories);
-  const subcategories = useStore(activitiesStore, (state) => state.activitySubcategories);
-  const getProjectById = useStore(projectsStore, (state) => state.getProjectById);
+  const showTransactions = useStore(
+    activitiesStore,
+    (state) => state.showTransactions,
+  );
+  const categories = useStore(
+    activitiesStore,
+    (state) => state.activityCategories,
+  );
+  const subcategories = useStore(
+    activitiesStore,
+    (state) => state.activitySubcategories,
+  );
+  const getProjectById = useStore(
+    projectsStore,
+    (state) => state.getProjectById,
+  );
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -57,7 +69,9 @@ export function ActivityLine({
     } else if (activity.status === "incomplete") {
       return <i className="mdi mdi-progress-helper text-lg text-orange-300" />;
     } else {
-      return <i className="mdi mdi-check-circle-outline text-lg text-emerald-300" />;
+      return (
+        <i className="mdi mdi-check-circle-outline text-lg text-emerald-300" />
+      );
     }
   };
 
@@ -74,10 +88,14 @@ export function ActivityLine({
   return (
     <div
       className={`group block flex-shrink-0 overflow-hidden border-b transition-colors ${
-        selected ? "bg-primary-800/50 border-l-4 border-l-accent" : "hover:bg-primary-800/50 pl-1"
+        selected
+          ? "bg-primary-800/50 border-l-4 border-l-accent"
+          : "hover:bg-primary-800/50 pl-1"
       }`}
       style={{
-        height: showTransactions ? `${40 * (1 + transactions.length)}px` : "40px",
+        height: showTransactions
+          ? `${40 * (1 + transactions.length)}px`
+          : "40px",
       }}
       onClick={handleClick}
     >
@@ -86,7 +104,10 @@ export function ActivityLine({
           {activity.date.toLocaleDateString()}
         </div>
         <div className="text-primary-100 w-10 shrink-0 lg:hidden">
-          {activity.date.toLocaleDateString(undefined, { month: "2-digit", day: "2-digit" })}
+          {activity.date.toLocaleDateString(undefined, {
+            month: "2-digit",
+            day: "2-digit",
+          })}
         </div>
 
         {getStatusIcon()}
@@ -98,17 +119,25 @@ export function ActivityLine({
         <div className="flex-1" />
 
         <div className="mr-2 hidden min-w-0 items-center lg:flex">
-          {activity.project !== null && !hideProject && getProjectById(activity.project) && (
-            <div className="hover:bg-primary-900 mr-4 flex h-6 min-w-0 items-center rounded-xl border px-2 text-xs tracking-wide text-white transition-colors hover:border-gray-300">
-              <span className="mr-2">{getProjectById(activity.project)!.emoji}</span>
-              <span className="truncate">{getProjectById(activity.project)!.name}</span>
-            </div>
-          )}
+          {activity.project !== null &&
+            !hideProject &&
+            getProjectById(activity.project) && (
+              <div className="hover:bg-primary-900 mr-4 flex h-6 min-w-0 items-center rounded-xl border px-2 text-xs tracking-wide text-white transition-colors hover:border-gray-300">
+                <span className="mr-2">
+                  {getProjectById(activity.project)!.emoji}
+                </span>
+                <span className="truncate">
+                  {getProjectById(activity.project)!.name}
+                </span>
+              </div>
+            )}
 
           {activity.type && (
             <div
               className="size-2 shrink-0 rounded-xs"
-              style={{ backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activity.type]}-300)` }}
+              style={{
+                backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activity.type]}-300)`,
+              }}
             />
           )}
 
@@ -133,7 +162,10 @@ export function ActivityLine({
 
         <div
           className="text-right font-mono font-medium whitespace-nowrap lg:w-20"
-          style={{ color: accountFilter !== null ? "var(--primary-100)" : "var(--white)" }}
+          style={{
+            color:
+              accountFilter !== null ? "var(--primary-100)" : "var(--white)",
+          }}
         >
           {currencyFormatter.format(activity.amount)}
         </div>
@@ -163,9 +195,11 @@ export function ActivityLine({
                     const oldTransaction = { ...transaction };
                     activitiesStore
                       .getState()
-                      .updateTransaction(activity.id, transaction.id, { amount: value });
+                      .updateTransaction(activity.id, transaction.id, {
+                        amount: value,
+                      });
 
-                    syncStore.getState().sendEvent({
+                    syncStore.getState().mutate({
                       name: "updateTransaction",
                       mutation: updateTransactionMutation,
                       variables: {

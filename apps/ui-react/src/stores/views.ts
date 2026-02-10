@@ -1,6 +1,5 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
-import type { string } from "crypto";
 
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";

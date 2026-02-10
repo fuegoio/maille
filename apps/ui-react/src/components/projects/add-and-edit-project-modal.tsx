@@ -1,12 +1,11 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { XIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { useStore } from "zustand";
-import { projectsStore } from "@/stores/projects";
-import { syncStore } from "@/stores/sync";
-import { createProjectMutation, updateProjectMutation } from "@/mutations/projects";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,11 +13,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
-import { XIcon } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  createProjectMutation,
+  updateProjectMutation,
+} from "@/mutations/projects";
+import { projectsStore } from "@/stores/projects";
+import { syncStore } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -44,7 +47,7 @@ export function AddAndEditProjectModal({
   const projects = useStore(projectsStore, (state) => state.projects);
   const addProject = useStore(projectsStore, (state) => state.addProject);
   const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
+  const mutate = useStore(syncStore, (state) => state.mutate);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -59,7 +62,9 @@ export function AddAndEditProjectModal({
   const { control, handleSubmit, reset, setValue, watch } = form;
   const emoji = watch("emoji");
 
-  const project = projectId ? projects.find((p) => p.id === projectId) : undefined;
+  const project = projectId
+    ? projects.find((p) => p.id === projectId)
+    : undefined;
 
   const isEditMode = !!project;
 
@@ -95,7 +100,7 @@ export function AddAndEditProjectModal({
         emoji: data.emoji,
       });
 
-      sendEvent({
+      mutate({
         name: "updateProject",
         mutation: updateProjectMutation,
         variables: {
@@ -114,7 +119,7 @@ export function AddAndEditProjectModal({
         endDate: null,
       });
 
-      sendEvent({
+      mutate({
         name: "createProject",
         mutation: createProjectMutation,
         variables: {
@@ -153,10 +158,10 @@ export function AddAndEditProjectModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="py-4">
           <div className="flex items-center gap-2">
-            <EmojiPicker 
+            <EmojiPicker
               value={emoji || ""}
               onChange={(value) => setValue("emoji", value)}
-              placeholder="📚" 
+              placeholder="📚"
               className="mr-2"
             />
             <Controller
@@ -170,7 +175,9 @@ export function AddAndEditProjectModal({
                     placeholder="Project name"
                     className="placeholder-primary-400 w-full resize-none border-none bg-transparent text-2xl font-semibold break-words text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />

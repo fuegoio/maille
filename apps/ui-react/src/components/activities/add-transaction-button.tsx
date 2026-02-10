@@ -1,14 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
+import type { Activity } from "@maille/core/activities";
+import { Plus } from "lucide-react";
 import { useState } from "react";
-import { activitiesStore } from "@/stores/activities";
-import { syncStore } from "@/stores/sync";
-import { addTransactionMutation } from "@/mutations/activities";
+import { useForm, Controller } from "react-hook-form";
+import z from "zod";
+
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +15,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import type { Activity } from "@maille/core/activities";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { addTransactionMutation } from "@/mutations/activities";
+import { activitiesStore } from "@/stores/activities";
+import { syncStore } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -34,9 +39,12 @@ interface AddTransactionButtonProps {
   className?: string;
 }
 
-export function AddTransactionButton({ activity, className }: AddTransactionButtonProps) {
+export function AddTransactionButton({
+  activity,
+  className,
+}: AddTransactionButtonProps) {
   const [showDialog, setShowDialog] = useState(false);
-  
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,9 +59,14 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
   const handleAddTransaction = (data: FormValues) => {
     const transaction = activitiesStore
       .getState()
-      .addNewTransaction(activity.id, data.amount, data.fromAccount, data.toAccount);
+      .addNewTransaction(
+        activity.id,
+        data.amount,
+        data.fromAccount,
+        data.toAccount,
+      );
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "addTransaction",
       mutation: addTransactionMutation,
       variables: {
@@ -93,7 +106,9 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
       <Dialog open={showDialog} onOpenChange={resetDialog}>
         <DialogContent className="bg-primary-800 border-primary-700 max-w-xl text-white">
           <DialogHeader>
-            <DialogTitle className="font-medium text-white">Add a new transaction</DialogTitle>
+            <DialogTitle className="font-medium text-white">
+              Add a new transaction
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit(handleAddTransaction)} className="py-4">
@@ -109,7 +124,9 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
                     onChange={field.onChange}
                     className="w-full sm:w-56"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -125,7 +142,9 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
                     onUpdateModelValue={field.onChange}
                     className="w-full sm:w-56"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -141,13 +160,18 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
                     onUpdateModelValue={field.onChange}
                     className="w-full sm:w-56"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
 
             <DialogFooter>
-              <Button type="submit" className="bg-primary-700 hover:bg-primary-600">
+              <Button
+                type="submit"
+                className="bg-primary-700 hover:bg-primary-600"
+              >
                 Create transaction
               </Button>
             </DialogFooter>

@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import { AccountType, type Account } from "@maille/core/accounts";
-import type { string } from "crypto";
+import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
 import { authStore } from "./auth";
 import type { Mutation } from "@/mutations";
@@ -79,7 +79,7 @@ export const accountsStore = createStore<AccountsState>()(
         if (!loggedUser) throw new Error("User not logged in");
 
         const newAccount = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           name,
           type,
           user: user !== undefined ? user : loggedUser.id,

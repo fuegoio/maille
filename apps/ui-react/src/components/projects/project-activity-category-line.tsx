@@ -4,8 +4,7 @@ import { projectsStore } from "@/stores/projects";
 import { activitiesStore } from "@/stores/activities";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
-import type { string } from "crypto";
-import { getCurrencyFormatter } from "@/utils/currency";
+import { getCurrencyFormatter } from "@/lib/utils";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface ProjectActivityCategoryLineProps {

@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Project } from "@maille/core/projects";
-import type { string } from "crypto";
+import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import type { ActivityType } from "@maille/core/activities";
@@ -73,7 +73,7 @@ export const projectsStore = createStore<ProjectsState>()(
         endDate: Date | null;
       }): Project => {
         const newProject = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           name,
           emoji,
           startDate,

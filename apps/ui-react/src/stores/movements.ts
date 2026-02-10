@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Movement } from "@maille/core/movements";
-import type { string } from "crypto";
+import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
@@ -68,7 +68,7 @@ export const movementsStore = createStore<MovementsState>()(
 
       createMovementActivity: (activityId: string, movementId: string, amount: number) => {
         const newMovementActivity = {
-          id: crypto.randomstring(),
+          id: randomstring(),
           activity: activityId,
           movement: movementId,
           amount,
@@ -154,7 +154,7 @@ export const movementsStore = createStore<MovementsState>()(
         activities: any[];
       }): Movement => {
         const newMovement = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           date,
           amount,
           account,

@@ -1,5 +1,4 @@
 import { useStore } from "zustand";
-import type { string } from "crypto";
 import { authStore } from "@/stores/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";

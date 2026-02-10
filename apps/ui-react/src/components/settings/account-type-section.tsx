@@ -1,20 +1,9 @@
-import { useStore } from "zustand";
-import { useState, useMemo } from "react";
-import type { string } from "crypto";
 import { AccountType, type Account } from "@maille/core/accounts";
-import { accountsStore, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
-import { workspacesStore } from "@/stores/workspaces";
-import { syncStore } from "@/stores/sync";
-import { activitiesStore } from "@/stores/activities";
-import {
-  createAccountMutation,
-  deleteAccountMutation,
-  updateAccountMutation,
-} from "@/mutations/accounts";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { AmountInput } from "@/components/ui/amount-input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
+import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { useStore } from "zustand";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +15,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { AmountInput } from "@/components/ui/amount-input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  createAccountMutation,
+  deleteAccountMutation,
+  updateAccountMutation,
+} from "@/mutations/accounts";
+import {
+  accountsStore,
+  ACCOUNT_TYPES_COLOR,
+  ACCOUNT_TYPES_NAME,
+} from "@/stores/accounts";
+import { activitiesStore } from "@/stores/activities";
+import { syncStore } from "@/stores/sync";
+import { workspacesStore } from "@/stores/workspaces";
 
 interface AccountTypeSectionProps {
   accountType: AccountType;
@@ -38,10 +42,13 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const addAccount = useStore(accountsStore, (state) => state.addAccount);
   const updateAccount = useStore(accountsStore, (state) => state.updateAccount);
   const deleteAccount = useStore(accountsStore, (state) => state.deleteAccount);
-  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
+  const mutate = useStore(syncStore, (state) => state.mutate);
 
   const activities = useStore(activitiesStore, (state) => state.activities);
-  const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
+  const currentWorkspace = useStore(
+    workspacesStore,
+    (state) => state.currentWorkspace,
+  );
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newAccount, setNewAccount] = useState({
@@ -72,7 +79,8 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const getTransactionsLinkedToAccount = (accountId: string) => {
     return activities
       .flatMap((a) => a.transactions)
-      .filter((t) => t.fromAccount === accountId || t.toAccount === accountId).length;
+      .filter((t) => t.fromAccount === accountId || t.toAccount === accountId)
+      .length;
   };
 
   const handleAddNewAccount = async () => {
@@ -83,7 +91,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
       type: accountType,
     });
 
-    sendEvent({
+    mutate({
       name: "createAccount",
       mutation: createAccountMutation,
       variables: {
@@ -109,7 +117,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
 
     updateAccount(accountId, update);
 
-    sendEvent({
+    mutate({
       name: "updateAccount",
       mutation: updateAccountMutation,
       variables: {
@@ -128,7 +136,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
 
     deleteAccount(accountId);
 
-    sendEvent({
+    mutate({
       name: "deleteAccount",
       mutation: deleteAccountMutation,
       variables: {
@@ -145,7 +153,9 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
           className="mr-2 h-3 w-3 shrink-0 rounded-xl sm:mr-3"
           style={{ backgroundColor: ACCOUNT_TYPES_COLOR[accountType] }}
         />
-        <div className="text-sm font-medium">{ACCOUNT_TYPES_NAME[accountType]}</div>
+        <div className="text-sm font-medium">
+          {ACCOUNT_TYPES_NAME[accountType]}
+        </div>
 
         <div className="flex-1" />
         <Button
@@ -163,7 +173,9 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
         <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-4">
           <Input
             value={newAccount.name}
-            onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
+            onChange={(e) =>
+              setNewAccount({ ...newAccount, name: e.target.value })
+            }
             placeholder="Name"
             autoFocus
             className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
@@ -179,9 +191,14 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
 
       <div className="py-2 pl-8">
         {sortedAccounts.map((account) => (
-          <div key={account.id} className="group my-2 w-full rounded border px-4">
+          <div
+            key={account.id}
+            className="group my-2 w-full rounded border px-4"
+          >
             <div className="flex h-10 w-full items-center">
-              <div className="text-primary-200 text-sm font-medium">{account.name}</div>
+              <div className="text-primary-200 text-sm font-medium">
+                {account.name}
+              </div>
               <div className="text-primary-600 ml-1 text-sm">
                 · {getTransactionsLinkedToAccount(account.id)} transactions
               </div>
@@ -213,7 +230,9 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => handleDeleteAccount(account.id)}
-                        disabled={getTransactionsLinkedToAccount(account.id) > 0}
+                        disabled={
+                          getTransactionsLinkedToAccount(account.id) > 0
+                        }
                       >
                         Delete
                       </AlertDialogAction>
@@ -222,10 +241,13 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
                 </AlertDialog>
               )}
 
-              {!([AccountType.EXPENSE, AccountType.REVENUE] as AccountType[]).includes(
-                account.type,
-              ) && (
-                <button className="ml-2" onClick={() => toggleExpand(account.id)}>
+              {!(
+                [AccountType.EXPENSE, AccountType.REVENUE] as AccountType[]
+              ).includes(account.type) && (
+                <button
+                  className="ml-2"
+                  onClick={() => toggleExpand(account.id)}
+                >
                   {expanded === account.id ? (
                     <ChevronUp className="text-primary-500 hover:text-primary-300 h-4 w-4" />
                   ) : (
@@ -269,7 +291,9 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
                 )}
 
                 <div className="mt-4 flex h-10 flex-col text-sm sm:flex-row sm:items-center">
-                  <div className="text-primary-500 text-sm">Movements enabled</div>
+                  <div className="text-primary-500 text-sm">
+                    Movements enabled
+                  </div>
                   <div className="flex-1" />
                   <Checkbox
                     checked={account.movements}

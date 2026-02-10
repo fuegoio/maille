@@ -9,7 +9,7 @@ import {
   type ActivityType,
   type Transaction,
 } from "@maille/core/activities";
-import type { string } from "crypto";
+import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
 import { accountsStore } from "./accounts";
 import { movementsStore } from "./movements";
@@ -140,7 +140,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
 
       addNewTransaction: (activityId: string, amount: number, fromAccount: string, toAccount: string) => {
         const newTransaction: Transaction = {
-          id: crypto.randomstring(),
+          id: randomstring(),
           amount,
           fromAccount,
           fromUser: null,
@@ -219,7 +219,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         const getMovementById = movementsStore.getState().getMovementById;
 
         const newActivity: Activity = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           user,
           number,
           name,
@@ -315,7 +315,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         type: ActivityType;
       }): ActivityCategory => {
         const newCategory = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           name,
           type,
           workspace: null,
@@ -375,7 +375,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
 
       addActivitySubcategory: ({ id, name, category }): ActivitySubCategory => {
         const newSubcategory = {
-          id: id ?? crypto.randomstring(),
+          id: id ?? randomstring(),
           name,
           category,
           workspace: null,

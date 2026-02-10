@@ -1,15 +1,12 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useHotkeys } from "react-hotkeys-hook";
 import z from "zod";
 
-import { movementsStore } from "@/stores/movements";
-import { syncStore } from "@/stores/sync";
-import { createMovementMutation } from "@/mutations/movements";
-import { useHotkeys } from "react-hotkeys-hook";
+import { AccountSelect } from "@/components/accounts/account-select";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +14,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { AccountSelect } from "@/components/accounts/account-select";
-import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { createMovementMutation } from "@/mutations/movements";
+import { movementsStore } from "@/stores/movements";
+import { syncStore } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -37,7 +41,7 @@ interface AddMovementButtonProps {
 
 export function AddMovementButton({ className }: AddMovementButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -73,7 +77,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       activities: [],
     });
 
-    syncStore.getState().sendEvent({
+    syncStore.getState().mutate({
       name: "createMovement",
       mutation: createMovementMutation,
       variables: {
@@ -118,7 +122,10 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
           <DialogHeader>
             <DialogTitle>Add a new movement</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(addNewMovement)} className="grid gap-4 py-4">
+          <form
+            onSubmit={handleSubmit(addNewMovement)}
+            className="grid gap-4 py-4"
+          >
             <Controller
               name="date"
               control={control}
@@ -132,7 +139,9 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                     onChange={(e) => field.onChange(new Date(e.target.value))}
                     className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -151,7 +160,9 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                     step="0.01"
                     className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -167,7 +178,9 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                     onUpdateModelValue={field.onChange}
                     movementsOnly
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -186,15 +199,15 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                     placeholder="Restaurant"
                     className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
 
             <DialogFooter>
-              <Button type="submit">
-                Create movement
-              </Button>
+              <Button type="submit">Create movement</Button>
             </DialogFooter>
           </form>
         </DialogContent>

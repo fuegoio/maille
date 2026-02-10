@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useActivitiesStore } from "@/stores/activities";
 import { usePeriodsStore } from "@/stores/periods";
 import { PeriodActivityCategoryLine } from "./period-activity-category-line";
-import { getCurrencyFormatter } from "@/utils/currency";
+import { getCurrencyFormatter } from "@/lib/utils";
 import { ActivityType } from "@maille/core/activities";
 import type { PeriodActivityData } from "@/types/periods";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
