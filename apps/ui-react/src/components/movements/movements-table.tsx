@@ -29,16 +29,18 @@ export function MovementsTable({
   const focusedActivity = useActivities((state) => state.focusedActivity);
   const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
   const movementView = useViews((state) => state.getMovementView(viewId));
+  const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
+  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>([]);
 
   // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       if (focusedMovement) {
-        useMovements.getState().setFocusedMovement(null);
+        setFocusedMovement(null);
       }
       if (focusedActivity) {
-        useActivities.getState().setFocusedActivity(null);
+        setFocusedActivity(null);
       }
     };
   }, []);
@@ -46,7 +48,7 @@ export function MovementsTable({
   // Reset focused activity when focused movement changes
   React.useEffect(() => {
     if (focusedMovement) {
-      useActivities.getState().setFocusedActivity(null);
+      setFocusedActivity(null);
     }
   }, [focusedMovement]);
 
@@ -124,9 +126,9 @@ export function MovementsTable({
 
   const handleMovementClick = (movementId: string) => {
     if (focusedMovement === movementId) {
-      useMovements.getState().setFocusedMovement(null);
+      setFocusedMovement(null);
     } else {
-      useMovements.getState().setFocusedMovement(movementId);
+      setFocusedMovement(movementId);
     }
   };
 
@@ -147,7 +149,7 @@ export function MovementsTable({
         ? 0
         : (currentIndex - 1 + movementsSorted.length) % movementsSorted.length;
 
-    useMovements.getState().setFocusedMovement(movementsSorted[nextIndex].id);
+    setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
   useHotkeys("j", () => {
@@ -156,7 +158,7 @@ export function MovementsTable({
     const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
 
     const nextIndex = (currentIndex + 1) % movementsSorted.length;
-    useMovements.getState().setFocusedMovement(movementsSorted[nextIndex].id);
+    setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
   useHotkeys("escape", () => {

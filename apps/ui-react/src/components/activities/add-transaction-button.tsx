@@ -57,16 +57,16 @@ export function AddTransactionButton({
   const { control, handleSubmit, reset } = form;
 
   const handleAddTransaction = (data: FormValues) => {
-    const transaction = useActivities
-      .getState()
-      .addNewTransaction(
+    const addNewTransaction = useActivities((state) => state.addNewTransaction);
+    const transaction = addNewTransaction(
         activity.id,
         data.amount,
         data.fromAccount,
         data.toAccount,
       );
 
-    useSync.getState().mutate({
+    const mutate = useSync((state) => state.mutate);
+    mutate({
       name: "addTransaction",
       mutation: addTransactionMutation,
       variables: {

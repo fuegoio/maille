@@ -40,11 +40,11 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     updateData: Partial<Transaction>,
   ) => {
     const oldTransaction = { ...transaction };
-    useActivities
-      .getState()
-      .updateTransaction(activity.id, transaction.id, updateData);
+    const updateTransaction = useActivities((state) => state.updateTransaction);
+    updateTransaction(activity.id, transaction.id, updateData);
 
-    useSync.getState().mutate({
+    const mutate = useSync((state) => state.mutate);
+    mutate({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
       variables: {
@@ -57,9 +57,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   };
 
   const handleTransactionDelete = (transaction: Transaction) => {
-    useActivities.getState().deleteTransaction(activity.id, transaction.id);
+    const deleteTransaction = useActivities((state) => state.deleteTransaction);
+    deleteTransaction(activity.id, transaction.id);
 
-    useSync.getState().mutate({
+    mutate({
       name: "deleteTransaction",
       mutation: deleteTransactionMutation,
       variables: {

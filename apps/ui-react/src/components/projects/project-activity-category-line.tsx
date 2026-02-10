@@ -15,7 +15,6 @@ export function ProjectActivityCategoryLine({
   projectActivities,
   category,
 }: ProjectActivityCategoryLineProps) {
-  const { viewFilters } = useProjects((state) => ({ viewFilters: state.viewFilters }));
   const { activitySubcategories } = useActivities((state) => ({
     activitySubcategories: state.activitySubcategories,
   }));
@@ -50,23 +49,24 @@ export function ProjectActivityCategoryLine({
     return values;
   }, [projectActivities, category.id, categorySubcategories]);
 
+  const viewFilters = useProjects((state) => state.viewFilters);
   const selectCategoryToFilterActivities = () => {
-    useProjects.getState().viewFilters.subcategory = null;
-    useProjects.getState().viewFilters.activityType = null;
-    if (useProjects.getState().viewFilters.category !== category.id) {
-      useProjects.getState().viewFilters.category = category.id;
+    viewFilters.subcategory = null;
+    viewFilters.activityType = null;
+    if (viewFilters.category !== category.id) {
+      viewFilters.category = category.id;
     } else {
-      useProjects.getState().viewFilters.category = null;
+      viewFilters.category = null;
     }
   };
 
   const selectSubcategoryToFilterActivities = (subcategory: ActivitySubCategory) => {
-    useProjects.getState().viewFilters.category = null;
-    useProjects.getState().viewFilters.activityType = null;
-    if (useProjects.getState().viewFilters.subcategory !== subcategory.id) {
-      useProjects.getState().viewFilters.subcategory = subcategory.id;
+    viewFilters.category = null;
+    viewFilters.activityType = null;
+    if (viewFilters.subcategory !== subcategory.id) {
+      viewFilters.subcategory = subcategory.id;
     } else {
-      useProjects.getState().viewFilters.subcategory = null;
+      viewFilters.subcategory = null;
     }
   };
 

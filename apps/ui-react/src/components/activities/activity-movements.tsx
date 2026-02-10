@@ -40,29 +40,32 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
       activity.transactions,
       activity.movements,
       accounts,
-      useMovements.getState().getMovementById,
+      useMovements((state) => state.getMovementById),
     );
 
+  const getMovementById = useMovements((state) => state.getMovementById);
   const isReconciled = getActivityMovementsReconciliated(
     activity.transactions,
     activity.movements,
     accounts,
-    useMovements.getState().getMovementById,
+    getMovementById,
   );
 
   const handleMovementMenuClick = (
     movementWithLink: any, // TODO: Fix proper typing
     event: string,
   ) => {
+    const deleteMovementActivity = useMovements((state) => state.deleteMovementActivity);
+    const updateMovementActivity = useMovements((state) => state.updateMovementActivity);
+    const mutate = useSync((state) => state.mutate);
+
     if (event === "unlink") {
-      useMovements
-        .getState()
-        .deleteMovementActivity(
+      deleteMovementActivity(
           movementWithLink.id,
           movementWithLink.movementActivityId,
         );
 
-      useSync.getState().mutate({
+      mutate({
         name: "deleteMovementActivity",
         mutation: deleteMovementActivityMutation,
         variables: {
@@ -76,15 +79,13 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         },
       });
     } else if (event === "resetAmount") {
-      useMovements
-        .getState()
-        .updateMovementActivity(
+      updateMovementActivity(
           movementWithLink.id,
           movementWithLink.movementActivityId,
           movementWithLink.amount,
         );
 
-      useSync.getState().mutate({
+      mutate({
         name: "updateMovementActivity",
         mutation: updateMovementActivityMutation,
         variables: {
@@ -104,15 +105,13 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     movementWithLink: any, // TODO: Fix proper typing
     newAmount: number,
   ) => {
-    useMovements
-      .getState()
-      .updateMovementActivity(
+    updateMovementActivity(
         movementWithLink.id,
         movementWithLink.movementActivityId,
         newAmount,
       );
 
-    useSync.getState().mutate({
+    mutate({
       name: "updateMovementActivity",
       mutation: updateMovementActivityMutation,
       variables: {

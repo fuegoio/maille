@@ -68,14 +68,18 @@ export function Movement({ movementId, onClose }: MovementProps) {
     }
   }, [movementId]);
 
+  const deleteMovement = useMovements((state) => state.deleteMovement);
+  const updateMovement = useMovements((state) => state.updateMovement);
+  const mutate = useSync((state) => state.mutate);
+
   const handleMovementMenuClick = (event: string) => {
     if (!movement) return;
 
     if (event === "delete") {
       const movementData = _.cloneDeep(movement);
-      useMovements.getState().deleteMovement(movementId);
+      deleteMovement(movementId);
 
-      useSync.getState().mutate({
+      mutate({
         name: "deleteMovement",
         mutation: deleteMovementMutation,
         variables: {
@@ -95,7 +99,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
     });
   };
 
-  const updateMovement = (update: {
+  const handleUpdateMovement = (update: {
     date?: Date;
     amount?: number;
     account?: string;
@@ -104,9 +108,9 @@ export function Movement({ movementId, onClose }: MovementProps) {
     if (!movement) return;
 
     const movementData = _.cloneDeep(movement);
-    useMovements.getState().updateMovement(movementId, update);
+    handleUpdateMovement(movementId, update);
 
-    useSync.getState().mutate({
+    mutate({
       name: "updateMovement",
       mutation: updateMovementMutation,
       variables: {

@@ -21,7 +21,7 @@ export const Route = createFileRoute(
 function ActivitiesPage() {
   const params = Route.useParams();
   const activities = useActivities((state) => state.activities);
-  const setFocusedActivity = useActivities.getState().setFocusedActivity;
+  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
   // Get the activity view based on route parameters
   const activityView = useViews((state) =>

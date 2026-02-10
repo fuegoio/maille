@@ -336,10 +336,12 @@ export function AddActivityModal({
 
   // Create a single activity
   const createActivity = (data: FormValues) => {
+    const userId = useAuth((state) => state.user!.id);
+    const activities = useActivities((state) => state.activities);
     const newActivity = {
       id: randomstring(),
-      user: useAuth.getState().user!.id,
-      number: useActivities.getState().activities.length + 1,
+      user: userId,
+      number: activities.length + 1,
       name: data.name,
       description: data.description || null,
       date: data.date.toISOString(),
@@ -397,10 +399,11 @@ export function AddActivityModal({
     movements.forEach((movement) => {
       const { fromAccount, toAccount } = guessBestTransaction();
 
+      const activities = useActivities((state) => state.activities);
       const newActivity = {
         id: randomstring(),
         user,
-        number: useActivities.getState().activities.length + 1,
+        number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
         date: movement.date.toISOString(),

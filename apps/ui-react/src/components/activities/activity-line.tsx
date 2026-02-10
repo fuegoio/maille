@@ -188,13 +188,13 @@ export function ActivityLine({
                   value={transaction.amount}
                   onChange={(value) => {
                     const oldTransaction = { ...transaction };
-                    useActivities
-                      .getState()
-                      .updateTransaction(activity.id, transaction.id, {
+                    const updateTransaction = useActivities((state) => state.updateTransaction);
+                    updateTransaction(activity.id, transaction.id, {
                         amount: value,
                       });
 
-                    useSync.getState().mutate({
+                    const mutate = useSync((state) => state.mutate);
+                    mutate({
                       name: "updateTransaction",
                       mutation: updateTransactionMutation,
                       variables: {

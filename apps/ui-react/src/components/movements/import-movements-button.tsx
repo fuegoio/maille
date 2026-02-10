@@ -100,7 +100,8 @@ export function ImportMovementsButton({
       );
 
       if (!existingMovement) {
-        const movement = useMovements.getState().addMovement({
+        const addMovement = useMovements((state) => state.addMovement);
+        const movement = addMovement({
           date: movementDate,
           amount: movementAmount,
           account: account,
@@ -108,7 +109,8 @@ export function ImportMovementsButton({
           activities: [],
         });
 
-        useSync.getState().mutate({
+        const mutate = useSync((state) => state.mutate);
+        mutate({
           name: "createMovement",
           mutation: createMovementMutation,
           variables: {

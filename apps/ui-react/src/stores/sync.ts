@@ -100,7 +100,7 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
-          useAccounts.getState().handleMutationSuccess({
+          handleAccountMutationSuccess({
             ...mutation,
             result,
           } as Mutation);

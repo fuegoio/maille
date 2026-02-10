@@ -75,11 +75,11 @@ export function LinkMovementButton({
   ]);
 
   const linkMovement = async (movement: Movement) => {
-    const movementActivity = useMovements
-      .getState()
-      .createMovementActivity(activity.id, movement.id, movement.amount);
+    const createMovementActivity = useMovements((state) => state.createMovementActivity);
+    const movementActivity = createMovementActivity(activity.id, movement.id, movement.amount);
 
-    useSync.getState().mutate({
+    const mutate = useSync((state) => state.mutate);
+    mutate({
       name: "createMovementActivity",
       mutation: createMovementActivityMutation,
       variables: {

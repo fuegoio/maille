@@ -26,7 +26,6 @@ interface ProjectActivitiesSummaryProps {
 }
 
 export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitiesSummaryProps) {
-  const { viewFilters } = useProjects((state) => ({ viewFilters: state.viewFilters }));
   const { activityCategories } = useActivities((state) => ({
     activityCategories: state.activityCategories,
   }));
@@ -45,13 +44,14 @@ export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitie
     return totals;
   }, [projectActivities]);
 
+  const viewFilters = useProjects((state) => state.viewFilters);
   const selectActivityTypeToFilterActivities = (activityType: ActivityType) => {
-    useProjects.getState().viewFilters.category = null;
-    useProjects.getState().viewFilters.subcategory = null;
-    if (useProjects.getState().viewFilters.activityType !== activityType) {
-      useProjects.getState().viewFilters.activityType = activityType;
+    viewFilters.category = null;
+    viewFilters.subcategory = null;
+    if (viewFilters.activityType !== activityType) {
+      viewFilters.activityType = activityType;
     } else {
-      useProjects.getState().viewFilters.activityType = null;
+      viewFilters.activityType = null;
     }
   };
 

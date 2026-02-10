@@ -69,7 +69,8 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
   };
 
   const addNewMovement = async (data: FormValues) => {
-    const movement = useMovements.getState().addMovement({
+    const addMovement = useMovements((state) => state.addMovement);
+    const movement = addMovement({
       date: data.date,
       amount: data.amount,
       account: data.account,
@@ -77,7 +78,8 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       activities: [],
     });
 
-    useSync.getState().mutate({
+    const mutate = useSync((state) => state.mutate);
+    mutate({
       name: "createMovement",
       mutation: createMovementMutation,
       variables: {
