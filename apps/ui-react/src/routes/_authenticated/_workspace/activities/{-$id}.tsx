@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
@@ -16,12 +16,25 @@ export const Route = createFileRoute(
   "/_authenticated/_workspace/activities/{-$id}",
 )({
   component: ActivitiesPage,
+  loader: async ({ params }) => {
+    const setFocusedActivity = useActivities.getState().setFocusedActivity;
+    if (params.id && params.id !== "reconciliation" && params.id !== "") {
+      const activities = useActivities.getState().activities;
+      const activity = activities.find(
+        (a) => a.number.toString() === params.id,
+      );
+      if (activity) {
+        setFocusedActivity(activity.id);
+      }
+    } else {
+      setFocusedActivity(null);
+    }
+  },
 });
 
 function ActivitiesPage() {
   const params = Route.useParams();
   const activities = useActivities((state) => state.activities);
-  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
   // Get the activity view based on route parameters
   const activityView = useViews((state) =>
@@ -39,20 +52,6 @@ function ActivitiesPage() {
     }
     return activities;
   }, [activities, params.id]);
-
-  // Handle route parameter changes for focused activity
-  useEffect(() => {
-    if (params.id && params.id !== "reconciliation" && params.id !== "") {
-      const activity = activities.find(
-        (a) => a.number.toString() === params.id,
-      );
-      if (activity) {
-        setFocusedActivity(activity.id);
-      }
-    } else {
-      setFocusedActivity(null);
-    }
-  }, [params.id, activities]);
 
   const title =
     params.id === "reconciliation"

@@ -42,18 +42,10 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
-  const activityView = useViews((state) =>
-    state.getActivityView(viewId),
-  );
-  const focusedActivity = useActivities(
-    (state) => state.focusedActivity,
-  );
-  const filterStringBySearch = useSearch(
-    (state) => state.filterStringBySearch,
-  );
-  const setFocusedActivity = useActivities(
-    (state) => state.setFocusedActivity,
-  );
+  const activityView = useViews((state) => state.getActivityView(viewId));
+  const focusedActivity = useActivities((state) => state.focusedActivity);
+  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
+  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const currencyFormatter = getCurrencyFormatter();
 
   // Cleanup on unmount

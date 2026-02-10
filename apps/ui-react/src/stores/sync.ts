@@ -65,6 +65,8 @@ export const useSync = create<SyncState>()(
             useAccounts.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
           });
+
+        void get().dequeueMutations();
       },
 
       dequeueMutations: async () => {
@@ -97,10 +99,6 @@ export const useSync = create<SyncState>()(
             result,
           } as Mutation);
           useProjects.getState().handleMutationSuccess({
-            ...mutation,
-            result,
-          } as Mutation);
-          handleAccountMutationSuccess({
             ...mutation,
             result,
           } as Mutation);

@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { getCurrencyFormatter } from "@/lib/utils";
 import {
@@ -34,8 +33,6 @@ import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
 
 export function Activity() {
-  const focusedActivity = useActivities((state) => state.focusedActivity);
-  const getActivityById = useActivities((state) => state.getActivityById);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const mutate = useSync((state) => state.mutate);
 
@@ -43,10 +40,10 @@ export function Activity() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [showSplitModal, setShowSplitModal] = React.useState(false);
 
-  const activity = React.useMemo(() => {
-    if (!focusedActivity) return null;
-    return getActivityById(focusedActivity);
-  }, [focusedActivity, getActivityById]);
+  const activity = useActivities((state) => {
+    if (!state.focusedActivity) return null;
+    return state.getActivityById(state.focusedActivity);
+  });
 
   const currencyFormatter = getCurrencyFormatter();
 

@@ -8,6 +8,13 @@
       "when": 1770070404103,
       "tag": "0000_demonic_robbie_robertson",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770763139048,
+      "tag": "0001_pink_swordsman",
+      "breakpoints": true
     }
   ]
 }
