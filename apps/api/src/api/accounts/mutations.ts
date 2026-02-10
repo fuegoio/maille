@@ -14,12 +14,12 @@ export const registerAccountsMutations = () => {
       type: AccountSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         type: t.arg.string(),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -45,6 +45,7 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return {
@@ -66,7 +67,7 @@ export const registerAccountsMutations = () => {
       type: AccountSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         startingBalance: t.arg({
           type: "Float",
@@ -98,9 +99,14 @@ export const registerAccountsMutations = () => {
           accountUpdates.movements = args.movements ?? undefined;
         }
 
-        const updatedAccount = (
+        const updatedAccounts = (
           await db.update(accounts).set(accountUpdates).where(eq(accounts.id, args.id)).returning()
-        )[0];
+        );
+        const updatedAccount = updatedAccounts[0];
+        
+        if (!updatedAccount) {
+          throw new GraphQLError("Failed to update account");
+        }
 
         await addEvent({
           type: "updateAccount",
@@ -111,6 +117,7 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: account.workspace,
         });
 
         return updatedAccount;
@@ -123,7 +130,7 @@ export const registerAccountsMutations = () => {
       type: DeleteAccountResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
       },
       resolve: async (root, args, ctx) => {
@@ -145,6 +152,7 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: account.workspace,
         });
 
         return {

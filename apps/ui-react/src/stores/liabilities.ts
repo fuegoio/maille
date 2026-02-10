@@ -1,25 +1,25 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Liability } from "@maille/core/liabilities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { Activity } from "@maille/core/activities";
 import { storage } from "./storage";
 
 interface LiabilitiesState {
   liabilities: Liability[];
 
-  getLiabilitiesByActivity: (activityId: UUID) => Liability[] | undefined;
+  getLiabilitiesByActivity: (activityId: string) => Liability[] | undefined;
   addLiability: (input: {
     amount: number;
     activity: Activity;
-    account: UUID;
-    id: UUID;
+    account: string;
+    id: string;
   }) => Liability;
-  getLiability: (account: UUID, activity: UUID) => Liability | undefined;
-  deleteLiabilitiesActivity: (activity: UUID) => void;
+  getLiability: (account: string, activity: string) => Liability | undefined;
+  deleteLiabilitiesActivity: (activity: string) => void;
   updateLiabilitiesLinkId: (
-    activityId: UUID,
-    liabilitiesUpdates: { account: UUID; id: UUID }[],
+    activityId: string,
+    liabilitiesUpdates: { account: string; id: string }[],
   ) => void;
 }
 
@@ -28,15 +28,15 @@ export const liabilitiesStore = createStore<LiabilitiesState>()(
     (set, get) => ({
       liabilities: [],
 
-      getLiabilitiesByActivity: (activityId: UUID): Liability[] | undefined => {
+      getLiabilitiesByActivity: (activityId: string): Liability[] | undefined => {
         return get().liabilities.filter((a) => a.activity === activityId);
       },
 
       addLiability: (input: {
         amount: number;
         activity: Activity;
-        account: UUID;
-        id: UUID;
+        account: string;
+        id: string;
       }): Liability => {
         const liability: Liability = {
           ...input,
@@ -52,19 +52,19 @@ export const liabilitiesStore = createStore<LiabilitiesState>()(
         return liability;
       },
 
-      getLiability: (account: UUID, activity: UUID): Liability | undefined => {
+      getLiability: (account: string, activity: string): Liability | undefined => {
         return get().liabilities.find((l) => l.account === account && l.activity === activity);
       },
 
-      deleteLiabilitiesActivity: (activity: UUID) => {
+      deleteLiabilitiesActivity: (activity: string) => {
         set((state) => ({
           liabilities: state.liabilities.filter((l) => l.activity !== activity),
         }));
       },
 
       updateLiabilitiesLinkId: (
-        activityId: UUID,
-        liabilitiesUpdates: { account: UUID; id: UUID }[],
+        activityId: string,
+        liabilitiesUpdates: { account: string; id: string }[],
       ) => {
         liabilitiesUpdates.forEach((liability) => {
           const liabilityStored = get().liabilities.find(

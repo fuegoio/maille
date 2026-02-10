@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useStore } from "zustand";
 import { movementsStore } from "@/stores/movements";
 import { accountsStore } from "@/stores/accounts";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import {
   updateMovementActivityMutation,
   deleteMovementActivityMutation,
@@ -58,7 +58,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         .getState()
         .deleteMovementActivity(movementWithLink.id, movementWithLink.movementActivityId);
 
-      eventsStore.getState().sendEvent({
+      syncStore.getState().sendEvent({
         name: "deleteMovementActivity",
         mutation: deleteMovementActivityMutation,
         variables: {
@@ -80,7 +80,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
           movementWithLink.amount,
         );
 
-      eventsStore.getState().sendEvent({
+      syncStore.getState().sendEvent({
         name: "updateMovementActivity",
         mutation: updateMovementActivityMutation,
         variables: {
@@ -104,7 +104,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
       .getState()
       .updateMovementActivity(movementWithLink.id, movementWithLink.movementActivityId, newAmount);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "updateMovementActivity",
       mutation: updateMovementActivityMutation,
       variables: {

@@ -1,13 +1,13 @@
 import { useStore } from "zustand";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { projectsStore } from "@/stores/projects";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 
 interface ProjectSelectProps {
-  modelValue: UUID | null;
-  onUpdateModelValue: (value: UUID | null) => void;
+  modelValue: string | null;
+  onUpdateModelValue: (value: string | null) => void;
 }
 
 export function ProjectSelect({ modelValue, onUpdateModelValue }: ProjectSelectProps) {
@@ -24,7 +24,7 @@ export function ProjectSelect({ modelValue, onUpdateModelValue }: ProjectSelectP
     <Select
       value={modelValue?.toString() || "null"}
       onValueChange={(value) => {
-        onUpdateModelValue(value === "null" ? null : (value as UUID));
+        onUpdateModelValue(value === "null" ? null : (value as string));
       }}
     >
       <SelectTrigger className="w-[180px]">

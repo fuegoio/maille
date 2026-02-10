@@ -2,7 +2,7 @@ import * as React from "react";
 import { useStore } from "zustand";
 import { movementsStore } from "@/stores/movements";
 import { accountsStore } from "@/stores/accounts";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { createMovementActivityMutation } from "@/mutations/movements";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -14,12 +14,12 @@ import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
 import { searchCompare } from "@/lib/strings";
 import type { Movement } from "@maille/core/movements";
 import type { Activity } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import _ from "lodash";
 
 interface LinkMovementButtonProps {
   activity: Activity;
-  account: UUID;
+  account: string;
   className?: string;
 }
 
@@ -66,7 +66,7 @@ export function LinkMovementButton({ activity, account, className }: LinkMovemen
       .getState()
       .createMovementActivity(activity.id, movement.id, movement.amount);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "createMovementActivity",
       mutation: createMovementActivityMutation,
       variables: {

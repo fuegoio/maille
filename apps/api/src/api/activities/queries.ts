@@ -23,7 +23,7 @@ export const registerActivitiesQueries = () => {
     t.field({
       type: [ActivitySchema],
       args: {
-        workspaceId: t.arg({ type: "UUID", required: true }),
+        workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
@@ -87,7 +87,7 @@ export const registerActivitiesQueries = () => {
     t.field({
       type: [ActivityCategorySchema],
       args: {
-        workspaceId: t.arg({ type: "UUID", required: true }),
+        workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace
@@ -105,7 +105,7 @@ export const registerActivitiesQueries = () => {
     t.field({
       type: [ActivitySubCategorySchema],
       args: {
-        workspaceId: t.arg({ type: "UUID", required: true }),
+        workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace

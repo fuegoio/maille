@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { X, Plus, Trash2 } from "lucide-react";
-import { randomUUID, type UUID } from "crypto";
+import { randomstring } from "crypto";
 import type { Movement } from "@maille/core/movements";
 import { syncStore } from "@/stores/sync";
 import { createActivityMutation } from "@/mutations/activities";
@@ -29,7 +29,7 @@ import { workspacesStore } from "@/stores/workspaces";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -223,11 +223,11 @@ export function AddActivityModal({
 
   // Guess best transaction accounts based on type
   const guessBestTransaction = (): {
-    fromAccount: UUID | undefined;
-    toAccount: UUID | undefined;
+    fromAccount: string | undefined;
+    toAccount: string | undefined;
   } => {
-    let fromAccount: UUID | undefined;
-    let toAccount: UUID | undefined;
+    let fromAccount: string | undefined;
+    let toAccount: string | undefined;
 
     if (type === ActivityType.EXPENSE) {
       fromAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
@@ -306,7 +306,7 @@ export function AddActivityModal({
   // Create a single activity
   const createActivity = (data: FormValues) => {
     const newActivity = {
-      id: crypto.randomUUID(),
+      id: crypto.randomstring(),
       user,
       number: activitiesStore.getState().activities.length + 1,
       name: data.name,
@@ -317,7 +317,7 @@ export function AddActivityModal({
       subcategory: data.subcategory || null,
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
-        id: crypto.randomUUID(),
+        id: crypto.randomstring(),
         fromUser: null,
         fromAccount: t.fromAccount,
         toUser: null,
@@ -327,7 +327,7 @@ export function AddActivityModal({
       movements: movement
         ? [
             {
-              id: randomUUID(),
+              id: randomstring(),
               movement: movement.id,
               amount: movement.amount,
             },
@@ -364,7 +364,7 @@ export function AddActivityModal({
       const { fromAccount, toAccount } = guessBestTransaction();
 
       const newActivity = {
-        id: crypto.randomUUID(),
+        id: crypto.randomstring(),
         user,
         number: activitiesStore.getState().activities.length + 1,
         name: movement.name,
@@ -376,7 +376,7 @@ export function AddActivityModal({
         project: data.project || null,
         transactions: [
           {
-            id: crypto.randomUUID(),
+            id: crypto.randomstring(),
             fromUser: null,
             fromAccount: fromAccount!,
             toUser: null,
@@ -386,7 +386,7 @@ export function AddActivityModal({
         ],
         movements: [
           {
-            id: randomUUID(),
+            id: randomstring(),
             movement: movement.id,
             amount: movement.amount,
           },
@@ -451,17 +451,20 @@ export function AddActivityModal({
         {/* Main content */}
         <div className="space-y-4 p-4" />
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Date picker */}
+          <FieldGroup>
+            {/* Date picker */}
           {!movements && (
             <Controller
               name="date"
               control={control}
-              render={({ field }) => (
-                <div className="flex items-center gap-2">
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="date">Date</FieldLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
+                        id="date"
                         className={cn(
                           "bg-primary-700 border-primary-600 h-8 justify-start text-left font-normal text-white",
                           !field.value && "text-muted-foreground",
@@ -484,7 +487,8 @@ export function AddActivityModal({
                       />
                     </PopoverContent>
                   </Popover>
-                </div>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
               )}
             />
           )}
@@ -627,6 +631,8 @@ export function AddActivityModal({
             />
           </div>
 
+          </FieldGroup>
+
           {/* Transactions section */}
           <div className="border-primary-700 border-t pt-4">
             <div className="mb-2 flex items-center justify-between">
@@ -658,19 +664,25 @@ export function AddActivityModal({
                 <Controller
                   name={`transactions.${index}.fromAccount` as const}
                   control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
-                        <SelectValue placeholder="From account" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-primary-800 border-primary-700">
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <span className="text-sm">{account.name}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} className="flex-1">
+                      <FieldLabel htmlFor={`transactions.${index}.fromAccount`} className="sr-only">
+                        From account
+                      </FieldLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
+                          <SelectValue placeholder="From account" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-primary-800 border-primary-700">
+                          {accounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              <span className="text-sm">{account.name}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
                   )}
                 />
 
@@ -680,19 +692,25 @@ export function AddActivityModal({
                 <Controller
                   name={`transactions.${index}.toAccount` as const}
                   control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
-                        <SelectValue placeholder="To account" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-primary-800 border-primary-700">
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            <span className="text-sm">{account.name}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} className="flex-1">
+                      <FieldLabel htmlFor={`transactions.${index}.toAccount`} className="sr-only">
+                        To account
+                      </FieldLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
+                          <SelectValue placeholder="To account" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-primary-800 border-primary-700">
+                          {accounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              <span className="text-sm">{account.name}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
                   )}
                 />
 
@@ -700,14 +718,21 @@ export function AddActivityModal({
                 <Controller
                   name={`transactions.${index}.amount` as const}
                   control={control}
-                  render={({ field }) => (
-                    <Input
-                      type="number"
-                      value={field.value}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      className="bg-primary-700 border-primary-600 h-8 w-24 font-mono text-sm text-white"
-                      step="0.01"
-                    />
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid} className="w-24">
+                      <FieldLabel htmlFor={`transactions.${index}.amount`} className="sr-only">
+                        Amount
+                      </FieldLabel>
+                      <Input
+                        type="number"
+                        id={`transactions.${index}.amount`}
+                        value={field.value}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                        className="bg-primary-700 border-primary-600 h-8 w-24 font-mono text-sm text-white"
+                        step="0.01"
+                      />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
                   )}
                 />
 

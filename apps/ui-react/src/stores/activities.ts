@@ -9,7 +9,7 @@ import {
   type ActivityType,
   type Transaction,
 } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import { accountsStore } from "./accounts";
 import { movementsStore } from "./movements";
@@ -20,96 +20,96 @@ interface ActivitiesState {
   activities: Activity[];
   activityCategories: ActivityCategory[];
   activitySubcategories: ActivitySubCategory[];
-  focusedActivity: UUID | null;
+  focusedActivity: string | null;
   showTransactions: boolean;
 
-  getActivityById: (activityId: UUID) => Activity | undefined;
-  getActivityCategoryById: (categoryId: UUID) => ActivityCategory | undefined;
-  getActivitySubcategoryById: (subcategoryId: UUID) => ActivitySubCategory | undefined;
+  getActivityById: (activityId: string) => Activity | undefined;
+  getActivityCategoryById: (categoryId: string) => ActivityCategory | undefined;
+  getActivitySubcategoryById: (subcategoryId: string) => ActivitySubCategory | undefined;
 
-  setFocusedActivity: (activityId: UUID | null) => void;
+  setFocusedActivity: (activityId: string | null) => void;
   setShowTransactions: (show: boolean) => void;
   addNewTransaction: (
-    activityId: UUID,
+    activityId: string,
     amount: number,
-    fromAccount: UUID,
-    toAccount: UUID,
+    fromAccount: string,
+    toAccount: string,
   ) => Transaction;
-  updateTransaction: (activityId: UUID, transactionId: UUID, update: Partial<Transaction>) => void;
-  deleteTransaction: (activityId: UUID, transactionId: UUID) => void;
+  updateTransaction: (activityId: string, transactionId: string, update: Partial<Transaction>) => void;
+  deleteTransaction: (activityId: string, transactionId: string) => void;
 
   addActivity: (params: {
-    id?: UUID;
+    id?: string;
     user: string;
     number: number;
     name: string;
     description: string | null;
     date: Date;
     type: ActivityType;
-    category: UUID | null;
-    subcategory: UUID | null;
-    project: UUID | null;
+    category: string | null;
+    subcategory: string | null;
+    project: string | null;
     transactions: any[];
     movements: any[];
   }) => Activity;
 
   updateActivity: (
-    activityId: UUID,
+    activityId: string,
     update: {
       name?: string;
       description?: string | null;
       date?: Date;
       type?: ActivityType;
-      category?: UUID | null;
-      subcategory?: UUID | null;
-      project?: UUID | null;
+      category?: string | null;
+      subcategory?: string | null;
+      project?: string | null;
       transactions?: any[];
       movements?: any[];
     },
   ) => void;
 
-  deleteActivity: (activityId: UUID) => void;
+  deleteActivity: (activityId: string) => void;
   restoreActivity: (activity: Activity) => void;
 
   addActivityCategory: (params: {
-    id?: UUID;
+    id?: string;
     name: string;
     type: ActivityType;
   }) => ActivityCategory;
 
   updateActivityCategory: (
-    categoryId: UUID,
+    categoryId: string,
     update: {
       name?: string;
       type?: ActivityType;
     },
   ) => void;
 
-  deleteActivityCategory: (categoryId: UUID) => void;
+  deleteActivityCategory: (categoryId: string) => void;
   restoreActivityCategory: (payload: {
     category: ActivityCategory;
-    activities: UUID[];
-    activitiesSubcategories: Record<UUID, UUID>;
+    activities: string[];
+    activitiesSubcategories: Record<string, string>;
   }) => void;
 
   addActivitySubcategory: (params: {
-    id?: UUID;
+    id?: string;
     name: string;
-    category: UUID;
+    category: string;
   }) => ActivitySubCategory;
 
   updateActivitySubcategory: (
-    subcategoryId: UUID,
+    subcategoryId: string,
     update: {
       name?: string;
-      category?: UUID;
+      category?: string;
     },
   ) => void;
 
-  deleteActivitySubcategory: (subcategoryId: UUID) => void;
+  deleteActivitySubcategory: (subcategoryId: string) => void;
   restoreActivitySubcategory: (payload: {
     subcategory: ActivitySubCategory;
-    activities: UUID[];
+    activities: string[];
   }) => void;
 
   handleEvent: (event: SyncEvent) => void;
@@ -126,11 +126,11 @@ export const activitiesStore = createStore<ActivitiesState>()(
       focusedActivity: null,
       showTransactions: false,
 
-      getActivityById: (activityId: UUID): Activity | undefined => {
+      getActivityById: (activityId: string): Activity | undefined => {
         return get().activities.find((a) => a.id === activityId);
       },
 
-      setFocusedActivity: (activityId: UUID | null) => {
+      setFocusedActivity: (activityId: string | null) => {
         set({ focusedActivity: activityId });
       },
 
@@ -138,9 +138,9 @@ export const activitiesStore = createStore<ActivitiesState>()(
         set({ showTransactions: show });
       },
 
-      addNewTransaction: (activityId: UUID, amount: number, fromAccount: UUID, toAccount: UUID) => {
+      addNewTransaction: (activityId: string, amount: number, fromAccount: string, toAccount: string) => {
         const newTransaction: Transaction = {
-          id: crypto.randomUUID(),
+          id: crypto.randomstring(),
           amount,
           fromAccount,
           fromUser: null,
@@ -163,7 +163,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         return newTransaction;
       },
 
-      updateTransaction: (activityId: UUID, transactionId: UUID, update: Partial<Transaction>) => {
+      updateTransaction: (activityId: string, transactionId: string, update: Partial<Transaction>) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
@@ -179,7 +179,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      deleteTransaction: (activityId: UUID, transactionId: UUID) => {
+      deleteTransaction: (activityId: string, transactionId: string) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
@@ -193,11 +193,11 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      getActivityCategoryById: (categoryId: UUID): ActivityCategory | undefined => {
+      getActivityCategoryById: (categoryId: string): ActivityCategory | undefined => {
         return get().activityCategories.find((c) => c.id === categoryId);
       },
 
-      getActivitySubcategoryById: (subcategoryId: UUID): ActivitySubCategory | undefined => {
+      getActivitySubcategoryById: (subcategoryId: string): ActivitySubCategory | undefined => {
         return get().activitySubcategories.find((s) => s.id === subcategoryId);
       },
 
@@ -219,7 +219,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         const getMovementById = movementsStore.getState().getMovementById;
 
         const newActivity: Activity = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           user,
           number,
           name,
@@ -243,15 +243,15 @@ export const activitiesStore = createStore<ActivitiesState>()(
       },
 
       updateActivity: (
-        activityId: UUID,
+        activityId: string,
         update: {
           name?: string;
           description?: string | null;
           date?: Date;
           type?: ActivityType;
-          category?: UUID | null;
-          subcategory?: UUID | null;
-          project?: UUID | null;
+          category?: string | null;
+          subcategory?: string | null;
+          project?: string | null;
           transactions?: any[];
           movements?: any[];
         },
@@ -293,7 +293,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      deleteActivity: (activityId: UUID) => {
+      deleteActivity: (activityId: string) => {
         set((state) => ({
           activities: state.activities.filter((activity) => activity.id !== activityId),
         }));
@@ -310,12 +310,12 @@ export const activitiesStore = createStore<ActivitiesState>()(
         name,
         type,
       }: {
-        id?: UUID;
+        id?: string;
         name: string;
         type: ActivityType;
       }): ActivityCategory => {
         const newCategory = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           name,
           type,
           workspace: null,
@@ -329,7 +329,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
       },
 
       updateActivityCategory: (
-        categoryId: UUID,
+        categoryId: string,
         update: {
           name?: string;
           type?: ActivityType;
@@ -349,7 +349,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      deleteActivityCategory: (categoryId: UUID) => {
+      deleteActivityCategory: (categoryId: string) => {
         set((state) => ({
           activityCategories: state.activityCategories.filter(
             (category) => category.id !== categoryId,
@@ -375,7 +375,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
 
       addActivitySubcategory: ({ id, name, category }): ActivitySubCategory => {
         const newSubcategory = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           name,
           category,
           workspace: null,
@@ -389,10 +389,10 @@ export const activitiesStore = createStore<ActivitiesState>()(
       },
 
       updateActivitySubcategory: (
-        subcategoryId: UUID,
+        subcategoryId: string,
         update: {
           name?: string;
-          category?: UUID;
+          category?: string;
         },
       ) => {
         set((state) => ({
@@ -409,7 +409,7 @@ export const activitiesStore = createStore<ActivitiesState>()(
         }));
       },
 
-      deleteActivitySubcategory: (subcategoryId: UUID) => {
+      deleteActivitySubcategory: (subcategoryId: string) => {
         set((state) => ({
           activitySubcategories: state.activitySubcategories.filter(
             (subcategory) => subcategory.id !== subcategoryId,

@@ -5,13 +5,12 @@ import type {
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
 } from "#activities/types.ts";
-import type { UUID } from "crypto";
 
 export type Liability = {
-  id: UUID;
+  id: string;
   amount: number;
-  activity: UUID | null;
-  account: UUID;
+  activity: string | null;
+  account: string;
   name: string;
   date: Date;
 };
@@ -37,7 +36,7 @@ type LiabilityFilterAmount = {
 type LiabilityFilterAccount = {
   field: "account";
   operator?: (typeof ActivityFilterMultipleOperators)[number];
-  value?: UUID[];
+  value?: string[];
 };
 
 export type LiabilityFilter =

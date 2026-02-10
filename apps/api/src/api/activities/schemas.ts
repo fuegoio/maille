@@ -6,14 +6,13 @@ import type {
   ActivityCategory,
   ActivitySubCategory,
 } from "@maille/core/activities";
-import type { UUID } from "crypto";
 
 export const ActivitySchema = builder.objectRef<Activity>("Activity");
 
 ActivitySchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     user: t.field({
@@ -31,17 +30,17 @@ ActivitySchema.implement({
     }),
     type: t.exposeString("type"),
     category: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.category,
       nullable: true,
     }),
     subcategory: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.subcategory,
       nullable: true,
     }),
     project: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.project,
       nullable: true,
     }),
@@ -63,11 +62,11 @@ export const ActivityMovementSchema = builder.objectRef<ActivityMovement>("Activ
 ActivityMovementSchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     movement: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.movement,
     }),
     amount: t.exposeFloat("amount"),
@@ -79,12 +78,12 @@ export const TransactionSchema = builder.objectRef<Transaction>("Transaction");
 TransactionSchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     amount: t.exposeFloat("amount"),
     fromAccount: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.fromAccount,
     }),
     fromUser: t.field({
@@ -93,7 +92,7 @@ TransactionSchema.implement({
       resolve: (parent) => parent.fromUser,
     }),
     toAccount: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.toAccount,
     }),
     toUser: t.field({
@@ -109,7 +108,7 @@ export const ActivityCategorySchema = builder.objectRef<ActivityCategory>("Activ
 ActivityCategorySchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),
@@ -123,19 +122,19 @@ export const ActivitySubCategorySchema =
 ActivitySubCategorySchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),
     category: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.category,
     }),
   }),
 });
 
 export const DeleteActivityResponseSchema = builder.objectRef<{
-  id: UUID;
+  id: string;
   success: boolean;
 }>("DeleteActivityResponse");
 
@@ -147,7 +146,7 @@ DeleteActivityResponseSchema.implement({
 });
 
 export const DeleteTransactionResponseSchema = builder.objectRef<{
-  id: UUID;
+  id: string;
   success: boolean;
 }>("DeleteTransactionResponse");
 

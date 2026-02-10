@@ -3,11 +3,11 @@ import { getCurrencyFormatter } from "@/lib/utils";
 import { useStore } from "zustand";
 import { activitiesStore } from "@/stores/activities";
 import { projectsStore } from "@/stores/projects";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { updateTransactionMutation } from "@/mutations/activities";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AmountInput } from "@/components/ui/amount-input";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -21,7 +21,7 @@ interface ActivityLineProps {
   activity: Activity;
   onClick?: (activityId: string) => void;
   selected?: boolean;
-  accountFilter?: UUID | null;
+  accountFilter?: string | null;
   hideProject?: boolean;
 }
 
@@ -165,7 +165,7 @@ export function ActivityLine({
                       .getState()
                       .updateTransaction(activity.id, transaction.id, { amount: value });
 
-                    eventsStore.getState().sendEvent({
+                    syncStore.getState().sendEvent({
                       name: "updateTransaction",
                       mutation: updateTransactionMutation,
                       variables: {

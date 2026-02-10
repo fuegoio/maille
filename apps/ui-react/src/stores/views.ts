@@ -1,6 +1,6 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 import type { ActivityFilter } from "@maille/core/activities";
 import type { LiabilityFilter } from "@maille/core/liabilities";
@@ -30,8 +30,8 @@ interface ViewsState {
   movementViews: Record<string, MovementView>;
 
   getActivityView: (viewId: string) => ActivityView;
-  deleteCategory: (categoryId: UUID) => void;
-  deleteSubcategory: (subcategoryId: UUID) => void;
+  deleteCategory: (categoryId: string) => void;
+  deleteSubcategory: (subcategoryId: string) => void;
   getLiabilityView: (viewId: string) => LiabilityView;
   getMovementView: (viewId: string) => MovementView;
 }
@@ -57,7 +57,7 @@ export const viewsStore = createStore<ViewsState>()(
         return state.activityViews[viewId];
       },
 
-      deleteCategory: (categoryId: UUID) => {
+      deleteCategory: (categoryId: string) => {
         const state = get();
         Object.values(state.activityViews).forEach((view) => {
           view.filters.forEach((filter) => {
@@ -68,7 +68,7 @@ export const viewsStore = createStore<ViewsState>()(
         });
       },
 
-      deleteSubcategory: (subcategoryId: UUID) => {
+      deleteSubcategory: (subcategoryId: string) => {
         const state = get();
         Object.values(state.activityViews).forEach((view) => {
           view.filters.forEach((filter) => {

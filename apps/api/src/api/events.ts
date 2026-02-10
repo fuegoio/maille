@@ -28,7 +28,7 @@ EventSchema.implement({
       resolve: (parent) => parent.user,
     }),
     workspace: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.workspace,
     }),
   }),
@@ -57,7 +57,7 @@ builder.queryField("events", (t) =>
         type: "Float",
       }),
       workspace: t.arg({
-        type: "UUID",
+        type: "String",
       }),
     },
     resolve: async (root, args, ctx) => {

@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Project } from "@maille/core/projects";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import type { ActivityType } from "@maille/core/activities";
@@ -11,15 +11,15 @@ import { storage } from "./storage";
 interface ProjectsState {
   projects: Project[];
   viewFilters: {
-    category: UUID | null;
-    subcategory: UUID | null;
+    category: string | null;
+    subcategory: string | null;
     activityType: ActivityType | null;
   };
 
-  getProjectById: (projectId: UUID) => Project | undefined;
+  getProjectById: (projectId: string) => Project | undefined;
 
   addProject: (params: {
-    id?: UUID;
+    id?: string;
     name: string;
     emoji: string | null;
     startDate: Date | null;
@@ -27,7 +27,7 @@ interface ProjectsState {
   }) => Project;
 
   updateProject: (
-    projectId: UUID,
+    projectId: string,
     update: {
       name?: string;
       emoji?: string | null;
@@ -36,8 +36,8 @@ interface ProjectsState {
     },
   ) => void;
 
-  deleteProject: (projectId: UUID) => void;
-  restoreProject: (payload: { project: Project; activities: UUID[] }) => void;
+  deleteProject: (projectId: string) => void;
+  restoreProject: (payload: { project: Project; activities: string[] }) => void;
 
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
@@ -55,7 +55,7 @@ export const projectsStore = createStore<ProjectsState>()(
         activityType: null,
       },
 
-      getProjectById: (projectId: UUID): Project | undefined => {
+      getProjectById: (projectId: string): Project | undefined => {
         return get().projects.find((p) => p.id === projectId);
       },
 
@@ -66,14 +66,14 @@ export const projectsStore = createStore<ProjectsState>()(
         startDate,
         endDate,
       }: {
-        id?: UUID;
+        id?: string;
         name: string;
         emoji: string | null;
         startDate: Date | null;
         endDate: Date | null;
       }): Project => {
         const newProject = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           name,
           emoji,
           startDate,
@@ -89,7 +89,7 @@ export const projectsStore = createStore<ProjectsState>()(
       },
 
       updateProject: (
-        projectId: UUID,
+        projectId: string,
         update: {
           name?: string;
           emoji?: string | null;
@@ -113,7 +113,7 @@ export const projectsStore = createStore<ProjectsState>()(
         }));
       },
 
-      deleteProject: (projectId: UUID) => {
+      deleteProject: (projectId: string) => {
         set((state) => ({
           projects: state.projects.filter((project) => project.id !== projectId),
         }));

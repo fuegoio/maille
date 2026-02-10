@@ -1,5 +1,5 @@
 import { useStore } from "zustand";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { accountsStore, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { AccountType } from "@maille/core/accounts";
 import {
@@ -14,8 +14,8 @@ import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 
 interface AccountSelectProps {
-  modelValue: UUID | null | UUID[] | any;
-  onUpdateModelValue: (value: UUID | null | UUID[] | any) => void;
+  modelValue: string | null | string[] | any;
+  onUpdateModelValue: (value: string | null | string[] | any) => void;
   disabled?: boolean;
   movementsOnly?: boolean;
   borderless?: boolean;
@@ -55,9 +55,9 @@ export function AccountSelect({
     if (multiple) {
       // For multiple selection, we'd need a different approach
       // This is a simplified version
-      onUpdateModelValue([value as UUID]);
+      onUpdateModelValue([value as string]);
     } else {
-      onUpdateModelValue(value === "null" ? null : (value as UUID));
+      onUpdateModelValue(value === "null" ? null : (value as string));
     }
   };
 

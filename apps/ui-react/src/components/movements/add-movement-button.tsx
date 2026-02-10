@@ -1,7 +1,10 @@
 import * as React from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 
 import { movementsStore } from "@/stores/movements";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { createMovementMutation } from "@/mutations/movements";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { AccountSelect } from "@/components/accounts/account-select";
-import type { UUID } from "crypto";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+
+// Form schema using zod
+const formSchema = z.object({
+  date: z.date(),
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  account: z.string().min(1, "Account is required"),
+  name: z.string().min(1, "Name is required"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddMovementButtonProps {
   className?: string;
@@ -23,18 +37,24 @@ interface AddMovementButtonProps {
 
 export function AddMovementButton({ className }: AddMovementButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [formData, setFormData] = React.useState({
-    date: new Date(),
-    amount: 0,
-    account: undefined as UUID | undefined,
-    name: "",
-  });
-
-  const openDialog = () => {
-    setFormData({
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       date: new Date(),
       amount: 0,
-      account: undefined,
+      account: "",
+      name: "",
+    },
+  });
+
+  const { control, handleSubmit, reset } = form;
+
+  const openDialog = () => {
+    reset({
+      date: new Date(),
+      amount: 0,
+      account: "",
       name: "",
     });
     setDialogOpen(true);
@@ -44,22 +64,16 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
     setDialogOpen(false);
   };
 
-  const handleInputChange = (field: keyof typeof formData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addNewMovement = async () => {
-    if (formData.amount === 0 || !formData.account || !formData.name) return;
-
+  const addNewMovement = async (data: FormValues) => {
     const movement = movementsStore.getState().addMovement({
-      date: formData.date,
-      amount: formData.amount,
-      account: formData.account,
-      name: formData.name,
+      date: data.date,
+      amount: data.amount,
+      account: data.account,
+      name: data.name,
       activities: [],
     });
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "createMovement",
       mutation: createMovementMutation,
       variables: {
@@ -104,72 +118,85 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
           <DialogHeader>
             <DialogTitle>Add a new movement</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="date" className="text-primary-100 text-right text-sm">
-                Date
-              </label>
-              <div className="col-span-3">
-                <input
-                  id="date"
-                  type="date"
-                  value={formData.date.toISOString().split("T")[0]}
-                  onChange={(e) => handleInputChange("date", new Date(e.target.value))}
-                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit(addNewMovement)} className="grid gap-4 py-4">
+            <Controller
+              name="date"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="date">Date</FieldLabel>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={field.value.toISOString().split("T")[0]}
+                    onChange={(e) => field.onChange(new Date(e.target.value))}
+                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="amount" className="text-primary-100 text-right text-sm">
-                Amount
-              </label>
-              <div className="col-span-3">
-                <input
-                  id="amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange("amount", parseFloat(e.target.value))}
-                  step="0.01"
-                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                />
-              </div>
-            </div>
+            <Controller
+              name="amount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="amount">Amount</FieldLabel>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={field.value}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    step="0.01"
+                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="account" className="text-primary-100 text-right text-sm">
-                Account
-              </label>
-              <div className="col-span-3">
-                <AccountSelect
-                  modelValue={formData.account}
-                  onUpdateModelValue={(value) => handleInputChange("account", value)}
-                  movementsOnly
-                />
-              </div>
-            </div>
+            <Controller
+              name="account"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="account">Account</FieldLabel>
+                  <AccountSelect
+                    modelValue={field.value}
+                    onUpdateModelValue={field.onChange}
+                    movementsOnly
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-primary-100 text-right text-sm">
-                Name
-              </label>
-              <div className="col-span-3">
-                <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Restaurant"
-                  className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                />
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" onClick={addNewMovement}>
-              Create movement
-            </Button>
-          </DialogFooter>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Restaurant"
+                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="submit">
+                Create movement
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </>

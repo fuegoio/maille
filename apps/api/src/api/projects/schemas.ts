@@ -6,7 +6,7 @@ export const ProjectSchema = builder.objectRef<Project>("Project");
 ProjectSchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),

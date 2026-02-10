@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 
 import { motion, AnimatePresence } from "framer-motion";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 interface MovementsActionsProps {
-  selectedMovements: UUID[];
+  selectedMovements: string[];
   onClearSelection: () => void;
 }
 

@@ -13,19 +13,19 @@ export const registerProjectsMutations = () => {
       type: ProjectSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         emoji: t.arg.string({ required: false }),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
       resolve: async (root, args, ctx) => {
         await validateWorkspace(args.workspace, ctx.user.id);
 
-        const project = (
+        const projectResults = (
           await db
             .insert(projects)
             .values({
@@ -35,7 +35,12 @@ export const registerProjectsMutations = () => {
               emoji: args.emoji,
             })
             .returning()
-        )[0];
+        );
+        const project = projectResults[0];
+        
+        if (!project) {
+          throw new GraphQLError("Failed to create project");
+        }
 
         await addEvent({
           type: "createProject",
@@ -47,6 +52,7 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return { ...project, startDate: null, endDate: null };
@@ -59,7 +65,7 @@ export const registerProjectsMutations = () => {
       type: ProjectSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string({ required: false }),
         emoji: t.arg.string({ required: false }),
@@ -97,9 +103,14 @@ export const registerProjectsMutations = () => {
           updates.endDate = args.endDate;
         }
 
-        const updatedProject = (
+        const updatedProjects = (
           await db.update(projects).set(updates).where(eq(projects.id, args.id)).returning()
-        )[0];
+        );
+        const updatedProject = updatedProjects[0];
+        
+        if (!updatedProject) {
+          throw new GraphQLError("Failed to update project");
+        }
 
         await addEvent({
           type: "updateProject",
@@ -112,6 +123,7 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: project.workspace,
         });
 
         return {
@@ -128,7 +140,7 @@ export const registerProjectsMutations = () => {
       type: "Boolean",
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
       },
       resolve: async (root, args, ctx) => {
@@ -151,6 +163,7 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: project.workspace,
         });
 
         return true;

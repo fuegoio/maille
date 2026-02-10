@@ -1,7 +1,7 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import { AccountType, type Account } from "@maille/core/accounts";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import { authStore } from "./auth";
 import type { Mutation } from "@/mutations";
@@ -27,24 +27,24 @@ export const ACCOUNT_TYPES_NAME = {
 
 interface AccountsState {
   accounts: Account[];
-  getAccountById: (accountId: UUID) => Account | undefined;
+  getAccountById: (accountId: string) => Account | undefined;
   addAccount: (params: {
-    id?: UUID;
+    id?: string;
     name: string;
     type: AccountType;
     isDefault?: boolean;
     movements?: boolean;
-    user?: UUID | null;
+    user?: string | null;
   }) => Account;
   updateAccount: (
-    accountId: UUID,
+    accountId: string,
     update: {
       startingBalance?: number | null;
       startingCashBalance?: number | null;
       movements?: boolean;
     },
   ) => void;
-  deleteAccount: (accountId: UUID) => void;
+  deleteAccount: (accountId: string) => void;
   restoreAccount: (account: Account) => void;
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
@@ -56,7 +56,7 @@ export const accountsStore = createStore<AccountsState>()(
     (set, get) => ({
       accounts: [],
 
-      getAccountById: (accountId: UUID): Account | undefined => {
+      getAccountById: (accountId: string): Account | undefined => {
         return get().accounts.find((a) => a.id === accountId);
       },
 
@@ -68,18 +68,18 @@ export const accountsStore = createStore<AccountsState>()(
         movements,
         user,
       }: {
-        id?: UUID;
+        id?: string;
         name: string;
         type: AccountType;
         isDefault?: boolean;
         movements?: boolean;
-        user?: UUID | null;
+        user?: string | null;
       }): Account => {
         const { user: loggedUser } = authStore.getState();
         if (!loggedUser) throw new Error("User not logged in");
 
         const newAccount = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           name,
           type,
           user: user !== undefined ? user : loggedUser.id,
@@ -98,7 +98,7 @@ export const accountsStore = createStore<AccountsState>()(
       },
 
       updateAccount: (
-        accountId: UUID,
+        accountId: string,
         update: {
           startingBalance?: number | null;
           startingCashBalance?: number | null;
@@ -126,7 +126,7 @@ export const accountsStore = createStore<AccountsState>()(
         }));
       },
 
-      deleteAccount: (accountId: UUID) => {
+      deleteAccount: (accountId: string) => {
         set((state) => ({
           accounts: state.accounts.filter((account) => account.id !== accountId),
         }));

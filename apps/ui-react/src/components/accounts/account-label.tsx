@@ -1,10 +1,10 @@
 import { useStore } from "zustand";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { accountsStore, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { useMemo } from "react";
 
 interface AccountLabelProps {
-  accountId: UUID;
+  accountId: string;
   onlyUser?: boolean;
 }
 

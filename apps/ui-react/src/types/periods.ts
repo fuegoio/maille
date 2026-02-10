@@ -1,5 +1,3 @@
-import type { UUID } from "crypto";
-
 export type Period = {
   month: number;
   year: number;
@@ -11,7 +9,7 @@ export type PeriodActivityData = Period & {
   investment: number;
   balance: number;
   categories: {
-    category: UUID;
+    category: string;
     value: number;
   }[];
 };
@@ -21,7 +19,7 @@ export type PeriodAccountData = Period & {
   outcome: number;
   balance: number;
   accounts: {
-    account: UUID;
+    account: string;
     income: number;
     outcome: number;
     balance: number;

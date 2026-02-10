@@ -1,4 +1,4 @@
-import type { UUID } from "crypto";
+// Remove incorrect crypto import
 
 export enum AccountType {
   BANK_ACCOUNT = "bank_account",
@@ -16,7 +16,7 @@ export const isAccountType = (value: string): value is AccountType => {
 };
 
 export type Account = {
-  id: UUID;
+  id: string;
   name: string;
   type: AccountType;
   default: boolean;

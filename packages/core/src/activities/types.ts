@@ -1,11 +1,11 @@
-import type { UUID } from "crypto";
+// Remove incorrect crypto import
 
 export type Transaction = {
-  id: UUID;
+  id: string;
   amount: number;
-  fromAccount: UUID;
+  fromAccount: string;
   fromUser: string | null;
-  toAccount: UUID;
+  toAccount: string;
   toUser: string | null;
 };
 
@@ -17,36 +17,36 @@ export enum ActivityType {
 }
 
 export type ActivityCategory = {
-  id: UUID;
+  id: string;
   name: string;
   type: ActivityType;
 };
 
 export type ActivitySubCategory = {
-  id: UUID;
+  id: string;
   name: string;
-  category: UUID;
+  category: string;
 };
 
 export type ActivityStatus = "scheduled" | "incomplete" | "completed";
 
 export type ActivityMovement = {
-  id: UUID;
-  movement: UUID;
+  id: string;
+  movement: string;
   amount: number;
 };
 
 export type Activity = {
-  id: UUID;
+  id: string;
   user: string;
   number: number;
   name: string;
   description: string | null;
   date: Date;
   type: ActivityType;
-  category: UUID | null;
-  subcategory: UUID | null;
-  project: UUID | null;
+  category: string | null;
+  subcategory: string | null;
+  project: string | null;
   transactions: Transaction[];
   movements: ActivityMovement[];
 
@@ -159,13 +159,13 @@ type ActivityFilterCategory = {
   operator?:
     | (typeof ActivityFilterMultipleOperators)[number]
     | (typeof ActivityFilterCategoryOperators)[number];
-  value?: UUID[];
+  value?: string[];
 };
 
 type ActivityFilterAccount = {
   field: "from_account" | "to_account";
   operator?: (typeof ActivityFilterMultipleOperators)[number];
-  value?: UUID[];
+  value?: string[];
 };
 
 export type ActivityFilter =

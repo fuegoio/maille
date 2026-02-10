@@ -4,7 +4,7 @@ import { viewsStore } from "@/stores/views";
 import { searchStore } from "@/stores/search";
 import { LiabilityLine } from "./liability-line";
 import { LiabilitiesFilters } from "./filters/liabilities-filters";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { Liability } from "@maille/core/liabilities";
 import { verifyLiabilityFilter } from "@maille/core/liabilities";
 import { Calendar } from "lucide-react";
@@ -13,7 +13,7 @@ interface LiabilitiesTableProps {
   liabilities: Liability[];
   viewId: string;
   grouping?: "period" | null;
-  accountFilter?: UUID | null;
+  accountFilter?: string | null;
   className?: string;
 }
 

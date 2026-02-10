@@ -2,7 +2,7 @@ import * as React from "react";
 import { useStore } from "zustand";
 import { movementsStore } from "@/stores/movements";
 import { activitiesStore } from "@/stores/activities";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { getCurrencyFormatter, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { deleteMovementMutation, updateMovementMutation } from "@/mutations/movements";
 import { useRouter } from "@tanstack/react-router";
 import type { Movement } from "@maille/core/movements";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import _ from "lodash";
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import { AmountInput } from "@/components/ui/amount-input";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 
 interface MovementProps {
-  movementId: UUID;
+  movementId: string;
   onClose: () => void;
 }
 
@@ -71,7 +71,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
       const movementData = _.cloneDeep(movement);
       movementsStore.getState().deleteMovement(movementId);
 
-      eventsStore.getState().sendEvent({
+      syncStore.getState().sendEvent({
         name: "deleteMovement",
         mutation: deleteMovementMutation,
         variables: {
@@ -91,7 +91,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
   const updateMovement = (update: {
     date?: Date;
     amount?: number;
-    account?: UUID;
+    account?: string;
     name?: string;
   }) => {
     if (!movement) return;
@@ -99,7 +99,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
     const movementData = _.cloneDeep(movement);
     movementsStore.getState().updateMovement(movementId, update);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "updateMovement",
       mutation: updateMovementMutation,
       variables: {

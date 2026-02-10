@@ -1,9 +1,9 @@
 import { useStore } from "zustand";
 import { useState, useMemo } from "react";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { ActivityType } from "@maille/core/activities";
 import { activitiesStore } from "@/stores/activities";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { workspacesStore } from "@/stores/workspaces";
 import {
   createActivityCategoryMutation,
@@ -64,10 +64,10 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     deleteActivitySubcategory: state.deleteActivitySubcategory,
   }));
 
-  const sendEvent = useStore(eventsStore, (state) => state.sendEvent);
+  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
   const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
 
-  const [expanded, setExpanded] = useState<UUID | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({
     show: false,
     name: "",
@@ -77,7 +77,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     name: "",
   });
 
-  const toggleExpand = (categoryId: UUID) => {
+  const toggleExpand = (categoryId: string) => {
     setExpanded(expanded === categoryId ? null : categoryId);
     setNewSubCategory({ show: false, name: "" });
   };
@@ -96,11 +96,11 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     setNewSubCategory({ show: false, name: "" });
   };
 
-  const getActivitiesLinkedToCategory = (categoryId: UUID) => {
+  const getActivitiesLinkedToCategory = (categoryId: string) => {
     return activities.filter((a) => a.category === categoryId).length;
   };
 
-  const getActivitiesLinkedToSubCategory = (subcategoryId: UUID) => {
+  const getActivitiesLinkedToSubCategory = (subcategoryId: string) => {
     return activities.filter((a) => a.subcategory === subcategoryId).length;
   };
 
@@ -146,7 +146,7 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
     cancelNewSubCategory();
   };
 
-  const handleDeleteCategory = async (categoryId: UUID) => {
+  const handleDeleteCategory = async (categoryId: string) => {
     const categoryActivities = activities.filter((a) => a.category === categoryId).map((a) => a.id);
     const categoryActivitiesSubcategories = activities
       .filter((a) => a.category === categoryId)
@@ -168,13 +168,13 @@ export function ActivityTypeSection({ activityType }: ActivityTypeSectionProps) 
             if (sc) acc[sc] = sc;
             return acc;
           },
-          {} as Record<UUID, UUID>,
+          {} as Record<string, string>,
         ),
       },
     });
   };
 
-  const handleDeleteSubCategory = async (subcategoryId: UUID) => {
+  const handleDeleteSubCategory = async (subcategoryId: string) => {
     const subcategoryActivities = activities
       .filter((a) => a.subcategory === subcategoryId)
       .map((a) => a.id);

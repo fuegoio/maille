@@ -1,10 +1,10 @@
 import { useStore } from "zustand";
 import { useState, useMemo } from "react";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { AccountType, type Account } from "@maille/core/accounts";
 import { accountsStore, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { workspacesStore } from "@/stores/workspaces";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { activitiesStore } from "@/stores/activities";
 import {
   createAccountMutation,
@@ -38,12 +38,12 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const addAccount = useStore(accountsStore, (state) => state.addAccount);
   const updateAccount = useStore(accountsStore, (state) => state.updateAccount);
   const deleteAccount = useStore(accountsStore, (state) => state.deleteAccount);
-  const sendEvent = useStore(eventsStore, (state) => state.sendEvent);
+  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
 
   const activities = useStore(activitiesStore, (state) => state.activities);
   const currentWorkspace = useStore(workspacesStore, (state) => state.currentWorkspace);
 
-  const [expanded, setExpanded] = useState<UUID | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [newAccount, setNewAccount] = useState({
     show: false,
     name: "",
@@ -61,7 +61,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
       });
   }, [accounts, accountType]);
 
-  const toggleExpand = (accountId: UUID) => {
+  const toggleExpand = (accountId: string) => {
     setExpanded(expanded === accountId ? null : accountId);
   };
 
@@ -69,7 +69,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
     setNewAccount({ show: false, name: "" });
   };
 
-  const getTransactionsLinkedToAccount = (accountId: UUID) => {
+  const getTransactionsLinkedToAccount = (accountId: string) => {
     return activities
       .flatMap((a) => a.transactions)
       .filter((t) => t.fromAccount === accountId || t.toAccount === accountId).length;
@@ -97,7 +97,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   };
 
   const handleUpdateAccount = async (
-    accountId: UUID,
+    accountId: string,
     update: {
       startingBalance?: number | null;
       startingCashBalance?: number | null;
@@ -120,7 +120,7 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
     });
   };
 
-  const handleDeleteAccount = async (accountId: UUID) => {
+  const handleDeleteAccount = async (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
     if (!account) return;
 

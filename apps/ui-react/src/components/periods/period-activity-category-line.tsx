@@ -3,7 +3,7 @@ import { usePeriodsStore } from "@/stores/periods";
 import { useActivitiesStore } from "@/stores/activities";
 import { getCurrencyFormatter } from "@/utils/currency";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -33,7 +33,7 @@ export function PeriodActivityCategoryLine({
   }, [subcategories, category.id]);
 
   const subcategoriesValues = useMemo(() => {
-    const values: Record<UUID, number> = {};
+    const values: Record<string, number> = {};
     categorySubcategories.forEach((subcategory) => {
       values[subcategory.id] = 0;
     });

@@ -5,7 +5,6 @@ import type {
   ActivitySubCategory,
   Transaction,
 } from "@maille/core/activities";
-import type { UUID } from "crypto";
 import type { MutationType } from "./type";
 import type {
   AddTransactionEvent,
@@ -23,15 +22,15 @@ import type {
 
 export const createActivityMutation = graphql(/* GraphQL */ `
   mutation CreateActivity(
-    $workspace: UUID!
-    $category: UUID
+    $workspace: String!
+    $category: String
     $date: Date!
     $description: String
-    $id: UUID!
+    $id: String!
     $movement: ActivityMovementInput
     $name: String!
-    $project: UUID
-    $subcategory: UUID
+    $project: String
+    $subcategory: String
     $transactions: [TransactionInput!]
     $type: String!
   ) {
@@ -57,13 +56,13 @@ export const createActivityMutation = graphql(/* GraphQL */ `
 
 export const updateActivityMutation = graphql(/* GraphQL */ `
   mutation UpdateActivity(
-    $id: UUID!
-    $category: UUID
+    $id: String!
+    $category: String
     $date: Date
     $description: String
     $name: String
-    $project: UUID
-    $subcategory: UUID
+    $project: String
+    $subcategory: String
     $type: String
   ) {
     updateActivity(
@@ -82,7 +81,7 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
 `);
 
 export const deleteActivityMutation = graphql(/* GraphQL */ `
-  mutation DeleteActivity($id: UUID!) {
+  mutation DeleteActivity($id: String!) {
     deleteActivity(id: $id) {
       success
     }
@@ -105,9 +104,9 @@ export type UpdateActivityMutation = MutationType<
     description: string | null;
     date: string;
     type: string;
-    category: UUID | null;
-    subcategory: UUID | null;
-    project: UUID | null;
+    category: string | null;
+    subcategory: string | null;
+    project: string | null;
   },
   [UpdateActivityEvent]
 >;
@@ -121,11 +120,11 @@ export type DeleteActivityMutation = MutationType<
 
 export const addTransactionMutation = graphql(/* GraphQL */ `
   mutation AddTransaction(
-    $activityId: UUID!
-    $id: UUID!
+    $activityId: String!
+    $id: String!
     $amount: Float!
-    $fromAccount: UUID!
-    $toAccount: UUID!
+    $fromAccount: String!
+    $toAccount: String!
   ) {
     addTransaction(
       activityId: $activityId
@@ -141,11 +140,11 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
 
 export const updateTransactionMutation = graphql(/* GraphQL */ `
   mutation UpdateTransaction(
-    $activityId: UUID!
-    $id: UUID!
+    $activityId: String!
+    $id: String!
     $amount: Float
-    $fromAccount: UUID
-    $toAccount: UUID
+    $fromAccount: String
+    $toAccount: String
   ) {
     updateTransaction(
       activityId: $activityId
@@ -160,7 +159,7 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
 `);
 
 export const deleteTransactionMutation = graphql(/* GraphQL */ `
-  mutation DeleteTransaction($activityId: UUID!, $id: UUID!) {
+  mutation DeleteTransaction($activityId: String!, $id: String!) {
     deleteTransaction(activityId: $activityId, id: $id) {
       success
     }
@@ -178,10 +177,10 @@ export type UpdateTransactionMutation = MutationType<
   "updateTransaction",
   typeof updateTransactionMutation,
   {
-    id: UUID;
+    id: string;
     amount: number;
-    fromAccount: UUID;
-    toAccount: UUID;
+    fromAccount: string;
+    toAccount: string;
   },
   [UpdateActivityEvent]
 >;
@@ -195,10 +194,10 @@ export type DeleteTransactionMutation = MutationType<
 
 export const createActivityCategoryMutation = graphql(/* GraphQL */ `
   mutation CreateActivityCategory(
-    $id: UUID!
+    $id: String!
     $name: String!
     $type: String!
-    $workspace: UUID!
+    $workspace: String!
   ) {
     createActivityCategory(
       id: $id
@@ -212,7 +211,7 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateActivityCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivityCategory($id: UUID!, $name: String!) {
+  mutation UpdateActivityCategory($id: String!, $name: String!) {
     updateActivityCategory(id: $id, name: $name) {
       id
     }
@@ -220,7 +219,7 @@ export const updateActivityCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const deleteActivityCategoryMutation = graphql(/* GraphQL */ `
-  mutation DeleteActivityCategory($id: UUID!) {
+  mutation DeleteActivityCategory($id: String!) {
     deleteActivityCategory(id: $id) {
       success
     }
@@ -229,10 +228,10 @@ export const deleteActivityCategoryMutation = graphql(/* GraphQL */ `
 
 export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
   mutation CreateActivitySubCategory(
-    $id: UUID!
+    $id: String!
     $name: String!
-    $category: UUID!
-    $workspace: UUID!
+    $category: String!
+    $workspace: String!
   ) {
     createActivitySubCategory(
       id: $id
@@ -246,7 +245,7 @@ export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateActivitySubCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivitySubCategory($id: UUID!, $name: String!) {
+  mutation UpdateActivitySubCategory($id: String!, $name: String!) {
     updateActivitySubCategory(id: $id, name: $name) {
       id
     }
@@ -254,7 +253,7 @@ export const updateActivitySubCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const deleteActivitySubCategoryMutation = graphql(/* GraphQL */ `
-  mutation DeleteActivitySubCategory($id: UUID!) {
+  mutation DeleteActivitySubCategory($id: String!) {
     deleteActivitySubCategory(id: $id) {
       success
     }
@@ -272,7 +271,7 @@ export type UpdateActivityCategoryMutation = MutationType<
   "updateActivityCategory",
   typeof updateActivityCategoryMutation,
   {
-    id: UUID;
+    id: string;
     name: string;
   },
   [UpdateActivityCategoryEvent]
@@ -283,8 +282,8 @@ export type DeleteActivityCategoryMutation = MutationType<
   typeof deleteActivityCategoryMutation,
   {
     category: ActivityCategory;
-    activities: UUID[];
-    activitiesSubcategories: Record<UUID, UUID>;
+    activities: string[];
+    activitiesSubcategories: Record<string, string>;
   },
   [DeleteActivityCategoryEvent]
 >;
@@ -300,7 +299,7 @@ export type UpdateActivitySubCategoryMutation = MutationType<
   "updateActivitySubCategory",
   typeof updateActivitySubCategoryMutation,
   {
-    id: UUID;
+    id: string;
     name: string;
   },
   [UpdateActivitySubCategoryEvent]
@@ -309,7 +308,7 @@ export type UpdateActivitySubCategoryMutation = MutationType<
 export type DeleteActivitySubCategoryMutation = MutationType<
   "deleteActivitySubCategory",
   typeof deleteActivitySubCategoryMutation,
-  { subcategory: ActivitySubCategory; activities: UUID[] },
+  { subcategory: ActivitySubCategory; activities: string[] },
   [DeleteActivitySubCategoryEvent]
 >;
 

@@ -1,5 +1,4 @@
 import _ from "lodash";
-import type { UUID } from "crypto";
 
 import {
   ActivityType,
@@ -15,7 +14,7 @@ export const getActivityStatus = (
   transactions: Transaction[],
   movements: ActivityMovement[],
   accounts: Account[],
-  getMovementById: (id: UUID) => Movement | undefined,
+  getMovementById: (id: string) => Movement | undefined,
 ): ActivityStatus => {
   if (activityDate > new Date()) {
     return "scheduled";
@@ -84,7 +83,7 @@ export const getActivityTransactionsReconciliationSum = (
 
 export const getActivityMovementsByAccount = (
   movements: ActivityMovement[],
-  getMovementById: (id: UUID) => Movement | undefined,
+  getMovementById: (id: string) => Movement | undefined,
 ) => {
   return movements.reduce(
     (movementsByAccount, movementActivity) => {
@@ -111,7 +110,7 @@ export const getActivityMovementsByAccount = (
       return movementsByAccount;
     },
     [] as {
-      account: UUID;
+      account: string;
       total: number;
       movements: MovementWithLink[];
     }[],
@@ -160,7 +159,7 @@ export const getActivityTransactionsSumByAccount = (
 
       return transactionsSumByAccount;
     },
-    [] as { account: UUID; total: number }[],
+    [] as { account: string; total: number }[],
   );
 };
 
@@ -168,7 +167,7 @@ export const getActivityMovementsReconciliatedByAccount = (
   transactions: Transaction[],
   movements: ActivityMovement[],
   accounts: Account[],
-  getMovementById: (id: UUID) => Movement | undefined,
+  getMovementById: (id: string) => Movement | undefined,
 ) => {
   const transactionsSumByAccount = getActivityTransactionsSumByAccount(transactions, accounts);
   const movementsByAccount = getActivityMovementsByAccount(movements, getMovementById);
@@ -213,7 +212,7 @@ export const getActivityMovementsReconciliatedByAccount = (
       return movementsReconciliatedByAccount;
     },
     [] as {
-      account: UUID;
+      account: string;
       reconcilied: boolean;
       transactionTotal: number;
       movementTotal: number;
@@ -226,7 +225,7 @@ export const getActivityMovementsReconciliated = (
   transactions: Transaction[],
   movements: ActivityMovement[],
   accounts: Account[],
-  getMovementById: (id: UUID) => Movement | undefined,
+  getMovementById: (id: string) => Movement | undefined,
 ): boolean => {
   const movementsReconciliatedByAccount = getActivityMovementsReconciliatedByAccount(
     transactions,

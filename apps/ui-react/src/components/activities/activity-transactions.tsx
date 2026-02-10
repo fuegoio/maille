@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { activitiesStore } from "@/stores/activities";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { updateTransactionMutation, deleteTransactionMutation } from "@/mutations/activities";
 import { AddTransactionButton } from "./add-transaction-button";
 import { AccountSelect } from "@/components/accounts/account-select";
@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Trash2 } from "lucide-react";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 interface ActivityTransactionsProps {
   activity: Activity;
@@ -32,7 +32,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     const oldTransaction = { ...transaction };
     activitiesStore.getState().updateTransaction(activity.id, transaction.id, updateData);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
       variables: {
@@ -47,7 +47,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   const handleTransactionDelete = (transaction: Transaction) => {
     activitiesStore.getState().deleteTransaction(activity.id, transaction.id);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "deleteTransaction",
       mutation: deleteTransactionMutation,
       variables: {
@@ -103,7 +103,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                   modelValue={transaction.fromAccount}
                   onUpdateModelValue={(account) =>
                     handleTransactionUpdate(transaction, {
-                      fromAccount: account as UUID,
+                      fromAccount: account as string,
                     })
                   }
                   borderless
@@ -114,7 +114,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                   modelValue={transaction.toAccount}
                   onUpdateModelValue={(account) =>
                     handleTransactionUpdate(transaction, {
-                      toAccount: account as UUID,
+                      toAccount: account as string,
                     })
                   }
                   borderless

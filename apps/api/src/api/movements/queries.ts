@@ -11,7 +11,7 @@ export const registerMovementsQueries = () => {
     t.field({
       type: [MovementSchema],
       args: {
-        workspaceId: t.arg({ type: "UUID", required: true }),
+        workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
         // Validate workspace

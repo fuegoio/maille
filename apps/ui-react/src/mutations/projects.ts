@@ -1,14 +1,13 @@
 import { graphql } from "@/gql";
 import type { MutationType } from "./type";
 import type { Project } from "@maille/core/projects";
-import type { UUID } from "crypto";
 
 export const createProjectMutation = graphql(/* GraphQL */ `
   mutation CreateProject(
-    $id: UUID!
+    $id: String!
     $name: String!
     $emoji: String
-    $workspace: UUID!
+    $workspace: String!
   ) {
     createProject(id: $id, name: $name, emoji: $emoji, workspace: $workspace) {
       id
@@ -18,7 +17,7 @@ export const createProjectMutation = graphql(/* GraphQL */ `
 
 export const updateProjectMutation = graphql(/* GraphQL */ `
   mutation UpdateProject(
-    $id: UUID!
+    $id: String!
     $name: String
     $emoji: String
     $startDate: Date
@@ -37,7 +36,7 @@ export const updateProjectMutation = graphql(/* GraphQL */ `
 `);
 
 export const deleteProjectMutation = graphql(/* GraphQL */ `
-  mutation DeleteProject($id: UUID!) {
+  mutation DeleteProject($id: String!) {
     deleteProject(id: $id)
   }
 `);
@@ -57,7 +56,7 @@ export type UpdateProjectMutation = MutationType<
 export type DeleteProjectMutation = MutationType<
   "deleteProject",
   typeof deleteProjectMutation,
-  { project: Project; activities: UUID[] }
+  { project: Project; activities: string[] }
 >;
 
 export type ProjectMutation = CreateProjectMutation | UpdateProjectMutation | DeleteProjectMutation;

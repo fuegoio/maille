@@ -4,6 +4,7 @@ import { workspaces, workspaceUsers } from "@/tables";
 import { WorkspaceSchema } from "./schemas";
 import { randomUUID } from "crypto";
 import { eq } from "drizzle-orm";
+import { GraphQLError } from "graphql";
 
 export const registerWorkspaceMutations = () => {
   builder.mutationField("createWorkspace", (t) =>
@@ -18,7 +19,7 @@ export const registerWorkspaceMutations = () => {
         const workspaceId = randomUUID();
         const createdAt = new Date();
 
-        const [workspace] = await db
+        const workspaceResults = await db
           .insert(workspaces)
           .values({
             id: workspaceId,
@@ -28,6 +29,11 @@ export const registerWorkspaceMutations = () => {
             createdAt: createdAt,
           })
           .returning();
+        const workspace = workspaceResults[0];
+        
+        if (!workspace) {
+          throw new GraphQLError("Failed to create workspace");
+        }
 
         // Add the creating user to the workspace
         await db.insert(workspaceUsers).values({
@@ -40,7 +46,7 @@ export const registerWorkspaceMutations = () => {
         return {
           ...workspace,
           users: [{ ...ctx.user, image: ctx.user.image || null }],
-          createdAt: workspace.createdAt.toISOString(),
+          createdAt: workspace.createdAt ? workspace.createdAt.toISOString() : createdAt.toISOString(),
         };
       },
     }),
@@ -50,7 +56,7 @@ export const registerWorkspaceMutations = () => {
     t.field({
       type: "Boolean",
       args: {
-        id: t.arg({ type: "UUID", required: true }),
+        id: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args) => {
         const result = await db.delete(workspaces).where(eq(workspaces.id, args.id)).returning();

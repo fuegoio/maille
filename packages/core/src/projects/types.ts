@@ -1,7 +1,7 @@
-import type { UUID } from "crypto";
+// Remove incorrect crypto import
 
 export type Project = {
-  id: UUID;
+  id: string;
   name: string;
   emoji: string | null;
   startDate: Date | null;

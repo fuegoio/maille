@@ -1,10 +1,9 @@
 import type { Account, AccountType } from "#accounts/index.js";
 import type { ActivityType, Transaction } from "#activities/types.ts";
-import type { UUID } from "crypto";
 
 export interface BaseSyncEvent {
   user: string;
-  workspace: UUID;
+  workspace: string;
   createdAt: Date;
   clientId: string;
 }
@@ -12,21 +11,21 @@ export interface BaseSyncEvent {
 export interface CreateActivityEvent extends BaseSyncEvent {
   type: "createActivity";
   payload: {
-    id: UUID;
+    id: string;
     number: number;
     user: string;
     name: string;
     description: string | null;
     date: string;
     type: ActivityType;
-    category: UUID | null;
-    subcategory: UUID | null;
-    project: UUID | null;
+    category: string | null;
+    subcategory: string | null;
+    project: string | null;
     transactions: Transaction[];
     movement?: {
-      id: UUID;
+      id: string;
       amount: number;
-      movement: UUID;
+      movement: string;
     };
   };
 }
@@ -34,63 +33,63 @@ export interface CreateActivityEvent extends BaseSyncEvent {
 export interface UpdateActivityEvent extends BaseSyncEvent {
   type: "updateActivity";
   payload: {
-    id: UUID;
+    id: string;
     name?: string;
-    users?: UUID[];
+    users?: string[];
     description?: string | null;
     date?: string;
     type?: ActivityType;
-    category?: UUID | null;
-    subcategory?: UUID | null;
-    project?: UUID | null;
+    category?: string | null;
+    subcategory?: string | null;
+    project?: string | null;
   };
 }
 
 export interface DeleteActivityEvent extends BaseSyncEvent {
   type: "deleteActivity";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface AddTransactionEvent extends BaseSyncEvent {
   type: "addTransaction";
   payload: Transaction & {
-    activityId: UUID;
+    activityId: string;
   };
 }
 
 export interface UpdateTransactionEvent extends BaseSyncEvent {
   type: "updateTransaction";
   payload: {
-    activityId: UUID;
-    id: UUID;
+    activityId: string;
+    id: string;
   } & Partial<Omit<Transaction, "id">>;
 }
 
 export interface DeleteTransactionEvent extends BaseSyncEvent {
   type: "deleteTransaction";
   payload: {
-    activityId: UUID;
-    id: UUID;
+    activityId: string;
+    id: string;
   };
 }
 
 export interface CreateMovementEvent extends BaseSyncEvent {
   type: "createMovement";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
     date: string;
     amount: number;
-    account: UUID;
+    account: string;
   };
 }
 
 export interface UpdateMovementEvent extends BaseSyncEvent {
   type: "updateMovement";
   payload: {
-    id: UUID;
+    id: string;
     date?: string;
     amount?: number;
   };
@@ -99,16 +98,16 @@ export interface UpdateMovementEvent extends BaseSyncEvent {
 export interface DeleteMovementEvent extends BaseSyncEvent {
   type: "deleteMovement";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface CreateMovementActivityEvent extends BaseSyncEvent {
   type: "createMovementActivity";
   payload: {
-    id: UUID;
-    movement: UUID;
-    activity: UUID;
+    id: string;
+    movement: string;
+    activity: string;
     amount: number;
   };
 }
@@ -116,8 +115,8 @@ export interface CreateMovementActivityEvent extends BaseSyncEvent {
 export interface UpdateMovementActivityEvent extends BaseSyncEvent {
   type: "updateMovementActivity";
   payload: {
-    id: UUID;
-    movement: UUID;
+    id: string;
+    movement: string;
     amount: number;
   };
 }
@@ -125,15 +124,15 @@ export interface UpdateMovementActivityEvent extends BaseSyncEvent {
 export interface DeleteMovementActivityEvent extends BaseSyncEvent {
   type: "deleteMovementActivity";
   payload: {
-    id: UUID;
-    movement: UUID;
+    id: string;
+    movement: string;
   };
 }
 
 export interface CreateActivityCategoryEvent extends BaseSyncEvent {
   type: "createActivityCategory";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
     type: ActivityType;
   };
@@ -142,7 +141,7 @@ export interface CreateActivityCategoryEvent extends BaseSyncEvent {
 export interface UpdateActivityCategoryEvent extends BaseSyncEvent {
   type: "updateActivityCategory";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
   };
 }
@@ -150,23 +149,23 @@ export interface UpdateActivityCategoryEvent extends BaseSyncEvent {
 export interface DeleteActivityCategoryEvent extends BaseSyncEvent {
   type: "deleteActivityCategory";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface CreateActivitySubCategoryEvent extends BaseSyncEvent {
   type: "createActivitySubCategory";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
-    category: UUID;
+    category: string;
   };
 }
 
 export interface UpdateActivitySubCategoryEvent extends BaseSyncEvent {
   type: "updateActivitySubCategory";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
   };
 }
@@ -174,14 +173,14 @@ export interface UpdateActivitySubCategoryEvent extends BaseSyncEvent {
 export interface DeleteActivitySubCategoryEvent extends BaseSyncEvent {
   type: "deleteActivitySubCategory";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface CreateProjectEvent extends BaseSyncEvent {
   type: "createProject";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
     emoji: string | null;
   };
@@ -190,7 +189,7 @@ export interface CreateProjectEvent extends BaseSyncEvent {
 export interface UpdateProjectEvent extends BaseSyncEvent {
   type: "updateProject";
   payload: {
-    id: UUID;
+    id: string;
     name?: string;
     emoji?: string | null;
     startDate?: string | null;
@@ -201,14 +200,14 @@ export interface UpdateProjectEvent extends BaseSyncEvent {
 export interface DeleteProjectEvent extends BaseSyncEvent {
   type: "deleteProject";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface CreateAccountEvent extends BaseSyncEvent {
   type: "createAccount";
   payload: {
-    id: UUID;
+    id: string;
     name: string;
     type: AccountType;
   };
@@ -217,7 +216,7 @@ export interface CreateAccountEvent extends BaseSyncEvent {
 export interface UpdateAccountEvent extends BaseSyncEvent {
   type: "updateAccount";
   payload: {
-    id: UUID;
+    id: string;
     startingBalance?: number | null;
     startingCashBalance?: number | null;
     movements?: boolean;
@@ -227,14 +226,14 @@ export interface UpdateAccountEvent extends BaseSyncEvent {
 export interface DeleteAccountEvent extends BaseSyncEvent {
   type: "deleteAccount";
   payload: {
-    id: UUID;
+    id: string;
   };
 }
 
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
-    id: UUID;
+    id: string;
     email: string;
     firstName: string;
     lastName: string;
@@ -245,7 +244,7 @@ export interface CreateUserEvent extends BaseSyncEvent {
 export interface UpdateUserEvent extends BaseSyncEvent {
   type: "updateUser";
   payload: {
-    id: UUID;
+    id: string;
     firstName?: string;
     lastName?: string;
     avatar?: string | null;

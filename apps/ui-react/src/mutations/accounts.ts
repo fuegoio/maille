@@ -1,14 +1,13 @@
 import { graphql } from "@/gql";
 import type { MutationType } from "./type";
-import type { UUID } from "crypto";
 import type { Account } from "@maille/core/accounts";
 
 export const createAccountMutation = graphql(/* GraphQL */ `
   mutation CreateAccount(
-    $id: UUID!
+    $id: String!
     $name: String!
     $type: String!
-    $workspace: UUID!
+    $workspace: String!
   ) {
     createAccount(id: $id, name: $name, type: $type, workspace: $workspace) {
       id
@@ -24,7 +23,7 @@ export type CreateAccountMutation = MutationType<
 
 export const updateAccountMutation = graphql(/* GraphQL */ `
   mutation UpdateAccount(
-    $id: UUID!
+    $id: String!
     $startingBalance: Float
     $startingCashBalance: Float
     $movements: Boolean
@@ -44,7 +43,7 @@ export type UpdateAccountMutation = MutationType<
   "updateAccount",
   typeof updateAccountMutation,
   {
-    id: UUID;
+    id: string;
     startingBalance: number | null;
     startingCashBalance: number | null;
     movements: boolean;
@@ -52,7 +51,7 @@ export type UpdateAccountMutation = MutationType<
 >;
 
 export const deleteAccountMutation = graphql(/* GraphQL */ `
-  mutation DeleteAccount($id: UUID!) {
+  mutation DeleteAccount($id: String!) {
     deleteAccount(id: $id) {
       success
     }

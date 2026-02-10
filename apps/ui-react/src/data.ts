@@ -8,10 +8,10 @@ import { projectsStore } from "./stores/projects";
 import { liabilitiesStore } from "./stores/liabilities";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 const workspaceDataQuery = graphql(/* GraphQL */ `
-  query WorkspaceData($workspace: UUID!) {
+  query WorkspaceData($workspace: string!) {
     workspace(id: $workspace) {
       id
       name
@@ -101,7 +101,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
 /**
  * Fetch workspace data and populate all stores
  */
-export const fetchWorkspaceData = async (workspaceId: UUID) => {
+export const fetchWorkspaceData = async (workspaceId: string) => {
   const workspaceData = await graphqlClient.request(workspaceDataQuery, {
     workspace: workspaceId,
   });

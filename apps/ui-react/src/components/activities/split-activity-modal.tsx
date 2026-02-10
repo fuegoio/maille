@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { Plus, Trash2 } from "lucide-react";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 interface SplitActivityModalProps {
   open: boolean;
@@ -21,7 +21,7 @@ interface SplitActivityModalProps {
 }
 
 export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActivityModalProps) {
-  const activity = useStore(activitiesStore, (state) => state.getActivityById(activityId as UUID));
+  const activity = useStore(activitiesStore, (state) => state.getActivityById(activityId as string));
   const currencyFormatter = getCurrencyFormatter();
 
   const [splitAmounts, setSplitAmounts] = React.useState<number[]>([activity?.amount || 0]);

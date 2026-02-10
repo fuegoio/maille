@@ -1,10 +1,9 @@
 import { db } from "@/database";
 import { workspaces, workspaceUsers } from "@/tables";
-import type { UUID } from "crypto";
 import { eq, and } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
-export const validateWorkspace = async (workspaceId: UUID, userId: string) => {
+export const validateWorkspace = async (workspaceId: string, userId: string) => {
   const workspace = await db
     .select()
     .from(workspaces)

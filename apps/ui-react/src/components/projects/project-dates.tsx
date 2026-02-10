@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useStore } from "zustand";
 import { projectsStore } from "@/stores/projects";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { updateProjectMutation } from "@/mutations/projects";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 
 interface ProjectDatesProps {
-  projectId: UUID;
+  projectId: string;
 }
 
 export function ProjectDates({ projectId }: ProjectDatesProps) {
   const projects = useStore(projectsStore, (state) => state.projects);
   const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const sendEvent = useStore(eventsStore, (state) => state.sendEvent);
+  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
 
   const project = projects.find((p) => p.id === projectId);
 

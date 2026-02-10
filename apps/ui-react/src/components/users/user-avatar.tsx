@@ -1,11 +1,11 @@
 import { useStore } from "zustand";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { authStore } from "@/stores/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useMemo } from "react";
 
 interface UserAvatarProps {
-  userId: UUID;
+  userId: string;
   className?: string;
 }
 

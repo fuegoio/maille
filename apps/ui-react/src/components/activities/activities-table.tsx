@@ -10,7 +10,7 @@ import { ActivitiesFilters } from "./filters/activities-filters";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useHotkeys } from "react-hotkeys-hook";
 import { verifyActivityFilter } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 // Activity type colors mapping
 const ACTIVITY_TYPES_COLOR = {
@@ -24,9 +24,9 @@ interface ActivitiesTableProps {
   viewId: string;
   activities: Activity[];
   grouping?: "period" | null;
-  accountFilter?: UUID | null;
-  categoryFilter?: UUID | null;
-  subcategoryFilter?: UUID | null;
+  accountFilter?: string | null;
+  categoryFilter?: string | null;
+  subcategoryFilter?: string | null;
   activityTypeFilter?: ActivityType | null;
   hideProject?: boolean;
 }
@@ -180,7 +180,7 @@ export function ActivitiesTable({
     if (focusedActivity === activityId) {
       activitiesStore.getState().setFocusedActivity(null);
     } else {
-      activitiesStore.getState().setFocusedActivity(activityId as UUID);
+      activitiesStore.getState().setFocusedActivity(activityId as string);
     }
   };
 

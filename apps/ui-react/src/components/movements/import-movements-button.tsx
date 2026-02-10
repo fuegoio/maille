@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useStore } from "zustand";
 import { movementsStore } from "@/stores/movements";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { createMovementMutation } from "@/mutations/movements";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { parse } from "csv-parse/browser/esm/sync";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -49,7 +49,7 @@ export function ImportMovementsButton({
     amount: undefined as string | undefined,
     name: undefined as string | undefined,
   });
-  const [account, setAccount] = React.useState<UUID | undefined>(undefined);
+  const [account, setAccount] = React.useState<string | undefined>(undefined);
 
   const movements = useStore(movementsStore, (state) => state.movements);
 
@@ -109,7 +109,7 @@ export function ImportMovementsButton({
           activities: [],
         });
 
-        eventsStore.getState().sendEvent({
+        syncStore.getState().sendEvent({
           name: "createMovement",
           mutation: createMovementMutation,
           variables: {

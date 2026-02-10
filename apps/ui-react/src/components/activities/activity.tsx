@@ -28,7 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 interface ActivityProps {
   viewId: string;
@@ -50,7 +50,7 @@ export function Activity({ viewId }: ActivityProps) {
 
   const activity = React.useMemo(() => {
     if (!activityView.focusedActivity) return null;
-    return activitiesStore.getState().getActivityById(activityView.focusedActivity as UUID);
+    return activitiesStore.getState().getActivityById(activityView.focusedActivity as string);
   }, [activityView.focusedActivity, activities]);
 
   const currencyFormatter = getCurrencyFormatter();
@@ -91,9 +91,9 @@ export function Activity({ viewId }: ActivityProps) {
     description?: string | null;
     date?: Date;
     type?: ActivityType;
-    category?: UUID | null;
-    subcategory?: UUID | null;
-    project?: UUID | null;
+    category?: string | null;
+    subcategory?: string | null;
+    project?: string | null;
   }) => {
     if (!activity) return;
 

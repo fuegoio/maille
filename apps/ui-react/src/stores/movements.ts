@@ -1,51 +1,51 @@
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Movement } from "@maille/core/movements";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
 
 interface MovementsState {
   movements: Movement[];
-  focusedMovement: UUID | null;
+  focusedMovement: string | null;
 
-  getMovementById: (movementId: UUID) => Movement | undefined;
+  getMovementById: (movementId: string) => Movement | undefined;
 
   addMovement: (params: {
-    id?: UUID;
+    id?: string;
     date: Date;
     amount: number;
-    account: UUID;
+    account: string;
     name: string;
     activities: any[];
   }) => Movement;
 
   updateMovement: (
-    movementId: UUID,
+    movementId: string,
     update: {
       date?: Date;
       amount?: number;
-      account?: UUID;
+      account?: string;
       name?: string;
       activities?: any[];
     },
   ) => void;
 
-  deleteMovement: (movementId: UUID) => void;
+  deleteMovement: (movementId: string) => void;
   restoreMovement: (movement: Movement) => void;
 
-  setFocusedMovement: (movementId: UUID | null) => void;
+  setFocusedMovement: (movementId: string | null) => void;
 
   createMovementActivity: (
-    activityId: UUID,
-    movementId: UUID,
+    activityId: string,
+    movementId: string,
     amount: number,
-  ) => { id: UUID; activity: UUID; movement: UUID; amount: number };
+  ) => { id: string; activity: string; movement: string; amount: number };
 
-  updateMovementActivity: (movementId: UUID, movementActivityId: UUID, amount: number) => void;
+  updateMovementActivity: (movementId: string, movementActivityId: string, amount: number) => void;
 
-  deleteMovementActivity: (movementId: UUID, movementActivityId: UUID) => void;
+  deleteMovementActivity: (movementId: string, movementActivityId: string) => void;
 
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
@@ -58,17 +58,17 @@ export const movementsStore = createStore<MovementsState>()(
       movements: [],
       focusedMovement: null,
 
-      getMovementById: (movementId: UUID): Movement | undefined => {
+      getMovementById: (movementId: string): Movement | undefined => {
         return get().movements.find((m) => m.id === movementId);
       },
 
-      setFocusedMovement: (movementId: UUID | null) => {
+      setFocusedMovement: (movementId: string | null) => {
         set({ focusedMovement: movementId });
       },
 
-      createMovementActivity: (activityId: UUID, movementId: UUID, amount: number) => {
+      createMovementActivity: (activityId: string, movementId: string, amount: number) => {
         const newMovementActivity = {
-          id: crypto.randomUUID(),
+          id: crypto.randomstring(),
           activity: activityId,
           movement: movementId,
           amount,
@@ -94,7 +94,7 @@ export const movementsStore = createStore<MovementsState>()(
         return newMovementActivity;
       },
 
-      updateMovementActivity: (movementId: UUID, movementActivityId: UUID, amount: number) => {
+      updateMovementActivity: (movementId: string, movementActivityId: string, amount: number) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
@@ -116,7 +116,7 @@ export const movementsStore = createStore<MovementsState>()(
         }));
       },
 
-      deleteMovementActivity: (movementId: UUID, movementActivityId: UUID) => {
+      deleteMovementActivity: (movementId: string, movementActivityId: string) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
@@ -146,15 +146,15 @@ export const movementsStore = createStore<MovementsState>()(
         name,
         activities,
       }: {
-        id?: UUID;
+        id?: string;
         date: Date;
         amount: number;
-        account: UUID;
+        account: string;
         name: string;
         activities: any[];
       }): Movement => {
         const newMovement = {
-          id: id ?? crypto.randomUUID(),
+          id: id ?? crypto.randomstring(),
           date,
           amount,
           account,
@@ -171,11 +171,11 @@ export const movementsStore = createStore<MovementsState>()(
       },
 
       updateMovement: (
-        movementId: UUID,
+        movementId: string,
         update: {
           date?: Date;
           amount?: number;
-          account?: UUID;
+          account?: string;
           name?: string;
           activities?: any[];
         },
@@ -207,7 +207,7 @@ export const movementsStore = createStore<MovementsState>()(
         }));
       },
 
-      deleteMovement: (movementId: UUID) => {
+      deleteMovement: (movementId: string) => {
         set((state) => ({
           movements: state.movements.filter((movement) => movement.id !== movementId),
         }));

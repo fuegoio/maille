@@ -1,10 +1,9 @@
 import { accounts, workspaces } from "@/tables";
 import { db } from "@/database";
-import type { UUID } from "crypto";
 import { AccountType } from "@maille/core/accounts";
 import { logger } from "@/logger";
 
-export const bootstrapUser = async (userId: UUID) => {
+export const bootstrapUser = async (userId: string) => {
   logger.info({ userId }, "Bootstrapping user ...");
 
   // Get or create a default workspace

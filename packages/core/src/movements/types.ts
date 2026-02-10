@@ -1,4 +1,4 @@
-import type { UUID } from "crypto";
+// Remove incorrect crypto import
 
 import type {
   ActivityFilterAmountOperators,
@@ -11,23 +11,23 @@ import type {
 export type MovementStatus = "incomplete" | "completed";
 
 export type Movement = {
-  id: UUID;
+  id: string;
   date: Date;
   amount: number;
-  account: UUID;
+  account: string;
   name: string;
   activities: MovementActivity[];
   status: MovementStatus;
 };
 
 export type MovementActivity = {
-  id: UUID;
-  activity: UUID;
+  id: string;
+  activity: string;
   amount: number;
 };
 
 export type MovementWithLink = Movement & {
-  movementActivityId: UUID;
+  movementActivityId: string;
   amountLinked: number;
 };
 
@@ -71,7 +71,7 @@ type MovementFilterAmount = {
 type MovementFilterAccount = {
   field: "account";
   operator?: (typeof ActivityFilterMultipleOperators)[number];
-  value?: UUID[];
+  value?: string[];
 };
 
 type MovementFilterStatus = {

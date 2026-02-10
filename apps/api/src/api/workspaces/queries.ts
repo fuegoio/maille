@@ -23,7 +23,7 @@ export const registerWorkspaceQueries = () => {
     t.field({
       type: WorkspaceSchema,
       args: {
-        id: t.arg({ type: "UUID", required: true }),
+        id: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args) => {
         const workspace = await db

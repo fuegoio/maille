@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 import { useStore } from "zustand";
 import { projectsStore } from "@/stores/projects";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { createProjectMutation, updateProjectMutation } from "@/mutations/projects";
-import type { UUID } from "crypto";
 
 import {
   Dialog,
@@ -16,12 +18,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { XIcon } from "lucide-react";
+import { Field, FieldError } from "@/components/ui/field";
+
+// Form schema using zod
+const formSchema = z.object({
+  name: z.string().min(1, "Project name is required"),
+  emoji: z.string().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddAndEditProjectModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId?: UUID;
-  onCreate?: (projectId: UUID) => void;
+  projectId?: string;
+  onCreate?: (projectId: string) => void;
 }
 
 export function AddAndEditProjectModal({
@@ -33,12 +44,20 @@ export function AddAndEditProjectModal({
   const projects = useStore(projectsStore, (state) => state.projects);
   const addProject = useStore(projectsStore, (state) => state.addProject);
   const updateProject = useStore(projectsStore, (state) => state.updateProject);
-  const sendEvent = useStore(eventsStore, (state) => state.sendEvent);
+  const sendEvent = useStore(syncStore, (state) => state.sendEvent);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState<string | null>(null);
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      emoji: null,
+    },
+  });
+
+  const { control, handleSubmit, reset, setValue, watch } = form;
+  const emoji = watch("emoji");
 
   const project = projectId ? projects.find((p) => p.id === projectId) : undefined;
 
@@ -48,11 +67,15 @@ export function AddAndEditProjectModal({
   useEffect(() => {
     if (open) {
       if (project) {
-        setName(project.name);
-        setEmoji(project.emoji);
+        reset({
+          name: project.name,
+          emoji: project.emoji || null,
+        });
       } else {
-        setName("");
-        setEmoji(null);
+        reset({
+          name: "",
+          emoji: null,
+        });
       }
 
       // Focus the name input when modal opens
@@ -62,18 +85,14 @@ export function AddAndEditProjectModal({
         }
       }, 100);
     }
-  }, [open, project]);
+  }, [open, project, reset]);
 
-  const validForm = name.trim() !== "";
-
-  const handleSubmit = () => {
-    if (!validForm) return;
-
+  const onSubmit = (data: FormValues) => {
     if (isEditMode && project) {
       // Update existing project
       updateProject(project.id, {
-        name: name,
-        emoji: emoji,
+        name: data.name,
+        emoji: data.emoji,
       });
 
       sendEvent({
@@ -81,16 +100,16 @@ export function AddAndEditProjectModal({
         mutation: updateProjectMutation,
         variables: {
           id: project.id,
-          name: name,
-          emoji: emoji,
+          name: data.name,
+          emoji: data.emoji,
         },
         rollbackData: { ...project },
       });
     } else {
       // Create new project
       const newProject = addProject({
-        name: name,
-        emoji: emoji,
+        name: data.name,
+        emoji: data.emoji,
         startDate: null,
         endDate: null,
       });
@@ -132,37 +151,50 @@ export function AddAndEditProjectModal({
           </Button>
         </DialogHeader>
 
-        <div className="py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="py-4">
           <div className="flex items-center gap-2">
-            <EmojiPicker value={emoji} onChange={setEmoji} placeholder="📚" className="mr-2" />
-            <Input
-              ref={nameInputRef}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Project name"
-              className="placeholder-primary-400 w-full resize-none border-none bg-transparent text-2xl font-semibold break-words text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+            <EmojiPicker 
+              value={emoji || ""}
+              onChange={(value) => setValue("emoji", value)}
+              placeholder="📚" 
+              className="mr-2"
+            />
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="w-full">
+                  <Input
+                    {...field}
+                    ref={nameInputRef}
+                    placeholder="Project name"
+                    className="placeholder-primary-400 w-full resize-none border-none bg-transparent text-2xl font-semibold break-words text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
             />
           </div>
-        </div>
 
-        <DialogFooter className="border-primary-700 border-t pt-4">
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              className="text-primary-300 border-primary-600 hover:bg-primary-700"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={!validForm}
-              className="bg-primary-400 hover:bg-primary-300 text-white"
-              onClick={handleSubmit}
-            >
-              {isEditMode ? "Save" : "Create"} project
-            </Button>
-          </div>
-        </DialogFooter>
+          <DialogFooter className="border-primary-700 border-t pt-4">
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                className="text-primary-300 border-primary-600 hover:bg-primary-700"
+                onClick={() => onOpenChange(false)}
+                type="button"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-primary-400 hover:bg-primary-300 text-white"
+              >
+                {isEditMode ? "Save" : "Create"} project
+              </Button>
+            </div>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

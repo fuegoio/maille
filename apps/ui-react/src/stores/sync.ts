@@ -7,7 +7,7 @@ import { movementsStore } from "./movements";
 import { projectsStore } from "./projects";
 import { accountsStore } from "./accounts";
 import { authStore } from "./auth";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import type { SyncEvent } from "@maille/core/sync";
 import { workspacesStore } from "./workspaces";
 import { persist } from "zustand/middleware";
@@ -19,13 +19,13 @@ interface SyncState {
   mutationsInProcessing: boolean;
   mutate: (mutation: Mutation) => void;
   dequeueMutations: () => Promise<void>;
-  fetchMissingEvents: (workspace: UUID) => Promise<void>;
+  fetchMissingEvents: (workspace: string) => Promise<void>;
 }
 
 const missingEventsQuery = graphql(/* GraphQL */ `
   query MissingEvents(
       $lastSync: Float!,
-      $workspace: UUID!
+      $workspace: string!
     ) {
     events(lastSync: $lastSync, workspace: $workspace) {
       type

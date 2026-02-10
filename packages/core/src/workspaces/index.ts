@@ -1,8 +1,8 @@
 import type { User } from "#users/types.js";
-import type { UUID } from "crypto";
+// Remove incorrect crypto import
 
 export interface Workspace {
-  id: UUID;
+  id: string;
   name: string;
   startingDate: Date;
   currency: string;

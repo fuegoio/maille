@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 import { useState } from "react";
 import { activitiesStore } from "@/stores/activities";
-import { eventsStore } from "@/stores/events";
+import { syncStore } from "@/stores/sync";
 import { addTransactionMutation } from "@/mutations/activities";
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
@@ -14,8 +17,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { UUID } from "crypto";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import type { Activity } from "@maille/core/activities";
+
+// Form schema using zod
+const formSchema = z.object({
+  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  fromAccount: z.string().min(1, "From account is required"),
+  toAccount: z.string().min(1, "To account is required"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddTransactionButtonProps {
   activity: Activity;
@@ -24,25 +36,24 @@ interface AddTransactionButtonProps {
 
 export function AddTransactionButton({ activity, className }: AddTransactionButtonProps) {
   const [showDialog, setShowDialog] = useState(false);
-  const [amount, setAmount] = useState<number | undefined>(undefined);
-  const [fromAccount, setFromAccount] = useState<UUID | null>(null);
-  const [toAccount, setToAccount] = useState<UUID | null>(null);
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      amount: 0,
+      fromAccount: "",
+      toAccount: "",
+    },
+  });
 
-  const resetDialog = () => {
-    setShowDialog(false);
-    setAmount(undefined);
-    setFromAccount(null);
-    setToAccount(null);
-  };
+  const { control, handleSubmit, reset } = form;
 
-  const handleAddTransaction = () => {
-    if (amount === undefined || fromAccount === null || toAccount === null) return;
-
+  const handleAddTransaction = (data: FormValues) => {
     const transaction = activitiesStore
       .getState()
-      .addNewTransaction(activity.id, amount, fromAccount, toAccount);
+      .addNewTransaction(activity.id, data.amount, data.fromAccount, data.toAccount);
 
-    eventsStore.getState().sendEvent({
+    syncStore.getState().sendEvent({
       name: "addTransaction",
       mutation: addTransactionMutation,
       variables: {
@@ -52,7 +63,13 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
       rollbackData: undefined,
     });
 
-    resetDialog();
+    reset();
+    setShowDialog(false);
+  };
+
+  const resetDialog = () => {
+    setShowDialog(false);
+    reset();
   };
 
   return (
@@ -79,39 +96,62 @@ export function AddTransactionButton({ activity, className }: AddTransactionButt
             <DialogTitle className="font-medium text-white">Add a new transaction</DialogTitle>
           </DialogHeader>
 
-          <div className="py-4">
-            <div className="mb-4 flex flex-col text-sm sm:flex-row sm:items-center">
-              <div className="text-primary-100 mb-2 text-sm sm:mb-0">Amount</div>
-              <div className="flex-1" />
-              <AmountInput value={amount || 0} onChange={setAmount} className="w-full sm:w-56" />
-            </div>
+          <form onSubmit={handleSubmit(handleAddTransaction)} className="py-4">
+            <Controller
+              name="amount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="mb-4">
+                  <FieldLabel htmlFor="amount">Amount</FieldLabel>
+                  <AmountInput
+                    id="amount"
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="w-full sm:w-56"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-            <div className="mb-4 flex flex-col text-sm sm:flex-row sm:items-center">
-              <div className="text-primary-100 mb-2 text-sm sm:mb-0">From account</div>
-              <div className="flex-1" />
-              <AccountSelect
-                modelValue={fromAccount}
-                onUpdateModelValue={setFromAccount}
-                className="w-full sm:w-56"
-              />
-            </div>
+            <Controller
+              name="fromAccount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="mb-4">
+                  <FieldLabel htmlFor="fromAccount">From account</FieldLabel>
+                  <AccountSelect
+                    modelValue={field.value}
+                    onUpdateModelValue={field.onChange}
+                    className="w-full sm:w-56"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-            <div className="mb-4 flex flex-col text-sm sm:flex-row sm:items-center">
-              <div className="text-primary-100 mb-2 text-sm sm:mb-0">To account</div>
-              <div className="flex-1" />
-              <AccountSelect
-                modelValue={toAccount}
-                onUpdateModelValue={setToAccount}
-                className="w-full sm:w-56"
-              />
-            </div>
-          </div>
+            <Controller
+              name="toAccount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="mb-4">
+                  <FieldLabel htmlFor="toAccount">To account</FieldLabel>
+                  <AccountSelect
+                    modelValue={field.value}
+                    onUpdateModelValue={field.onChange}
+                    className="w-full sm:w-56"
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
 
-          <DialogFooter>
-            <Button onClick={handleAddTransaction} className="bg-primary-700 hover:bg-primary-600">
-              Create transaction
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="submit" className="bg-primary-700 hover:bg-primary-600">
+                Create transaction
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </>

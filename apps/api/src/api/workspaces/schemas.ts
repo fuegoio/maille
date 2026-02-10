@@ -12,7 +12,7 @@ export const WorkspaceSchema = builder.objectRef<
 WorkspaceSchema.implement({
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),

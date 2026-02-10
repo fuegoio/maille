@@ -33,12 +33,12 @@ import { validateWorkspace } from "@/services/workspaces";
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
     }),
     amount: t.float(),
-    fromAccount: t.field({ type: "UUID" }),
+    fromAccount: t.field({ type: "String" }),
     fromUser: t.field({ type: "String", required: false }),
-    toAccount: t.field({ type: "UUID" }),
+    toAccount: t.field({ type: "String" }),
     toUser: t.field({ type: "String", required: false }),
   }),
 });
@@ -46,10 +46,10 @@ const TransactionInput = builder.inputType("TransactionInput", {
 const ActivityMovementInput = builder.inputType("ActivityMovementInput", {
   fields: (t) => ({
     id: t.field({
-      type: "UUID",
+      type: "String",
     }),
     movement: t.field({
-      type: "UUID",
+      type: "String",
     }),
     amount: t.float(),
   }),
@@ -61,26 +61,26 @@ export const registerActivitiesMutations = () => {
       type: ActivitySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         description: t.arg.string({ required: false }),
         date: t.arg({ type: "Date" }),
         type: t.arg.string(),
         category: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         subcategory: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         project: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         transactions: t.arg({
@@ -100,10 +100,12 @@ export const registerActivitiesMutations = () => {
         const activityType = ActivityTypeEnum.parse(args.type);
 
         const accountsQuery = await db.select().from(accounts);
-        const number = await db
+        const maxNumberResult = await db
           .select({ number: max(activities.number) })
           .from(activities)
-          .then(([{ number }]) => number! + 1);
+          .then((result) => result[0]);
+        
+        const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
         await db.insert(activities).values({
           id: args.id,
@@ -120,9 +122,8 @@ export const registerActivitiesMutations = () => {
         });
 
         // Transactions
-        const newTransactions: Transaction[] = [];
-        args.transactions?.forEach(async (transaction) => {
-          const newTransaction = (
+        const transactionPromises = args.transactions?.map(async (transaction) => {
+          const transactionResults = (
             await db
               .insert(transactions)
               .values({
@@ -135,10 +136,17 @@ export const registerActivitiesMutations = () => {
                 activity: args.id,
               })
               .returning()
-          )[0];
+          );
+          const newTransaction = transactionResults[0];
+          
+          if (!newTransaction) {
+            throw new GraphQLError("Failed to create transaction");
+          }
+          
+          return newTransaction;
+        }) || [];
 
-          newTransactions.push(newTransaction);
-        });
+        const newTransactions = await Promise.all(transactionPromises);
 
         // Movements
         let newMovements: ActivityMovement[] = [];
@@ -174,6 +182,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return {
@@ -220,7 +229,7 @@ export const registerActivitiesMutations = () => {
       type: ActivitySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg({
           type: "String",
@@ -239,15 +248,15 @@ export const registerActivitiesMutations = () => {
           required: false,
         }),
         category: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         subcategory: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         project: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
       },
@@ -295,13 +304,18 @@ export const registerActivitiesMutations = () => {
           activityUpdates.project = args.project;
         }
 
-        const updatedActivity = (
+        const updatedActivities = (
           await db
             .update(activities)
             .set(activityUpdates)
             .where(eq(activities.id, args.id))
             .returning()
-        )[0];
+        );
+        const updatedActivity = updatedActivities[0];
+        
+        if (!updatedActivity) {
+          throw new GraphQLError("Failed to update activity");
+        }
 
         addEvent({
           type: "updateActivity",
@@ -313,6 +327,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: activity.workspace,
         });
 
         const accountsQuery = await db.select().from(accounts);
@@ -361,7 +376,7 @@ export const registerActivitiesMutations = () => {
       type: DeleteActivityResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
       },
       resolve: async (root, args, ctx) => {
@@ -389,6 +404,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: activity.workspace,
         });
 
         return {
@@ -404,18 +420,18 @@ export const registerActivitiesMutations = () => {
       type: TransactionSchema,
       args: {
         activityId: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         amount: t.arg({
           type: "Float",
         }),
-        fromAccount: t.arg({ type: "UUID" }),
-        fromUser: t.arg({ type: "UUID", required: false }),
-        toAccount: t.arg({ type: "UUID" }),
-        toUser: t.arg({ type: "UUID", required: false }),
+        fromAccount: t.arg({ type: "String" }),
+        fromUser: t.arg({ type: "String", required: false }),
+        toAccount: t.arg({ type: "String" }),
+        toUser: t.arg({ type: "String", required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -430,7 +446,7 @@ export const registerActivitiesMutations = () => {
           await validateWorkspace(activity.workspace, ctx.user.id);
         }
 
-        const newTransaction = (
+        const newTransactions = (
           await db
             .insert(transactions)
             .values({
@@ -443,7 +459,12 @@ export const registerActivitiesMutations = () => {
               activity: args.activityId,
             })
             .returning()
-        )[0];
+        );
+        const newTransaction = newTransactions[0];
+        
+        if (!newTransaction) {
+          throw new GraphQLError("Failed to create transaction");
+        }
 
         addEvent({
           type: "addTransaction",
@@ -454,6 +475,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: activity.workspace,
         });
 
         return newTransaction;
@@ -466,11 +488,11 @@ export const registerActivitiesMutations = () => {
       type: TransactionSchema,
       args: {
         activityId: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         amount: t.arg({
@@ -478,19 +500,19 @@ export const registerActivitiesMutations = () => {
           required: false,
         }),
         fromAccount: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         fromUser: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         toAccount: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
         toUser: t.arg({
-          type: "UUID",
+          type: "String",
           required: false,
         }),
       },
@@ -522,13 +544,18 @@ export const registerActivitiesMutations = () => {
         if (args.toAccount) updatedFields.toAccount = args.toAccount;
         if (args.toUser) updatedFields.toUser = args.toUser;
 
-        const updatedTransaction = (
+        const updatedTransactions = (
           await db
             .update(transactions)
             .set(updatedFields)
             .where(eq(transactions.id, args.id))
             .returning()
-        )[0];
+        );
+        const updatedTransaction = updatedTransactions[0];
+        
+        if (!updatedTransaction) {
+          throw new GraphQLError("Failed to update transaction");
+        }
 
         addEvent({
           type: "updateTransaction",
@@ -540,6 +567,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: activity.workspace,
         });
 
         return updatedTransaction;
@@ -552,11 +580,11 @@ export const registerActivitiesMutations = () => {
       type: DeleteTransactionResponseSchema,
       args: {
         activityId: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -592,6 +620,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: activity.workspace,
         });
 
         return { id: args.id, success: true };
@@ -604,12 +633,12 @@ export const registerActivitiesMutations = () => {
       type: ActivityCategorySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         type: t.arg.string(),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -634,6 +663,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return category;
@@ -646,7 +676,7 @@ export const registerActivitiesMutations = () => {
       type: ActivityCategorySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         name: t.arg.string(),
@@ -665,13 +695,18 @@ export const registerActivitiesMutations = () => {
 
         await validateWorkspace(category.workspace, ctx.user.id);
 
-        const updatedCategory = await db
+        const updatedCategories = await db
           .update(activityCategories)
           .set({
             name: args.name,
           })
           .where(eq(activityCategories.id, args.id))
           .returning();
+        const updatedCategory = updatedCategories[0];
+        
+        if (!updatedCategory) {
+          throw new GraphQLError("Failed to update activity category");
+        }
 
         await addEvent({
           type: "updateActivityCategory",
@@ -682,9 +717,10 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: category.workspace,
         });
 
-        return updatedCategory[0];
+        return updatedCategory;
       },
     }),
   );
@@ -694,7 +730,7 @@ export const registerActivitiesMutations = () => {
       type: DeleteActivityResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -732,6 +768,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: category.workspace,
         });
 
         return { id: args.id, success: true };
@@ -744,14 +781,14 @@ export const registerActivitiesMutations = () => {
       type: ActivitySubCategorySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         category: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -773,6 +810,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return subcategory;
@@ -785,7 +823,7 @@ export const registerActivitiesMutations = () => {
       type: ActivitySubCategorySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         name: t.arg.string(),
@@ -807,13 +845,18 @@ export const registerActivitiesMutations = () => {
           await validateWorkspace(subcategory.workspace, ctx.user.id);
         }
 
-        const updatedSubCategory = await db
+        const updatedSubCategories = await db
           .update(activitySubcategories)
           .set({
             name: args.name,
           })
           .where(eq(activitySubcategories.id, args.id))
           .returning();
+        const updatedSubCategory = updatedSubCategories[0];
+        
+        if (!updatedSubCategory) {
+          throw new GraphQLError("Failed to update activity subcategory");
+        }
 
         await addEvent({
           type: "updateActivitySubCategory",
@@ -824,9 +867,10 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: subcategory.workspace,
         });
 
-        return updatedSubCategory[0];
+        return updatedSubCategory;
       },
     }),
   );
@@ -836,7 +880,7 @@ export const registerActivitiesMutations = () => {
       type: DeleteActivityResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -870,6 +914,7 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: subCategory.workspace,
         });
 
         return { id: args.id, success: true };

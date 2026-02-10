@@ -4,7 +4,7 @@ import { projectsStore } from "@/stores/projects";
 import { activitiesStore } from "@/stores/activities";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 import { getCurrencyFormatter } from "@/utils/currency";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
@@ -35,7 +35,7 @@ export function ProjectActivityCategoryLine({
   }, [activitySubcategories, category.id]);
 
   const subcategoriesValues = useMemo(() => {
-    const values: Record<UUID, number> = {};
+    const values: Record<string, number> = {};
 
     categorySubcategories.forEach((subcategory) => {
       values[subcategory.id] = 0;

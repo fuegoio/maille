@@ -18,16 +18,16 @@ export const registerMovementsMutations = () => {
       type: MovementSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         name: t.arg.string(),
         date: t.arg({ type: "Date" }),
         amount: t.arg.float(),
         account: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -57,6 +57,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return {
@@ -78,7 +79,7 @@ export const registerMovementsMutations = () => {
       type: MovementSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         date: t.arg({
           type: "Date",
@@ -111,9 +112,14 @@ export const registerMovementsMutations = () => {
           updates.amount = args.amount;
         }
 
-        const updatedMovement = (
+        const updatedMovements = (
           await db.update(movements).set(updates).where(eq(movements.id, args.id)).returning()
-        )[0];
+        );
+        const updatedMovement = updatedMovements[0];
+        
+        if (!updatedMovement) {
+          throw new GraphQLError("Failed to update movement");
+        }
 
         await addEvent({
           type: "updateMovement",
@@ -125,6 +131,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: movement.workspace,
         });
 
         const activitiesData = await db
@@ -149,7 +156,7 @@ export const registerMovementsMutations = () => {
       type: DeleteMovementResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
       },
       resolve: async (root, args, ctx) => {
@@ -180,6 +187,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: movement.workspace,
         });
 
         return {
@@ -195,17 +203,17 @@ export const registerMovementsMutations = () => {
       type: MovementActivitySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         movementId: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         activityId: t.arg({
-          type: "UUID",
+          type: "String",
         }),
         amount: t.arg.float(),
         workspace: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -232,6 +240,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: args.workspace,
         });
 
         return {
@@ -249,7 +258,7 @@ export const registerMovementsMutations = () => {
       type: MovementActivitySchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
         amount: t.arg.float(),
@@ -271,13 +280,18 @@ export const registerMovementsMutations = () => {
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
 
-        const updatedMovementActivity = (
+        const updatedMovementActivities = (
           await db
             .update(movementsActivities)
             .set(updatedFields)
             .where(eq(movementsActivities.id, args.id))
             .returning()
-        )[0];
+        );
+        const updatedMovementActivity = updatedMovementActivities[0];
+        
+        if (!updatedMovementActivity) {
+          throw new GraphQLError("Failed to update movement activity");
+        }
 
         await addEvent({
           type: "updateMovementActivity",
@@ -289,6 +303,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: movementActivity.workspace,
         });
 
         return updatedMovementActivity;
@@ -301,7 +316,7 @@ export const registerMovementsMutations = () => {
       type: DeleteMovementActivityResponseSchema,
       args: {
         id: t.arg({
-          type: "UUID",
+          type: "String",
           required: true,
         }),
       },
@@ -330,6 +345,7 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+          workspace: movementActivity.workspace,
         });
 
         return { id: args.id, success: true };

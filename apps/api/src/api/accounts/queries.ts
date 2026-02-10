@@ -10,7 +10,7 @@ export const registerAccountsQueries = () => {
     t.field({
       type: [AccountSchema],
       args: {
-        workspaceId: t.arg({ type: "UUID", required: true }),
+        workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
         await validateWorkspace(args.workspaceId, ctx.user.id);

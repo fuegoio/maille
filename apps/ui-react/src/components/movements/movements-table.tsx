@@ -12,13 +12,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useHotkeys } from "react-hotkeys-hook";
 import type { Movement } from "@maille/core/movements";
-import type { UUID } from "crypto";
+import type { string } from "crypto";
 
 interface MovementsTableProps {
   movements: Movement[];
   viewId: string;
   grouping?: "period" | null;
-  accountFilter?: UUID | null;
+  accountFilter?: string | null;
 }
 
 export function MovementsTable({
@@ -31,7 +31,7 @@ export function MovementsTable({
   const focusedActivity = useStore(activitiesStore, (state) => state.focusedActivity);
   const filterStringBySearch = useStore(searchStore, (state) => state.filterStringBySearch);
   const movementView = useStore(viewsStore, (state) => state.getMovementView(viewId));
-  const [selectedMovements, setSelectedMovements] = React.useState<UUID[]>([]);
+  const [selectedMovements, setSelectedMovements] = React.useState<string[]>([]);
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -124,7 +124,7 @@ export function MovementsTable({
     return new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
   };
 
-  const handleMovementClick = (movementId: UUID) => {
+  const handleMovementClick = (movementId: string) => {
     if (focusedMovement === movementId) {
       movementsStore.getState().setFocusedMovement(null);
     } else {
@@ -132,7 +132,7 @@ export function MovementsTable({
     }
   };
 
-  const selectMovement = (movementId: UUID) => {
+  const selectMovement = (movementId: string) => {
     setSelectedMovements((prev) =>
       prev.includes(movementId) ? prev.filter((id) => id !== movementId) : [...prev, movementId],
     );
