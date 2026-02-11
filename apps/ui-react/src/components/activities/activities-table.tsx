@@ -237,75 +237,73 @@ export function ActivitiesTable({
       />
 
       <div className="flex h-full flex-1 overflow-x-hidden">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex flex-col overflow-x-hidden sm:min-w-[575px]">
-            {activitiesFiltered.length !== 0 ? (
-              <ScrollArea className="flex-1 pb-40">
-                {grouping
-                  ? activitiesWithGroups.map((item) => (
-                      <React.Fragment key={item.id}>
-                        {item.itemType === "group" ? (
-                          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-6">
-                            <ChevronDown className="mr-3 size-3 opacity-20 transition-opacity hover:opacity-100" />
-                            <Calendar className="size-4" />
-                            <div className="text-sm">
-                              {periodFormatter(item.month, item.year)}
-                            </div>
-                            <div className="flex-1" />
-
-                            {[
-                              ActivityType.INVESTMENT,
-                              ActivityType.REVENUE,
-                              ActivityType.EXPENSE,
-                            ].map((activityType) => {
-                              const typeKey =
-                                activityType.toLowerCase() as keyof Group["total"];
-                              return item.total[typeKey] ? (
-                                <div
-                                  key={activityType}
-                                  className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
-                                >
-                                  <div
-                                    className="mt-0.5 mr-3 size-[9px] shrink-0 rounded-xs"
-                                    style={{
-                                      backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
-                                    }}
-                                  />
-                                  {currencyFormatter.format(
-                                    item.total[typeKey]!,
-                                  )}
-                                </div>
-                              ) : null;
-                            })}
+        <div className="flex w-full flex-col overflow-x-hidden sm:min-w-[575px]">
+          {activitiesFiltered.length !== 0 ? (
+            <ScrollArea className="flex-1 pb-40">
+              {grouping
+                ? activitiesWithGroups.map((item) => (
+                    <React.Fragment key={item.id}>
+                      {item.itemType === "group" ? (
+                        <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-6">
+                          <ChevronDown className="mr-3 size-3 opacity-20 transition-opacity hover:opacity-100" />
+                          <Calendar className="size-4" />
+                          <div className="text-sm">
+                            {periodFormatter(item.month, item.year)}
                           </div>
-                        ) : (
-                          <ActivityLine
-                            activity={item}
-                            accountFilter={accountFilter}
-                            hideProject={hideProject}
-                            onClick={handleActivityClick}
-                            selected={focusedActivity === item.id}
-                          />
-                        )}
-                      </React.Fragment>
-                    ))
-                  : activitiesSorted.map((activity) => (
-                      <ActivityLine
-                        key={activity.id}
-                        activity={activity}
-                        accountFilter={accountFilter}
-                        hideProject={hideProject}
-                        onClick={handleActivityClick}
-                        selected={focusedActivity === activity.id}
-                      />
-                    ))}
-              </ScrollArea>
-            ) : (
-              <div className="flex flex-1 items-center justify-center overflow-hidden">
-                <div className="text-primary-600">No activity found</div>
+                          <div className="flex-1" />
+
+                          {[
+                            ActivityType.INVESTMENT,
+                            ActivityType.REVENUE,
+                            ActivityType.EXPENSE,
+                          ].map((activityType) => {
+                            const typeKey =
+                              activityType.toLowerCase() as keyof Group["total"];
+                            return item.total[typeKey] ? (
+                              <div
+                                key={activityType}
+                                className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
+                              >
+                                <div
+                                  className="mt-0.5 mr-3 size-[9px] shrink-0 rounded-xs"
+                                  style={{
+                                    backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
+                                  }}
+                                />
+                                {currencyFormatter.format(item.total[typeKey]!)}
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      ) : (
+                        <ActivityLine
+                          activity={item}
+                          accountFilter={accountFilter}
+                          hideProject={hideProject}
+                          onClick={handleActivityClick}
+                          selected={focusedActivity === item.id}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))
+                : activitiesSorted.map((activity) => (
+                    <ActivityLine
+                      key={activity.id}
+                      activity={activity}
+                      accountFilter={accountFilter}
+                      hideProject={hideProject}
+                      onClick={handleActivityClick}
+                      selected={focusedActivity === activity.id}
+                    />
+                  ))}
+            </ScrollArea>
+          ) : (
+            <div className="flex flex-1 items-center justify-center overflow-hidden">
+              <div className="text-sm text-muted-foreground">
+                No activity found.
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
