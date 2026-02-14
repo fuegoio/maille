@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import { getCurrencyFormatter } from "@/lib/utils";
 
 import { Button } from "./button";
-import { Input } from "./input";
 import { Popover, PopoverTrigger, PopoverContent } from "./popover";
 
 const CALCULATOR_KEYS = [

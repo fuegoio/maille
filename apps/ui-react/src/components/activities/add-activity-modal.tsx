@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { ActivityType } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
 import { Plus, Trash2 } from "lucide-react";
 import * as React from "react";
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getGraphQLDate } from "@/lib/date";
-import { cn, randomstring } from "@/lib/utils";
+import { cn, getCurrencyFormatter, randomstring } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
 import {
@@ -44,6 +44,7 @@ import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
 
+import { AccountSelect } from "../accounts/account-select";
 import { AmountInput } from "../ui/amount-input";
 import { DatePicker } from "../ui/date-picker";
 
@@ -56,15 +57,13 @@ const formSchema = z.object({
   category: z.string().optional(),
   subcategory: z.string().optional(),
   project: z.string().optional(),
-  transactions: z
-    .array(
-      z.object({
-        fromAccount: z.string().min(1, "From account is required"),
-        toAccount: z.string().min(1, "To account is required"),
-        amount: z.number().min(0.01, "Amount must be greater than 0"),
-      }),
-    )
-    .min(1, "At least one transaction is required"),
+  transactions: z.array(
+    z.object({
+      fromAccount: z.string().min(1, "From account is required"),
+      toAccount: z.string().min(1, "To account is required"),
+      amount: z.number().min(0.01, "Amount must be greater than 0"),
+    }),
+  ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -78,7 +77,6 @@ interface AddActivityModalProps {
   name?: string;
   date?: Date;
   type?: ActivityType;
-  onActivityAdded?: (activity: Activity) => void;
 }
 
 export function AddActivityModal({
@@ -90,7 +88,6 @@ export function AddActivityModal({
   name: initialName,
   date: initialDate,
   type: initialType,
-  onActivityAdded,
 }: AddActivityModalProps) {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -99,6 +96,7 @@ export function AddActivityModal({
   const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
   const userId = useAuth((state) => state.user!.id);
   const activities = useActivities((state) => state.activities);
+  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -136,60 +134,57 @@ export function AddActivityModal({
   }, [category, subcategories]);
 
   // Calculate transactions sum
-  const transactionsSum = React.useMemo(() => {
-    return transactions.reduce((sum, t) => sum + t.amount, 0);
-  }, [transactions]);
+  const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  // Initialize form based on props
-  React.useEffect(() => {
+  const handleOpenChange = (open: boolean) => {
     if (open) {
-      // Set initial values from props
-      const initialValues: Partial<FormValues> = {};
-
-      if (initialName) initialValues.name = initialName;
-      if (initialDate) initialValues.date = initialDate;
-      if (initialType) initialValues.type = initialType;
+      if (initialName) setValue("name", initialName);
+      if (initialDate) setValue("date", initialDate);
+      if (initialType) setValue("type", initialType);
       if (initialAmount) {
-        initialValues.transactions = [
+        setValue("transactions", [
           {
             fromAccount: "",
             toAccount: "",
             amount: initialAmount,
           },
-        ];
+        ]);
       }
 
       // Handle movement/movements
       if (movement) {
-        initialValues.name = movement.name || "";
-        initialValues.date = movement.date;
-        initialValues.type =
-          movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE;
-        initialValues.transactions = [
+        setValue("name", movement.name || "");
+        setValue("date", movement.date);
+        setValue(
+          "type",
+          movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
+        );
+        setValue("transactions", [
           {
             fromAccount: "",
             toAccount: "",
             amount: Math.abs(movement.amount),
           },
-        ];
+        ]);
       } else if (movements && movements.length > 0) {
         const firstMovement = movements[0];
-        initialValues.name = firstMovement.name || "";
+        setValue("name", firstMovement.name || "");
 
         if (movements.every((m) => m.amount < 0)) {
-          initialValues.type = ActivityType.EXPENSE;
+          setValue("type", ActivityType.EXPENSE);
         } else if (movements.every((m) => m.amount > 0)) {
-          initialValues.type = ActivityType.REVENUE;
+          setValue("type", ActivityType.REVENUE);
         }
 
-        initialValues.transactions = movements.map((m) => ({
-          fromAccount: "",
-          toAccount: "",
-          amount: Math.abs(m.amount),
-        }));
+        setValue(
+          "transactions",
+          movements.map((m) => ({
+            fromAccount: "",
+            toAccount: "",
+            amount: Math.abs(m.amount),
+          })),
+        );
       }
-
-      reset(initialValues);
 
       // Focus name input
       setTimeout(() => {
@@ -198,20 +193,13 @@ export function AddActivityModal({
         }
       }, 100);
     }
-  }, [
-    open,
-    movement,
-    movements,
-    initialName,
-    initialDate,
-    initialType,
-    initialAmount,
-    reset,
-  ]);
+
+    onOpenChange(open);
+  };
 
   // Add transaction when form becomes valid and has no transactions
   React.useEffect(() => {
-    if (type && transactions.length === 0 && !movements) {
+    if (type && transactions.length === 0) {
       const { fromAccount, toAccount } = guessBestTransaction();
       let amount = 0;
 
@@ -290,9 +278,8 @@ export function AddActivityModal({
       amount = Math.abs(firstMovement.amount);
     }
 
-    const currentTransactions = watch("transactions");
     setValue("transactions", [
-      ...currentTransactions,
+      ...transactions,
       {
         fromAccount: fromAccount || "",
         toAccount: toAccount || "",
@@ -303,8 +290,7 @@ export function AddActivityModal({
 
   // Remove a transaction
   const removeTransaction = (index: number) => {
-    const currentTransactions = watch("transactions");
-    const newTransactions = [...currentTransactions];
+    const newTransactions = [...transactions];
     newTransactions.splice(index, 1);
     setValue("transactions", newTransactions);
   };
@@ -368,12 +354,9 @@ export function AddActivityModal({
       ],
     });
 
-    if (onActivityAdded) {
-      onActivityAdded(newActivity);
-    }
-
     reset();
     onOpenChange(false);
+    setFocusedActivity(newActivity.id);
   };
 
   // Create multiple activities from movements
@@ -385,7 +368,7 @@ export function AddActivityModal({
 
       const newActivity = {
         id: randomstring(),
-        user,
+        user: userId,
         number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
@@ -428,10 +411,6 @@ export function AddActivityModal({
           },
         ],
       });
-
-      if (onActivityAdded) {
-        onActivityAdded(newActivity);
-      }
     });
 
     reset();
@@ -439,7 +418,7 @@ export function AddActivityModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
@@ -641,8 +620,8 @@ export function AddActivityModal({
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
-                <span className="text-primary-300 font-mono text-sm">
-                  {transactionsSum.toFixed(2)}
+                <span className="mr-2.5 font-mono text-sm text-muted-foreground">
+                  {getCurrencyFormatter().format(transactionsSum)}
                 </span>
                 {!movements && (
                   <Button
@@ -659,40 +638,14 @@ export function AddActivityModal({
             </div>
 
             {transactions.map((transaction, index) => (
-              <div
-                key={index}
-                className="border-primary-700 mb-2 flex items-center gap-2 border-b pb-2"
-              >
+              <div key={index} className="my-3 flex items-center gap-2">
                 {/* From Account */}
                 <Controller
                   name={`transactions.${index}.fromAccount` as const}
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <FieldLabel
-                        htmlFor={`transactions.${index}.fromAccount`}
-                        className="sr-only"
-                      >
-                        From account
-                      </FieldLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="From account" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {accounts.map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      <AccountSelect {...field} placeholder="From account" />
                     </Field>
                   )}
                 />
@@ -705,30 +658,7 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <FieldLabel
-                        htmlFor={`transactions.${index}.toAccount`}
-                        className="sr-only"
-                      >
-                        To account
-                      </FieldLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="To account" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {accounts.map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      <AccountSelect {...field} placeholder="To account" />
                     </Field>
                   )}
                 />
@@ -739,16 +669,7 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="w-24">
-                      <FieldLabel
-                        htmlFor={`transactions.${index}.amount`}
-                        className="sr-only"
-                      >
-                        Amount
-                      </FieldLabel>
                       <AmountInput {...field} />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
                     </Field>
                   )}
                 />
@@ -774,7 +695,7 @@ export function AddActivityModal({
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit">
-              {movements ? "Create activities" : "Create activity"}
+              {movements ? "Add activities" : "Add activity"}
             </Button>
           </DialogFooter>
         </form>

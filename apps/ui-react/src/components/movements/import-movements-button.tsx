@@ -170,8 +170,8 @@ export function ImportMovementsButton({
                 <label className="text-primary-100 w-32 text-sm">Account</label>
                 <div className="flex-1">
                   <AccountSelect
-                    modelValue={account}
-                    onUpdateModelValue={setAccount}
+                    value={account}
+                    onChange={setAccount}
                     movementsOnly
                   />
                 </div>

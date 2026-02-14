@@ -176,8 +176,8 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="account">Account</FieldLabel>
                   <AccountSelect
-                    modelValue={field.value}
-                    onUpdateModelValue={field.onChange}
+                    value={field.value}
+                    onChange={field.onChange}
                     movementsOnly
                   />
                   {fieldState.invalid && (

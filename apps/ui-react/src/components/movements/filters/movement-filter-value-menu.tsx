@@ -1,7 +1,10 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
 import { ActivityFilterDateValues } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
+import { ChevronDown } from "lucide-react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+
+import { AccountSelect } from "@/components/accounts/account-select";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,8 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { AccountSelect } from "@/components/accounts/account-select";
 
 interface MovementFilterValueMenuProps {
   modelValue: MovementFilter["value"] | undefined;
@@ -25,7 +26,9 @@ export const MovementFilterValueMenu = forwardRef<
 >(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLButtonElement>(null);
-  const [textValue, setTextValue] = useState<string | undefined>(modelValue as string | undefined);
+  const [textValue, setTextValue] = useState<string | undefined>(
+    modelValue as string | undefined,
+  );
   const [open, setOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -63,7 +66,11 @@ export const MovementFilterValueMenu = forwardRef<
         </SelectTrigger>
         <SelectContent className="bg-primary-800 border-primary-600">
           {ActivityFilterDateValues.map((value) => (
-            <SelectItem key={value} value={value} className="text-primary-100 hover:bg-primary-700">
+            <SelectItem
+              key={value}
+              value={value}
+              className="text-primary-100 hover:bg-primary-700"
+            >
               {value}
             </SelectItem>
           ))}
@@ -105,8 +112,8 @@ export const MovementFilterValueMenu = forwardRef<
   } else if (field === "account") {
     return (
       <AccountSelect
-        modelValue={modelValue && Array.isArray(modelValue) ? modelValue : []}
-        onUpdateModelValue={(value) => {
+        value={modelValue && Array.isArray(modelValue) ? modelValue : []}
+        onChange={(value) => {
           onUpdateModelValue(value);
         }}
         multiple
@@ -139,7 +146,11 @@ export const MovementFilterValueMenu = forwardRef<
         </SelectTrigger>
         <SelectContent className="bg-primary-800 border-primary-600">
           {["incomplete", "completed"].map((value) => (
-            <SelectItem key={value} value={value} className="text-primary-100 hover:bg-primary-700">
+            <SelectItem
+              key={value}
+              value={value}
+              className="text-primary-100 hover:bg-primary-700"
+            >
               {value}
             </SelectItem>
           ))}

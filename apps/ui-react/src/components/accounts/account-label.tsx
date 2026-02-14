@@ -1,12 +1,13 @@
-import { useAccounts, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { useMemo } from "react";
+
+import { cn } from "@/lib/utils";
+import { useAccounts, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 
 interface AccountLabelProps {
   accountId: string;
-  onlyUser?: boolean;
 }
 
-export function AccountLabel({ accountId, onlyUser = false }: AccountLabelProps) {
+export function AccountLabel({ accountId }: AccountLabelProps) {
   const accounts = useAccounts((state) => state.accounts);
 
   const account = useMemo(() => {
@@ -17,13 +18,13 @@ export function AccountLabel({ accountId, onlyUser = false }: AccountLabelProps)
 
   return (
     <div className="flex min-w-0 shrink-0 items-center">
-      {!onlyUser && (
-        <div
-          className="-ml-1 size-4.5 shrink-0 rounded-xl"
-          style={{ backgroundColor: ACCOUNT_TYPES_COLOR[account.type] }}
-        />
-      )}
-      <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap text-white sm:ml-3">
+      <div
+        className={cn(
+          "size-3 shrink-0 rounded-xl",
+          ACCOUNT_TYPES_COLOR[account.type],
+        )}
+      />
+      <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap">
         {account.name}
       </div>
     </div>

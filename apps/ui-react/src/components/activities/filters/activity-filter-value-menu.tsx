@@ -1,7 +1,13 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { ActivityFilterDateValues, ActivityType } from "@maille/core/activities";
+import {
+  ActivityFilterDateValues,
+  ActivityType,
+} from "@maille/core/activities";
 import type { ActivityFilter } from "@maille/core/activities";
+import { ChevronDown } from "lucide-react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+
+import { AccountSelect } from "@/components/accounts/account-select";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,8 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { AccountSelect } from "@/components/accounts/account-select";
 
 interface ActivityFilterValueMenuProps {
   modelValue: ActivityFilter["value"] | undefined;
@@ -25,7 +29,9 @@ export const ActivityFilterValueMenu = forwardRef<
 >(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLButtonElement>(null);
-  const [textValue, setTextValue] = useState<string | undefined>(modelValue as string | undefined);
+  const [textValue, setTextValue] = useState<string | undefined>(
+    modelValue as string | undefined,
+  );
   const [open, setOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -63,7 +69,11 @@ export const ActivityFilterValueMenu = forwardRef<
         </SelectTrigger>
         <SelectContent className="bg-primary-800 border-primary-600">
           {ActivityFilterDateValues.map((value) => (
-            <SelectItem key={value} value={value} className="text-primary-100 hover:bg-primary-700">
+            <SelectItem
+              key={value}
+              value={value}
+              className="text-primary-100 hover:bg-primary-700"
+            >
               {value}
             </SelectItem>
           ))}
@@ -127,7 +137,11 @@ export const ActivityFilterValueMenu = forwardRef<
         </SelectTrigger>
         <SelectContent className="bg-primary-800 border-primary-600">
           {Object.values(ActivityType).map((value) => (
-            <SelectItem key={value} value={value} className="text-primary-100 hover:bg-primary-700">
+            <SelectItem
+              key={value}
+              value={value}
+              className="text-primary-100 hover:bg-primary-700"
+            >
               {value}
             </SelectItem>
           ))}
@@ -137,8 +151,8 @@ export const ActivityFilterValueMenu = forwardRef<
   } else if (field === "from_account" || field === "to_account") {
     return (
       <AccountSelect
-        modelValue={modelValue && Array.isArray(modelValue) ? modelValue : []}
-        onUpdateModelValue={(value) => {
+        value={modelValue && Array.isArray(modelValue) ? modelValue : []}
+        onChange={(value) => {
           onUpdateModelValue(value);
         }}
         multiple

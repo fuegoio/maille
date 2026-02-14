@@ -113,8 +113,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 }`}
               >
                 <AccountSelect
-                  modelValue={transaction.fromAccount}
-                  onUpdateModelValue={(account) =>
+                  value={transaction.fromAccount}
+                  onChange={(account) =>
                     handleTransactionUpdate(transaction, {
                       fromAccount: account as string,
                     })
@@ -124,8 +124,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 />
                 <div className="text-primary-200 mx-2 text-center">to</div>
                 <AccountSelect
-                  modelValue={transaction.toAccount}
-                  onUpdateModelValue={(account) =>
+                  value={transaction.toAccount}
+                  onChange={(account) =>
                     handleTransactionUpdate(transaction, {
                       toAccount: account as string,
                     })

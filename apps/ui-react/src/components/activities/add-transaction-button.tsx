@@ -59,11 +59,11 @@ export function AddTransactionButton({
   const handleAddTransaction = (data: FormValues) => {
     const addNewTransaction = useActivities((state) => state.addNewTransaction);
     const transaction = addNewTransaction(
-        activity.id,
-        data.amount,
-        data.fromAccount,
-        data.toAccount,
-      );
+      activity.id,
+      data.amount,
+      data.fromAccount,
+      data.toAccount,
+    );
 
     const mutate = useSync((state) => state.mutate);
     mutate({
@@ -138,8 +138,8 @@ export function AddTransactionButton({
                 <Field data-invalid={fieldState.invalid} className="mb-4">
                   <FieldLabel htmlFor="fromAccount">From account</FieldLabel>
                   <AccountSelect
-                    modelValue={field.value}
-                    onUpdateModelValue={field.onChange}
+                    value={field.value}
+                    onChange={field.onChange}
                     className="w-full sm:w-56"
                   />
                   {fieldState.invalid && (
@@ -156,8 +156,8 @@ export function AddTransactionButton({
                 <Field data-invalid={fieldState.invalid} className="mb-4">
                   <FieldLabel htmlFor="toAccount">To account</FieldLabel>
                   <AccountSelect
-                    modelValue={field.value}
-                    onUpdateModelValue={field.onChange}
+                    value={field.value}
+                    onChange={field.onChange}
                     className="w-full sm:w-56"
                   />
                   {fieldState.invalid && (

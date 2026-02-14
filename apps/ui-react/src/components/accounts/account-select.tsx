@@ -1,5 +1,4 @@
 import { AccountType } from "@maille/core/accounts";
-import { ChevronDown } from "lucide-react";
 import { useMemo } from "react";
 
 import {
@@ -9,30 +8,27 @@ import {
   SelectItem,
   SelectLabel,
   SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import {
-  useAccounts,
-  ACCOUNT_TYPES_COLOR,
-  ACCOUNT_TYPES_NAME,
-} from "@/stores/accounts";
+import { useAccounts, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
+
+import { AccountLabel } from "./account-label";
 
 interface AccountSelectProps {
-  modelValue: string | null | string[] | any;
-  onUpdateModelValue: (value: string | null | string[] | any) => void;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
   disabled?: boolean;
   movementsOnly?: boolean;
-  borderless?: boolean;
-  multiple?: boolean;
+  placeholder?: string;
   className?: string;
 }
 
 export function AccountSelect({
-  modelValue,
-  onUpdateModelValue,
+  value,
+  onChange,
   disabled = false,
+  placeholder = "Account",
   movementsOnly = false,
-  borderless = false,
-  multiple = false,
 }: AccountSelectProps) {
   const accounts = useAccounts((state) => state.accounts);
 
@@ -54,101 +50,31 @@ export function AccountSelect({
     });
   }, [accountsToDisplay]);
 
-  const handleValueChange = (value: string) => {
-    if (multiple) {
-      // For multiple selection, we'd need a different approach
-      // This is a simplified version
-      onUpdateModelValue([value as string]);
-    } else {
-      onUpdateModelValue(value === "null" ? null : (value as string));
-    }
-  };
-
-  const getCurrentValue = () => {
-    if (multiple && Array.isArray(modelValue)) {
-      return modelValue[0]?.toString() || "null";
-    } else {
-      return modelValue?.toString() || "null";
-    }
-  };
-
-  const getSelectedAccount = () => {
-    const currentValue = getCurrentValue();
-    if (currentValue === "null") return null;
-    return accounts.find((a) => a.id.toString() === currentValue);
-  };
-
-  const selectedAccount = getSelectedAccount();
-
   return (
-    <Select
-      value={getCurrentValue()}
-      onValueChange={handleValueChange}
-      disabled={disabled}
-    >
-      <SelectTrigger
-        className={`group relative flex h-10 items-center rounded px-3 text-left text-sm transition-colors ${
-          borderless
-            ? "border-none bg-transparent hover:bg-transparent"
-            : "bg-primary-700 hover:bg-primary-600 border"
-        } ${disabled ? "bg-gray-100" : ""}`}
-      >
-        <div className="flex flex-1 items-center">
-          {selectedAccount ? (
-            <>
-              <div
-                className="mr-2 -ml-1 size-4 shrink-0 rounded-xl transition-colors sm:mr-3"
-                style={{
-                  backgroundColor: ACCOUNT_TYPES_COLOR[selectedAccount.type],
-                }}
-              />
-              <div
-                className="truncate font-medium text-white transition-colors"
-                style={{ color: borderless ? "inherit" : "white" }}
-              >
-                {selectedAccount.name}
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger>
+        <SelectValue
+          placeholder={
+            <div className="flex min-w-0 shrink-0 items-center">
+              <div className="size-3.5 shrink-0 rounded-xl bg-gray-200" />
+              <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap">
+                {placeholder}
               </div>
-            </>
-          ) : (
-            <>
-              <div
-                className="bg-primary-300 mr-2 h-3 w-3 shrink-0 rounded-xl transition-colors sm:mr-3"
-                style={{ backgroundColor: borderless ? "inherit" : "#c4b5fd" }}
-              />
-              <div
-                className="text-primary-200 truncate font-medium transition-colors"
-                style={{ color: borderless ? "inherit" : "#c4b5fd" }}
-              >
-                Account
-              </div>
-            </>
-          )}
-        </div>
-        {!borderless && !disabled && (
-          <ChevronDown className="size-4 text-muted-foreground" />
-        )}
+            </div>
+          }
+        >
+          {value && <AccountLabel accountId={value} />}
+        </SelectValue>
       </SelectTrigger>
-      <SelectContent className="bg-primary-700 absolute z-50 max-h-60 w-56 overflow-auto rounded-md border py-1 text-sm shadow-lg focus:outline-none">
+      <SelectContent>
         {accountTypesToDisplay.map((accountType) => (
           <SelectGroup key={accountType}>
-            <SelectLabel className="flex items-center border-t px-4 py-3 first:border-t-0">
-              <div
-                className="mr-4 h-2 w-2 shrink-0 rounded-xl"
-                style={{ backgroundColor: ACCOUNT_TYPES_COLOR[accountType] }}
-              />
-              <div className="text-primary-100 text-xs font-medium tracking-wide">
-                {ACCOUNT_TYPES_NAME[accountType]}
-              </div>
-            </SelectLabel>
+            <SelectLabel>{ACCOUNT_TYPES_NAME[accountType]}</SelectLabel>
             {accountsToDisplay
               .filter((a) => a.type === accountType)
               .map((account) => (
                 <SelectItem key={account.id} value={account.id}>
-                  <div className="relative inline-flex w-full cursor-default items-center py-2 pr-4 pl-10 select-none">
-                    <span className="block flex-1 truncate">
-                      {account.name}
-                    </span>
-                  </div>
+                  <AccountLabel accountId={account.id} />
                 </SelectItem>
               ))}
           </SelectGroup>
