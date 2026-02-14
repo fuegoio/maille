@@ -1,10 +1,12 @@
+import { AccountType, type Account } from "@maille/core/accounts";
+import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { AccountType, type Account } from "@maille/core/accounts";
+
 import { randomstring } from "@/lib/utils";
-import type { SyncEvent } from "@maille/core/sync";
-import { useAuth } from "./auth";
 import type { Mutation } from "@/mutations";
+
+import { useAuth } from "./auth";
 import { storage } from "./storage";
 
 export const ACCOUNT_TYPES_COLOR = {
@@ -28,14 +30,7 @@ export const ACCOUNT_TYPES_NAME = {
 interface AccountsState {
   accounts: Account[];
   getAccountById: (accountId: string) => Account | undefined;
-  addAccount: (params: {
-    id?: string;
-    name: string;
-    type: AccountType;
-    isDefault?: boolean;
-    movements?: boolean;
-    user?: string | null;
-  }) => Account;
+  addAccount: (account: Account) => Account;
   updateAccount: (
     accountId: string,
     update: {
@@ -60,41 +55,12 @@ export const useAccounts = create<AccountsState>()(
         return get().accounts.find((a) => a.id === accountId);
       },
 
-      addAccount: ({
-        id,
-        name,
-        type,
-        isDefault,
-        movements,
-        user,
-      }: {
-        id?: string;
-        name: string;
-        type: AccountType;
-        isDefault?: boolean;
-        movements?: boolean;
-        user?: string | null;
-      }): Account => {
-        const { user: loggedUser } = useAuth.getState();
-        if (!loggedUser) throw new Error("User not logged in");
-
-        const newAccount = {
-          id: id ?? randomstring(),
-          name,
-          type,
-          user: user !== undefined ? user : loggedUser.id,
-          default: !!isDefault,
-          movements: !!movements,
-          startingBalance: 0,
-          startingCashBalance: 0,
-          workspace: null,
-        };
-
+      addAccount: (account) => {
         set((state) => ({
-          accounts: [...state.accounts, newAccount],
+          accounts: [...state.accounts, account],
         }));
 
-        return newAccount;
+        return account;
       },
 
       updateAccount: (
@@ -118,7 +84,10 @@ export const useAccounts = create<AccountsState>()(
                   update.startingCashBalance !== undefined
                     ? update.startingCashBalance
                     : account.startingCashBalance,
-                movements: update.movements !== undefined ? update.movements : account.movements,
+                movements:
+                  update.movements !== undefined
+                    ? update.movements
+                    : account.movements,
               };
             }
             return account;
@@ -128,7 +97,9 @@ export const useAccounts = create<AccountsState>()(
 
       deleteAccount: (accountId: string) => {
         set((state) => ({
-          accounts: state.accounts.filter((account) => account.id !== accountId),
+          accounts: state.accounts.filter(
+            (account) => account.id !== accountId,
+          ),
         }));
       },
 
@@ -140,7 +111,14 @@ export const useAccounts = create<AccountsState>()(
 
       handleEvent: (event: SyncEvent) => {
         if (event.type === "createAccount") {
-          get().addAccount(event.payload);
+          get().addAccount({
+            ...event.payload,
+            default: false,
+            movements: false,
+            startingBalance: 0,
+            startingCashBalance: 0,
+            user: event.user,
+          });
         } else if (event.type === "updateAccount") {
           get().updateAccount(event.payload.id, {
             ...event.payload,

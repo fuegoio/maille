@@ -1,7 +1,8 @@
-import { AccountType, type Account } from "@maille/core/accounts";
+import { AccountType } from "@maille/core/accounts";
 import { format } from "date-fns";
 import { Plus, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +18,7 @@ import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { cn, randomstring } from "@/lib/utils";
 import {
   createAccountMutation,
   deleteAccountMutation,
@@ -37,15 +39,10 @@ interface AccountTypeSectionProps {
 
 export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const accounts = useAccounts((state) => state.accounts);
-  const addAccount = useAccounts((state) => state.addAccount);
-  const updateAccount = useAccounts((state) => state.updateAccount);
-  const deleteAccount = useAccounts((state) => state.deleteAccount);
   const mutate = useSync((state) => state.mutate);
 
   const activities = useActivities((state) => state.activities);
-  const currentWorkspace = useWorkspaces(
-    (state) => state.currentWorkspace,
-  );
+  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [newAccount, setNewAccount] = useState({
@@ -83,19 +80,28 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
   const handleAddNewAccount = async () => {
     if (!newAccount.name) return;
 
-    const account = addAccount({
+    const account = {
+      id: randomstring(),
       name: newAccount.name,
       type: accountType,
-    });
+    };
 
     mutate({
       name: "createAccount",
       mutation: createAccountMutation,
       variables: {
         ...account,
-        workspace: currentWorkspace?.id,
+        workspace: currentWorkspace!.id,
       },
       rollbackData: undefined,
+      events: [
+        {
+          type: "createAccount",
+          payload: {
+            ...account,
+          },
+        },
+      ],
     });
 
     cancelNewAccount();
@@ -112,8 +118,6 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
     const account = accounts.find((a) => a.id === accountId);
     if (!account) return;
 
-    updateAccount(accountId, update);
-
     mutate({
       name: "updateAccount",
       mutation: updateAccountMutation,
@@ -122,6 +126,15 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
         ...update,
       },
       rollbackData: { ...account },
+      events: [
+        {
+          type: "updateAccount",
+          payload: {
+            id: accountId,
+            ...update,
+          },
+        },
+      ],
     });
   };
 
@@ -130,9 +143,6 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
     if (!account) return;
 
     if (getTransactionsLinkedToAccount(accountId) > 0) return;
-
-    deleteAccount(accountId);
-
     mutate({
       name: "deleteAccount",
       mutation: deleteAccountMutation,
@@ -140,15 +150,25 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
         id: accountId,
       },
       rollbackData: account,
+      events: [
+        {
+          type: "deleteAccount",
+          payload: {
+            id: accountId,
+          },
+        },
+      ],
     });
   };
 
   return (
-    <div className="border-t pt-4 pb-10">
+    <div className="border-b px-4 pt-4 pb-10">
       <div className="mb-2 flex items-center px-2">
         <div
-          className="mr-2 h-3 w-3 shrink-0 rounded-xl sm:mr-3"
-          style={{ backgroundColor: ACCOUNT_TYPES_COLOR[accountType] }}
+          className={cn(
+            "mr-2 h-3 w-3 shrink-0 rounded-xl sm:mr-3",
+            ACCOUNT_TYPES_COLOR[accountType],
+          )}
         />
         <div className="text-sm font-medium">
           {ACCOUNT_TYPES_NAME[accountType]}
@@ -167,52 +187,64 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
       </div>
 
       {newAccount.show && (
-        <div className="bg-primary-900 my-2 flex h-12 w-full items-center rounded border px-4">
-          <Input
-            value={newAccount.name}
-            onChange={(e) =>
-              setNewAccount({ ...newAccount, name: e.target.value })
-            }
-            placeholder="Name"
-            autoFocus
-            className="flex-1 border-none bg-transparent focus:ring-0 focus:outline-none"
-          />
+        <div className="pl-4">
+          <div className="my-2 flex h-12 w-full items-center rounded border bg-card px-4">
+            <Input
+              value={newAccount.name}
+              onChange={(e) =>
+                setNewAccount({ ...newAccount, name: e.target.value })
+              }
+              placeholder="Name"
+              autoFocus
+              className="max-w-96"
+            />
 
-          <div className="flex-1" />
-          <Button variant="outline" className="mr-2" onClick={cancelNewAccount}>
-            Cancel
-          </Button>
-          <Button onClick={handleAddNewAccount}>Save</Button>
+            <div className="flex-1" />
+            <Button
+              variant="outline"
+              className="mr-2"
+              onClick={cancelNewAccount}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddNewAccount}>
+              <Plus />
+              Add
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="py-2 pl-8">
+      <div className="pl-4">
         {sortedAccounts.map((account) => (
           <div
             key={account.id}
             className="group my-2 w-full rounded border px-4"
           >
             <div className="flex h-10 w-full items-center">
-              <div className="text-primary-200 text-sm font-medium">
-                {account.name}
-              </div>
-              <div className="text-primary-600 ml-1 text-sm">
-                · {getTransactionsLinkedToAccount(account.id)} transactions
+              <div className="text-sm font-medium">{account.name}</div>
+              <div className="mx-2">·</div>
+              <div className="text-sm text-muted-foreground">
+                {getTransactionsLinkedToAccount(account.id)} transactions
               </div>
 
               <div className="flex-1" />
 
               {account.default ? (
-                <div className="text-primary-600 mx-1 text-sm">Default</div>
+                <div className="mx-1 text-sm text-muted-foreground">
+                  Default
+                </div>
               ) : (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <button
-                      className="hidden group-hover:block"
+                    <Button
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
+                      variant="ghost"
+                      size="icon"
                       disabled={getTransactionsLinkedToAccount(account.id) > 0}
                     >
-                      <Trash2 className="text-primary-700 hover:text-primary-300 mx-1 h-4 w-4" />
-                    </button>
+                      <Trash2 />
+                    </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
@@ -282,7 +314,6 @@ export function AccountTypeSection({ accountType }: AccountTypeSectionProps) {
                         handleUpdateAccount(account.id, { startingCashBalance })
                       }
                       className="mt-2 w-full sm:mt-0 sm:w-56"
-                      placeholder=""
                     />
                   </div>
                 )}

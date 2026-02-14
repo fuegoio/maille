@@ -2,6 +2,7 @@ import {
   Banknote,
   BookMarked,
   Calendar,
+  Cog,
   Folder,
   LayoutDashboard,
   LifeBuoy,
@@ -79,6 +80,11 @@ const data = {
   ],
   navFooter: [
     {
+      title: "Settings",
+      url: "/settings",
+      icon: Cog,
+    },
+    {
       title: "Support",
       url: "#",
       icon: LifeBuoy,
@@ -101,9 +107,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const availableWorkspaces = useWorkspaces(
     (state) => state.availableWorkspaces,
   );
-  const currentWorkspace = useWorkspaces(
-    (state) => state.currentWorkspace,
-  );
+  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
 
   if (!availableWorkspaces || !currentWorkspace) {
     throw new Error("no workspace available");

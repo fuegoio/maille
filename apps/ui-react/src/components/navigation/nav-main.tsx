@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { type LucideIcon } from "lucide-react";
 
 import {
@@ -10,7 +11,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { Link } from "@tanstack/react-router";
 
 export function NavMain({
   title,
