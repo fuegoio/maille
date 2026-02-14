@@ -14,6 +14,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getCurrencyFormatter } from "@/lib/utils";
 
+import { Button } from "./button";
+import { Input } from "./input";
 import { Popover, PopoverTrigger, PopoverContent } from "./popover";
 
 const CALCULATOR_KEYS = [
@@ -45,7 +47,6 @@ interface AmountInputProps {
   disabled?: boolean;
   clearable?: boolean;
   placeholder?: string;
-  borderless?: boolean;
   className?: string;
   id?: string;
 }
@@ -56,7 +57,6 @@ export function AmountInput({
   disabled = false,
   clearable = false,
   placeholder = "18,99 €",
-  borderless = false,
   className,
   id,
 }: AmountInputProps) {
@@ -203,34 +203,30 @@ export function AmountInput({
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           ref={triggerRef}
           id={id}
+          variant="ghost"
+          disabled={disabled}
           className={cn(
-            "flex h-10 items-center rounded font-mono whitespace-nowrap text-white",
-            {
-              "border-border": isOpen && !borderless,
-              "hover:border-accent": !isOpen && !borderless,
-              "bg-primary-700 hover:bg-primary-600 border px-3": !borderless,
-              "hover:text-white": borderless,
-            },
+            "justify-end text-right font-mono font-normal",
             className,
           )}
-          disabled={disabled}
           onKeyDown={isOpen ? handleKeyPress : undefined}
         >
           {externalValue !== null ? (
             currencyFormatter.format(externalValue)
           ) : (
-            <span className="text-primary-300">{placeholder}</span>
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
-        </button>
+        </Button>
       </PopoverTrigger>
 
       <PopoverContent
         ref={calculatorRef}
         align="start"
         sideOffset={10}
+        className="w-48 gap-0 p-0"
         onKeyDown={handleKeyPress}
       >
         <div className="flex h-10 items-center px-4 font-mono text-sm">
@@ -241,18 +237,15 @@ export function AmountInput({
             `}>{numberFormatter.format(computedCalculatorValue)}</div>
         </div>
 
-        <div className="border-primary-600 grid grid-cols-4 gap-y-2 border-t px-2 py-4">
+        <div className="grid grid-cols-4 gap-y-2 border-t p-2">
           {CALCULATOR_KEYS.map((touch) => (
             <div key={touch} className="flex justify-center">
-              <button
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded text-white transition",
-                  touch === "validate"
-                    ? isValueValid
-                      ? "bg-primary-600 hover:bg-primary-500"
-                      : "bg-primary-800"
-                    : "bg-primary-600 hover:bg-primary-500 shadow",
-                )}
+              <Button
+                className="size-9"
+                variant={
+                  touch === "validate" && isValueValid ? "default" : "outline"
+                }
+                disabled={touch === "validate" && !isValueValid}
                 onClick={() => handleCalculatorKey(touch)}
               >
                 {typeof touch === "number" ? (
@@ -283,7 +276,7 @@ export function AmountInput({
                     )}
                   />
                 ) : null}
-              </button>
+              </Button>
             </div>
           ))}
         </div>
