@@ -16,7 +16,7 @@ function RouteComponent() {
         <div className="truncate font-medium">Settings</div>
       </header>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto px-2">
         <div className="border-b px-4 py-8">
           <div className="text-3xl font-medium text-foreground">Accounts</div>
           <div className="mt-3 text-sm text-foreground">
