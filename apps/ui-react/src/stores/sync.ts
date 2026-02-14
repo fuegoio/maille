@@ -105,7 +105,7 @@ export const useSync = create<SyncState>()(
 
           set({
             mutationsInProcessing: false,
-            mutationsQueue: get().mutationsQueue.splice(0, 1),
+            mutationsQueue: get().mutationsQueue.slice(1),
           });
           await get().dequeueMutations();
         } catch (e) {

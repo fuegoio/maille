@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/navigation/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { fetchWorkspaceData } from "@/data";
+import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
 
 export const Route = createFileRoute("/_authenticated/_workspace")({
@@ -26,6 +27,9 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
         await fetchWorkspaceData(firstWorkspace.id);
       }
     }
+
+    const syncState = useSync.getState();
+    void syncState.dequeueMutations();
   },
 });
 

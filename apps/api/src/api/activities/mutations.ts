@@ -3,7 +3,6 @@ import {
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
   type ActivityMovement,
-  type Transaction,
 } from "@maille/core/activities";
 import { builder } from "../builder";
 import {
@@ -104,7 +103,7 @@ export const registerActivitiesMutations = () => {
           .select({ number: max(activities.number) })
           .from(activities)
           .then((result) => result[0]);
-        
+
         const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
         await db.insert(activities).values({
@@ -122,9 +121,9 @@ export const registerActivitiesMutations = () => {
         });
 
         // Transactions
-        const transactionPromises = args.transactions?.map(async (transaction) => {
-          const transactionResults = (
-            await db
+        const transactionPromises =
+          args.transactions?.map(async (transaction) => {
+            const transactionResults = await db
               .insert(transactions)
               .values({
                 id: transaction.id,
@@ -135,16 +134,15 @@ export const registerActivitiesMutations = () => {
                 toUser: transaction.toUser,
                 activity: args.id,
               })
-              .returning()
-          );
-          const newTransaction = transactionResults[0];
-          
-          if (!newTransaction) {
-            throw new GraphQLError("Failed to create transaction");
-          }
-          
-          return newTransaction;
-        }) || [];
+              .returning();
+            const newTransaction = transactionResults[0];
+
+            if (!newTransaction) {
+              throw new GraphQLError("Failed to create transaction");
+            }
+
+            return newTransaction;
+          }) || [];
 
         const newTransactions = await Promise.all(transactionPromises);
 
@@ -304,15 +302,13 @@ export const registerActivitiesMutations = () => {
           activityUpdates.project = args.project;
         }
 
-        const updatedActivities = (
-          await db
-            .update(activities)
-            .set(activityUpdates)
-            .where(eq(activities.id, args.id))
-            .returning()
-        );
+        const updatedActivities = await db
+          .update(activities)
+          .set(activityUpdates)
+          .where(eq(activities.id, args.id))
+          .returning();
         const updatedActivity = updatedActivities[0];
-        
+
         if (!updatedActivity) {
           throw new GraphQLError("Failed to update activity");
         }
@@ -384,7 +380,10 @@ export const registerActivitiesMutations = () => {
           await db.select().from(activities).where(eq(activities.id, args.id)).limit(1)
         )[0];
         if (!activity) {
-          throw new GraphQLError("Activity not found");
+          return {
+            id: args.id,
+            success: true,
+          };
         }
 
         // Validate workspace from the activity
@@ -446,22 +445,20 @@ export const registerActivitiesMutations = () => {
           await validateWorkspace(activity.workspace, ctx.user.id);
         }
 
-        const newTransactions = (
-          await db
-            .insert(transactions)
-            .values({
-              id: args.id,
-              amount: args.amount,
-              fromAccount: args.fromAccount,
-              fromUser: args.fromUser,
-              toAccount: args.toAccount,
-              toUser: args.toUser,
-              activity: args.activityId,
-            })
-            .returning()
-        );
+        const newTransactions = await db
+          .insert(transactions)
+          .values({
+            id: args.id,
+            amount: args.amount,
+            fromAccount: args.fromAccount,
+            fromUser: args.fromUser,
+            toAccount: args.toAccount,
+            toUser: args.toUser,
+            activity: args.activityId,
+          })
+          .returning();
         const newTransaction = newTransactions[0];
-        
+
         if (!newTransaction) {
           throw new GraphQLError("Failed to create transaction");
         }
@@ -544,15 +541,13 @@ export const registerActivitiesMutations = () => {
         if (args.toAccount) updatedFields.toAccount = args.toAccount;
         if (args.toUser) updatedFields.toUser = args.toUser;
 
-        const updatedTransactions = (
-          await db
-            .update(transactions)
-            .set(updatedFields)
-            .where(eq(transactions.id, args.id))
-            .returning()
-        );
+        const updatedTransactions = await db
+          .update(transactions)
+          .set(updatedFields)
+          .where(eq(transactions.id, args.id))
+          .returning();
         const updatedTransaction = updatedTransactions[0];
-        
+
         if (!updatedTransaction) {
           throw new GraphQLError("Failed to update transaction");
         }
@@ -703,7 +698,7 @@ export const registerActivitiesMutations = () => {
           .where(eq(activityCategories.id, args.id))
           .returning();
         const updatedCategory = updatedCategories[0];
-        
+
         if (!updatedCategory) {
           throw new GraphQLError("Failed to update activity category");
         }
@@ -853,7 +848,7 @@ export const registerActivitiesMutations = () => {
           .where(eq(activitySubcategories.id, args.id))
           .returning();
         const updatedSubCategory = updatedSubCategories[0];
-        
+
         if (!updatedSubCategory) {
           throw new GraphQLError("Failed to update activity subcategory");
         }

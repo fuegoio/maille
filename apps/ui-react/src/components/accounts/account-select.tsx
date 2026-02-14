@@ -1,5 +1,7 @@
-import { useAccounts, ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { AccountType } from "@maille/core/accounts";
+import { ChevronDown } from "lucide-react";
+import { useMemo } from "react";
+
 import {
   Select,
   SelectContent,
@@ -8,8 +10,11 @@ import {
   SelectLabel,
   SelectTrigger,
 } from "@/components/ui/select";
-import { useMemo } from "react";
-import { ChevronDown } from "lucide-react";
+import {
+  useAccounts,
+  ACCOUNT_TYPES_COLOR,
+  ACCOUNT_TYPES_NAME,
+} from "@/stores/accounts";
 
 interface AccountSelectProps {
   modelValue: string | null | string[] | any;
@@ -76,7 +81,11 @@ export function AccountSelect({
   const selectedAccount = getSelectedAccount();
 
   return (
-    <Select value={getCurrentValue()} onValueChange={handleValueChange} disabled={disabled}>
+    <Select
+      value={getCurrentValue()}
+      onValueChange={handleValueChange}
+      disabled={disabled}
+    >
       <SelectTrigger
         className={`group relative flex h-10 items-center rounded px-3 text-left text-sm transition-colors ${
           borderless
@@ -89,7 +98,9 @@ export function AccountSelect({
             <>
               <div
                 className="mr-2 -ml-1 size-4 shrink-0 rounded-xl transition-colors sm:mr-3"
-                style={{ backgroundColor: ACCOUNT_TYPES_COLOR[selectedAccount.type] }}
+                style={{
+                  backgroundColor: ACCOUNT_TYPES_COLOR[selectedAccount.type],
+                }}
               />
               <div
                 className="truncate font-medium text-white transition-colors"
@@ -113,7 +124,9 @@ export function AccountSelect({
             </>
           )}
         </div>
-        {!borderless && !disabled && <ChevronDown className="size-4 text-muted-foreground" />}
+        {!borderless && !disabled && (
+          <ChevronDown className="size-4 text-muted-foreground" />
+        )}
       </SelectTrigger>
       <SelectContent className="bg-primary-700 absolute z-50 max-h-60 w-56 overflow-auto rounded-md border py-1 text-sm shadow-lg focus:outline-none">
         {accountTypesToDisplay.map((accountType) => (
@@ -132,7 +145,9 @@ export function AccountSelect({
               .map((account) => (
                 <SelectItem key={account.id} value={account.id}>
                   <div className="relative inline-flex w-full cursor-default items-center py-2 pr-4 pl-10 select-none">
-                    <span className="block flex-1 truncate">{account.name}</span>
+                    <span className="block flex-1 truncate">
+                      {account.name}
+                    </span>
                   </div>
                 </SelectItem>
               ))}

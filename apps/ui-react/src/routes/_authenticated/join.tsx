@@ -24,6 +24,7 @@ import {
 import { fetchWorkspaceData } from "@/data";
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
+import { getGraphQLDate } from "@/lib/date";
 import { useWorkspaces } from "@/stores/workspaces";
 
 export const CreateWorkspaceMutation = graphql(`
@@ -86,7 +87,7 @@ function RouteComponent() {
       const response = await graphqlClient.request(CreateWorkspaceMutation, {
         name: data.name,
         currency: data.currency,
-        startingDate: data.startingDate.toISOString().split("T")[0],
+        startingDate: getGraphQLDate(data.startingDate),
       });
 
       createWorkspace({

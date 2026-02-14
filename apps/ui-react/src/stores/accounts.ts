@@ -3,10 +3,8 @@ import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { randomstring } from "@/lib/utils";
 import type { Mutation } from "@/mutations";
 
-import { useAuth } from "./auth";
 import { storage } from "./storage";
 
 export const ACCOUNT_TYPES_COLOR = {

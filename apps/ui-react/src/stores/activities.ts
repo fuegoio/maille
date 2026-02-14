@@ -1,20 +1,37 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import {
+  ActivityType,
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
   type Activity,
   type ActivityCategory,
   type ActivitySubCategory,
-  type ActivityType,
   type Transaction,
 } from "@maille/core/activities";
-import { randomstring } from "@/lib/utils";
 import type { SyncEvent } from "@maille/core/sync";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+import { randomstring } from "@/lib/utils";
+import type { Mutation } from "@/mutations";
+
 import { useAccounts } from "./accounts";
 import { useMovements } from "./movements";
-import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
+
+export const ACTIVITY_TYPES_COLOR = {
+  [ActivityType.EXPENSE]: "bg-red-400",
+  [ActivityType.REVENUE]: "bg-green-400",
+  [ActivityType.INVESTMENT]: "bg-orange-400",
+  [ActivityType.NEUTRAL]: "bg-slate-400",
+};
+
+// Activity type names mapping
+export const ACTIVITY_TYPES_NAME = {
+  [ActivityType.EXPENSE]: "Expense",
+  [ActivityType.REVENUE]: "Revenue",
+  [ActivityType.INVESTMENT]: "Investment",
+  [ActivityType.NEUTRAL]: "Neutral",
+};
 
 interface ActivitiesState {
   activities: Activity[];
@@ -25,7 +42,9 @@ interface ActivitiesState {
 
   getActivityById: (activityId: string) => Activity | undefined;
   getActivityCategoryById: (categoryId: string) => ActivityCategory | undefined;
-  getActivitySubcategoryById: (subcategoryId: string) => ActivitySubCategory | undefined;
+  getActivitySubcategoryById: (
+    subcategoryId: string,
+  ) => ActivitySubCategory | undefined;
 
   setFocusedActivity: (activityId: string | null) => void;
   setShowTransactions: (show: boolean) => void;
@@ -35,7 +54,11 @@ interface ActivitiesState {
     fromAccount: string,
     toAccount: string,
   ) => Transaction;
-  updateTransaction: (activityId: string, transactionId: string, update: Partial<Transaction>) => void;
+  updateTransaction: (
+    activityId: string,
+    transactionId: string,
+    update: Partial<Transaction>,
+  ) => void;
   deleteTransaction: (activityId: string, transactionId: string) => void;
 
   addActivity: (params: {
@@ -138,7 +161,12 @@ export const useActivities = create<ActivitiesState>()(
         set({ showTransactions: show });
       },
 
-      addNewTransaction: (activityId: string, amount: number, fromAccount: string, toAccount: string) => {
+      addNewTransaction: (
+        activityId: string,
+        amount: number,
+        fromAccount: string,
+        toAccount: string,
+      ) => {
         const newTransaction: Transaction = {
           id: randomstring(),
           amount,
@@ -163,7 +191,11 @@ export const useActivities = create<ActivitiesState>()(
         return newTransaction;
       },
 
-      updateTransaction: (activityId: string, transactionId: string, update: Partial<Transaction>) => {
+      updateTransaction: (
+        activityId: string,
+        transactionId: string,
+        update: Partial<Transaction>,
+      ) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
@@ -185,7 +217,9 @@ export const useActivities = create<ActivitiesState>()(
             if (activity.id === activityId) {
               return {
                 ...activity,
-                transactions: activity.transactions.filter((t) => t.id !== transactionId),
+                transactions: activity.transactions.filter(
+                  (t) => t.id !== transactionId,
+                ),
               };
             }
             return activity;
@@ -193,11 +227,15 @@ export const useActivities = create<ActivitiesState>()(
         }));
       },
 
-      getActivityCategoryById: (categoryId: string): ActivityCategory | undefined => {
+      getActivityCategoryById: (
+        categoryId: string,
+      ): ActivityCategory | undefined => {
         return get().activityCategories.find((c) => c.id === categoryId);
       },
 
-      getActivitySubcategoryById: (subcategoryId: string): ActivitySubCategory | undefined => {
+      getActivitySubcategoryById: (
+        subcategoryId: string,
+      ): ActivitySubCategory | undefined => {
         return get().activitySubcategories.find((s) => s.id === subcategoryId);
       },
 
@@ -231,8 +269,18 @@ export const useActivities = create<ActivitiesState>()(
           project,
           transactions,
           movements,
-          amount: getActivityTransactionsReconciliationSum(type, transactions, accounts),
-          status: getActivityStatus(date, transactions, movements, accounts, getMovementById),
+          amount: getActivityTransactionsReconciliationSum(
+            type,
+            transactions,
+            accounts,
+          ),
+          status: getActivityStatus(
+            date,
+            transactions,
+            movements,
+            accounts,
+            getMovementById,
+          ),
         };
 
         set((state) => ({
@@ -263,16 +311,31 @@ export const useActivities = create<ActivitiesState>()(
                 ...activity,
                 name: update.name !== undefined ? update.name : activity.name,
                 description:
-                  update.description !== undefined ? update.description : activity.description,
+                  update.description !== undefined
+                    ? update.description
+                    : activity.description,
                 date: update.date !== undefined ? update.date : activity.date,
                 type: update.type !== undefined ? update.type : activity.type,
-                category: update.category !== undefined ? update.category : activity.category,
+                category:
+                  update.category !== undefined
+                    ? update.category
+                    : activity.category,
                 subcategory:
-                  update.subcategory !== undefined ? update.subcategory : activity.subcategory,
-                project: update.project !== undefined ? update.project : activity.project,
+                  update.subcategory !== undefined
+                    ? update.subcategory
+                    : activity.subcategory,
+                project:
+                  update.project !== undefined
+                    ? update.project
+                    : activity.project,
                 transactions:
-                  update.transactions !== undefined ? update.transactions : activity.transactions,
-                movements: update.movements !== undefined ? update.movements : activity.movements,
+                  update.transactions !== undefined
+                    ? update.transactions
+                    : activity.transactions,
+                movements:
+                  update.movements !== undefined
+                    ? update.movements
+                    : activity.movements,
 
                 amount: getActivityTransactionsReconciliationSum(
                   update.type ?? activity.type,
@@ -295,7 +358,9 @@ export const useActivities = create<ActivitiesState>()(
 
       deleteActivity: (activityId: string) => {
         set((state) => ({
-          activities: state.activities.filter((activity) => activity.id !== activityId),
+          activities: state.activities.filter(
+            (activity) => activity.id !== activityId,
+          ),
         }));
       },
 
@@ -382,7 +447,10 @@ export const useActivities = create<ActivitiesState>()(
         };
 
         set((state) => ({
-          activitySubcategories: [...state.activitySubcategories, newSubcategory],
+          activitySubcategories: [
+            ...state.activitySubcategories,
+            newSubcategory,
+          ],
         }));
 
         return newSubcategory;
@@ -396,16 +464,22 @@ export const useActivities = create<ActivitiesState>()(
         },
       ) => {
         set((state) => ({
-          activitySubcategories: state.activitySubcategories.map((subcategory) => {
-            if (subcategory.id === subcategoryId) {
-              return {
-                ...subcategory,
-                name: update.name !== undefined ? update.name : subcategory.name,
-                category: update.category !== undefined ? update.category : subcategory.category,
-              };
-            }
-            return subcategory;
-          }),
+          activitySubcategories: state.activitySubcategories.map(
+            (subcategory) => {
+              if (subcategory.id === subcategoryId) {
+                return {
+                  ...subcategory,
+                  name:
+                    update.name !== undefined ? update.name : subcategory.name,
+                  category:
+                    update.category !== undefined
+                      ? update.category
+                      : subcategory.category,
+                };
+              }
+              return subcategory;
+            },
+          ),
         }));
       },
 
@@ -419,7 +493,10 @@ export const useActivities = create<ActivitiesState>()(
 
       restoreActivitySubcategory: (payload) => {
         set((state) => ({
-          activitySubcategories: [...state.activitySubcategories, payload.subcategory],
+          activitySubcategories: [
+            ...state.activitySubcategories,
+            payload.subcategory,
+          ],
           activities: state.activities.map((activity) => {
             if (payload.activities.includes(activity.id)) {
               return {

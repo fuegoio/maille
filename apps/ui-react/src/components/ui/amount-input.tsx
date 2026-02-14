@@ -229,7 +229,6 @@ export function AmountInput({
 
       <PopoverContent
         ref={calculatorRef}
-        className="bg-primary-700 ring-primary-600 ring-opacity-10 z-20 w-56 rounded-md p-0 shadow-lg ring-1 focus:outline-none"
         align="start"
         sideOffset={10}
         onKeyDown={handleKeyPress}
@@ -292,4 +291,3 @@ export function AmountInput({
     </Popover>
   );
 }
-

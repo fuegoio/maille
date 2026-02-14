@@ -2,16 +2,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType, type Activity } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
@@ -20,11 +24,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,30 +31,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { randomstring } from "@/lib/utils";
+import { getGraphQLDate } from "@/lib/date";
+import { cn, randomstring } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
-import { useActivities } from "@/stores/activities";
+import {
+  ACTIVITY_TYPES_COLOR,
+  ACTIVITY_TYPES_NAME,
+  useActivities,
+} from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
 
-// Activity type colors mapping
-const ACTIVITY_TYPES_COLOR = {
-  [ActivityType.EXPENSE]: "red",
-  [ActivityType.REVENUE]: "green",
-  [ActivityType.INVESTMENT]: "orange",
-  [ActivityType.NEUTRAL]: "slate",
-};
-
-// Activity type names mapping
-const ACTIVITY_TYPES_NAME = {
-  [ActivityType.EXPENSE]: "Expense",
-  [ActivityType.REVENUE]: "Revenue",
-  [ActivityType.INVESTMENT]: "Investment",
-  [ActivityType.NEUTRAL]: "Neutral",
-};
+import { AmountInput } from "../ui/amount-input";
+import { DatePicker } from "../ui/date-picker";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -102,17 +92,13 @@ export function AddActivityModal({
   type: initialType,
   onActivityAdded,
 }: AddActivityModalProps) {
-  const categories = useActivities(
-    (state) => state.activityCategories,
-  );
-  const subcategories = useActivities(
-    (state) => state.activitySubcategories,
-  );
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
   const mutate = useSync((state) => state.mutate);
-  const currentWorkspace = useWorkspaces(
-    (state) => state.currentWorkspace,
-  );
+  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
+  const userId = useAuth((state) => state.user!.id);
+  const activities = useActivities((state) => state.activities);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -336,15 +322,13 @@ export function AddActivityModal({
 
   // Create a single activity
   const createActivity = (data: FormValues) => {
-    const userId = useAuth((state) => state.user!.id);
-    const activities = useActivities((state) => state.activities);
     const newActivity = {
       id: randomstring(),
       user: userId,
       number: activities.length + 1,
       name: data.name,
       description: data.description || null,
-      date: data.date.toISOString(),
+      date: getGraphQLDate(data.date),
       type: data.type,
       category: data.category || null,
       subcategory: data.subcategory || null,
@@ -399,7 +383,6 @@ export function AddActivityModal({
     movements.forEach((movement) => {
       const { fromAccount, toAccount } = guessBestTransaction();
 
-      const activities = useActivities((state) => state.activities);
       const newActivity = {
         id: randomstring(),
         user,
@@ -457,40 +440,32 @@ export function AddActivityModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-primary-800 border-primary-700 max-h-[90vh] max-w-2xl overflow-y-auto text-white">
-        {/* Header with movement info */}
-        <div className="border-primary-700 flex items-center justify-between border-b px-4 py-2">
-          <div className="flex items-center gap-2">
-            {movement && (
-              <div className="bg-primary-400 text-primary-900 rounded px-3 py-1 text-sm font-medium">
-                {accounts.find((a) => a.id === movement.account)?.name ||
-                  movement.account}{" "}
-                - {movement.name}
-              </div>
-            )}
-            {movements && (
-              <div className="bg-primary-400 text-primary-900 rounded px-3 py-1 text-sm font-medium">
-                {movements.length} movements
-              </div>
-            )}
-            {!movement && !movements && (
-              <div className="bg-primary-400 text-primary-900 rounded px-3 py-1 text-sm font-medium">
-                New activity
-              </div>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-400 hover:text-primary-100"
-            onClick={() => onOpenChange(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            <div className="flex items-center gap-2">
+              {movement && (
+                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
+                  {accounts.find((a) => a.id === movement.account)?.name ||
+                    movement.account}{" "}
+                  - {movement.name}
+                </div>
+              )}
+              {movements && (
+                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
+                  {movements.length} movements
+                </div>
+              )}
+              {!movement && !movements && (
+                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
+                  New activity
+                </div>
+              )}
+            </div>
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Main content */}
-        <div className="space-y-4 p-4" />
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FieldGroup>
             {/* Date picker */}
@@ -501,37 +476,7 @@ export function AddActivityModal({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="date">Date</FieldLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          id="date"
-                          className={cn(
-                            "bg-primary-700 border-primary-600 h-8 justify-start text-left font-normal text-white",
-                            !field.value && "text-muted-foreground",
-                          )}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                        >
-                          <CalendarIcon className="mr-2 h-3 w-3" />
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="bg-primary-800 border-primary-700 w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          className="bg-primary-800 text-white"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <DatePicker value={field.value} onChange={field.onChange} />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -556,7 +501,6 @@ export function AddActivityModal({
                     {...field}
                     ref={nameInputRef}
                     id="name"
-                    className="bg-primary-700 border-primary-600 flex-1 text-white"
                     placeholder="Activity name"
                     autoFocus
                   />
@@ -599,19 +543,20 @@ export function AddActivityModal({
                     }}
                     value={field.value}
                   >
-                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                    <SelectTrigger>
                       <SelectValue placeholder="Activity type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-primary-800 border-primary-700">
+                    <SelectContent>
                       {Object.values(ActivityType).map((activityType) => (
                         <SelectItem key={activityType} value={activityType}>
-                          <div className="flex items-center">
+                          <div className="flex items-center py-1">
                             <div
-                              className={`mr-2 h-3 w-3 rounded-full ${ACTIVITY_TYPES_COLOR[activityType]}-500`}
+                              className={cn(
+                                "mr-2 h-3 w-3 rounded-full",
+                                ACTIVITY_TYPES_COLOR[activityType],
+                              )}
                             />
-                            <span className="text-sm">
-                              {ACTIVITY_TYPES_NAME[activityType]}
-                            </span>
+                            <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -734,13 +679,13 @@ export function AddActivityModal({
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
+                        <SelectTrigger>
                           <SelectValue placeholder="From account" />
                         </SelectTrigger>
-                        <SelectContent className="bg-primary-800 border-primary-700">
+                        <SelectContent>
                           {accounts.map((account) => (
                             <SelectItem key={account.id} value={account.id}>
-                              <span className="text-sm">{account.name}</span>
+                              {account.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -770,13 +715,13 @@ export function AddActivityModal({
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger className="bg-primary-700 border-primary-600 h-8 flex-1 text-sm text-white">
+                        <SelectTrigger>
                           <SelectValue placeholder="To account" />
                         </SelectTrigger>
-                        <SelectContent className="bg-primary-800 border-primary-700">
+                        <SelectContent>
                           {accounts.map((account) => (
                             <SelectItem key={account.id} value={account.id}>
-                              <span className="text-sm">{account.name}</span>
+                              {account.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -800,16 +745,7 @@ export function AddActivityModal({
                       >
                         Amount
                       </FieldLabel>
-                      <Input
-                        type="number"
-                        id={`transactions.${index}.amount`}
-                        value={field.value}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
-                        className="bg-primary-700 border-primary-600 h-8 w-24 font-mono text-sm text-white"
-                        step="0.01"
-                      />
+                      <AmountInput {...field} />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
@@ -833,23 +769,14 @@ export function AddActivityModal({
             ))}
           </div>
 
-          {/* Footer with action buttons */}
-          <div className="border-primary-700 flex justify-end gap-2 border-t px-4 py-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="text-primary-300 border-primary-600 hover:bg-primary-700"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="bg-primary-600 hover:bg-primary-500 text-white"
-            >
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">
               {movements ? "Create activities" : "Create activity"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
