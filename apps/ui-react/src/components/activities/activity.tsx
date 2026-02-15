@@ -51,7 +51,6 @@ export function Activity() {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
 
-  const [showProperties, setShowProperties] = React.useState(true);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [showSplitModal, setShowSplitModal] = React.useState(false);
 
@@ -267,85 +266,63 @@ export function Activity() {
                   />
                 </Field>
               </FieldGroup>
+
+              <FieldGroup className="mt-2 gap-3">
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="type">Activity type</FieldLabel>
+                  <Select value={activity.type}>
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(ActivityType).map((activityType) => (
+                        <SelectItem key={activityType} value={activityType}>
+                          <div className="flex items-center py-1">
+                            <div
+                              className={cn(
+                                "mr-2 h-3 w-3 rounded-full",
+                                ACTIVITY_TYPES_COLOR[activityType],
+                              )}
+                            />
+                            <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="category">Category</FieldLabel>
+                  <Select value={activity.category || undefined}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
+                  <Select value={activity.subcategory || undefined}>
+                    <SelectTrigger id="subcategory">
+                      <SelectValue placeholder="Subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredSubcategories.map((subcat) => (
+                        <SelectItem key={subcat.id} value={subcat.id}>
+                          {subcat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </FieldGroup>
             </FieldSet>
-          </div>
-
-          <div className="border-b px-4 py-6 sm:px-8">
-            <div className="flex">
-              <button
-                className="text-primary-100 -ml-2 flex h-7 items-center rounded px-2 text-sm font-medium transition-colors hover:text-white"
-                onClick={() => setShowProperties(!showProperties)}
-              >
-                Properties
-                {showProperties ? (
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                ) : (
-                  <ChevronRight className="ml-2 h-4 w-4 rotate-90 transform" />
-                )}
-              </button>
-            </div>
-
-            {showProperties && (
-              <div className="pt-4">
-                <FieldSet>
-                  <FieldGroup className="gap-3">
-                    <Field orientation="horizontal">
-                      <FieldLabel htmlFor="type">Activity type</FieldLabel>
-                      <Select value={activity.type}>
-                        <SelectTrigger id="type">
-                          <SelectValue placeholder="Activity type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.values(ActivityType).map((activityType) => (
-                            <SelectItem key={activityType} value={activityType}>
-                              <div className="flex items-center py-1">
-                                <div
-                                  className={cn(
-                                    "mr-2 h-3 w-3 rounded-full",
-                                    ACTIVITY_TYPES_COLOR[activityType],
-                                  )}
-                                />
-                                <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field orientation="horizontal">
-                      <FieldLabel htmlFor="category">Category</FieldLabel>
-                      <Select value={activity.category || undefined}>
-                        <SelectTrigger id="category">
-                          <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filteredCategories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                    <Field orientation="horizontal">
-                      <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
-                      <Select value={activity.subcategory || undefined}>
-                        <SelectTrigger id="subcategory">
-                          <SelectValue placeholder="Subcategory" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filteredSubcategories.map((subcat) => (
-                            <SelectItem key={subcat.id} value={subcat.id}>
-                              {subcat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
-              </div>
-            )}
           </div>
 
           <ActivityTransactions activity={activity} />

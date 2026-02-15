@@ -116,6 +116,7 @@ export interface UpdateMovementActivityEvent extends BaseSyncEvent {
   type: "updateMovementActivity";
   payload: {
     id: string;
+    activity: string;
     movement: string;
     amount: number;
   };
@@ -125,6 +126,7 @@ export interface DeleteMovementActivityEvent extends BaseSyncEvent {
   type: "deleteMovementActivity";
   payload: {
     id: string;
+    activity: string;
     movement: string;
   };
 }

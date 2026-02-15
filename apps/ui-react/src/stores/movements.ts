@@ -1,9 +1,10 @@
+import type { Movement, MovementActivity } from "@maille/core/movements";
+import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Movement } from "@maille/core/movements";
-import { randomstring } from "@/lib/utils";
-import type { SyncEvent } from "@maille/core/sync";
+
 import type { Mutation } from "@/mutations";
+
 import { storage } from "./storage";
 
 interface MovementsState {
@@ -12,15 +13,7 @@ interface MovementsState {
 
   getMovementById: (movementId: string) => Movement | undefined;
 
-  addMovement: (params: {
-    id?: string;
-    date: Date;
-    amount: number;
-    account: string;
-    name: string;
-    activities: any[];
-  }) => Movement;
-
+  addMovement: (movement: Omit<Movement, "status">) => Movement;
   updateMovement: (
     movementId: string,
     update: {
@@ -28,24 +21,26 @@ interface MovementsState {
       amount?: number;
       account?: string;
       name?: string;
-      activities?: any[];
     },
   ) => void;
-
   deleteMovement: (movementId: string) => void;
   restoreMovement: (movement: Movement) => void;
 
   setFocusedMovement: (movementId: string | null) => void;
 
-  createMovementActivity: (
-    activityId: string,
+  addMovementActivity: (
     movementId: string,
-    amount: number,
-  ) => { id: string; activity: string; movement: string; amount: number };
-
-  updateMovementActivity: (movementId: string, movementActivityId: string, amount: number) => void;
-
-  deleteMovementActivity: (movementId: string, movementActivityId: string) => void;
+    movementActivity: MovementActivity,
+  ) => MovementActivity;
+  updateMovementActivity: (
+    movementId: string,
+    movementActivityId: string,
+    update: Partial<MovementActivity>,
+  ) => void;
+  deleteMovementActivity: (
+    movementId: string,
+    movementActivityId: string,
+  ) => void;
 
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
@@ -66,22 +61,16 @@ export const useMovements = create<MovementsState>()(
         set({ focusedMovement: movementId });
       },
 
-      createMovementActivity: (activityId: string, movementId: string, amount: number) => {
-        const newMovementActivity = {
-          id: randomstring(),
-          activity: activityId,
-          movement: movementId,
-          amount,
-        };
-
+      addMovementActivity: (movementId, movementActivity) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
+              const newActivities = [...movement.activities, movementActivity];
               return {
                 ...movement,
-                activities: [...movement.activities, newMovementActivity],
+                activities: newActivities,
                 status:
-                  movement.activities.reduce((sum, ma) => sum + ma.amount, 0) + amount ===
+                  newActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
                   movement.amount
                     ? "completed"
                     : "incomplete",
@@ -91,22 +80,22 @@ export const useMovements = create<MovementsState>()(
           }),
         }));
 
-        return newMovementActivity;
+        return movementActivity;
       },
-
-      updateMovementActivity: (movementId: string, movementActivityId: string, amount: number) => {
+      updateMovementActivity: (movementId, movementActivityId, update) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
               const updatedActivities = movement.activities.map((ma) =>
-                ma.id === movementActivityId ? { ...ma, amount } : ma,
+                ma.id === movementActivityId ? { ...ma, ...update } : ma,
               );
 
               return {
                 ...movement,
                 activities: updatedActivities,
                 status:
-                  updatedActivities.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
+                  updatedActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
+                  movement.amount
                     ? "completed"
                     : "incomplete",
               };
@@ -115,8 +104,7 @@ export const useMovements = create<MovementsState>()(
           }),
         }));
       },
-
-      deleteMovementActivity: (movementId: string, movementActivityId: string) => {
+      deleteMovementActivity: (movementId, movementActivityId) => {
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
@@ -128,7 +116,8 @@ export const useMovements = create<MovementsState>()(
                 ...movement,
                 activities: filteredActivities,
                 status:
-                  filteredActivities.reduce((sum, ma) => sum + ma.amount, 0) === movement.amount
+                  filteredActivities.reduce((sum, ma) => sum + ma.amount, 0) ===
+                  movement.amount
                     ? "completed"
                     : "incomplete",
               };
@@ -138,30 +127,15 @@ export const useMovements = create<MovementsState>()(
         }));
       },
 
-      addMovement: ({
-        id,
-        date,
-        amount,
-        account,
-        name,
-        activities,
-      }: {
-        id?: string;
-        date: Date;
-        amount: number;
-        account: string;
-        name: string;
-        activities: any[];
-      }): Movement => {
+      addMovement: (movement) => {
         const newMovement = {
-          id: id ?? randomstring(),
-          date,
-          amount,
-          account,
-          name,
-          activities,
-          status: "incomplete" as const,
-        };
+          ...movement,
+          status:
+            movement.activities.reduce((sum, ma) => sum + ma.amount, 0) ===
+            movement.amount
+              ? "completed"
+              : "incomplete",
+        } satisfies Movement;
 
         set((state) => ({
           movements: [...state.movements, newMovement],
@@ -169,7 +143,6 @@ export const useMovements = create<MovementsState>()(
 
         return newMovement;
       },
-
       updateMovement: (
         movementId: string,
         update: {
@@ -177,7 +150,6 @@ export const useMovements = create<MovementsState>()(
           amount?: number;
           account?: string;
           name?: string;
-          activities?: any[];
         },
       ) => {
         set((state) => ({
@@ -185,19 +157,15 @@ export const useMovements = create<MovementsState>()(
             if (movement.id === movementId) {
               return {
                 ...movement,
-                date: update.date !== undefined ? update.date : movement.date,
-                amount: update.amount !== undefined ? update.amount : movement.amount,
-                account: update.account !== undefined ? update.account : movement.account,
-                name: update.name !== undefined ? update.name : movement.name,
-                activities:
-                  update.activities !== undefined ? update.activities : movement.activities,
-
+                ...update,
                 status:
-                  (update.activities !== undefined
-                    ? update.activities
-                    : movement.activities
-                  ).reduce((sum, ma) => sum + ma.amount, 0) ===
-                  (update.amount !== undefined ? update.amount : movement.amount)
+                  movement.activities.reduce(
+                    (sum, ma) => sum + ma.amount,
+                    0,
+                  ) ===
+                  (update.amount !== undefined
+                    ? update.amount
+                    : movement.amount)
                     ? "completed"
                     : "incomplete",
               };
@@ -209,7 +177,9 @@ export const useMovements = create<MovementsState>()(
 
       deleteMovement: (movementId: string) => {
         set((state) => ({
-          movements: state.movements.filter((movement) => movement.id !== movementId),
+          movements: state.movements.filter(
+            (movement) => movement.id !== movementId,
+          ),
         }));
       },
 
@@ -233,6 +203,19 @@ export const useMovements = create<MovementsState>()(
           });
         } else if (event.type === "deleteMovement") {
           get().deleteMovement(event.payload.id);
+        } else if (event.type === "createMovementActivity") {
+          get().addMovementActivity(event.payload.movement, event.payload);
+        } else if (event.type === "updateMovementActivity") {
+          get().updateMovementActivity(
+            event.payload.movement,
+            event.payload.id,
+            event.payload,
+          );
+        } else if (event.type === "deleteMovementActivity") {
+          get().deleteMovementActivity(
+            event.payload.movement,
+            event.payload.id,
+          );
         }
       },
 
@@ -250,6 +233,22 @@ export const useMovements = create<MovementsState>()(
           });
         } else if (event.name === "deleteMovement") {
           get().restoreMovement(event.rollbackData);
+        } else if (event.name === "createMovementActivity") {
+          get().deleteMovementActivity(
+            event.variables.movementId,
+            event.variables.id,
+          );
+        } else if (event.name === "updateMovementActivity") {
+          get().updateMovementActivity(
+            event.rollbackData.movement,
+            event.variables.id,
+            event.rollbackData,
+          );
+        } else if (event.name === "deleteMovementActivity") {
+          get().addMovementActivity(
+            event.rollbackData.movement,
+            event.rollbackData,
+          );
         }
       },
     }),

@@ -112,11 +112,13 @@ export const registerMovementsMutations = () => {
           updates.amount = args.amount;
         }
 
-        const updatedMovements = (
-          await db.update(movements).set(updates).where(eq(movements.id, args.id)).returning()
-        );
+        const updatedMovements = await db
+          .update(movements)
+          .set(updates)
+          .where(eq(movements.id, args.id))
+          .returning();
         const updatedMovement = updatedMovements[0];
-        
+
         if (!updatedMovement) {
           throw new GraphQLError("Failed to update movement");
         }
@@ -280,15 +282,13 @@ export const registerMovementsMutations = () => {
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
 
-        const updatedMovementActivities = (
-          await db
-            .update(movementsActivities)
-            .set(updatedFields)
-            .where(eq(movementsActivities.id, args.id))
-            .returning()
-        );
+        const updatedMovementActivities = await db
+          .update(movementsActivities)
+          .set(updatedFields)
+          .where(eq(movementsActivities.id, args.id))
+          .returning();
         const updatedMovementActivity = updatedMovementActivities[0];
-        
+
         if (!updatedMovementActivity) {
           throw new GraphQLError("Failed to update movement activity");
         }
@@ -297,6 +297,7 @@ export const registerMovementsMutations = () => {
           type: "updateMovementActivity",
           payload: {
             id: args.id,
+            activity: movementActivity.activity,
             movement: movementActivity.movement,
             amount: args.amount,
           },
@@ -340,6 +341,7 @@ export const registerMovementsMutations = () => {
           type: "deleteMovementActivity",
           payload: {
             id: args.id,
+            activity: movementActivity.activity,
             movement: movementActivity.movement,
           },
           createdAt: new Date(),

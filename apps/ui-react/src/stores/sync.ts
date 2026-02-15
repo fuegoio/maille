@@ -112,6 +112,7 @@ export const useSync = create<SyncState>()(
           set({
             mutationsInProcessing: false,
           });
+          console.error(e);
           if (!(e instanceof TypeError)) {
             useActivities.getState().handleMutationError(mutation);
             useMovements.getState().handleMutationError(mutation);

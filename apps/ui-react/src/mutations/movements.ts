@@ -123,6 +123,7 @@ export type UpdateMovementActivityMutation = MutationType<
   typeof updateMovementActivityMutation,
   {
     id: string;
+    activity: string;
     movement: string;
     amount: number;
   },

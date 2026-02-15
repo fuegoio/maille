@@ -22,7 +22,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { addTransactionMutation } from "@/mutations/activities";
-import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
 // Form schema using zod
@@ -57,23 +56,27 @@ export function AddTransactionButton({
   const { control, handleSubmit, reset } = form;
 
   const handleAddTransaction = (data: FormValues) => {
-    const addNewTransaction = useActivities((state) => state.addNewTransaction);
-    const transaction = addNewTransaction(
-      activity.id,
-      data.amount,
-      data.fromAccount,
-      data.toAccount,
-    );
-
     const mutate = useSync((state) => state.mutate);
+    const transactionId = crypto.randomUUID();
     mutate({
       name: "addTransaction",
       mutation: addTransactionMutation,
       variables: {
         activityId: activity.id,
-        ...transaction,
+        id: transactionId,
+        ...data,
       },
       rollbackData: undefined,
+      events: [
+        {
+          type: "addTransaction",
+          payload: {
+            activityId: activity.id,
+            id: transactionId,
+            ...data,
+          },
+        },
+      ],
     });
 
     reset();

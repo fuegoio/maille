@@ -1,5 +1,3 @@
-// Remove incorrect crypto import
-
 import type {
   ActivityFilterAmountOperators,
   ActivityFilterDateOperators,

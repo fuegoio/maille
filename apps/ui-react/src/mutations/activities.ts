@@ -1,11 +1,9 @@
-import { graphql } from "@/gql";
 import type {
   Activity,
   ActivityCategory,
   ActivitySubCategory,
   Transaction,
 } from "@maille/core/activities";
-import type { MutationType } from "./type";
 import type {
   AddTransactionEvent,
   CreateActivityCategoryEvent,
@@ -18,7 +16,12 @@ import type {
   UpdateActivityCategoryEvent,
   UpdateActivityEvent,
   UpdateActivitySubCategoryEvent,
+  UpdateTransactionEvent,
 } from "@maille/core/sync";
+
+import { graphql } from "@/gql";
+
+import type { MutationType } from "./type";
 
 export const createActivityMutation = graphql(/* GraphQL */ `
   mutation CreateActivity(
@@ -144,14 +147,18 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
     $id: String!
     $amount: Float
     $fromAccount: String
+    $fromUser: String
     $toAccount: String
+    $toUser: String
   ) {
     updateTransaction(
       activityId: $activityId
       id: $id
       amount: $amount
       fromAccount: $fromAccount
+      fromUser: $fromUser
       toAccount: $toAccount
+      toUser: $toUser
     ) {
       id
     }
@@ -182,7 +189,7 @@ export type UpdateTransactionMutation = MutationType<
     fromAccount: string;
     toAccount: string;
   },
-  [UpdateActivityEvent]
+  [UpdateTransactionEvent]
 >;
 
 export type DeleteTransactionMutation = MutationType<

@@ -277,14 +277,14 @@ export const registerActivitiesMutations = () => {
         if (args.name) {
           activityUpdates.name = args.name;
         }
-        if (args.description) {
+        if (args.description !== undefined) {
           activityUpdates.description = args.description;
         }
         if (args.date) {
           activityUpdates.date = args.date;
         }
         if (args.type) {
-          const ActivityTypeEnum = z.nativeEnum(ActivityType);
+          const ActivityTypeEnum = z.enum(ActivityType);
           activityUpdates.type = ActivityTypeEnum.parse(args.type);
           activityUpdates.category = null;
           activityUpdates.subcategory = null;
@@ -313,7 +313,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to update activity");
         }
 
-        addEvent({
+        void addEvent({
           type: "updateActivity",
           payload: {
             id: args.id,
@@ -463,7 +463,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to create transaction");
         }
 
-        addEvent({
+        void addEvent({
           type: "addTransaction",
           payload: {
             activityId: args.activityId,
@@ -552,7 +552,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to update transaction");
         }
 
-        addEvent({
+        void addEvent({
           type: "updateTransaction",
           payload: {
             activityId: transaction.activity,
@@ -606,7 +606,7 @@ export const registerActivitiesMutations = () => {
 
         await db.delete(transactions).where(eq(transactions.id, args.id));
 
-        addEvent({
+        void addEvent({
           type: "deleteTransaction",
           payload: {
             activityId: transaction.activity,

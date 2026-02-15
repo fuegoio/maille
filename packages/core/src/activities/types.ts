@@ -1,5 +1,3 @@
-// Remove incorrect crypto import
-
 export type Transaction = {
   id: string;
   amount: number;

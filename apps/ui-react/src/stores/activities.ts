@@ -4,6 +4,7 @@ import {
   getActivityTransactionsReconciliationSum,
   type Activity,
   type ActivityCategory,
+  type ActivityMovement,
   type ActivitySubCategory,
   type Transaction,
 } from "@maille/core/activities";
@@ -47,35 +48,25 @@ interface ActivitiesState {
   ) => ActivitySubCategory | undefined;
 
   setFocusedActivity: (activityId: string | null) => void;
+
   setShowTransactions: (show: boolean) => void;
-  addNewTransaction: (
-    activityId: string,
-    amount: number,
-    fromAccount: string,
-    toAccount: string,
-  ) => Transaction;
+  addTransaction: (activityId: string, transaction: Transaction) => Transaction;
   updateTransaction: (
     activityId: string,
     transactionId: string,
-    update: Partial<Transaction>,
+    update: Omit<Partial<Transaction>, "id">,
   ) => void;
   deleteTransaction: (activityId: string, transactionId: string) => void;
 
-  addActivity: (params: {
-    id?: string;
-    user: string;
-    number: number;
-    name: string;
-    description: string | null;
-    date: Date;
-    type: ActivityType;
-    category: string | null;
-    subcategory: string | null;
-    project: string | null;
-    transactions: any[];
-    movements: any[];
-  }) => Activity;
+  addActivityMovement: (activityId: string, movement: ActivityMovement) => void;
+  updateActivityMovement: (
+    activityId: string,
+    movementId: string,
+    update: Omit<Partial<ActivityMovement>, "id">,
+  ) => void;
+  deleteActivityMovement: (activityId: string, movementId: string) => void;
 
+  addActivity: (activity: Omit<Activity, "amount" | "status">) => Activity;
   updateActivity: (
     activityId: string,
     update: {
@@ -86,11 +77,8 @@ interface ActivitiesState {
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
-      transactions?: any[];
-      movements?: any[];
     },
   ) => void;
-
   deleteActivity: (activityId: string) => void;
   restoreActivity: (activity: Activity) => void;
 
@@ -99,7 +87,6 @@ interface ActivitiesState {
     name: string;
     type: ActivityType;
   }) => ActivityCategory;
-
   updateActivityCategory: (
     categoryId: string,
     update: {
@@ -107,7 +94,6 @@ interface ActivitiesState {
       type?: ActivityType;
     },
   ) => void;
-
   deleteActivityCategory: (categoryId: string) => void;
   restoreActivityCategory: (payload: {
     category: ActivityCategory;
@@ -120,7 +106,6 @@ interface ActivitiesState {
     name: string;
     category: string;
   }) => ActivitySubCategory;
-
   updateActivitySubcategory: (
     subcategoryId: string,
     update: {
@@ -128,7 +113,6 @@ interface ActivitiesState {
       category?: string;
     },
   ) => void;
-
   deleteActivitySubcategory: (subcategoryId: string) => void;
   restoreActivitySubcategory: (payload: {
     subcategory: ActivitySubCategory;
@@ -161,48 +145,56 @@ export const useActivities = create<ActivitiesState>()(
         set({ showTransactions: show });
       },
 
-      addNewTransaction: (
-        activityId: string,
-        amount: number,
-        fromAccount: string,
-        toAccount: string,
-      ) => {
-        const newTransaction: Transaction = {
-          id: randomstring(),
-          amount,
-          fromAccount,
-          fromUser: null,
-          toAccount,
-          toUser: null,
-        };
-
+      addTransaction: (activityId, transaction) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
+              const newTransactions = [...activity.transactions, transaction];
               return {
                 ...activity,
-                transactions: [...activity.transactions, newTransaction],
+                transactions: newTransactions,
+                amount: getActivityTransactionsReconciliationSum(
+                  activity.type,
+                  newTransactions,
+                  useAccounts.getState().accounts,
+                ),
+                status: getActivityStatus(
+                  activity.date,
+                  newTransactions,
+                  activity.movements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
+                ),
               };
             }
             return activity;
           }),
         }));
 
-        return newTransaction;
+        return transaction;
       },
 
-      updateTransaction: (
-        activityId: string,
-        transactionId: string,
-        update: Partial<Transaction>,
-      ) => {
+      updateTransaction: (activityId, transactionId, update) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
+              const newTransactions = activity.transactions.map((t) =>
+                t.id === transactionId ? { ...t, ...update } : t,
+              );
               return {
                 ...activity,
-                transactions: activity.transactions.map((t) =>
-                  t.id === transactionId ? { ...t, ...update } : t,
+                transactions: newTransactions,
+                amount: getActivityTransactionsReconciliationSum(
+                  activity.type,
+                  newTransactions,
+                  useAccounts.getState().accounts,
+                ),
+                status: getActivityStatus(
+                  activity.date,
+                  newTransactions,
+                  activity.movements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
                 ),
               };
             }
@@ -211,14 +203,95 @@ export const useActivities = create<ActivitiesState>()(
         }));
       },
 
-      deleteTransaction: (activityId: string, transactionId: string) => {
+      deleteTransaction: (activityId, transactionId) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
+              const newTransactions = activity.transactions.filter(
+                (t) => t.id !== transactionId,
+              );
               return {
                 ...activity,
-                transactions: activity.transactions.filter(
-                  (t) => t.id !== transactionId,
+                transactions: newTransactions,
+                amount: getActivityTransactionsReconciliationSum(
+                  activity.type,
+                  newTransactions,
+                  useAccounts.getState().accounts,
+                ),
+                status: getActivityStatus(
+                  activity.date,
+                  newTransactions,
+                  activity.movements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
+                ),
+              };
+            }
+            return activity;
+          }),
+        }));
+      },
+
+      addActivityMovement: (activityId, movement) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              const newMovements = [...activity.movements, movement];
+              return {
+                ...activity,
+                movements: newMovements,
+                status: getActivityStatus(
+                  activity.date,
+                  activity.transactions,
+                  newMovements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
+                ),
+              };
+            }
+            return activity;
+          }),
+        }));
+      },
+      updateActivityMovement: (activityId, movementId, update) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              const newMovements = activity.movements.map((m) =>
+                m.id === movementId ? { ...m, ...update } : m,
+              );
+              return {
+                ...activity,
+                movements: newMovements,
+                status: getActivityStatus(
+                  activity.date,
+                  activity.transactions,
+                  newMovements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
+                ),
+              };
+            }
+            return activity;
+          }),
+        }));
+      },
+      deleteActivityMovement: (activityId, movementId) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id === activityId) {
+              const newMovements = activity.movements.filter(
+                (m) => m.id !== movementId,
+              );
+              return {
+                ...activity,
+                movements: newMovements,
+                status: getActivityStatus(
+                  activity.date,
+                  activity.transactions,
+                  newMovements,
+                  useAccounts.getState().accounts,
+                  useMovements.getState().getMovementById,
                 ),
               };
             }
@@ -300,8 +373,6 @@ export const useActivities = create<ActivitiesState>()(
           category?: string | null;
           subcategory?: string | null;
           project?: string | null;
-          transactions?: any[];
-          movements?: any[];
         },
       ) => {
         set((state) => ({
@@ -309,43 +380,16 @@ export const useActivities = create<ActivitiesState>()(
             if (activity.id === activityId) {
               return {
                 ...activity,
-                name: update.name !== undefined ? update.name : activity.name,
-                description:
-                  update.description !== undefined
-                    ? update.description
-                    : activity.description,
-                date: update.date !== undefined ? update.date : activity.date,
-                type: update.type !== undefined ? update.type : activity.type,
-                category:
-                  update.category !== undefined
-                    ? update.category
-                    : activity.category,
-                subcategory:
-                  update.subcategory !== undefined
-                    ? update.subcategory
-                    : activity.subcategory,
-                project:
-                  update.project !== undefined
-                    ? update.project
-                    : activity.project,
-                transactions:
-                  update.transactions !== undefined
-                    ? update.transactions
-                    : activity.transactions,
-                movements:
-                  update.movements !== undefined
-                    ? update.movements
-                    : activity.movements,
-
+                ...update,
                 amount: getActivityTransactionsReconciliationSum(
                   update.type ?? activity.type,
-                  update.transactions ?? activity.transactions,
+                  activity.transactions,
                   useAccounts.getState().accounts,
                 ),
                 status: getActivityStatus(
                   update.date ?? activity.date,
-                  update.transactions ?? activity.transactions,
-                  update.movements ?? activity.movements,
+                  activity.transactions,
+                  activity.movements,
                   useAccounts.getState().accounts,
                   useMovements.getState().getMovementById,
                 ),
@@ -539,6 +583,29 @@ export const useActivities = create<ActivitiesState>()(
           });
         } else if (event.type === "deleteActivitySubCategory") {
           get().deleteActivitySubcategory(event.payload.id);
+        } else if (event.type === "addTransaction") {
+          get().addTransaction(event.payload.activityId, event.payload);
+        } else if (event.type === "updateTransaction") {
+          get().updateTransaction(
+            event.payload.activityId,
+            event.payload.id,
+            event.payload,
+          );
+        } else if (event.type === "deleteTransaction") {
+          get().deleteTransaction(event.payload.activityId, event.payload.id);
+        } else if (event.type === "createMovementActivity") {
+          get().addActivityMovement(event.payload.activity, event.payload);
+        } else if (event.type === "updateMovementActivity") {
+          get().updateActivityMovement(
+            event.payload.activity,
+            event.payload.id,
+            event.payload,
+          );
+        } else if (event.type === "deleteMovementActivity") {
+          get().deleteActivityMovement(
+            event.payload.activity,
+            event.payload.id,
+          );
         }
       },
 
@@ -587,6 +654,38 @@ export const useActivities = create<ActivitiesState>()(
           });
         } else if (mutation.name === "deleteActivitySubCategory") {
           get().restoreActivitySubcategory(mutation.rollbackData);
+        } else if (mutation.name === "addTransaction") {
+          get().deleteTransaction(
+            mutation.variables.activityId,
+            mutation.variables.id,
+          );
+        } else if (mutation.name === "updateTransaction") {
+          get().updateTransaction(
+            mutation.variables.activityId,
+            mutation.variables.id,
+            mutation.rollbackData,
+          );
+        } else if (mutation.name === "deleteTransaction") {
+          get().addTransaction(
+            mutation.variables.activityId,
+            mutation.rollbackData,
+          );
+        } else if (mutation.name === "createMovementActivity") {
+          get().deleteActivityMovement(
+            mutation.variables.activityId,
+            mutation.variables.id,
+          );
+        } else if (mutation.name === "updateMovementActivity") {
+          get().updateActivityMovement(
+            mutation.rollbackData.activity,
+            mutation.variables.id,
+            mutation.rollbackData,
+          );
+        } else if (mutation.name === "deleteMovementActivity") {
+          get().addActivityMovement(
+            mutation.rollbackData.activity,
+            mutation.rollbackData,
+          );
         }
       },
     }),
