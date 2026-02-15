@@ -15,18 +15,21 @@ interface DatePickerProps {
   value: Date;
   onChange: (date: Date | undefined) => void;
   className?: string;
+  id?: string;
 }
 
 export function DatePicker({
   value,
   onChange,
   className,
+  id,
   ...props
 }: Omit<PropsSingle, "mode"> & DatePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant={"outline"}
           className={cn(
             "justify-start text-left font-normal",

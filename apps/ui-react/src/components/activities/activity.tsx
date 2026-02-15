@@ -1,7 +1,7 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { ChevronRight, Trash2, Scissors } from "lucide-react";
 import * as React from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import {
   AlertDialog,
@@ -22,11 +22,22 @@ import {
   updateActivityMutation,
   deleteActivityMutation,
 } from "@/mutations/activities";
-import { useActivities } from "@/stores/activities";
+import {
+  ACTIVITY_TYPES_COLOR,
+  ACTIVITY_TYPES_NAME,
+  useActivities,
+} from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
 import { DatePicker } from "../ui/date-picker";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { SidebarInset } from "../ui/sidebar";
 
 import { ActivityLiabilities } from "./activity-liabilities";
@@ -37,6 +48,8 @@ import { SplitActivityModal } from "./split-activity-modal";
 export function Activity() {
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const mutate = useSync((state) => state.mutate);
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
 
   const [showProperties, setShowProperties] = React.useState(true);
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
@@ -46,6 +59,16 @@ export function Activity() {
     if (!state.focusedActivity) return null;
     return state.getActivityById(state.focusedActivity);
   });
+
+  const filteredCategories = React.useMemo(() => {
+    if (!activity?.type) return categories;
+    return categories.filter((c) => c.type === activity.type);
+  }, [activity?.type, categories]);
+
+  const filteredSubcategories = React.useMemo(() => {
+    if (!activity?.category) return [];
+    return subcategories.filter((sc) => sc.category === activity.category);
+  }, [activity?.category, subcategories]);
 
   const currencyFormatter = getCurrencyFormatter();
 
@@ -120,7 +143,7 @@ export function Activity() {
   };
 
   // Hotkey to close with Escape
-  useHotkeys("escape", () => {
+  useHotkey("Escape", () => {
     close();
   });
 
@@ -193,48 +216,52 @@ export function Activity() {
 
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="border-b px-4 py-8 sm:px-8">
-            <div
-              className={cn("flex h-7 w-fit items-center rounded-md px-3", {
-                "bg-primary-700": activity.status === "scheduled",
-                "bg-orange-300": activity.status === "incomplete",
-                "bg-emerald-300": activity.status === "completed",
-              })}
-            >
-              <span className="text-sm font-medium text-black capitalize">
-                {activity.status}
-              </span>
+            <div className="flex items-center justify-between">
+              <div
+                className={cn("flex h-7 w-fit items-center rounded-md px-3", {
+                  "bg-primary-700": activity.status === "scheduled",
+                  "bg-orange-300": activity.status === "incomplete",
+                  "bg-emerald-300": activity.status === "completed",
+                })}
+              >
+                <span className="text-sm font-medium text-black capitalize">
+                  {activity.status}
+                </span>
+              </div>
+
+              <div className="pl-4 text-right font-mono text-2xl leading-snug font-semibold whitespace-nowrap text-white">
+                {currencyFormatter.format(activity.amount)}
+              </div>
             </div>
 
-            <FieldSet className="w-full max-w-xs">
+            <FieldSet className="mt-8">
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor="username">Date</FieldLabel>
+                  <FieldLabel htmlFor="date">Date</FieldLabel>
                   <DatePicker
                     value={activity.date}
+                    id="date"
                     onChange={(date) => updateActivity({ date })}
                   />
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="username">Activity name</FieldLabel>
+                  <FieldLabel htmlFor="name">Activity name</FieldLabel>
                   <Input
+                    id="name"
                     value={activity.name}
                     onChange={(e) => updateActivity({ name: e.target.value })}
                   />
                 </Field>
 
-                <div className="pl-4 text-right font-mono text-3xl leading-snug font-semibold whitespace-nowrap text-white">
-                  {currencyFormatter.format(activity.amount)}
-                </div>
-
                 <Field>
-                  <FieldLabel htmlFor="username">Description</FieldLabel>
+                  <FieldLabel htmlFor="description">Description</FieldLabel>
                   <Textarea
                     value={activity.description || ""}
                     onChange={(e) =>
                       updateActivity({ description: e.target.value || null })
                     }
-                    className="text-primary-100 placeholder:text-primary-700 mt-2 w-full resize-none border-none bg-transparent text-sm break-words"
+                    className="resize-none"
                     placeholder="Add a description ..."
                     rows={3}
                   />
@@ -260,25 +287,63 @@ export function Activity() {
 
             {showProperties && (
               <div className="pt-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm">Activity type</div>
-                  {/* Activity type selector would go here */}
-                </div>
-
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm">Category</div>
-                  {/* Category selector would go here */}
-                </div>
-
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm">Subcategory</div>
-                  {/* Subcategory selector would go here */}
-                </div>
-
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-sm">Project</div>
-                  {/* Project selector would go here */}
-                </div>
+                <FieldSet>
+                  <FieldGroup className="gap-3">
+                    <Field orientation="horizontal">
+                      <FieldLabel htmlFor="type">Activity type</FieldLabel>
+                      <Select value={activity.type}>
+                        <SelectTrigger id="type">
+                          <SelectValue placeholder="Activity type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(ActivityType).map((activityType) => (
+                            <SelectItem key={activityType} value={activityType}>
+                              <div className="flex items-center py-1">
+                                <div
+                                  className={cn(
+                                    "mr-2 h-3 w-3 rounded-full",
+                                    ACTIVITY_TYPES_COLOR[activityType],
+                                  )}
+                                />
+                                <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <FieldLabel htmlFor="category">Category</FieldLabel>
+                      <Select value={activity.category || undefined}>
+                        <SelectTrigger id="category">
+                          <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {filteredCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
+                      <Select value={activity.subcategory || undefined}>
+                        <SelectTrigger id="subcategory">
+                          <SelectValue placeholder="Subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {filteredSubcategories.map((subcat) => (
+                            <SelectItem key={subcat.id} value={subcat.id}>
+                              {subcat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </FieldGroup>
+                </FieldSet>
               </div>
             )}
           </div>

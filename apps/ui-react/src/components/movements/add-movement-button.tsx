@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Plus } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useHotkeys } from "react-hotkeys-hook";
 import z from "zod";
 
 import { AccountSelect } from "@/components/accounts/account-select";
@@ -96,7 +96,8 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
   };
 
   // Hotkeys
-  useHotkeys("c", () => {
+  useHotkey("C", (event) => {
+    if (event.key !== "c") return;
     openDialog();
   });
 

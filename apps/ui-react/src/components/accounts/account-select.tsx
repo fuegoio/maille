@@ -62,9 +62,7 @@ export function AccountSelect({
               </div>
             </div>
           }
-        >
-          {value && <AccountLabel accountId={value} />}
-        </SelectValue>
+        />
       </SelectTrigger>
       <SelectContent>
         {accountTypesToDisplay.map((accountType) => (

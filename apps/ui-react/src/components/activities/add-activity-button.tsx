@@ -1,7 +1,7 @@
 import type { Movement } from "@maille/core/movements";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { Button } from "@/components/ui/button";
 
@@ -27,8 +27,8 @@ export function AddActivityButton({
     setShowModal(true);
   };
 
-  // Add hotkey support (Ctrl+C or Cmd+C)
-  useHotkeys("c", () => {
+  useHotkey("C", (event) => {
+    if (event.key !== "c") return;
     setShowModal(true);
   });
 

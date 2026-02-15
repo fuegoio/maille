@@ -1,8 +1,8 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
@@ -194,7 +194,8 @@ export function ActivitiesTable({
   };
 
   // Hotkeys for navigation
-  useHotkeys("k", () => {
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
     if (activitiesSorted.length === 0) return;
 
     const currentIndex = activitiesSorted.findIndex(
@@ -210,7 +211,8 @@ export function ActivitiesTable({
     setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
-  useHotkeys("j", () => {
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
     if (activitiesSorted.length === 0) return;
 
     const currentIndex = activitiesSorted.findIndex(

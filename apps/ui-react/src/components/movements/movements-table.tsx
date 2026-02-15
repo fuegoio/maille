@@ -1,16 +1,17 @@
-import * as React from "react";
-import { useMovements } from "@/stores/movements";
-import { useViews } from "@/stores/views";
-import { useSearch } from "@/stores/search";
-import { useActivities } from "@/stores/activities";
-import { MovementLine } from "./movement-line";
-import { MovementsFilters } from "./filters/movements-filters";
-import { MovementsActions } from "./movements-actions";
 import { verifyMovementFilter } from "@maille/core/movements";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-import { useHotkeys } from "react-hotkeys-hook";
 import type { Movement } from "@maille/core/movements";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import * as React from "react";
+
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useActivities } from "@/stores/activities";
+import { useMovements } from "@/stores/movements";
+import { useSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
+
+import { MovementsFilters } from "./filters/movements-filters";
+import { MovementLine } from "./movement-line";
+import { MovementsActions } from "./movements-actions";
 
 interface MovementsTableProps {
   movements: Movement[];
@@ -31,7 +32,9 @@ export function MovementsTable({
   const movementView = useViews((state) => state.getMovementView(viewId));
   const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
-  const [selectedMovements, setSelectedMovements] = React.useState<string[]>([]);
+  const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
+    [],
+  );
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -55,7 +58,9 @@ export function MovementsTable({
   const movementsFiltered = React.useMemo(() => {
     return movements
       .filter((movement) => filterStringBySearch(movement.name))
-      .filter((movement) => (accountFilter !== null ? movement.account === accountFilter : true))
+      .filter((movement) =>
+        accountFilter !== null ? movement.account === accountFilter : true,
+      )
       .filter((movement) => {
         if (movementView.filters.length === 0) return true;
         return movementView.filters
@@ -80,10 +85,13 @@ export function MovementsTable({
     movements: Movement[];
   };
 
-  type MovementAndGroup = ({ itemType: "group" } & Group) | ({ itemType: "movement" } & Movement);
+  type MovementAndGroup =
+    | ({ itemType: "group" } & Group)
+    | ({ itemType: "movement" } & Movement);
 
   const movementsWithGroups = React.useMemo<MovementAndGroup[]>(() => {
-    if (!grouping) return movementsSorted.map((m) => ({ itemType: "movement", ...m }));
+    if (!grouping)
+      return movementsSorted.map((m) => ({ itemType: "movement", ...m }));
 
     const groups = movementsSorted.reduce((groups: Group[], m) => {
       const month = m.date.getMonth();
@@ -116,12 +124,17 @@ export function MovementsTable({
           month: group.month,
           year: group.year,
         });
-        return mwg.concat(group.movements.map((m) => ({ itemType: "movement", ...m })));
+        return mwg.concat(
+          group.movements.map((m) => ({ itemType: "movement", ...m })),
+        );
       }, []);
   }, [movementsSorted, grouping]);
 
   const periodFormatter = (month: number, year: number): string => {
-    return new Date(year, month).toLocaleString("default", { month: "long", year: "numeric" });
+    return new Date(year, month).toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
   };
 
   const handleMovementClick = (movementId: string) => {
@@ -134,15 +147,20 @@ export function MovementsTable({
 
   const selectMovement = (movementId: string) => {
     setSelectedMovements((prev) =>
-      prev.includes(movementId) ? prev.filter((id) => id !== movementId) : [...prev, movementId],
+      prev.includes(movementId)
+        ? prev.filter((id) => id !== movementId)
+        : [...prev, movementId],
     );
   };
 
   // Hotkeys
-  useHotkeys("k", () => {
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
     if (movementsSorted.length === 0) return;
 
-    const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
+    const currentIndex = movementsSorted.findIndex(
+      (movement) => movement.id === focusedMovement,
+    );
 
     const nextIndex =
       currentIndex === -1
@@ -152,22 +170,26 @@ export function MovementsTable({
     setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
-  useHotkeys("j", () => {
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
     if (movementsSorted.length === 0) return;
 
-    const currentIndex = movementsSorted.findIndex((movement) => movement.id === focusedMovement);
+    const currentIndex = movementsSorted.findIndex(
+      (movement) => movement.id === focusedMovement,
+    );
 
     const nextIndex = (currentIndex + 1) % movementsSorted.length;
     setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
-  useHotkeys("escape", () => {
+  useHotkey("Escape", () => {
     if (selectedMovements.length > 0) {
       setSelectedMovements([]);
     }
   });
 
-  useHotkeys("ctrl+a,meta+a", () => {
+  useHotkey("Mod+A", (event) => {
+    if (event.key !== "a") return;
     setSelectedMovements(movementsFiltered.map((m) => m.id));
   });
 

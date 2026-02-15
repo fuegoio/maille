@@ -1,10 +1,9 @@
 import type { Movement } from "@maille/core/movements";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useRouter } from "@tanstack/react-router";
-import { motion, AnimatePresence } from "framer-motion";
 import _ from "lodash";
 import { ChevronRight, MoreVertical } from "lucide-react";
 import * as React from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -38,9 +37,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
   const [showProperties, setShowProperties] = React.useState(true);
   const [showActivities, setShowActivities] = React.useState(true);
 
-  const movement = useMovements((state) =>
-    state.getMovementById(movementId),
-  );
+  const movement = useMovements((state) => state.getMovementById(movementId));
 
   const activities = useActivities((state) => state.activities);
 
@@ -126,7 +123,7 @@ export function Movement({ movementId, onClose }: MovementProps) {
   };
 
   // Hotkeys
-  useHotkeys("escape", () => {
+  useHotkey("Escape", () => {
     onClose();
   });
 

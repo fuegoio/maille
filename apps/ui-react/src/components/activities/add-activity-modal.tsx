@@ -498,7 +498,7 @@ export function AddActivityModal({
                   <Textarea
                     {...field}
                     id="description"
-                    className="bg-primary-700 border-primary-600 resize-none text-sm text-white"
+                    className="resize-none"
                     placeholder="Description (optional)"
                     rows={3}
                   />
@@ -553,13 +553,13 @@ export function AddActivityModal({
                     value={field.value}
                     disabled={!type || filteredCategories.length === 0}
                   >
-                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                    <SelectTrigger>
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
-                    <SelectContent className="bg-primary-800 border-primary-700">
+                    <SelectContent>
                       {filteredCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
-                          <span className="text-sm">{cat.name}</span>
+                          {cat.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -576,13 +576,13 @@ export function AddActivityModal({
                     value={field.value}
                     disabled={!category || filteredSubcategories.length === 0}
                   >
-                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
+                    <SelectTrigger>
                       <SelectValue placeholder="Subcategory" />
                     </SelectTrigger>
-                    <SelectContent className="bg-primary-800 border-primary-700">
+                    <SelectContent>
                       {filteredSubcategories.map((subcat) => (
                         <SelectItem key={subcat.id} value={subcat.id}>
-                          <span className="text-sm">{subcat.name}</span>
+                          {subcat.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
