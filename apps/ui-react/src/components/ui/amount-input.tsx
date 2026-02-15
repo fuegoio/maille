@@ -40,15 +40,23 @@ const CALCULATOR_KEYS = [
   "validate",
 ];
 
-interface AmountInputProps {
-  value: number | null;
+interface AmountInputNotClearableProps {
+  clearable?: false;
+  onChange: (value: number) => void;
+}
+
+interface AmountInputClearableProps {
+  clearable: true;
   onChange: (value: number | null) => void;
+}
+
+type AmountInputProps = {
+  value: number | null;
   disabled?: boolean;
-  clearable?: boolean;
   placeholder?: string;
   className?: string;
   id?: string;
-}
+} & (AmountInputNotClearableProps | AmountInputClearableProps);
 
 export function AmountInput({
   value: externalValue,

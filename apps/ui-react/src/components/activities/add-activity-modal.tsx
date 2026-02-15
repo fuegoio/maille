@@ -372,7 +372,7 @@ export function AddActivityModal({
         number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
-        date: movement.date.toISOString(),
+        date: getGraphQLDate(movement.date),
         type: movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
         category: data.category || null,
         subcategory: data.subcategory || null,
@@ -422,25 +422,15 @@ export function AddActivityModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            <div className="flex items-center gap-2">
-              {movement && (
-                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
-                  {accounts.find((a) => a.id === movement.account)?.name ||
-                    movement.account}{" "}
-                  - {movement.name}
-                </div>
-              )}
-              {movements && (
-                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
-                  {movements.length} movements
-                </div>
-              )}
-              {!movement && !movements && (
-                <div className="rounded bg-muted px-3 py-1 text-sm font-medium text-foreground">
-                  New activity
-                </div>
-              )}
-            </div>
+            {movement && (
+              <div>
+                {accounts.find((a) => a.id === movement.account)?.name ||
+                  movement.account}{" "}
+                - {movement.name}
+              </div>
+            )}
+            {movements && <div>{movements.length} movements</div>}
+            {!movement && !movements && <div>New activity</div>}
           </DialogTitle>
         </DialogHeader>
 

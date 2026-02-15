@@ -28,7 +28,9 @@ import { useSync } from "@/stores/sync";
 const formSchema = z.object({
   amount: z.number().min(0.01, "Amount must be greater than 0"),
   fromAccount: z.string().min(1, "From account is required"),
+  fromUser: z.string().optional(),
   toAccount: z.string().min(1, "To account is required"),
+  toUser: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -42,6 +44,7 @@ export function AddTransactionButton({
   activity,
   className,
 }: AddTransactionButtonProps) {
+  const mutate = useSync((state) => state.mutate);
   const [showDialog, setShowDialog] = useState(false);
 
   const form = useForm<FormValues>({
@@ -56,7 +59,6 @@ export function AddTransactionButton({
   const { control, handleSubmit, reset } = form;
 
   const handleAddTransaction = (data: FormValues) => {
-    const mutate = useSync((state) => state.mutate);
     const transactionId = crypto.randomUUID();
     mutate({
       name: "addTransaction",
@@ -74,6 +76,8 @@ export function AddTransactionButton({
             activityId: activity.id,
             id: transactionId,
             ...data,
+            fromUser: data.fromUser ?? null,
+            toUser: data.toUser ?? null,
           },
         },
       ],
@@ -107,14 +111,12 @@ export function AddTransactionButton({
       </Tooltip>
 
       <Dialog open={showDialog} onOpenChange={resetDialog}>
-        <DialogContent className="bg-primary-800 border-primary-700 max-w-xl text-white">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-medium text-white">
-              Add a new transaction
-            </DialogTitle>
+            <DialogTitle>Add a new transaction</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit(handleAddTransaction)} className="py-4">
+          <form onSubmit={handleSubmit(handleAddTransaction)}>
             <Controller
               name="amount"
               control={control}
@@ -171,12 +173,7 @@ export function AddTransactionButton({
             />
 
             <DialogFooter>
-              <Button
-                type="submit"
-                className="bg-primary-700 hover:bg-primary-600"
-              >
-                Create transaction
-              </Button>
+              <Button type="submit">Create transaction</Button>
             </DialogFooter>
           </form>
         </DialogContent>

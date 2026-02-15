@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export function getGraphQLDate(date: Date): string {
-  return date.toISOString().split("T")[0];
+  return format(date, "yyyy-MM-dd");
 }

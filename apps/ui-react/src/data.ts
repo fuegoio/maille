@@ -41,7 +41,9 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
         id
         amount
         fromAccount
+        fromUser
         toAccount
+        toUser
       }
       movements {
         id
@@ -72,6 +74,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       startingBalance
       startingCashBalance
       movements
+      user
     }
 
     movements(workspaceId: $workspace) {
@@ -126,37 +129,32 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   // Populate accounts
   workspaceData.accounts.forEach((account) => {
     useAccounts.getState().addAccount({
-      id: account.id,
-      name: account.name,
+      ...account,
       type: account.type as AccountType,
-      isDefault: account.default,
-      movements: account.movements,
+    });
+  });
+
+  // Populate movements
+  workspaceData.movements.forEach((movement) => {
+    useMovements.getState().addMovement({
+      ...movement,
+      date: new Date(movement.date),
     });
   });
 
   // Populate activities
   workspaceData.activities.forEach((activity) => {
     useActivities.getState().addActivity({
-      id: activity.id,
-      user: activity.user,
-      number: activity.number,
-      name: activity.name,
-      description: activity.description,
+      ...activity,
       date: new Date(activity.date),
       type: activity.type as ActivityType,
-      category: activity.category,
-      subcategory: activity.subcategory,
-      project: activity.project,
-      transactions: activity.transactions,
-      movements: activity.movements,
     });
   });
 
   // Populate activity categories
   workspaceData.activityCategories.forEach((category) => {
     useActivities.getState().addActivityCategory({
-      id: category.id,
-      name: category.name,
+      ...category,
       type: category.type as ActivityType,
     });
   });
@@ -164,21 +162,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   // Populate activity subcategories
   workspaceData.activitySubcategories.forEach((subcategory) => {
     useActivities.getState().addActivitySubcategory({
-      id: subcategory.id,
-      name: subcategory.name,
-      category: subcategory.category,
-    });
-  });
-
-  // Populate movements
-  workspaceData.movements.forEach((movement) => {
-    useMovements.getState().addMovement({
-      id: movement.id,
-      date: new Date(movement.date),
-      amount: movement.amount,
-      account: movement.account,
-      name: movement.name,
-      activities: movement.activities,
+      ...subcategory,
     });
   });
 

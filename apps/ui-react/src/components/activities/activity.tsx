@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getGraphQLDate } from "@/lib/date";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
 import {
   updateActivityMutation,
@@ -122,11 +123,11 @@ export function Activity() {
       variables: {
         id: activity.id,
         ...update,
-        date: update.date?.toISOString(),
+        date: update.date ? getGraphQLDate(update.date) : undefined,
       },
       rollbackData: {
         ...oldActivity,
-        date: oldActivity.date.toISOString(),
+        date: getGraphQLDate(oldActivity.date),
       },
       events: [
         {
@@ -134,7 +135,7 @@ export function Activity() {
           payload: {
             id: activity.id,
             ...update,
-            date: update.date?.toISOString(),
+            date: update.date ? getGraphQLDate(update.date) : undefined,
           },
         },
       ],
@@ -168,10 +169,9 @@ export function Activity() {
             <Button
               variant="ghost"
               size="icon"
-              className="inline-flex h-8 w-6 items-center justify-center"
               onClick={() => setShowSplitModal(true)}
             >
-              <Scissors className="text-primary-100 h-5 w-5 transition hover:text-white" />
+              <Scissors />
             </Button>
 
             <AlertDialog
@@ -179,31 +179,23 @@ export function Activity() {
               onOpenChange={setShowDeleteModal}
             >
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="inline-flex h-8 w-6 items-center justify-center"
-                >
-                  <Trash2 className="text-primary-100 h-5 w-5 transition hover:text-white" />
+                <Button variant="ghost" size="icon">
+                  <Trash2 />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="bg-primary-900 border-primary-700">
+              <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white">
-                    Delete Activity
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="text-primary-100">
+                  <AlertDialogTitle>Delete activity</AlertDialogTitle>
+                  <AlertDialogDescription>
                     Are you sure you want to delete this activity? This action
                     cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-primary-800 border-primary-700 hover:bg-primary-700 text-white">
-                    Cancel
-                  </AlertDialogCancel>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={deleteActivity}
-                    className="bg-red-500 text-white hover:bg-red-600"
+                    variant="destructive"
                   >
                     Delete
                   </AlertDialogAction>

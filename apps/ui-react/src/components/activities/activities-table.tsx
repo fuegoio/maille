@@ -34,11 +34,17 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
+  const currencyFormatter = getCurrencyFormatter();
+
   const activityView = useViews((state) => state.getActivityView(viewId));
   const focusedActivity = useActivities((state) => state.focusedActivity);
   const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
-  const currencyFormatter = getCurrencyFormatter();
+
+  const [selectedActivities, setSelectedActivities] = React.useState<string[]>(
+    [],
+  );
+  const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -172,11 +178,15 @@ export function ActivitiesTable({
           year: group.year,
           total: group.total,
         });
-        return awg.concat(
-          group.activities.map((a) => ({ itemType: "activity", ...a })),
-        );
+        if (!groupsFolded.includes(group.id)) {
+          return awg.concat(
+            group.activities.map((a) => ({ itemType: "activity", ...a })),
+          );
+        } else {
+          return awg;
+        }
       }, []);
-  }, [activitiesSorted, grouping]);
+  }, [activitiesSorted, grouping, groupsFolded]);
 
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
@@ -223,6 +233,20 @@ export function ActivitiesTable({
     setFocusedActivity(activitiesSorted[nextIndex].id);
   });
 
+  useHotkey("Space", () => {
+    if (focusedActivity === null) return;
+    const activity = activitiesSorted.find(
+      (activity) => activity.id === focusedActivity,
+    );
+    if (activity === undefined) return;
+
+    if (selectedActivities.includes(activity.id)) {
+      setSelectedActivities((prev) => prev.filter((id) => id !== activity.id));
+    } else {
+      setSelectedActivities((prev) => [...prev, activity.id]);
+    }
+  });
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ActivitiesFilters
@@ -239,7 +263,22 @@ export function ActivitiesTable({
                     <React.Fragment key={item.id}>
                       {item.itemType === "group" ? (
                         <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted px-6">
-                          <ChevronDown className="mr-3 size-3 opacity-20 transition-opacity hover:opacity-100" />
+                          <ChevronDown
+                            className={cn(
+                              "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
+                              groupsFolded.includes(item.id) &&
+                                "-rotate-90 opacity-100",
+                            )}
+                            onClick={() => {
+                              if (groupsFolded.includes(item.id)) {
+                                setGroupsFolded((prev) =>
+                                  prev.filter((id) => id !== item.id),
+                                );
+                              } else {
+                                setGroupsFolded((prev) => [...prev, item.id]);
+                              }
+                            }}
+                          />
                           <Calendar className="size-4" />
                           <div className="text-sm">
                             {periodFormatter(item.month, item.year)}
@@ -276,6 +315,19 @@ export function ActivitiesTable({
                           hideProject={hideProject}
                           onClick={handleActivityClick}
                           selected={focusedActivity === item.id}
+                          checked={selectedActivities.includes(item.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedActivities((prev) => [
+                                ...prev,
+                                item.id,
+                              ]);
+                            } else {
+                              setSelectedActivities((prev) =>
+                                prev.filter((id) => id !== item.id),
+                              );
+                            }
+                          }}
                         />
                       )}
                     </React.Fragment>
@@ -288,6 +340,19 @@ export function ActivitiesTable({
                       hideProject={hideProject}
                       onClick={handleActivityClick}
                       selected={focusedActivity === activity.id}
+                      checked={selectedActivities.includes(activity.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedActivities((prev) => [
+                            ...prev,
+                            activity.id,
+                          ]);
+                        } else {
+                          setSelectedActivities((prev) =>
+                            prev.filter((id) => id !== activity.id),
+                          );
+                        }
+                      }}
                     />
                   ))}
             </ScrollArea>

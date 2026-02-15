@@ -1,5 +1,3 @@
-// Remove incorrect crypto import
-
 export enum AccountType {
   BANK_ACCOUNT = "bank_account",
   INVESTMENT_ACCOUNT = "investment_account",

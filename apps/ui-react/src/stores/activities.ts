@@ -312,45 +312,21 @@ export const useActivities = create<ActivitiesState>()(
         return get().activitySubcategories.find((s) => s.id === subcategoryId);
       },
 
-      addActivity: ({
-        id,
-        user,
-        number,
-        name,
-        description,
-        date,
-        type,
-        category,
-        subcategory,
-        project,
-        transactions,
-        movements,
-      }) => {
+      addActivity: (activity) => {
         const accounts = useAccounts.getState().accounts;
         const getMovementById = useMovements.getState().getMovementById;
 
         const newActivity: Activity = {
-          id: id ?? randomstring(),
-          user,
-          number,
-          name,
-          description,
-          date,
-          type,
-          category,
-          subcategory,
-          project,
-          transactions,
-          movements,
+          ...activity,
           amount: getActivityTransactionsReconciliationSum(
-            type,
-            transactions,
+            activity.type,
+            activity.transactions,
             accounts,
           ),
           status: getActivityStatus(
-            date,
-            transactions,
-            movements,
+            activity.date,
+            activity.transactions,
+            activity.movements,
             accounts,
             getMovementById,
           ),

@@ -445,6 +445,25 @@ export const registerActivitiesMutations = () => {
           await validateWorkspace(activity.workspace, ctx.user.id);
         }
 
+        // Validate accounts
+        const fromAccount = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.id, args.fromAccount))
+          .limit(1);
+        if (!fromAccount) {
+          throw new GraphQLError("From account not found");
+        }
+
+        const toAccount = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.id, args.toAccount))
+          .limit(1);
+        if (!toAccount) {
+          throw new GraphQLError("To account not found");
+        }
+
         const newTransactions = await db
           .insert(transactions)
           .values({

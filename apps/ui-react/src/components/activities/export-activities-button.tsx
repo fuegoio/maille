@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getGraphQLDate } from "@/lib/date";
 import { useViews } from "@/stores/views";
 
 interface ExportActivitiesButtonProps {
@@ -22,9 +23,7 @@ export function ExportActivitiesButton({
   activities,
   className,
 }: ExportActivitiesButtonProps) {
-  const activityView = useViews((state) =>
-    state.getActivityView(viewId),
-  );
+  const activityView = useViews((state) => state.getActivityView(viewId));
 
   const filteredActivities = React.useMemo(() => {
     return activities.filter((activity) => {
@@ -43,7 +42,7 @@ export function ExportActivitiesButton({
       ["number", "date", "name", "amount"],
       ...filteredActivities.map((a) => [
         a.number,
-        a.date.toISOString().split("T")[0], // Format date as YYYY-MM-DD
+        getGraphQLDate(a.date),
         a.name,
         a.amount,
       ]),

@@ -5,7 +5,6 @@ import {
   CircleDashed,
   CircleDotDashed,
 } from "lucide-react";
-import { useState } from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
@@ -17,7 +16,9 @@ import { Checkbox } from "../ui/checkbox";
 interface ActivityLineProps {
   activity: Activity;
   onClick?: (activityId: string) => void;
+  onCheckedChange: (checked: boolean) => void;
   selected?: boolean;
+  checked?: boolean;
   accountFilter?: string | null;
   hideProject?: boolean;
 }
@@ -25,7 +26,9 @@ interface ActivityLineProps {
 export function ActivityLine({
   activity,
   onClick,
+  onCheckedChange,
   selected = false,
+  checked = false,
   accountFilter = null,
   hideProject = false,
 }: ActivityLineProps) {
@@ -34,8 +37,6 @@ export function ActivityLine({
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const getProjectById = useProjects((state) => state.getProjectById);
-
-  const [checked, setChecked] = useState(false);
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -91,7 +92,7 @@ export function ActivityLine({
         <Checkbox
           checked={checked}
           onCheckedChange={(checked) =>
-            checked != "indeterminate" && setChecked(checked)
+            checked != "indeterminate" && onCheckedChange(checked)
           }
           onClick={(e) => e.stopPropagation()}
           className={cn(
@@ -107,14 +108,14 @@ export function ActivityLine({
           )}
         />
 
-        <div className="mx-1 hidden shrink-0 text-muted-foreground lg:block">
+        <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
           {activity.date.toLocaleDateString(undefined, {
             weekday: "short",
             month: "2-digit",
             day: "2-digit",
           })}
         </div>
-        <div className="shrink-0 text-muted-foreground lg:hidden">
+        <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
           {activity.date.toLocaleDateString(undefined, {
             month: "2-digit",
             day: "2-digit",

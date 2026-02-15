@@ -1,4 +1,5 @@
 import type { SyncEvent } from "@maille/core/sync";
+import { Network } from "lucide-react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -109,16 +110,22 @@ export const useSync = create<SyncState>()(
           });
           await get().dequeueMutations();
         } catch (e) {
+          // if (e) {
+          //   set({
+          //     mutationsInProcessing: false,
+          //   });
+          // }
+
           set({
             mutationsInProcessing: false,
+            mutationsQueue: get().mutationsQueue.slice(1),
           });
           console.error(e);
-          if (!(e instanceof TypeError)) {
-            useActivities.getState().handleMutationError(mutation);
-            useMovements.getState().handleMutationError(mutation);
-            useProjects.getState().handleMutationError(mutation);
-            useAccounts.getState().handleMutationError(mutation);
-          }
+          useActivities.getState().handleMutationError(mutation);
+          useMovements.getState().handleMutationError(mutation);
+          useProjects.getState().handleMutationError(mutation);
+          useAccounts.getState().handleMutationError(mutation);
+          await get().dequeueMutations();
         }
       },
 
