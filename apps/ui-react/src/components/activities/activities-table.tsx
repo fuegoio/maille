@@ -5,21 +5,13 @@ import * as React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getCurrencyFormatter } from "@/lib/utils";
-import { useActivities } from "@/stores/activities";
+import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
-
-// Activity type colors mapping
-const ACTIVITY_TYPES_COLOR = {
-  [ActivityType.EXPENSE]: "red",
-  [ActivityType.REVENUE]: "green",
-  [ActivityType.INVESTMENT]: "orange",
-  [ActivityType.NEUTRAL]: "slate",
-};
 
 interface ActivitiesTableProps {
   viewId: string;
@@ -244,7 +236,7 @@ export function ActivitiesTable({
                 ? activitiesWithGroups.map((item) => (
                     <React.Fragment key={item.id}>
                       {item.itemType === "group" ? (
-                        <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted pl-6">
+                        <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted px-6">
                           <ChevronDown className="mr-3 size-3 opacity-20 transition-opacity hover:opacity-100" />
                           <Calendar className="size-4" />
                           <div className="text-sm">
@@ -265,10 +257,10 @@ export function ActivitiesTable({
                                 className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
                               >
                                 <div
-                                  className="mt-0.5 mr-3 size-[9px] shrink-0 rounded-xs"
-                                  style={{
-                                    backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activityType]}-300)`,
-                                  }}
+                                  className={cn(
+                                    "mr-3 size-2.5 shrink-0 rounded-lg",
+                                    ACTIVITY_TYPES_COLOR[activityType],
+                                  )}
                                 />
                                 {currencyFormatter.format(item.total[typeKey]!)}
                               </div>

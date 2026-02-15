@@ -32,8 +32,7 @@ const props = withDefaults(
 const transactions = computed(() => {
   return props.activity.transactions.filter((t) =>
     props.accountFilter !== null
-      ? t.fromAccount === props.accountFilter ||
-        t.toAccount === props.accountFilter
+      ? t.fromAccount === props.accountFilter || t.toAccount === props.accountFilter
       : true,
   );
 });
@@ -41,19 +40,15 @@ const transactions = computed(() => {
 
 <template>
   <div
-    class="block overflow-hidden border-b flex-shrink-0 group transition-colors"
+    class="block overflow-hidden border-b shrink-0 group transition-colors"
     :class="[
       focusedActivity === activity.id
         ? 'bg-primary-800/50 border-l-4 border-l-accent'
         : 'hover:bg-primary-800/50 pl-1',
     ]"
-    :style="`height: ${
-      showTransactions ? 40 * (1 + transactions.length) + 'px' : '40px'
-    }`"
+    :style="`height: ${showTransactions ? 40 * (1 + transactions.length) + 'px' : '40px'}`"
   >
-    <div
-      class="h-10 flex items-center gap-2 pl-3 pr-2 @lg:pr-6 @lg:pl-1 text-sm"
-    >
+    <div class="h-10 flex items-center gap-2 pl-3 pr-2 @lg:pr-6 @lg:pl-1 text-sm">
       <div class="hidden @lg:block text-primary-100 w-20 shrink-0 ml-4">
         {{ dayjs(activity.date).format("DD/MM/YYYY") }}
       </div>
@@ -110,9 +105,7 @@ const transactions = computed(() => {
             :to="{
               name: 'category',
               params: {
-                name: categories
-                  .find((c) => c.id === activity.category)
-                  ?.name.toLowerCase(),
+                name: categories.find((c) => c.id === activity.category)?.name.toLowerCase(),
               },
             }"
             @click.stop=""
@@ -122,9 +115,7 @@ const transactions = computed(() => {
         </template>
         <template v-if="activity.subcategory !== null">
           <i class="mdi mdi-chevron-right text-primary-100 mx-1" />
-          <div
-            class="text-primary-100 text-ellipsis overflow-hidden whitespace-nowrap"
-          >
+          <div class="text-primary-100 text-ellipsis overflow-hidden whitespace-nowrap">
             {{ subcategories.find((c) => c.id === activity.subcategory)?.name }}
           </div>
         </template>

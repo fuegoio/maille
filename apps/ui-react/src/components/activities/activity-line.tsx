@@ -1,20 +1,18 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { type Activity } from "@maille/core/activities";
+import {
+  ChevronRight,
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+} from "lucide-react";
+import { useState } from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
-import { AmountInput } from "@/components/ui/amount-input";
-import { getCurrencyFormatter } from "@/lib/utils";
-import { updateTransactionMutation } from "@/mutations/activities";
-import { useActivities } from "@/stores/activities";
+import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
-import { useSync } from "@/stores/sync";
 
-// Activity type colors mapping
-const ACTIVITY_TYPES_COLOR = {
-  [ActivityType.EXPENSE]: "red",
-  [ActivityType.REVENUE]: "green",
-  [ActivityType.INVESTMENT]: "orange",
-  [ActivityType.NEUTRAL]: "slate",
-};
+import { Checkbox } from "../ui/checkbox";
 
 interface ActivityLineProps {
   activity: Activity;
@@ -32,18 +30,12 @@ export function ActivityLine({
   hideProject = false,
 }: ActivityLineProps) {
   const currencyFormatter = getCurrencyFormatter();
-  const showTransactions = useActivities(
-    (state) => state.showTransactions,
-  );
-  const categories = useActivities(
-    (state) => state.activityCategories,
-  );
-  const subcategories = useActivities(
-    (state) => state.activitySubcategories,
-  );
-  const getProjectById = useProjects(
-    (state) => state.getProjectById,
-  );
+  const showTransactions = useActivities((state) => state.showTransactions);
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
+  const getProjectById = useProjects((state) => state.getProjectById);
+
+  const [checked, setChecked] = useState(false);
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -60,13 +52,11 @@ export function ActivityLine({
 
   const getStatusIcon = () => {
     if (activity.status === "scheduled") {
-      return <i className="mdi mdi-progress-clock text-primary-100 text-lg" />;
+      return <CircleDashed className="size-4 text-muted-foreground" />;
     } else if (activity.status === "incomplete") {
-      return <i className="mdi mdi-progress-helper text-lg text-orange-300" />;
+      return <CircleDotDashed className="size-4 text-orange-300" />;
     } else {
-      return (
-        <i className="mdi mdi-check-circle-outline text-lg text-emerald-300" />
-      );
+      return <CircleCheck className="size-4 text-indigo-300" />;
     }
   };
 
@@ -82,11 +72,14 @@ export function ActivityLine({
 
   return (
     <div
-      className={`group block shrink-0 overflow-hidden border-b transition-colors ${
-        selected
-          ? "border-l-4 border-l-primary bg-accent"
-          : "pl-1 hover:bg-accent"
-      }`}
+      className={cn(
+        "group block shrink-0 overflow-hidden border-b transition-colors hover:bg-accent",
+        {
+          "border-l-4 border-l-primary bg-accent": selected,
+          "pl-1": !selected,
+          "bg-primary/30 hover:bg-primary/40": checked,
+        },
+      )}
       style={{
         height: showTransactions
           ? `${40 * (1 + transactions.length)}px`
@@ -94,11 +87,34 @@ export function ActivityLine({
       }}
       onClick={handleClick}
     >
-      <div className="flex h-10 items-center gap-2 pr-2 pl-7 text-sm lg:pr-6">
-        <div className="ml-6 hidden w-20 shrink-0 text-muted-foreground lg:block">
-          {activity.date.toLocaleDateString()}
+      <div className="flex h-10 items-center gap-2 pr-2 pl-4.5 text-sm lg:pr-6">
+        <Checkbox
+          checked={checked}
+          onCheckedChange={(checked) =>
+            checked != "indeterminate" && setChecked(checked)
+          }
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "opacity-0 transition-opacity group-hover:opacity-100",
+            checked && "opacity-100",
+          )}
+        />
+
+        <div
+          className={cn(
+            "ml-3.5 size-2 shrink-0 rounded-lg",
+            ACTIVITY_TYPES_COLOR[activity.type],
+          )}
+        />
+
+        <div className="mx-1 hidden shrink-0 text-muted-foreground lg:block">
+          {activity.date.toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "2-digit",
+            day: "2-digit",
+          })}
         </div>
-        <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
+        <div className="shrink-0 text-muted-foreground lg:hidden">
           {activity.date.toLocaleDateString(undefined, {
             month: "2-digit",
             day: "2-digit",
@@ -127,18 +143,9 @@ export function ActivityLine({
               </div>
             )}
 
-          {activity.type && (
-            <div
-              className="size-2 shrink-0 rounded-xs"
-              style={{
-                backgroundColor: `var(--${ACTIVITY_TYPES_COLOR[activity.type]}-300)`,
-              }}
-            />
-          )}
-
           {activity.category !== null && getCategoryName() && (
             <>
-              <i className="mdi mdi-chevron-right mx-1" />
+              <ChevronRight className="mx-1" />
               <div className="overflow-hidden text-ellipsis whitespace-nowrap hover:text-accent-foreground">
                 {getCategoryName()}
               </div>
@@ -147,7 +154,7 @@ export function ActivityLine({
 
           {activity.subcategory !== null && getSubcategoryName() && (
             <>
-              <i className="mdi mdi-chevron-right mx-1" />
+              <ChevronRight className="mx-1" />
               <div className="overflow-hidden text-ellipsis whitespace-nowrap">
                 {getSubcategoryName()}
               </div>
@@ -156,11 +163,13 @@ export function ActivityLine({
         </div>
 
         <div
-          className="text-right font-mono font-medium whitespace-nowrap lg:w-20"
-          style={{
-            color:
-              accountFilter !== null ? "var(--primary-100)" : "var(--white)",
-          }}
+          className={cn(
+            "text-right font-mono font-medium whitespace-nowrap lg:w-20",
+            {
+              "text-muted-foreground": accountFilter !== null,
+              "text-foreground": accountFilter === null,
+            },
+          )}
         >
           {currencyFormatter.format(activity.amount)}
         </div>
@@ -183,30 +192,9 @@ export function ActivityLine({
                 <AccountLabel accountId={transaction.toAccount} />
 
                 <div className="flex-1" />
-
-                <AmountInput
-                  value={transaction.amount}
-                  onChange={(value) => {
-                    const oldTransaction = { ...transaction };
-                    const updateTransaction = useActivities((state) => state.updateTransaction);
-                    updateTransaction(activity.id, transaction.id, {
-                        amount: value,
-                      });
-
-                    const mutate = useSync((state) => state.mutate);
-                    mutate({
-                      name: "updateTransaction",
-                      mutation: updateTransactionMutation,
-                      variables: {
-                        activityId: activity.id,
-                        id: transaction.id,
-                        amount: value,
-                      },
-                      rollbackData: oldTransaction,
-                    });
-                  }}
-                  className="h-8 w-20 border-none bg-transparent p-0 text-right text-xs"
-                />
+                <div className="text-right font-mono font-medium whitespace-nowrap lg:w-20">
+                  {currencyFormatter.format(transaction.amount)}
+                </div>
               </div>
             </div>
           ))}

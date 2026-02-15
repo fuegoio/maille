@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { cn, getCurrencyFormatter } from "@/lib/utils";
 import {
   updateActivityMutation,
   deleteActivityMutation,
@@ -25,6 +25,8 @@ import {
 import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
+import { DatePicker } from "../ui/date-picker";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
 import { SidebarInset } from "../ui/sidebar";
 
 import { ActivityLiabilities } from "./activity-liabilities";
@@ -192,52 +194,53 @@ export function Activity() {
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="border-b px-4 py-8 sm:px-8">
             <div
-              className={`-ml-2 flex h-7 w-fit items-center rounded-md px-3 ${
-                activity.status === "scheduled"
-                  ? "bg-primary-700"
-                  : activity.status === "incomplete"
-                    ? "bg-orange-300"
-                    : "bg-emerald-300"
-              }`}
+              className={cn("flex h-7 w-fit items-center rounded-md px-3", {
+                "bg-primary-700": activity.status === "scheduled",
+                "bg-orange-300": activity.status === "incomplete",
+                "bg-emerald-300": activity.status === "completed",
+              })}
             >
-              <span className="text-primary-800 text-sm font-medium capitalize">
+              <span className="text-sm font-medium text-black capitalize">
                 {activity.status}
               </span>
             </div>
 
-            <div className="mt-4 flex items-start">
-              <div className="flex-1">
-                <Input
-                  type="date"
-                  value={activity.date.toISOString().split("T")[0]}
-                  onChange={(e) =>
-                    updateActivity({ date: new Date(e.target.value) })
-                  }
-                  className="text-primary-100 h-8 border-none bg-transparent text-sm font-semibold"
-                />
-                <div className="flex items-start">
+            <FieldSet className="w-full max-w-xs">
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="username">Date</FieldLabel>
+                  <DatePicker
+                    value={activity.date}
+                    onChange={(date) => updateActivity({ date })}
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="username">Activity name</FieldLabel>
                   <Input
                     value={activity.name}
                     onChange={(e) => updateActivity({ name: e.target.value })}
-                    className="flex-1 border-none bg-transparent text-lg font-medium text-white"
                   />
-                  <div className="flex-1" />
-                  <div className="pl-4 text-right font-mono text-3xl leading-snug font-semibold whitespace-nowrap text-white">
-                    {currencyFormatter.format(activity.amount)}
-                  </div>
+                </Field>
+
+                <div className="pl-4 text-right font-mono text-3xl leading-snug font-semibold whitespace-nowrap text-white">
+                  {currencyFormatter.format(activity.amount)}
                 </div>
 
-                <Textarea
-                  value={activity.description || ""}
-                  onChange={(e) =>
-                    updateActivity({ description: e.target.value || null })
-                  }
-                  className="text-primary-100 placeholder:text-primary-700 mt-2 w-full resize-none border-none bg-transparent text-sm break-words"
-                  placeholder="Add a description ..."
-                  rows={3}
-                />
-              </div>
-            </div>
+                <Field>
+                  <FieldLabel htmlFor="username">Description</FieldLabel>
+                  <Textarea
+                    value={activity.description || ""}
+                    onChange={(e) =>
+                      updateActivity({ description: e.target.value || null })
+                    }
+                    className="text-primary-100 placeholder:text-primary-700 mt-2 w-full resize-none border-none bg-transparent text-sm break-words"
+                    placeholder="Add a description ..."
+                    rows={3}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
           </div>
 
           <div className="border-b px-4 py-6 sm:px-8">
