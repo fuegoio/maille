@@ -1,31 +1,27 @@
 import { type Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { getCurrencyFormatter } from "@/lib/utils";
 
 interface ActivityLiabilitiesProps {
   activity: Activity;
 }
 
-export function ActivityLiabilities({}: ActivityLiabilitiesProps) {
+export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
   const currencyFormatter = getCurrencyFormatter();
 
-  // For now, we'll show a placeholder since liabilities are not directly part of the activity
-  // In a real implementation, this would fetch and display related liabilities
   const liabilities: any[] = []; // This would come from a store or API
 
   return (
     <div className="px-4 py-6 sm:px-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium text-white">Liabilities</h3>
-        <Button variant="outline" size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          <span>Add Liability</span>
-        </Button>
+      <div className="flex items-center">
+        <div className="text-sm font-medium">Liabilities</div>
       </div>
 
       {liabilities.length === 0 ? (
-        <div className="text-primary-400 py-8 text-center">No liabilities for this activity</div>
+        <div className="py-4 text-sm text-muted-foreground">
+          No transaction added for this activity.
+        </div>
       ) : (
         <div className="space-y-4">
           {liabilities.map((liability: any) => (

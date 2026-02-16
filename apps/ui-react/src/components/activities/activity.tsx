@@ -209,13 +209,16 @@ export function Activity() {
           <div className="border-b px-4 py-8 sm:px-8">
             <div className="flex items-center justify-between">
               <div
-                className={cn("flex h-7 w-fit items-center rounded-md px-3", {
-                  "bg-primary-700": activity.status === "scheduled",
-                  "bg-orange-300": activity.status === "incomplete",
-                  "bg-emerald-300": activity.status === "completed",
-                })}
+                className={cn(
+                  "flex h-7 w-fit items-center rounded-md border px-3",
+                  {
+                    "bg-muted": activity.status === "scheduled",
+                    "bg-orange-400": activity.status === "incomplete",
+                    "bg-indigo-400": activity.status === "completed",
+                  },
+                )}
               >
-                <span className="text-sm font-medium text-black capitalize">
+                <span className="text-sm font-medium text-foreground capitalize">
                   {activity.status}
                 </span>
               </div>

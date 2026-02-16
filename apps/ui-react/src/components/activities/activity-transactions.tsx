@@ -93,7 +93,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
       <div className="my-2">
         {activity.transactions.length === 0 ? (
-          <div className="text-primary-300 p-4 text-sm">
+          <div className="py-4 text-sm text-muted-foreground">
             No transaction added for this activity.
           </div>
         ) : (

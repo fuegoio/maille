@@ -4,7 +4,7 @@ import {
   getActivityMovementsReconciliatedByAccount,
 } from "@maille/core/activities";
 import type { MovementWithLink } from "@maille/core/movements";
-import { CircleCheck, TriangleAlert } from "lucide-react";
+import { CircleCheck, Ellipsis, TriangleAlert } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -147,7 +147,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         {!isReconciled ? (
           <TriangleAlert className="mr-1.5 size-5 text-orange-300" />
         ) : (
-          <CircleCheck className="mr-1.5 size-5 text-emerald-400" />
+          <CircleCheck className="mr-1.5 size-5 text-indigo-400" />
         )}
       </div>
 
@@ -202,20 +202,20 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                         <div key={movement.id}>
                           <hr className="border-t" />
 
-                          <div className="hover:bg-primary-700 flex h-10 items-center justify-center px-4 text-sm">
-                            <div className="text-primary-100 mr-4 hidden w-16 shrink-0 sm:block">
+                          <div className="flex items-center justify-center px-4 text-sm">
+                            <div className="mr-4 hidden w-16 shrink-0 text-muted-foreground sm:block">
                               {movement.date.toLocaleDateString()}
                             </div>
-                            <div className="text-primary-100 mr-2 w-10 shrink-0 sm:hidden">
+                            <div className="mr-2 w-10 shrink-0 text-muted-foreground sm:hidden">
                               {movement.date.toLocaleDateString(undefined, {
                                 day: "2-digit",
                                 month: "2-digit",
                               })}
                             </div>
-                            <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-white">
+                            <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
                               {movement.name}
                               {movement.amountLinked !== movement.amount && (
-                                <span className="text-primary-100 ml-2 font-mono text-sm whitespace-nowrap">
+                                <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">
                                   ({currencyFormatter.format(movement.amount)})
                                 </span>
                               )}
@@ -238,20 +238,10 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                                   size="icon"
                                   className="h-8 w-8"
                                 >
-                                  <span className="sr-only">Actions</span>
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="text-primary-100"
-                                  >
-                                    <path d="M12 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0-6a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2" />
-                                  </svg>
+                                  <Ellipsis />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent className="bg-primary-700 border-primary-600">
+                              <DropdownMenuContent>
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleMovementMenuClick(
@@ -259,9 +249,8 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                                       "editAmount",
                                     )
                                   }
-                                  className="focus:bg-primary-600"
                                 >
-                                  <Edit2 className="mr-2 h-4 w-4" />
+                                  <Edit2 />
                                   <span>Modify amount linked</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -271,18 +260,17 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                                       "resetAmount",
                                     )
                                   }
-                                  className="focus:bg-primary-600"
                                 >
-                                  <RefreshCw className="mr-2 h-4 w-4" />
+                                  <RefreshCw />
                                   <span>Reset amount linked</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
                                     handleMovementMenuClick(movement, "unlink")
                                   }
-                                  className="focus:bg-primary-600 text-red-400 focus:text-red-300"
+                                  variant="destructive"
                                 >
-                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  <Trash2 />
                                   <span>Unlink</span>
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
