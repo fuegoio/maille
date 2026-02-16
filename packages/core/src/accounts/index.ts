@@ -10,6 +10,16 @@ export enum AccountType {
   REVENUE = "revenue",
 }
 
+export const ACCOUNT_TYPES = [
+  AccountType.BANK_ACCOUNT,
+  AccountType.INVESTMENT_ACCOUNT,
+  AccountType.ASSETS,
+  AccountType.CASH,
+  AccountType.LIABILITIES,
+  AccountType.EXPENSE,
+  AccountType.REVENUE,
+];
+
 export const isAccountType = (value: string): value is AccountType => {
   return Object.values(AccountType).includes(value as AccountType);
 };

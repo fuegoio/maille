@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccountType } from "@maille/core/accounts";
+import { ACCOUNT_TYPES, AccountType } from "@maille/core/accounts";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -173,7 +173,7 @@ export function CreateAccountDialog({
                         <SelectValue placeholder="Select account type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.values(AccountType).map((type) => (
+                        {ACCOUNT_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>
                             <div
                               className={cn(

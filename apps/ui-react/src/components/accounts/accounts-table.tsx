@@ -1,4 +1,4 @@
-import { AccountType } from "@maille/core/accounts";
+import { ACCOUNT_TYPES, AccountType } from "@maille/core/accounts";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -61,14 +61,7 @@ export function AccountsTable() {
       }, 0);
   };
 
-  return [
-    AccountType.BANK_ACCOUNT,
-    AccountType.INVESTMENT_ACCOUNT,
-    AccountType.CASH,
-    AccountType.LIABILITIES,
-    AccountType.EXPENSE,
-    AccountType.REVENUE,
-  ].map((accountType) => (
+  return ACCOUNT_TYPES.map((accountType) => (
     <div>
       <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
         <ChevronDown

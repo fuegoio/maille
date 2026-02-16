@@ -1,4 +1,4 @@
-import { AccountType } from "@maille/core/accounts";
+import { ACCOUNT_TYPES } from "@maille/core/accounts";
 import { useMemo } from "react";
 
 import {
@@ -40,14 +40,7 @@ export function AccountSelect({
   }, [accounts, movementsOnly]);
 
   const accountTypesToDisplay = useMemo(() => {
-    return [
-      AccountType.BANK_ACCOUNT,
-      AccountType.INVESTMENT_ACCOUNT,
-      AccountType.CASH,
-      AccountType.LIABILITIES,
-      AccountType.REVENUE,
-      AccountType.EXPENSE,
-    ].filter((accountType) => {
+    return ACCOUNT_TYPES.filter((accountType) => {
       return accountsToDisplay.filter((a) => a.type === accountType).length > 0;
     });
   }, [accountsToDisplay]);

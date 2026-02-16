@@ -15,8 +15,10 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
+import { Route as AuthenticatedWorkspaceCategoriesIndexRouteImport } from './routes/_authenticated/_workspace/categories/index'
 import { Route as AuthenticatedWorkspaceAccountsIndexRouteImport } from './routes/_authenticated/_workspace/accounts/index'
 import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
+import { Route as AuthenticatedWorkspaceCategoriesIdRouteImport } from './routes/_authenticated/_workspace/categories/$id'
 import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
 import { Route as AuthenticatedWorkspaceAccountsIdRouteImport } from './routes/_authenticated/_workspace/accounts/$id'
 
@@ -49,6 +51,12 @@ const AuthenticatedWorkspaceIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceCategoriesIndexRoute =
+  AuthenticatedWorkspaceCategoriesIndexRouteImport.update({
+    id: '/categories/',
+    path: '/categories/',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
 const AuthenticatedWorkspaceAccountsIndexRoute =
   AuthenticatedWorkspaceAccountsIndexRouteImport.update({
     id: '/accounts/',
@@ -59,6 +67,12 @@ const AuthenticatedWorkspaceMovementsChar123IdChar125Route =
   AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport.update({
     id: '/movements/{-$id}',
     path: '/movements/{-$id}',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
+const AuthenticatedWorkspaceCategoriesIdRoute =
+  AuthenticatedWorkspaceCategoriesIdRouteImport.update({
+    id: '/categories/$id',
+    path: '/categories/$id',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
 const AuthenticatedWorkspaceActivitiesChar123IdChar125Route =
@@ -81,8 +95,10 @@ export interface FileRoutesByFullPath {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
+  '/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedWorkspaceIndexRoute
@@ -91,8 +107,10 @@ export interface FileRoutesByTo {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/accounts': typeof AuthenticatedWorkspaceAccountsIndexRoute
+  '/categories': typeof AuthenticatedWorkspaceCategoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,8 +122,10 @@ export interface FileRoutesById {
   '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/_workspace/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/_authenticated/_workspace/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/_authenticated/_workspace/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
+  '/_authenticated/_workspace/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,8 +136,10 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
+    | '/categories/$id'
     | '/movements/{-$id}'
     | '/accounts/'
+    | '/categories/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -126,8 +148,10 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
+    | '/categories/$id'
     | '/movements/{-$id}'
     | '/accounts'
+    | '/categories'
   id:
     | '__root__'
     | '/_authenticated'
@@ -138,8 +162,10 @@ export interface FileRouteTypes {
     | '/_authenticated/_workspace/'
     | '/_authenticated/_workspace/accounts/$id'
     | '/_authenticated/_workspace/activities/{-$id}'
+    | '/_authenticated/_workspace/categories/$id'
     | '/_authenticated/_workspace/movements/{-$id}'
     | '/_authenticated/_workspace/accounts/'
+    | '/_authenticated/_workspace/categories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -192,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/categories/': {
+      id: '/_authenticated/_workspace/categories/'
+      path: '/categories'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
     '/_authenticated/_workspace/accounts/': {
       id: '/_authenticated/_workspace/accounts/'
       path: '/accounts'
@@ -204,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/movements/{-$id}'
       fullPath: '/movements/{-$id}'
       preLoaderRoute: typeof AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
+    '/_authenticated/_workspace/categories/$id': {
+      id: '/_authenticated/_workspace/categories/$id'
+      path: '/categories/$id'
+      fullPath: '/categories/$id'
+      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
     '/_authenticated/_workspace/activities/{-$id}': {
@@ -227,8 +267,10 @@ interface AuthenticatedWorkspaceRouteChildren {
   AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
   AuthenticatedWorkspaceAccountsIdRoute: typeof AuthenticatedWorkspaceAccountsIdRoute
   AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  AuthenticatedWorkspaceCategoriesIdRoute: typeof AuthenticatedWorkspaceCategoriesIdRoute
   AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   AuthenticatedWorkspaceAccountsIndexRoute: typeof AuthenticatedWorkspaceAccountsIndexRoute
+  AuthenticatedWorkspaceCategoriesIndexRoute: typeof AuthenticatedWorkspaceCategoriesIndexRoute
 }
 
 const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
@@ -238,10 +280,14 @@ const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
       AuthenticatedWorkspaceAccountsIdRoute,
     AuthenticatedWorkspaceActivitiesChar123IdChar125Route:
       AuthenticatedWorkspaceActivitiesChar123IdChar125Route,
+    AuthenticatedWorkspaceCategoriesIdRoute:
+      AuthenticatedWorkspaceCategoriesIdRoute,
     AuthenticatedWorkspaceMovementsChar123IdChar125Route:
       AuthenticatedWorkspaceMovementsChar123IdChar125Route,
     AuthenticatedWorkspaceAccountsIndexRoute:
       AuthenticatedWorkspaceAccountsIndexRoute,
+    AuthenticatedWorkspaceCategoriesIndexRoute:
+      AuthenticatedWorkspaceCategoriesIndexRoute,
   }
 
 const AuthenticatedWorkspaceRouteWithChildren =

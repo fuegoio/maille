@@ -611,7 +611,7 @@ export function AddActivityModal({
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
-                <span className="mr-2.5 font-mono text-sm text-muted-foreground">
+                <span className="mr-2.75 font-mono text-sm text-muted-foreground">
                   {getCurrencyFormatter().format(transactionsSum)}
                 </span>
                 {!movements && (
