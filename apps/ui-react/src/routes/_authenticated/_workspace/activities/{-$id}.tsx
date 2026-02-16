@@ -35,6 +35,10 @@ export const Route = createFileRoute(
 function ActivitiesPage() {
   const params = Route.useParams();
   const activities = useActivities((state) => state.activities);
+  const showTransactions = useActivities((state) => state.showTransactions);
+  const setShowTransactions = useActivities(
+    (state) => state.setShowTransactions,
+  );
 
   // Get the activity view based on route parameters
   const activityView = useViews((state) =>
@@ -66,8 +70,12 @@ function ActivitiesPage() {
           <div className="truncate font-medium">{title}</div>
           <div className="flex-1" />
           <AddActivityButton />
-          <Button className="gap-1" variant="outline">
-            Show transactions
+          <Button
+            className="gap-1"
+            variant="outline"
+            onClick={() => setShowTransactions(!showTransactions)}
+          >
+            {showTransactions ? "Hide" : "Show"} transactions
           </Button>
           <div className="h-full w-px bg-border" />
           <ExportActivitiesButton

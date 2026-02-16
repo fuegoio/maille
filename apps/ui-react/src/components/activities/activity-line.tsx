@@ -167,8 +167,8 @@ export function ActivityLine({
           className={cn(
             "text-right font-mono font-medium whitespace-nowrap lg:w-20",
             {
-              "text-muted-foreground": accountFilter !== null,
-              "text-foreground": accountFilter === null,
+              "text-muted-foreground":
+                accountFilter !== null || showTransactions,
             },
           )}
         >
@@ -181,13 +181,9 @@ export function ActivityLine({
           {transactions.map((transaction) => (
             <div
               key={transaction.id}
-              className="ml:pl-1 flex h-10 items-center gap-2 border-t pr-4 pl-3 text-sm lg:pr-6"
+              className="flex h-10 items-center gap-2 border-t pr-6 pl-41.75 text-sm"
             >
-              <div className="hidden w-4 lg:block" />
-              <div className="hidden w-7 shrink-0 lg:block" />
-              <div className="shrink-0 lg:w-20" />
-
-              <div className="flex h-10 grow items-center gap-2 border-l-2">
+              <div className="flex h-10 grow items-center gap-2 border-l-2 pl-4">
                 <AccountLabel accountId={transaction.fromAccount} />
                 <div className="text-primary-100 mx-2 text-center">to</div>
                 <AccountLabel accountId={transaction.toAccount} />
