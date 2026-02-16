@@ -18,7 +18,7 @@ export const Route = createFileRoute(
   component: ActivitiesPage,
   loader: async ({ params }) => {
     const setFocusedActivity = useActivities.getState().setFocusedActivity;
-    if (params.id && params.id !== "reconciliation" && params.id !== "") {
+    if (params.id && params.id !== "to-reconciliate" && params.id !== "") {
       const activities = useActivities.getState().activities;
       const activity = activities.find(
         (a) => a.number.toString() === params.id,
@@ -39,7 +39,7 @@ function ActivitiesPage() {
   // Get the activity view based on route parameters
   const activityView = useViews((state) =>
     state.getActivityView(
-      params.id === "reconciliation"
+      params.id === "to-reconciliate"
         ? "activities-reconciliate-page"
         : "activities-page",
     ),
@@ -47,14 +47,14 @@ function ActivitiesPage() {
 
   // Filter activities based on route parameters
   const viewActivities = useMemo(() => {
-    if (params.id === "reconciliation") {
+    if (params.id === "to-reconciliate") {
       return activities.filter((activity) => activity.status === "incomplete");
     }
     return activities;
   }, [activities, params.id]);
 
   const title =
-    params.id === "reconciliation"
+    params.id === "to-reconciliate"
       ? "Activities to reconciliate"
       : "Activities";
 
