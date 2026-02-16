@@ -1,11 +1,12 @@
+import "./index.css";
+
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
 
+import { loadTheme } from "./components/navigation/theme-switcher";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
-
-import "./index.css";
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -27,3 +28,5 @@ if (!rootElement.innerHTML) {
     </StrictMode>,
   );
 }
+
+loadTheme();

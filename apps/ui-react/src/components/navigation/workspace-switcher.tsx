@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/sidebar";
 import type { AvailableWorkspace } from "@/stores/workspaces";
 
+import { ThemeSwitcher } from "./theme-switcher";
+
 export function WorkspaceSwitcher({
   user,
   currentWorkspace,
@@ -89,6 +91,7 @@ export function WorkspaceSwitcher({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <ThemeSwitcher />
             <DropdownMenuItem className="gap-2 px-3">
               <LogOut />
               Log out
