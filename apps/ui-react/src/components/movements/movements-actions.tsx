@@ -1,14 +1,17 @@
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 interface MovementsActionsProps {
   selectedMovements: string[];
   onClearSelection: () => void;
 }
 
-export function MovementsActions({ selectedMovements, onClearSelection }: MovementsActionsProps) {
+export function MovementsActions({
+  selectedMovements,
+  onClearSelection,
+}: MovementsActionsProps) {
   const show = selectedMovements.length > 0;
 
   if (!show) return null;
@@ -27,7 +30,7 @@ export function MovementsActions({ selectedMovements, onClearSelection }: Moveme
           }}
           className="fixed right-0 bottom-5 left-0 z-40 flex justify-center"
         >
-          <div className="bg-primary-950 flex items-center gap-2 rounded p-2 shadow-xl">
+          <div className="flex items-center gap-2 rounded bg-muted p-2 shadow-xl">
             <Button
               variant="outline"
               size="sm"

@@ -197,10 +197,16 @@ export function MovementsTable({
     }
   });
 
-  useHotkey("Mod+A", (event) => {
-    if (event.key !== "a") return;
-    setSelectedMovements(movementsFiltered.map((m) => m.id));
-  });
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      setSelectedMovements(movementsFiltered.map((m) => m.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">

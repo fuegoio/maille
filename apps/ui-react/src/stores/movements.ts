@@ -220,6 +220,12 @@ export const useMovements = create<MovementsState>()(
             event.payload.movement,
             event.payload.id,
           );
+        } else if (event.type === "createActivity" && event.payload.movement) {
+          get().addMovementActivity(event.payload.movement.movement, {
+            id: event.payload.movement.id,
+            amount: event.payload.movement.amount,
+            activity: event.payload.id,
+          });
         }
       },
 
@@ -252,6 +258,14 @@ export const useMovements = create<MovementsState>()(
           get().addMovementActivity(
             event.rollbackData.movement,
             event.rollbackData,
+          );
+        } else if (
+          event.name === "createActivity" &&
+          event.variables.movement
+        ) {
+          get().deleteMovementActivity(
+            event.variables.movement.movement,
+            event.variables.movement.id,
           );
         }
       },

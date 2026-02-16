@@ -329,15 +329,13 @@ export function AddActivityModal({
         toAccount: t.toAccount,
         amount: t.amount,
       })),
-      movements: movement
-        ? [
-            {
-              id: randomstring(),
-              movement: movement.id,
-              amount: movement.amount,
-            },
-          ]
-        : [],
+      movement: movement
+        ? {
+            id: randomstring(),
+            movement: movement.id,
+            amount: movement.amount,
+          }
+        : undefined,
     };
 
     mutate({

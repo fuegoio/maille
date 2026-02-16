@@ -192,7 +192,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                 </div>
 
                 {movementsReconciliatedOfAccount.movements.length === 0 ? (
-                  <div className="mt-4 px-4 text-sm text-muted-foreground">
+                  <div className="p-4 text-sm text-muted-foreground">
                     No movement added for this account.
                   </div>
                 ) : (
