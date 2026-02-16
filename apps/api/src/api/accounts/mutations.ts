@@ -24,7 +24,7 @@ export const registerAccountsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const AccountTypeEnum = z.nativeEnum(AccountType);
+        const AccountTypeEnum = z.enum(AccountType);
         const accountType = AccountTypeEnum.parse(args.type);
 
         await db.insert(accounts).values({
@@ -99,11 +99,13 @@ export const registerAccountsMutations = () => {
           accountUpdates.movements = args.movements ?? undefined;
         }
 
-        const updatedAccounts = (
-          await db.update(accounts).set(accountUpdates).where(eq(accounts.id, args.id)).returning()
-        );
+        const updatedAccounts = await db
+          .update(accounts)
+          .set(accountUpdates)
+          .where(eq(accounts.id, args.id))
+          .returning();
         const updatedAccount = updatedAccounts[0];
-        
+
         if (!updatedAccount) {
           throw new GraphQLError("Failed to update account");
         }

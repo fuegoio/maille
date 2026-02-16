@@ -95,7 +95,7 @@ export const registerActivitiesMutations = () => {
         // Validate workspace
         await validateWorkspace(args.workspace, ctx.user.id);
 
-        const ActivityTypeEnum = z.nativeEnum(ActivityType);
+        const ActivityTypeEnum = z.enum(ActivityType);
         const activityType = ActivityTypeEnum.parse(args.type);
 
         const accountsQuery = await db.select().from(accounts);
@@ -660,7 +660,7 @@ export const registerActivitiesMutations = () => {
         // Validate workspace
         await validateWorkspace(args.workspace, ctx.user.id);
 
-        const activityTypeSchema = z.nativeEnum(ActivityType);
+        const activityTypeSchema = z.enum(ActivityType);
         const parsedType = activityTypeSchema.parse(args.type);
 
         const category = {

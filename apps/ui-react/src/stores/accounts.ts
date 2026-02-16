@@ -14,6 +14,7 @@ export const ACCOUNT_TYPES_COLOR = {
   [AccountType.LIABILITIES]: "bg-sky-400",
   [AccountType.EXPENSE]: "bg-red-300",
   [AccountType.REVENUE]: "bg-green-300",
+  [AccountType.ASSETS]: "bg-violet-400",
 };
 
 export const ACCOUNT_TYPES_NAME = {
@@ -23,6 +24,7 @@ export const ACCOUNT_TYPES_NAME = {
   [AccountType.LIABILITIES]: "Liabilities",
   [AccountType.EXPENSE]: "Expense",
   [AccountType.REVENUE]: "Revenue",
+  [AccountType.ASSETS]: "Assets",
 };
 
 interface AccountsState {
@@ -113,8 +115,8 @@ export const useAccounts = create<AccountsState>()(
             ...event.payload,
             default: false,
             movements: false,
-            startingBalance: 0,
-            startingCashBalance: 0,
+            startingBalance: null,
+            startingCashBalance: null,
             user: event.user,
           });
         } else if (event.type === "updateAccount") {

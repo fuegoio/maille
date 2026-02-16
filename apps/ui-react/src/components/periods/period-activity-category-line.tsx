@@ -19,7 +19,8 @@ export function PeriodActivityCategoryLine({
   periodDate,
   category,
 }: PeriodActivityCategoryLineProps) {
-  const { activities, subcategories } = useActivities();
+  const activities = useActivities((state) => state.activities);
+  const subcategories = useActivities((state) => state.activitySubcategories);
   const viewFilters = usePeriods((state) => state.viewFilters);
   const periodsActivityData = usePeriods((state) =>
     state.getPeriodsAvailable(),

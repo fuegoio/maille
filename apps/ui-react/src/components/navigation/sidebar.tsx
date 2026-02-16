@@ -4,9 +4,13 @@ import {
   Calendar,
   Cog,
   Folder,
+  House,
   LayoutDashboard,
   LifeBuoy,
   Send,
+  Tag,
+  TentTree,
+  Users,
 } from "lucide-react";
 import * as React from "react";
 
@@ -34,7 +38,6 @@ const data = {
       title: "Periods",
       url: "/periods",
       icon: Calendar,
-      isActive: true,
       items: [
         {
           title: "Current",
@@ -46,18 +49,12 @@ const data = {
         },
       ],
     },
-    {
-      title: "Projects",
-      url: "/projects",
-      icon: Folder,
-    },
   ],
-  navSource: [
+  navLinks: [
     {
       title: "Activities",
       url: "/activities",
       icon: BookMarked,
-      isActive: true,
       items: [
         {
           title: "To reconciliate",
@@ -69,13 +66,29 @@ const data = {
       title: "Movements",
       url: "/movements",
       icon: Banknote,
-      isActive: true,
       items: [
         {
           title: "To link",
           url: "/movements/to-link",
         },
       ],
+    },
+  ],
+  navFoundations: [
+    {
+      title: "Accounts",
+      url: "/accounts",
+      icon: Folder,
+    },
+    {
+      title: "Categories",
+      url: "/categories",
+      icon: Tag,
+    },
+    {
+      title: "Projects",
+      url: "/projects",
+      icon: TentTree,
     },
   ],
   navFooter: [
@@ -124,7 +137,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain title="Analysis" items={data.navAnalysis} />
-        <NavMain title="Source" items={data.navSource} />
+        <NavMain title="Links" items={data.navLinks} />
+        <NavMain title="Foundations" items={data.navFoundations} />
       </SidebarContent>
       <SidebarFooter>
         <NavSecondary items={data.navFooter} />

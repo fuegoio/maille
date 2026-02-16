@@ -3,8 +3,10 @@ export type Transaction = {
   amount: number;
   fromAccount: string;
   fromUser: string | null;
+  fromAsset: string | null;
   toAccount: string;
   toUser: string | null;
+  toAsset: string | null;
 };
 
 export enum ActivityType {
