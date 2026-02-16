@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { useState, useRef } from "react";
+
+import { Button } from "@/components/ui/button";
 
 interface UploadDropZoneProps {
   onFile: (file: File) => void;
@@ -53,17 +54,24 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
         name="upload-file"
         type="file"
         hidden
+        accept=".csv"
         onClick={(e) => {
           // @ts-ignore
           e.target.value = null;
         }}
         onChange={handleFileInputEvent}
       />
-      <Button className="mt-5" variant="outline" onClick={() => fileUploadInput.current?.click()}>
+      <Button
+        className="mt-5"
+        variant="outline"
+        onClick={() => fileUploadInput.current?.click()}
+      >
         Select from your computer
       </Button>
 
-      <div className="text-primary-200 mt-8 text-xs">File should be a valid CSV.</div>
+      <div className="text-primary-200 mt-8 text-xs">
+        File should be a valid CSV.
+      </div>
     </div>
   );
 }

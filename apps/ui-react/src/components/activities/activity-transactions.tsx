@@ -132,6 +132,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                     amount,
                   });
                 }}
+                mode="cell"
                 className="mr-1.5 w-24"
               />
 

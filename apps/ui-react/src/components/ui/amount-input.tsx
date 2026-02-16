@@ -55,6 +55,7 @@ type AmountInputProps = {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  mode: "field" | "cell";
   id?: string;
 } & (AmountInputNotClearableProps | AmountInputClearableProps);
 
@@ -65,6 +66,7 @@ export function AmountInput({
   clearable = false,
   placeholder = "18,99 €",
   className,
+  mode,
   id,
 }: AmountInputProps) {
   const [calculatorInput, setCalculatorInput] = React.useState<string>("");
@@ -213,10 +215,13 @@ export function AmountInput({
         <Button
           ref={triggerRef}
           id={id}
-          variant="ghost"
+          variant={mode === "cell" ? "ghost" : "outline"}
           disabled={disabled}
           className={cn(
-            "justify-end text-right font-mono font-normal",
+            "font-mono font-normal",
+            mode === "cell"
+              ? "justify-end text-right"
+              : "justify-start text-left",
             className,
           )}
           onKeyDown={isOpen ? handleKeyPress : undefined}

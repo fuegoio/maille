@@ -14,16 +14,25 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getGraphQLDate } from "@/lib/date";
 import { createMovementMutation } from "@/mutations/movements";
-import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
+
+import { AmountInput } from "../ui/amount-input";
+import { DatePicker } from "../ui/date-picker";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -40,6 +49,8 @@ interface AddMovementButtonProps {
 }
 
 export function AddMovementButton({ className }: AddMovementButtonProps) {
+  const mutate = useSync((state) => state.mutate);
+  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const form = useForm<FormValues>({
@@ -69,27 +80,24 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
   };
 
   const addNewMovement = async (data: FormValues) => {
-    const addMovement = useMovements((state) => state.addMovement);
-    const movement = addMovement({
-      date: data.date,
-      amount: data.amount,
-      account: data.account,
-      name: data.name,
-      activities: [],
-    });
+    const movement = {
+      id: crypto.randomUUID(),
+      ...data,
+      date: getGraphQLDate(data.date),
+      workspace: workspaceId,
+    };
 
-    const mutate = useSync((state) => state.mutate);
     mutate({
       name: "createMovement",
       mutation: createMovementMutation,
-      variables: {
-        id: movement.id,
-        name: movement.name,
-        date: movement.date.toISOString().split("T")[0],
-        account: movement.account,
-        amount: movement.amount,
-      },
+      variables: movement,
       rollbackData: undefined,
+      events: [
+        {
+          type: "createMovement",
+          payload: movement,
+        },
+      ],
     });
 
     closeDialog();
@@ -121,93 +129,79 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       </Tooltip>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Add a new movement</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={handleSubmit(addNewMovement)}
-            className="grid gap-4 py-4"
-          >
-            <Controller
-              name="date"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="date">Date</FieldLabel>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={field.value.toISOString().split("T")[0]}
-                    onChange={(e) => field.onChange(new Date(e.target.value))}
-                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
 
-            <Controller
-              name="amount"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="amount">Amount</FieldLabel>
-                  <Input
-                    id="amount"
-                    type="number"
-                    value={field.value}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                    step="0.01"
-                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+          <form onSubmit={handleSubmit(addNewMovement)}>
+            <FieldGroup className="pb-8">
+              <Controller
+                name="date"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="date">Date</FieldLabel>
+                    <DatePicker {...field} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="account"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="account">Account</FieldLabel>
-                  <AccountSelect
-                    value={field.value}
-                    onChange={field.onChange}
-                    movementsOnly
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="name"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="name">Movement name</FieldLabel>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Restaurant"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="name"
-              control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Restaurant"
-                    className="bg-primary-800 w-full rounded-md border px-3 py-2 text-white"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="amount"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="amount">Amount</FieldLabel>
+                    <AmountInput {...field} mode="field" />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="account"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="account">Account</FieldLabel>
+                    <AccountSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      movementsOnly
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
 
             <DialogFooter>
               <Button type="submit">Create movement</Button>

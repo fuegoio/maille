@@ -128,6 +128,7 @@ export function AddTransactionButton({
                     value={field.value}
                     onChange={field.onChange}
                     className="w-full sm:w-56"
+                    mode="field"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />

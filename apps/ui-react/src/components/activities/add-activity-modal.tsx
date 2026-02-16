@@ -659,7 +659,7 @@ export function AddActivityModal({
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid} className="w-24">
-                      <AmountInput {...field} />
+                      <AmountInput {...field} mode="cell" />
                     </Field>
                   )}
                 />

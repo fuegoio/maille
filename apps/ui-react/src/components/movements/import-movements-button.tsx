@@ -30,13 +30,11 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 
 interface ImportMovementsButtonProps {
-  large?: boolean;
   className?: string;
   onImported?: () => void;
 }
 
 export function ImportMovementsButton({
-  large = false,
   className,
   onImported,
 }: ImportMovementsButtonProps) {
@@ -145,13 +143,12 @@ export function ImportMovementsButton({
     <>
       <Button
         type="button"
-        variant="outline"
-        size={large ? "default" : "sm"}
+        variant="default"
         className={className}
         onClick={() => setDialogOpen(true)}
       >
-        <Upload className={`h-4 w-4 ${large ? "mr-2" : "mr-1"}`} />
-        <span>{large ? "Import movements" : "Import"}</span>
+        <Upload />
+        Import movements
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -161,7 +158,7 @@ export function ImportMovementsButton({
           </DialogHeader>
 
           {step === 0 ? (
-            <div className="py-4">
+            <div className="pt-1 pb-4">
               <UploadDropZone onFile={handleInputFile} />
             </div>
           ) : (

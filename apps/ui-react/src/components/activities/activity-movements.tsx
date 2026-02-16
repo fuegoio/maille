@@ -228,6 +228,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                               onChange={(amount) =>
                                 updateAmountLinked(movement, amount)
                               }
+                              mode="cell"
                               className="mr-4 w-24"
                             />
 

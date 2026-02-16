@@ -16,6 +16,7 @@ import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/j
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
 import { Route as AuthenticatedWorkspaceSettingsIndexRouteImport } from './routes/_authenticated/_workspace/settings/index'
+import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
 import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
 
 const SignupRoute = SignupRouteImport.update({
@@ -53,6 +54,12 @@ const AuthenticatedWorkspaceSettingsIndexRoute =
     path: '/settings/',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceMovementsChar123IdChar125Route =
+  AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport.update({
+    id: '/movements/{-$id}',
+    path: '/movements/{-$id}',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
 const AuthenticatedWorkspaceActivitiesChar123IdChar125Route =
   AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport.update({
     id: '/activities/{-$id}',
@@ -66,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/join': typeof AuthenticatedJoinRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/settings/': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/join': typeof AuthenticatedJoinRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/settings': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -85,6 +94,7 @@ export interface FileRoutesById {
   '/_authenticated/join': typeof AuthenticatedJoinRoute
   '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/_authenticated/_workspace/settings/': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -95,9 +105,17 @@ export interface FileRouteTypes {
     | '/signup'
     | '/join'
     | '/activities/{-$id}'
+    | '/movements/{-$id}'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/join' | '/activities/{-$id}' | '/settings'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/join'
+    | '/activities/{-$id}'
+    | '/movements/{-$id}'
+    | '/settings'
   id:
     | '__root__'
     | '/_authenticated'
@@ -107,6 +125,7 @@ export interface FileRouteTypes {
     | '/_authenticated/join'
     | '/_authenticated/_workspace/'
     | '/_authenticated/_workspace/activities/{-$id}'
+    | '/_authenticated/_workspace/movements/{-$id}'
     | '/_authenticated/_workspace/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -167,6 +186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/movements/{-$id}': {
+      id: '/_authenticated/_workspace/movements/{-$id}'
+      path: '/movements/{-$id}'
+      fullPath: '/movements/{-$id}'
+      preLoaderRoute: typeof AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
     '/_authenticated/_workspace/activities/{-$id}': {
       id: '/_authenticated/_workspace/activities/{-$id}'
       path: '/activities/{-$id}'
@@ -180,6 +206,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedWorkspaceRouteChildren {
   AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
   AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   AuthenticatedWorkspaceSettingsIndexRoute: typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 
@@ -188,6 +215,8 @@ const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
     AuthenticatedWorkspaceIndexRoute: AuthenticatedWorkspaceIndexRoute,
     AuthenticatedWorkspaceActivitiesChar123IdChar125Route:
       AuthenticatedWorkspaceActivitiesChar123IdChar125Route,
+    AuthenticatedWorkspaceMovementsChar123IdChar125Route:
+      AuthenticatedWorkspaceMovementsChar123IdChar125Route,
     AuthenticatedWorkspaceSettingsIndexRoute:
       AuthenticatedWorkspaceSettingsIndexRoute,
   }

@@ -1,10 +1,12 @@
 import { verifyMovementFilter } from "@maille/core/movements";
 import type { Movement } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchCompare } from "@/lib/strings";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSearch } from "@/stores/search";
@@ -36,6 +38,7 @@ export function MovementsTable({
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
     [],
   );
+  const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   // Cleanup on unmount
   React.useEffect(() => {
@@ -124,10 +127,15 @@ export function MovementsTable({
           id: group.id,
           month: group.month,
           year: group.year,
+          movements: group.movements,
         });
-        return mwg.concat(
-          group.movements.map((m) => ({ itemType: "movement", ...m })),
-        );
+        if (!groupsFolded.includes(group.id)) {
+          return mwg.concat(
+            group.movements.map((m) => ({ itemType: "movement", ...m })),
+          );
+        } else {
+          return mwg;
+        }
       }, []);
   }, [movementsSorted, grouping]);
 
@@ -205,12 +213,25 @@ export function MovementsTable({
               ? movementsWithGroups.map((item) => (
                   <React.Fragment key={item.id}>
                     {item.itemType === "group" ? (
-                      <div className="bg-primary-800 flex h-10 flex-shrink-0 items-center gap-2 border-b pl-5 sm:pl-7">
-                        <i
-                          className="mdi mdi-calendar-blank text-primary-100 mdi-16px"
-                          aria-hidden="true"
+                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted px-6">
+                        <ChevronDown
+                          className={cn(
+                            "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
+                            groupsFolded.includes(item.id) &&
+                              "-rotate-90 opacity-100",
+                          )}
+                          onClick={() => {
+                            if (groupsFolded.includes(item.id)) {
+                              setGroupsFolded((prev) =>
+                                prev.filter((id) => id !== item.id),
+                              );
+                            } else {
+                              setGroupsFolded((prev) => [...prev, item.id]);
+                            }
+                          }}
                         />
-                        <div className="text-sm font-medium">
+                        <Calendar className="size-4" />
+                        <div className="text-sm">
                           {periodFormatter(item.month, item.year)}
                         </div>
                         <div className="flex-1" />
@@ -218,8 +239,9 @@ export function MovementsTable({
                     ) : (
                       <MovementLine
                         movement={item}
-                        isMovementSelected={selectedMovements.includes(item.id)}
-                        onSelectMovement={() => selectMovement(item.id)}
+                        selected={focusedMovement === item.id}
+                        checked={selectedMovements.includes(item.id)}
+                        onCheckedChange={() => selectMovement(item.id)}
                         onClick={() => handleMovementClick(item.id)}
                       />
                     )}
@@ -229,15 +251,18 @@ export function MovementsTable({
                   <MovementLine
                     key={movement.id}
                     movement={movement}
-                    isMovementSelected={selectedMovements.includes(movement.id)}
-                    onSelectMovement={() => selectMovement(movement.id)}
+                    selected={focusedMovement === movement.id}
+                    checked={selectedMovements.includes(movement.id)}
+                    onCheckedChange={() => selectMovement(movement.id)}
                     onClick={() => handleMovementClick(movement.id)}
                   />
                 ))}
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center overflow-hidden">
-            <div className="text-primary-600">No movement found</div>
+            <div className="text-sm text-muted-foreground">
+              No movement found.
+            </div>
           </div>
         )}
       </div>
