@@ -1,11 +1,14 @@
-import * as React from "react";
-import { useViews } from "@/stores/views";
-import { useSearch } from "@/stores/search";
-import { LiabilityLine } from "./liability-line";
-import { LiabilitiesFilters } from "./filters/liabilities-filters";
 import type { Liability } from "@maille/core/liabilities";
 import { verifyLiabilityFilter } from "@maille/core/liabilities";
 import { Calendar } from "lucide-react";
+import * as React from "react";
+
+import { searchCompare } from "@/lib/strings";
+import { useSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
+
+import { LiabilitiesFilters } from "./filters/liabilities-filters";
+import { LiabilityLine } from "./liability-line";
 
 interface LiabilitiesTableProps {
   liabilities: Liability[];
@@ -23,12 +26,14 @@ export function LiabilitiesTable({
   className,
 }: LiabilitiesTableProps) {
   const liabilityView = useViews((state) => state.getLiabilityView(viewId));
-  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
+  const search = useSearch((state) => state.search);
 
   const liabilitiesFiltered = React.useMemo(() => {
     return liabilities
-      .filter((liability) => filterStringBySearch(liability.name))
-      .filter((liability) => (accountFilter !== null ? liability.account === accountFilter : true))
+      .filter((liability) => searchCompare(search, liability.name))
+      .filter((liability) =>
+        accountFilter !== null ? liability.account === accountFilter : true,
+      )
       .filter((liability) => {
         if (liabilityView.filters.length === 0) return true;
 
@@ -38,7 +43,7 @@ export function LiabilitiesTable({
           })
           .every((f) => f);
       });
-  }, [liabilities, filterStringBySearch, accountFilter, liabilityView.filters]);
+  }, [liabilities, search, accountFilter, liabilityView.filters]);
 
   const liabilitiesSorted = React.useMemo(() => {
     return [...liabilitiesFiltered].sort((a, b) => {
@@ -62,7 +67,8 @@ export function LiabilitiesTable({
     | ({ itemType: "liability" } & Liability);
 
   const liabilitiesWithGroups = React.useMemo<LiabilityAndGroup[]>(() => {
-    if (!grouping) return liabilitiesSorted.map((l) => ({ itemType: "liability", ...l }));
+    if (!grouping)
+      return liabilitiesSorted.map((l) => ({ itemType: "liability", ...l }));
 
     const groups = liabilitiesSorted.reduce((groups, l) => {
       const group = groups.find(
@@ -97,7 +103,12 @@ export function LiabilitiesTable({
         year: group.year,
         liabilities: group.liabilities,
       });
-      return lwg.concat(group.liabilities.map((l) => ({ itemType: "liability" as const, ...l })));
+      return lwg.concat(
+        group.liabilities.map((l) => ({
+          itemType: "liability" as const,
+          ...l,
+        })),
+      );
     }, [] as LiabilityAndGroup[]);
   }, [liabilitiesSorted, grouping]);
 

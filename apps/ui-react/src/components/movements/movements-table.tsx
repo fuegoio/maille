@@ -4,6 +4,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { searchCompare } from "@/lib/strings";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSearch } from "@/stores/search";
@@ -28,7 +29,7 @@ export function MovementsTable({
 }: MovementsTableProps) {
   const focusedMovement = useMovements((state) => state.focusedMovement);
   const focusedActivity = useActivities((state) => state.focusedActivity);
-  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
+  const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
   const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
@@ -57,7 +58,7 @@ export function MovementsTable({
 
   const movementsFiltered = React.useMemo(() => {
     return movements
-      .filter((movement) => filterStringBySearch(movement.name))
+      .filter((movement) => searchCompare(search, movement.name))
       .filter((movement) =>
         accountFilter !== null ? movement.account === accountFilter : true,
       )
@@ -67,7 +68,7 @@ export function MovementsTable({
           .map((filter) => verifyMovementFilter(filter, movement))
           .every((f) => f);
       });
-  }, [movements, filterStringBySearch, accountFilter, movementView.filters]);
+  }, [movements, search, accountFilter, movementView.filters]);
 
   const movementsSorted = React.useMemo(() => {
     return [...movementsFiltered].sort((a, b) => {

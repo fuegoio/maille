@@ -5,6 +5,7 @@ import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { searchCompare } from "@/lib/strings";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
@@ -38,7 +39,7 @@ export function ActivitiesTable({
 
   const activityView = useViews((state) => state.getActivityView(viewId));
   const focusedActivity = useActivities((state) => state.focusedActivity);
-  const filterStringBySearch = useSearch((state) => state.filterStringBySearch);
+  const search = useSearch((state) => state.search);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
   const [selectedActivities, setSelectedActivities] = React.useState<string[]>(
@@ -55,7 +56,7 @@ export function ActivitiesTable({
 
   const activitiesFiltered = React.useMemo(() => {
     return activities
-      .filter((activity) => filterStringBySearch(activity.name))
+      .filter((activity) => searchCompare(search, activity.name))
       .filter((activity) => {
         if (subcategoryFilter !== null) {
           return activity.subcategory === subcategoryFilter;
@@ -96,7 +97,7 @@ export function ActivitiesTable({
       });
   }, [
     activities,
-    filterStringBySearch,
+    search,
     subcategoryFilter,
     categoryFilter,
     accountFilter,
