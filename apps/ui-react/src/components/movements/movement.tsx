@@ -5,7 +5,6 @@ import _ from "lodash";
 import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";
 
-import { AccountLabel } from "@/components/accounts/account-label";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";

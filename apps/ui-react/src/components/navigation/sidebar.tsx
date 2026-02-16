@@ -2,7 +2,6 @@ import {
   Banknote,
   BookMarked,
   Calendar,
-  Cog,
   Folder,
   LayoutDashboard,
   LifeBuoy,

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, XIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
