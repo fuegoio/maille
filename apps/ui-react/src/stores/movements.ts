@@ -152,12 +152,16 @@ export const useMovements = create<MovementsState>()(
           name?: string;
         },
       ) => {
+        const filteredUpdate = Object.fromEntries(
+          Object.entries(update).filter(([_, value]) => value !== undefined),
+        );
+
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
               return {
                 ...movement,
-                ...update,
+                ...filteredUpdate,
                 status:
                   movement.activities.reduce(
                     (sum, ma) => sum + ma.amount,

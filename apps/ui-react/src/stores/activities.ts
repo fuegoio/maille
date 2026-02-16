@@ -178,8 +178,13 @@ export const useActivities = create<ActivitiesState>()(
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
+              const filteredUpdate = Object.fromEntries(
+                Object.entries(update).filter(
+                  ([_, value]) => value !== undefined,
+                ),
+              );
               const newTransactions = activity.transactions.map((t) =>
-                t.id === transactionId ? { ...t, ...update } : t,
+                t.id === transactionId ? { ...t, ...filteredUpdate } : t,
               );
               return {
                 ...activity,
@@ -257,8 +262,13 @@ export const useActivities = create<ActivitiesState>()(
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
+              const filteredUpdate = Object.fromEntries(
+                Object.entries(update).filter(
+                  ([_, value]) => value !== undefined,
+                ),
+              );
               const newMovements = activity.movements.map((m) =>
-                m.id === movementId ? { ...m, ...update } : m,
+                m.id === movementId ? { ...m, ...filteredUpdate } : m,
               );
               return {
                 ...activity,
@@ -351,12 +361,16 @@ export const useActivities = create<ActivitiesState>()(
           project?: string | null;
         },
       ) => {
+        const filteredUpdate = Object.fromEntries(
+          Object.entries(update).filter(([_, value]) => value !== undefined),
+        );
+
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
               return {
                 ...activity,
-                ...update,
+                ...filteredUpdate,
                 amount: getActivityTransactionsReconciliationSum(
                   update.type ?? activity.type,
                   activity.transactions,

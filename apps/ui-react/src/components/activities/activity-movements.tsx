@@ -161,7 +161,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
             (movementsReconciliatedOfAccount) => (
               <div
                 key={movementsReconciliatedOfAccount.account.toString()}
-                className="-mx-4 mt-4 mb-2 rounded border py-4"
+                className="-mx-4 mt-4 mb-2 rounded border py-2"
               >
                 <div className="flex items-center px-4 text-sm">
                   <AccountLabel
@@ -191,97 +191,83 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                   />
                 </div>
 
-                <div className="my-2">
-                  {movementsReconciliatedOfAccount.movements.length === 0 ? (
-                    <div className="mt-4 px-4 text-sm text-muted-foreground">
-                      No movement added for this account.
-                    </div>
-                  ) : (
-                    movementsReconciliatedOfAccount.movements.map(
-                      (movement) => (
-                        <div key={movement.id}>
-                          <hr className="border-t" />
+                {movementsReconciliatedOfAccount.movements.length === 0 ? (
+                  <div className="mt-4 px-4 text-sm text-muted-foreground">
+                    No movement added for this account.
+                  </div>
+                ) : (
+                  movementsReconciliatedOfAccount.movements.map((movement) => (
+                    <div key={movement.id}>
+                      <hr className="my-1 border-t" />
 
-                          <div className="flex items-center justify-center px-4 text-sm">
-                            <div className="mr-4 hidden w-16 shrink-0 text-muted-foreground sm:block">
-                              {movement.date.toLocaleDateString()}
-                            </div>
-                            <div className="mr-2 w-10 shrink-0 text-muted-foreground sm:hidden">
-                              {movement.date.toLocaleDateString(undefined, {
-                                day: "2-digit",
-                                month: "2-digit",
-                              })}
-                            </div>
-                            <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                              {movement.name}
-                              {movement.amountLinked !== movement.amount && (
-                                <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">
-                                  ({currencyFormatter.format(movement.amount)})
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex-1" />
-
-                            <AmountInput
-                              value={movement.amountLinked}
-                              onChange={(amount) =>
-                                updateAmountLinked(movement, amount)
-                              }
-                              mode="cell"
-                              className="mr-4 w-24"
-                            />
-
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                >
-                                  <Ellipsis />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleMovementMenuClick(
-                                      movement,
-                                      "editAmount",
-                                    )
-                                  }
-                                >
-                                  <Edit2 />
-                                  <span>Modify amount linked</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleMovementMenuClick(
-                                      movement,
-                                      "resetAmount",
-                                    )
-                                  }
-                                >
-                                  <RefreshCw />
-                                  <span>Reset amount linked</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleMovementMenuClick(movement, "unlink")
-                                  }
-                                  variant="destructive"
-                                >
-                                  <Trash2 />
-                                  <span>Unlink</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
+                      <div className="flex items-center justify-center px-4 text-sm">
+                        <div className="mr-4 hidden w-16 shrink-0 text-muted-foreground sm:block">
+                          {movement.date.toLocaleDateString()}
                         </div>
-                      ),
-                    )
-                  )}
-                </div>
+                        <div className="mr-2 w-10 shrink-0 text-muted-foreground sm:hidden">
+                          {movement.date.toLocaleDateString(undefined, {
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                        </div>
+                        <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {movement.name}
+                          {movement.amountLinked !== movement.amount && (
+                            <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">
+                              ({currencyFormatter.format(movement.amount)})
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex-1" />
+
+                        <AmountInput
+                          value={movement.amountLinked}
+                          onChange={(amount) =>
+                            updateAmountLinked(movement, amount)
+                          }
+                          mode="cell"
+                          className="mr-1 w-24 text-xs"
+                        />
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <Ellipsis />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleMovementMenuClick(movement, "editAmount")
+                              }
+                            >
+                              <Edit2 />
+                              Modify amount linked
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleMovementMenuClick(movement, "resetAmount")
+                              }
+                            >
+                              <RefreshCw />
+                              Reset amount linked
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleMovementMenuClick(movement, "unlink")
+                              }
+                              variant="destructive"
+                            >
+                              <Trash2 />
+                              Unlink
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             ),
           )

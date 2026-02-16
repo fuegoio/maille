@@ -21,9 +21,11 @@ interface AccountSelectProps {
   movementsOnly?: boolean;
   placeholder?: string;
   className?: string;
+  id?: string;
 }
 
 export function AccountSelect({
+  id,
   value,
   onChange,
   disabled = false,
@@ -52,7 +54,7 @@ export function AccountSelect({
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger>
+      <SelectTrigger id={id}>
         <SelectValue
           placeholder={
             <div className="flex min-w-0 shrink-0 items-center">

@@ -49,6 +49,8 @@ export function SearchBar() {
   return (
     <InputGroup className="max-w-xs">
       <InputGroupInput
+        id="search"
+        name="search"
         ref={setInputRef}
         value={search}
         onChange={(e) => setSearch(e.target.value)}

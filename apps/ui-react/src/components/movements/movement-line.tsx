@@ -48,7 +48,14 @@ export function MovementLine({
         )}
       />
 
-      <div className="mr-1 ml-3 hidden w-18 shrink-0 text-muted-foreground lg:block">
+      <div
+        className={cn(
+          "ml-3.5 size-2 shrink-0 rounded-lg",
+          movement.amount > 0 ? "bg-green-400" : "bg-red-400",
+        )}
+      />
+
+      <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
         {movement.date.toLocaleDateString(undefined, {
           weekday: "short",
           month: "2-digit",

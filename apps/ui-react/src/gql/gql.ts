@@ -31,7 +31,7 @@ type Documents = {
     "\n  mutation UpdateActivitySubCategory($id: String!, $name: String!) {\n    updateActivitySubCategory(id: $id, name: $name) {\n      id\n    }\n  }\n": typeof types.UpdateActivitySubCategoryDocument,
     "\n  mutation DeleteActivitySubCategory($id: String!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n": typeof types.DeleteActivitySubCategoryDocument,
     "\n  mutation CreateMovement(\n    $workspace: String!\n    $id: String!\n    $date: Date!\n    $name: String!\n    $account: String!\n    $amount: Float!\n  ) {\n    createMovement(\n      workspace: $workspace\n      id: $id\n      date: $date\n      name: $name\n      account: $account\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": typeof types.CreateMovementDocument,
-    "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n": typeof types.UpdateMovementDocument,
+    "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float, $name: String, $account: String) {\n    updateMovement(id: $id, date: $date, amount: $amount, name: $name, account: $account) {\n      id\n    }\n  }\n": typeof types.UpdateMovementDocument,
     "\n  mutation DeleteMovement($id: String!) {\n      deleteMovement(id: $id) {\n      success\n    }\n  }\n": typeof types.DeleteMovementDocument,
     "\n  mutation CreateMovementActivity(\n    $workspace: String!\n    $id: String!\n    $movementId: String!\n    $activityId: String!\n    $amount: Float!\n  ) {\n    createMovementActivity(\n      workspace: $workspace\n      id: $id\n      movementId: $movementId\n      activityId: $activityId\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": typeof types.CreateMovementActivityDocument,
     "\n  mutation UpdateMovementActivity($id: String!, $amount: Float!) {\n    updateMovementActivity(id: $id, amount: $amount) {\n      id\n    }\n  }\n": typeof types.UpdateMovementActivityDocument,
@@ -61,7 +61,7 @@ const documents: Documents = {
     "\n  mutation UpdateActivitySubCategory($id: String!, $name: String!) {\n    updateActivitySubCategory(id: $id, name: $name) {\n      id\n    }\n  }\n": types.UpdateActivitySubCategoryDocument,
     "\n  mutation DeleteActivitySubCategory($id: String!) {\n    deleteActivitySubCategory(id: $id) {\n      success\n    }\n  }\n": types.DeleteActivitySubCategoryDocument,
     "\n  mutation CreateMovement(\n    $workspace: String!\n    $id: String!\n    $date: Date!\n    $name: String!\n    $account: String!\n    $amount: Float!\n  ) {\n    createMovement(\n      workspace: $workspace\n      id: $id\n      date: $date\n      name: $name\n      account: $account\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": types.CreateMovementDocument,
-    "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n": types.UpdateMovementDocument,
+    "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float, $name: String, $account: String) {\n    updateMovement(id: $id, date: $date, amount: $amount, name: $name, account: $account) {\n      id\n    }\n  }\n": types.UpdateMovementDocument,
     "\n  mutation DeleteMovement($id: String!) {\n      deleteMovement(id: $id) {\n      success\n    }\n  }\n": types.DeleteMovementDocument,
     "\n  mutation CreateMovementActivity(\n    $workspace: String!\n    $id: String!\n    $movementId: String!\n    $activityId: String!\n    $amount: Float!\n  ) {\n    createMovementActivity(\n      workspace: $workspace\n      id: $id\n      movementId: $movementId\n      activityId: $activityId\n      amount: $amount\n    ) {\n      id\n    }\n  }\n": types.CreateMovementActivityDocument,
     "\n  mutation UpdateMovementActivity($id: String!, $amount: Float!) {\n    updateMovementActivity(id: $id, amount: $amount) {\n      id\n    }\n  }\n": types.UpdateMovementActivityDocument,
@@ -159,7 +159,7 @@ export function graphql(source: "\n  mutation CreateMovement(\n    $workspace: S
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float) {\n    updateMovement(id: $id, date: $date, amount: $amount) {\n      id\n    }\n  }\n"];
+export function graphql(source: "\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float, $name: String, $account: String) {\n    updateMovement(id: $id, date: $date, amount: $amount, name: $name, account: $account) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateMovement($id: String!, $date: Date, $amount: Float, $name: String, $account: String) {\n    updateMovement(id: $id, date: $date, amount: $amount, name: $name, account: $account) {\n      id\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

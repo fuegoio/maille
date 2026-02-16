@@ -89,6 +89,14 @@ export const registerMovementsMutations = () => {
           type: "Float",
           required: false,
         }),
+        name: t.arg({
+          type: "String",
+          required: false,
+        }),
+        account: t.arg({
+          type: "String",
+          required: false,
+        }),
       },
       resolve: async (root, args, ctx) => {
         const movement = (
@@ -110,6 +118,12 @@ export const registerMovementsMutations = () => {
         }
         if (args.amount) {
           updates.amount = args.amount;
+        }
+        if (args.name) {
+          updates.name = args.name;
+        }
+        if (args.account) {
+          updates.account = args.account;
         }
 
         const updatedMovements = await db

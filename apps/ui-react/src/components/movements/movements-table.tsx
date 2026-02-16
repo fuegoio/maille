@@ -137,7 +137,7 @@ export function MovementsTable({
           return mwg;
         }
       }, []);
-  }, [movementsSorted, grouping]);
+  }, [movementsSorted, grouping, groupsFolded]);
 
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
@@ -213,7 +213,7 @@ export function MovementsTable({
               ? movementsWithGroups.map((item) => (
                   <React.Fragment key={item.id}>
                     {item.itemType === "group" ? (
-                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted px-6">
+                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
                         <ChevronDown
                           className={cn(
                             "mr-3 size-3 opacity-20 transition-all hover:opacity-100",

@@ -251,6 +251,7 @@ export function Activity() {
                 <Field>
                   <FieldLabel htmlFor="description">Description</FieldLabel>
                   <Textarea
+                    id="description"
                     value={activity.description || ""}
                     onChange={(e) =>
                       updateActivity({ description: e.target.value || null })
@@ -265,7 +266,16 @@ export function Activity() {
               <FieldGroup className="mt-2 gap-3">
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="type">Activity type</FieldLabel>
-                  <Select value={activity.type}>
+                  <Select
+                    value={activity.type}
+                    onValueChange={(value) =>
+                      updateActivity({
+                        type: value as ActivityType,
+                        category: null,
+                        subcategory: null,
+                      })
+                    }
+                  >
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Activity type" />
                     </SelectTrigger>
@@ -288,7 +298,12 @@ export function Activity() {
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="category">Category</FieldLabel>
-                  <Select value={activity.category || undefined}>
+                  <Select
+                    value={activity.category || undefined}
+                    onValueChange={(value) =>
+                      updateActivity({ category: value, subcategory: null })
+                    }
+                  >
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
@@ -303,7 +318,12 @@ export function Activity() {
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
-                  <Select value={activity.subcategory || undefined}>
+                  <Select
+                    value={activity.subcategory || undefined}
+                    onValueChange={(value) =>
+                      updateActivity({ subcategory: value })
+                    }
+                  >
                     <SelectTrigger id="subcategory">
                       <SelectValue placeholder="Subcategory" />
                     </SelectTrigger>

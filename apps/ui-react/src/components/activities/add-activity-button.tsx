@@ -11,12 +11,14 @@ interface AddActivityButtonProps {
   onClick?: () => void;
   className?: string;
   movement?: Movement;
+  onCreated?: (activityNumber: number) => void;
 }
 
 export function AddActivityButton({
   onClick,
   className,
   movement,
+  onCreated,
 }: AddActivityButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -43,6 +45,7 @@ export function AddActivityButton({
         open={showModal}
         onOpenChange={setShowModal}
         movement={movement}
+        onCreated={onCreated}
       />
     </>
   );

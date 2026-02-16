@@ -32,7 +32,6 @@ export const getActivityTransactionsReconciliationSum = (
   transactions: Transaction[],
   accounts: Account[],
 ): number => {
-  console.log("getActivityTransactionsReconciliationSum", activityType, transactions, accounts);
   return _.round(
     transactions.reduce((s, transaction) => {
       let amountTakenIntoAccount = 0;

@@ -128,7 +128,7 @@ type Mutation {
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!
-  updateMovement(amount: Float, date: Date, id: String!): Movement!
+  updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
   updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromUser: String, id: String!, toAccount: String, toUser: String): Transaction!
