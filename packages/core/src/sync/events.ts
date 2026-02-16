@@ -212,6 +212,9 @@ export interface CreateAccountEvent extends BaseSyncEvent {
     id: string;
     name: string;
     type: AccountType;
+    startingBalance: number | null;
+    startingCashBalance: number | null;
+    movements: boolean;
   };
 }
 

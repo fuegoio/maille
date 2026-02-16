@@ -102,9 +102,6 @@ export const useAccounts = create<AccountsState>()(
           get().addAccount({
             ...event.payload,
             default: false,
-            movements: false,
-            startingBalance: null,
-            startingCashBalance: null,
             user: event.user,
           });
         } else if (event.type === "updateAccount") {

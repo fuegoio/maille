@@ -22,25 +22,48 @@ export const registerAccountsMutations = () => {
           type: "String",
           required: true,
         }),
+        startingBalance: t.arg({
+          type: "Float",
+          required: false,
+        }),
+        startingCashBalance: t.arg({
+          type: "Float",
+          required: false,
+        }),
+        movements: t.arg({
+          type: "Boolean",
+          required: false,
+        }),
       },
       resolve: async (root, args, ctx) => {
         const AccountTypeEnum = z.enum(AccountType);
         const accountType = AccountTypeEnum.parse(args.type);
 
-        await db.insert(accounts).values({
-          id: args.id,
-          name: args.name,
-          type: accountType,
-          user: ctx.user.id,
-          workspace: args.workspace,
-        });
+        const account = (
+          await db
+            .insert(accounts)
+            .values({
+              id: args.id,
+              name: args.name,
+              startingBalance: args.startingBalance || undefined,
+              startingCashBalance: args.movements
+                ? args.startingCashBalance || undefined
+                : undefined,
+              movements: args.movements || false,
+              type: accountType,
+              user: ctx.user.id,
+              workspace: args.workspace,
+            })
+            .returning()
+        )[0];
+        if (!account) {
+          throw new GraphQLError("Failed to create account");
+        }
 
         await addEvent({
           type: "createAccount",
           payload: {
-            id: args.id,
-            name: args.name,
-            type: accountType,
+            ...account,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -48,16 +71,7 @@ export const registerAccountsMutations = () => {
           workspace: args.workspace,
         });
 
-        return {
-          id: args.id,
-          name: args.name,
-          user: ctx.user.id,
-          type: accountType,
-          default: false,
-          startingBalance: null,
-          startingCashBalance: null,
-          movements: false,
-        };
+        return account;
       },
     }),
   );
