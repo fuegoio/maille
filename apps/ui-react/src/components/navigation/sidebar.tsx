@@ -91,11 +91,6 @@ const data = {
   ],
   navFooter: [
     {
-      title: "Settings",
-      url: "/settings",
-      icon: Cog,
-    },
-    {
       title: "Support",
       url: "#",
       icon: LifeBuoy,

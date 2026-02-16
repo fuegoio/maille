@@ -15,7 +15,6 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
-import { Route as AuthenticatedWorkspaceSettingsIndexRouteImport } from './routes/_authenticated/_workspace/settings/index'
 import { Route as AuthenticatedWorkspaceAccountsIndexRouteImport } from './routes/_authenticated/_workspace/accounts/index'
 import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
 import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
@@ -48,12 +47,6 @@ const AuthenticatedWorkspaceIndexRoute =
   AuthenticatedWorkspaceIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceSettingsIndexRoute =
-  AuthenticatedWorkspaceSettingsIndexRouteImport.update({
-    id: '/settings/',
-    path: '/settings/',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
 const AuthenticatedWorkspaceAccountsIndexRoute =
@@ -90,7 +83,6 @@ export interface FileRoutesByFullPath {
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/settings/': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedWorkspaceIndexRoute
@@ -101,7 +93,6 @@ export interface FileRoutesByTo {
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/accounts': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/settings': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,7 +106,6 @@ export interface FileRoutesById {
   '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
   '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/_authenticated/_workspace/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/_authenticated/_workspace/settings/': typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,7 +118,6 @@ export interface FileRouteTypes {
     | '/activities/{-$id}'
     | '/movements/{-$id}'
     | '/accounts/'
-    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,7 +128,6 @@ export interface FileRouteTypes {
     | '/activities/{-$id}'
     | '/movements/{-$id}'
     | '/accounts'
-    | '/settings'
   id:
     | '__root__'
     | '/_authenticated'
@@ -152,7 +140,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_workspace/activities/{-$id}'
     | '/_authenticated/_workspace/movements/{-$id}'
     | '/_authenticated/_workspace/accounts/'
-    | '/_authenticated/_workspace/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,13 +192,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
-    '/_authenticated/_workspace/settings/': {
-      id: '/_authenticated/_workspace/settings/'
-      path: '/settings'
-      fullPath: '/settings/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceSettingsIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
-    }
     '/_authenticated/_workspace/accounts/': {
       id: '/_authenticated/_workspace/accounts/'
       path: '/accounts'
@@ -249,7 +229,6 @@ interface AuthenticatedWorkspaceRouteChildren {
   AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
   AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   AuthenticatedWorkspaceAccountsIndexRoute: typeof AuthenticatedWorkspaceAccountsIndexRoute
-  AuthenticatedWorkspaceSettingsIndexRoute: typeof AuthenticatedWorkspaceSettingsIndexRoute
 }
 
 const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
@@ -263,8 +242,6 @@ const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
       AuthenticatedWorkspaceMovementsChar123IdChar125Route,
     AuthenticatedWorkspaceAccountsIndexRoute:
       AuthenticatedWorkspaceAccountsIndexRoute,
-    AuthenticatedWorkspaceSettingsIndexRoute:
-      AuthenticatedWorkspaceSettingsIndexRoute,
   }
 
 const AuthenticatedWorkspaceRouteWithChildren =
