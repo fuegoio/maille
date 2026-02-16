@@ -1,4 +1,5 @@
 import { type Activity } from "@maille/core/activities";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   ChevronRight,
   CircleCheck,
@@ -11,6 +12,7 @@ import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
+import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
 
 interface ActivityLineProps {
@@ -37,6 +39,7 @@ export function ActivityLine({
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const getProjectById = useProjects((state) => state.getProjectById);
+  const navigate = useNavigate();
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -145,21 +148,21 @@ export function ActivityLine({
             )}
 
           {activity.category !== null && getCategoryName() && (
-            <>
-              <ChevronRight className="mx-1" />
-              <div className="overflow-hidden text-ellipsis whitespace-nowrap hover:text-accent-foreground">
+            <Badge
+              variant="outline"
+              asChild
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <Link to={`/categories/$id`} params={{ id: activity.category }}>
                 {getCategoryName()}
-              </div>
-            </>
+              </Link>
+            </Badge>
           )}
 
           {activity.subcategory !== null && getSubcategoryName() && (
-            <>
-              <ChevronRight className="mx-1" />
-              <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-                {getSubcategoryName()}
-              </div>
-            </>
+            <Badge variant="outline">{getSubcategoryName()}</Badge>
           )}
         </div>
 
