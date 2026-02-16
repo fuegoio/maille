@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActivityType } from "@maille/core/activities";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -21,30 +20,22 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { randomstring } from "@/lib/utils";
-import { createActivityCategoryMutation } from "@/mutations/activities";
-import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
+import { createActivitySubCategoryMutation } from "@/mutations/activities";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
+import { randomstring } from "@/lib/utils";
 
-const createCategorySchema = z.object({
+const createSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(ActivityType),
 });
 
-type CreateCategoryFormValues = z.infer<typeof createCategorySchema>;
+type CreateSubcategoryFormValues = z.infer<typeof createSubcategorySchema>;
 
-export function CreateCategoryDialog({
+export function CreateSubcategoryDialog({
+  categoryId,
   children,
 }: {
+  categoryId: string;
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
@@ -60,34 +51,33 @@ export function CreateCategoryDialog({
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateCategoryFormValues>({
-    resolver: zodResolver(createCategorySchema),
+  } = useForm<CreateSubcategoryFormValues>({
+    resolver: zodResolver(createSubcategorySchema),
     defaultValues: {
       name: "",
-      type: ActivityType.EXPENSE,
     },
   });
 
-  const onSubmit = async (data: CreateCategoryFormValues) => {
+  const onSubmit = async (data: CreateSubcategoryFormValues) => {
     try {
-      const category = {
+      const subcategory = {
         id: randomstring(),
         name: data.name,
-        type: data.type,
+        category: categoryId,
       };
 
       mutate({
-        name: "createActivityCategory",
-        mutation: createActivityCategoryMutation,
+        name: "createActivitySubCategory",
+        mutation: createActivitySubCategoryMutation,
         variables: {
-          ...category,
+          ...subcategory,
           workspace: workspace.id,
         },
         rollbackData: undefined,
         events: [
           {
-            type: "createActivityCategory",
-            payload: category,
+            type: "createActivitySubCategory",
+            payload: subcategory,
           },
         ],
       });
@@ -96,7 +86,7 @@ export function CreateCategoryDialog({
       reset();
       setOpen(false);
     } catch (error) {
-      console.error("Failed to create category:", error);
+      console.error("Failed to create subcategory:", error);
     }
   };
 
@@ -105,7 +95,7 @@ export function CreateCategoryDialog({
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Create category</DialogTitle>
+          <DialogTitle>Create Subcategory</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -118,48 +108,13 @@ export function CreateCategoryDialog({
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="Category name"
+                    placeholder="Subcategory name"
                     className={errors.name ? "border-destructive" : ""}
                     autoFocus
                   />
                 )}
               />
               <FieldError errors={[errors.name]} />
-            </FieldContent>
-          </Field>
-
-          <Field>
-            <FieldLabel>Activity Type</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select activity type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(ActivityType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          <div
-                            className={cn(
-                              "mr-2 h-3 w-3 shrink-0 rounded-xl",
-                              ACTIVITY_TYPES_COLOR[type],
-                            )}
-                          />
-                          <div className="text-sm font-medium">
-                            {ACTIVITY_TYPES_NAME[type]}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
             </FieldContent>
           </Field>
 
@@ -170,7 +125,7 @@ export function CreateCategoryDialog({
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create category"}
+              {isSubmitting ? "Creating..." : "Create Subcategory"}
             </Button>
           </DialogFooter>
         </form>
@@ -178,4 +133,3 @@ export function CreateCategoryDialog({
     </Dialog>
   );
 }
-

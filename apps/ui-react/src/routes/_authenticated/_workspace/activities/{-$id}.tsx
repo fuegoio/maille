@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
@@ -7,6 +7,14 @@ import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { SearchBar } from "@/components/search-bar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useActivities } from "@/stores/activities";
@@ -58,16 +66,32 @@ function ActivitiesPage() {
   }, [activities, params.id]);
 
   const title =
-    params.id === "to-reconciliate"
-      ? "Activities to reconciliate"
-      : "Activities";
+    params.id === "to-reconciliate" ? "To reconciliate" : "Activities";
 
   return (
     <>
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
           <SidebarTrigger className="mr-1" />
-          <div className="truncate font-medium">{title}</div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              {params.id === "to-reconciliate" && (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link to="/activities/{-$id}" params={{ id: undefined }}>
+                        Activities
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </>
+              )}
+              <BreadcrumbItem>
+                <BreadcrumbPage>{title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <div className="flex-1" />
           <AddActivityButton />
           <Button

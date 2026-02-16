@@ -1,6 +1,9 @@
-import * as React from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface EmojiPickerProps {
@@ -46,11 +49,20 @@ const commonEmojis = [
   "📎",
 ];
 
-export function EmojiPicker({ value, onChange, placeholder = "📚", className }: EmojiPickerProps) {
+export function EmojiPicker({
+  value,
+  onChange,
+  placeholder = "📚",
+  className,
+}: EmojiPickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("h-8 w-8 rounded-full", className)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("h-8 w-8 rounded-full", className)}
+        >
           {value || placeholder}
         </Button>
       </PopoverTrigger>

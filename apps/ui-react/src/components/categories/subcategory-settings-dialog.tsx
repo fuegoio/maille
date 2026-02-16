@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActivityType, type ActivityCategory } from "@maille/core/activities";
+import type { ActivitySubCategory } from "@maille/core/activities";
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,11 +22,12 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  updateActivityCategoryMutation,
-  deleteActivityCategoryMutation,
+  updateActivitySubCategoryMutation,
+  deleteActivitySubCategoryMutation,
 } from "@/mutations/activities";
 import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
 
 import {
   AlertDialog,
@@ -40,54 +41,59 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 
-const updateCategorySchema = z.object({
+const updateSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(ActivityType),
 });
 
-type UpdateCategoryFormValues = z.infer<typeof updateCategorySchema>;
+type UpdateSubcategoryFormValues = z.infer<typeof updateSubcategorySchema>;
 
-export function CategorySettingsDialog({
+export function SubcategorySettingsDialog({
+  subcategory,
   children,
-  category,
 }: {
+  subcategory: ActivitySubCategory;
   children?: React.ReactNode;
-  category: ActivityCategory;
 }) {
   const mutate = useSync((state) => state.mutate);
+  const workspace = useWorkspaces((state) => state.currentWorkspace);
   const activities = useActivities((state) => state.activities);
+
   const [open, setOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  if (!workspace) {
+    throw new Error("Workspace not found");
+  }
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UpdateCategoryFormValues>({
-    resolver: zodResolver(updateCategorySchema),
+  } = useForm<UpdateSubcategoryFormValues>({
+    resolver: zodResolver(updateSubcategorySchema),
     defaultValues: {
-      name: category.name,
-      type: category.type,
+      name: subcategory.name,
     },
   });
 
-  const onSubmit = async (data: UpdateCategoryFormValues) => {
+  const onSubmit = async (data: UpdateSubcategoryFormValues) => {
     mutate({
-      name: "updateActivityCategory",
-      mutation: updateActivityCategoryMutation,
+      name: "updateActivitySubCategory",
+      mutation: updateActivitySubCategoryMutation,
       variables: {
-        id: category.id,
+        id: subcategory.id,
         name: data.name,
       },
       rollbackData: {
-        id: category.id,
-        name: category.name,
+        ...subcategory,
+        name: subcategory.name,
       },
       events: [
         {
-          type: "updateActivityCategory",
+          type: "updateActivitySubCategory",
           payload: {
-            id: category.id,
+            id: subcategory.id,
             name: data.name,
           },
         },
@@ -100,49 +106,37 @@ export function CategorySettingsDialog({
     setOpen(false);
   };
 
-  const handleDelete = async () => {
+  const onDelete = async () => {
     mutate({
-      name: "deleteActivityCategory",
-      mutation: deleteActivityCategoryMutation,
+      name: "deleteActivitySubCategory",
+      mutation: deleteActivitySubCategoryMutation,
       variables: {
-        id: category.id,
+        id: subcategory.id,
       },
       rollbackData: {
-        category: category,
+        subcategory: subcategory,
         activities: activities
-          .filter((a) => a.category === category.id)
-          .map((a) => a.id),
-        activitiesSubcategories: activities
-          .filter((a) => a.category === category.id)
-          .reduce(
-            (acc, a) => {
-              if (a.subcategory) {
-                acc[a.id] = a.subcategory;
-              }
-              return acc;
-            },
-            {} as Record<string, string>,
-          ),
+          .filter((activity) => activity.subcategory === subcategory.id)
+          .map((activity) => activity.id),
       },
       events: [
         {
-          type: "deleteActivityCategory",
-          payload: {
-            id: category.id,
-          },
+          type: "deleteActivitySubCategory",
+          payload: subcategory,
         },
       ],
     });
 
+    setIsDeleteDialogOpen(false);
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Category settings</DialogTitle>
+          <DialogTitle>Subcategory settings</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -155,7 +149,7 @@ export function CategorySettingsDialog({
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="Category name"
+                    placeholder="Subcategory name"
                     className={errors.name ? "border-destructive" : ""}
                     autoFocus
                   />
@@ -169,23 +163,20 @@ export function CategorySettingsDialog({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button type="button" variant="destructive">
-                  Delete category
+                  Delete subcategory
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete category</AlertDialogTitle>
+                  <AlertDialogTitle>Delete subcategory</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this category? This action
-                    cannot be undone.
+                    Are you sure you want to delete this subcategory? This
+                    action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    variant="destructive"
-                  >
+                  <AlertDialogAction onClick={onDelete} variant="destructive">
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -198,7 +189,7 @@ export function CategorySettingsDialog({
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save changes"}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>
@@ -206,3 +197,4 @@ export function CategorySettingsDialog({
     </Dialog>
   );
 }
+

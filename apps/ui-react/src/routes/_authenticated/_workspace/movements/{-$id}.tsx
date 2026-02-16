@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 import { useMemo } from "react";
 
@@ -8,6 +8,14 @@ import { ImportMovementsButton } from "@/components/movements/import-movements-b
 import { Movement } from "@/components/movements/movement";
 import { MovementsTable } from "@/components/movements/movements-table";
 import { SearchBar } from "@/components/search-bar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -53,14 +61,32 @@ function MovementsPage() {
     return movements;
   }, [movements, params.id]);
 
-  const title = params.id === "to-link" ? "Movements to link" : "Movements";
+  const title = params.id === "to-link" ? "To link" : "Movements";
 
   return (
     <>
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
           <SidebarTrigger className="mr-1" />
-          <div className="truncate font-medium">{title}</div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              {params.id === "to-link" && (
+                <>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link to="/movements/{-$id}" params={{ id: undefined }}>
+                        Movements
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                </>
+              )}
+              <BreadcrumbItem>
+                <BreadcrumbPage>{title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
           <div className="flex-1" />
           <ImportMovementsButton />
           <AddMovementButton />

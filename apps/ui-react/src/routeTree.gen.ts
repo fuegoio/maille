@@ -15,12 +15,15 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
+import { Route as AuthenticatedWorkspaceProjectsIndexRouteImport } from './routes/_authenticated/_workspace/projects/index'
 import { Route as AuthenticatedWorkspaceCategoriesIndexRouteImport } from './routes/_authenticated/_workspace/categories/index'
 import { Route as AuthenticatedWorkspaceAccountsIndexRouteImport } from './routes/_authenticated/_workspace/accounts/index'
+import { Route as AuthenticatedWorkspaceProjectsIdRouteImport } from './routes/_authenticated/_workspace/projects/$id'
 import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
-import { Route as AuthenticatedWorkspaceCategoriesIdRouteImport } from './routes/_authenticated/_workspace/categories/$id'
 import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
 import { Route as AuthenticatedWorkspaceAccountsIdRouteImport } from './routes/_authenticated/_workspace/accounts/$id'
+import { Route as AuthenticatedWorkspaceCategoriesIdIndexRouteImport } from './routes/_authenticated/_workspace/categories/$id/index'
+import { Route as AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport } from './routes/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -51,6 +54,12 @@ const AuthenticatedWorkspaceIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceProjectsIndexRoute =
+  AuthenticatedWorkspaceProjectsIndexRouteImport.update({
+    id: '/projects/',
+    path: '/projects/',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
 const AuthenticatedWorkspaceCategoriesIndexRoute =
   AuthenticatedWorkspaceCategoriesIndexRouteImport.update({
     id: '/categories/',
@@ -63,16 +72,16 @@ const AuthenticatedWorkspaceAccountsIndexRoute =
     path: '/accounts/',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceProjectsIdRoute =
+  AuthenticatedWorkspaceProjectsIdRouteImport.update({
+    id: '/projects/$id',
+    path: '/projects/$id',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
 const AuthenticatedWorkspaceMovementsChar123IdChar125Route =
   AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport.update({
     id: '/movements/{-$id}',
     path: '/movements/{-$id}',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceCategoriesIdRoute =
-  AuthenticatedWorkspaceCategoriesIdRouteImport.update({
-    id: '/categories/$id',
-    path: '/categories/$id',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
 const AuthenticatedWorkspaceActivitiesChar123IdChar125Route =
@@ -87,6 +96,20 @@ const AuthenticatedWorkspaceAccountsIdRoute =
     path: '/accounts/$id',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceCategoriesIdIndexRoute =
+  AuthenticatedWorkspaceCategoriesIdIndexRouteImport.update({
+    id: '/categories/$id/',
+    path: '/categories/$id/',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
+const AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute =
+  AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport.update(
+    {
+      id: '/categories/$id/subcategories/$subcategoryId',
+      path: '/categories/$id/subcategories/$subcategoryId',
+      getParentRoute: () => AuthenticatedWorkspaceRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedWorkspaceIndexRoute
@@ -95,10 +118,13 @@ export interface FileRoutesByFullPath {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
+  '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
   '/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
+  '/projects/': typeof AuthenticatedWorkspaceProjectsIndexRoute
+  '/categories/$id/': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
+  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedWorkspaceIndexRoute
@@ -107,10 +133,13 @@ export interface FileRoutesByTo {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
+  '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/accounts': typeof AuthenticatedWorkspaceAccountsIndexRoute
   '/categories': typeof AuthenticatedWorkspaceCategoriesIndexRoute
+  '/projects': typeof AuthenticatedWorkspaceProjectsIndexRoute
+  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
+  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,10 +151,13 @@ export interface FileRoutesById {
   '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/_workspace/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/_authenticated/_workspace/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdRoute
   '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
+  '/_authenticated/_workspace/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/_authenticated/_workspace/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
   '/_authenticated/_workspace/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
+  '/_authenticated/_workspace/projects/': typeof AuthenticatedWorkspaceProjectsIndexRoute
+  '/_authenticated/_workspace/categories/$id/': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
+  '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -136,10 +168,13 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
-    | '/categories/$id'
     | '/movements/{-$id}'
+    | '/projects/$id'
     | '/accounts/'
     | '/categories/'
+    | '/projects/'
+    | '/categories/$id/'
+    | '/categories/$id/subcategories/$subcategoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -148,10 +183,13 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
-    | '/categories/$id'
     | '/movements/{-$id}'
+    | '/projects/$id'
     | '/accounts'
     | '/categories'
+    | '/projects'
+    | '/categories/$id'
+    | '/categories/$id/subcategories/$subcategoryId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -162,10 +200,13 @@ export interface FileRouteTypes {
     | '/_authenticated/_workspace/'
     | '/_authenticated/_workspace/accounts/$id'
     | '/_authenticated/_workspace/activities/{-$id}'
-    | '/_authenticated/_workspace/categories/$id'
     | '/_authenticated/_workspace/movements/{-$id}'
+    | '/_authenticated/_workspace/projects/$id'
     | '/_authenticated/_workspace/accounts/'
     | '/_authenticated/_workspace/categories/'
+    | '/_authenticated/_workspace/projects/'
+    | '/_authenticated/_workspace/categories/$id/'
+    | '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -218,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/projects/': {
+      id: '/_authenticated/_workspace/projects/'
+      path: '/projects'
+      fullPath: '/projects/'
+      preLoaderRoute: typeof AuthenticatedWorkspaceProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
     '/_authenticated/_workspace/categories/': {
       id: '/_authenticated/_workspace/categories/'
       path: '/categories'
@@ -232,18 +280,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceAccountsIndexRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/projects/$id': {
+      id: '/_authenticated/_workspace/projects/$id'
+      path: '/projects/$id'
+      fullPath: '/projects/$id'
+      preLoaderRoute: typeof AuthenticatedWorkspaceProjectsIdRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
     '/_authenticated/_workspace/movements/{-$id}': {
       id: '/_authenticated/_workspace/movements/{-$id}'
       path: '/movements/{-$id}'
       fullPath: '/movements/{-$id}'
       preLoaderRoute: typeof AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
-    }
-    '/_authenticated/_workspace/categories/$id': {
-      id: '/_authenticated/_workspace/categories/$id'
-      path: '/categories/$id'
-      fullPath: '/categories/$id'
-      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
     '/_authenticated/_workspace/activities/{-$id}': {
@@ -260,6 +308,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceAccountsIdRouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/categories/$id/': {
+      id: '/_authenticated/_workspace/categories/$id/'
+      path: '/categories/$id'
+      fullPath: '/categories/$id/'
+      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
+    '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId': {
+      id: '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
+      path: '/categories/$id/subcategories/$subcategoryId'
+      fullPath: '/categories/$id/subcategories/$subcategoryId'
+      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
   }
 }
 
@@ -267,10 +329,13 @@ interface AuthenticatedWorkspaceRouteChildren {
   AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
   AuthenticatedWorkspaceAccountsIdRoute: typeof AuthenticatedWorkspaceAccountsIdRoute
   AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  AuthenticatedWorkspaceCategoriesIdRoute: typeof AuthenticatedWorkspaceCategoriesIdRoute
   AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
+  AuthenticatedWorkspaceProjectsIdRoute: typeof AuthenticatedWorkspaceProjectsIdRoute
   AuthenticatedWorkspaceAccountsIndexRoute: typeof AuthenticatedWorkspaceAccountsIndexRoute
   AuthenticatedWorkspaceCategoriesIndexRoute: typeof AuthenticatedWorkspaceCategoriesIndexRoute
+  AuthenticatedWorkspaceProjectsIndexRoute: typeof AuthenticatedWorkspaceProjectsIndexRoute
+  AuthenticatedWorkspaceCategoriesIdIndexRoute: typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
+  AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute: typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 
 const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
@@ -280,14 +345,20 @@ const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
       AuthenticatedWorkspaceAccountsIdRoute,
     AuthenticatedWorkspaceActivitiesChar123IdChar125Route:
       AuthenticatedWorkspaceActivitiesChar123IdChar125Route,
-    AuthenticatedWorkspaceCategoriesIdRoute:
-      AuthenticatedWorkspaceCategoriesIdRoute,
     AuthenticatedWorkspaceMovementsChar123IdChar125Route:
       AuthenticatedWorkspaceMovementsChar123IdChar125Route,
+    AuthenticatedWorkspaceProjectsIdRoute:
+      AuthenticatedWorkspaceProjectsIdRoute,
     AuthenticatedWorkspaceAccountsIndexRoute:
       AuthenticatedWorkspaceAccountsIndexRoute,
     AuthenticatedWorkspaceCategoriesIndexRoute:
       AuthenticatedWorkspaceCategoriesIndexRoute,
+    AuthenticatedWorkspaceProjectsIndexRoute:
+      AuthenticatedWorkspaceProjectsIndexRoute,
+    AuthenticatedWorkspaceCategoriesIdIndexRoute:
+      AuthenticatedWorkspaceCategoriesIdIndexRoute,
+    AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute:
+      AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute,
   }
 
 const AuthenticatedWorkspaceRouteWithChildren =

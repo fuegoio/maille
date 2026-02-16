@@ -24,7 +24,7 @@ export function AccountLabel({ accountId }: AccountLabelProps) {
           ACCOUNT_TYPES_COLOR[account.type],
         )}
       />
-      <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap">
+      <div className="ml-2 overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
         {account.name}
       </div>
     </div>

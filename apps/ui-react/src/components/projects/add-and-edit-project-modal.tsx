@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { XIcon } from "lucide-react";
+import { Plus, XIcon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -11,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { Field, FieldError } from "@/components/ui/field";
@@ -31,15 +33,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface AddAndEditProjectModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   projectId?: string;
   onCreate?: (projectId: string) => void;
 }
 
 export function AddAndEditProjectModal({
-  open,
-  onOpenChange,
   projectId,
   onCreate,
 }: AddAndEditProjectModalProps) {
@@ -134,29 +132,25 @@ export function AddAndEditProjectModal({
         onCreate(newProject.id);
       }
     }
-
-    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-primary-800 border-primary-700 text-white sm:max-w-[600px]">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="bg-primary-400 flex h-6 items-center rounded px-2 text-sm font-medium text-white">
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus />
+          Create project
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
             {isEditMode ? "Edit project" : "New project"}
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-500 hover:text-primary-100"
-            onClick={() => onOpenChange(false)}
-          >
-            <XIcon className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="py-4">
-          <div className="flex items-center gap-2">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="mb-4 flex items-center gap-2">
             <EmojiPicker
               value={emoji || ""}
               onChange={(value) => setValue("emoji", value)}
@@ -172,7 +166,6 @@ export function AddAndEditProjectModal({
                     {...field}
                     ref={nameInputRef}
                     placeholder="Project name"
-                    className="placeholder-primary-400 w-full resize-none border-none bg-transparent text-2xl font-semibold break-words text-white focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -182,23 +175,17 @@ export function AddAndEditProjectModal({
             />
           </div>
 
-          <DialogFooter className="border-primary-700 border-t pt-4">
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                className="text-primary-300 border-primary-600 hover:bg-primary-700"
-                onClick={() => onOpenChange(false)}
-                type="button"
-              >
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                className="bg-primary-400 hover:bg-primary-300 text-white"
-              >
+            </DialogClose>
+            <DialogClose asChild>
+              <Button type="submit">
                 {isEditMode ? "Save" : "Create"} project
               </Button>
-            </div>
+            </DialogClose>
           </DialogFooter>
         </form>
       </DialogContent>
