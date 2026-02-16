@@ -295,7 +295,7 @@ export function ActivitiesTable({
                             return item.total[typeKey] ? (
                               <div
                                 key={activityType}
-                                className="hidden items-center pl-4 text-right font-mono text-sm text-white sm:flex"
+                                className="hidden items-center pl-4 text-right font-mono text-sm sm:flex"
                               >
                                 <div
                                   className={cn(

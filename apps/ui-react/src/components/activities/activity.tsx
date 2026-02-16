@@ -218,7 +218,7 @@ export function Activity() {
                   },
                 )}
               >
-                <span className="text-sm font-medium text-foreground capitalize">
+                <span className="text-sm font-medium text-white capitalize">
                   {activity.status}
                 </span>
               </div>
