@@ -21,15 +21,27 @@ export const Route = createFileRoute("/_authenticated/_workspace")({
       void workspacesState.fetchWorkspaces();
     }
 
-    if (workspacesState.currentWorkspace === null) {
+    let currentWorkspace = workspacesState.currentWorkspace;
+    if (currentWorkspace === null) {
       const firstWorkspace = useWorkspaces.getState().availableWorkspaces![0];
       if (firstWorkspace) {
         await fetchWorkspaceData(firstWorkspace.id);
+        currentWorkspace = useWorkspaces.getState().currentWorkspace;
       }
+    }
+
+    if (!currentWorkspace) {
+      throw redirect({
+        to: "/join",
+      });
     }
 
     const syncState = useSync.getState();
     void syncState.dequeueMutations();
+
+    return {
+      workspace: currentWorkspace,
+    };
   },
 });
 

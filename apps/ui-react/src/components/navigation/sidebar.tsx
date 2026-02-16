@@ -4,13 +4,11 @@ import {
   Calendar,
   Cog,
   Folder,
-  House,
   LayoutDashboard,
   LifeBuoy,
   Send,
   Tag,
   TentTree,
-  Users,
 } from "lucide-react";
 import * as React from "react";
 
@@ -35,17 +33,17 @@ const data = {
       icon: LayoutDashboard,
     },
     {
-      title: "Periods",
-      url: "/periods",
+      title: "Months",
+      url: "/months",
       icon: Calendar,
       items: [
         {
           title: "Current",
-          url: "/periods/current",
+          url: "/months/current",
         },
         {
           title: "Past",
-          url: "/periods/past",
+          url: "/months/past",
         },
       ],
     },
