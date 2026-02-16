@@ -124,7 +124,7 @@ type Mutation {
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
   deleteWorkspace(id: String!): Boolean!
-  updateAccount(id: String!, movements: Boolean, startingBalance: Float, startingCashBalance: Float): Account!
+  updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!

@@ -14,21 +14,13 @@ export const isAccountType = (value: string): value is AccountType => {
   return Object.values(AccountType).includes(value as AccountType);
 };
 
-type AccountMovementEnabled = {
-  movements: true;
-  startingCashBalance: number | null;
-};
-
-type AccountMovementDisabled = {
-  movements: false;
-  startingCashBalance: null;
-};
-
-export type Account = (AccountMovementEnabled | AccountMovementDisabled) & {
+export type Account = {
   id: string;
   name: string;
   type: AccountType;
   default: boolean;
   startingBalance: number | null;
+  startingCashBalance: number | null;
+  movements: boolean;
   user: string | null;
 };

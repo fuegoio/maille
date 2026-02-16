@@ -219,6 +219,7 @@ export interface UpdateAccountEvent extends BaseSyncEvent {
   type: "updateAccount";
   payload: {
     id: string;
+    name?: string;
     startingBalance?: number | null;
     startingCashBalance?: number | null;
     movements?: boolean;

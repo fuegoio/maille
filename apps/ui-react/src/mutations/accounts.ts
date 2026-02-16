@@ -32,12 +32,14 @@ export type CreateAccountMutation = MutationType<
 export const updateAccountMutation = graphql(/* GraphQL */ `
   mutation UpdateAccount(
     $id: String!
+    $name: String
     $startingBalance: Float
     $startingCashBalance: Float
     $movements: Boolean
   ) {
     updateAccount(
       id: $id
+      name: $name
       startingBalance: $startingBalance
       startingCashBalance: $startingCashBalance
       movements: $movements

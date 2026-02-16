@@ -69,6 +69,10 @@ export const registerAccountsMutations = () => {
         id: t.arg({
           type: "String",
         }),
+        name: t.arg({
+          type: "String",
+          required: false,
+        }),
         startingBalance: t.arg({
           type: "Float",
           required: false,
@@ -89,6 +93,9 @@ export const registerAccountsMutations = () => {
         }
 
         const accountUpdates: Partial<typeof account> = {};
+        if (args.name) {
+          accountUpdates.name = args.name;
+        }
         if (args.startingBalance !== undefined) {
           accountUpdates.startingBalance = args.startingBalance ?? undefined;
         }

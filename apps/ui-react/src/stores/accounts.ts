@@ -34,6 +34,7 @@ interface AccountsState {
   updateAccount: (
     accountId: string,
     update: {
+      name?: string;
       startingBalance?: number | null;
       startingCashBalance?: number | null;
       movements?: boolean;
@@ -63,31 +64,18 @@ export const useAccounts = create<AccountsState>()(
         return account;
       },
 
-      updateAccount: (
-        accountId: string,
-        update: {
-          startingBalance?: number | null;
-          startingCashBalance?: number | null;
-          movements?: boolean;
-        },
-      ) => {
+      updateAccount: (accountId, update) => {
         set((state) => ({
           accounts: state.accounts.map((account) => {
             if (account.id === accountId) {
+              const filteredUpdate = Object.fromEntries(
+                Object.entries(update).filter(
+                  ([_, value]) => value !== undefined,
+                ),
+              );
               return {
                 ...account,
-                startingBalance:
-                  update.startingBalance !== undefined
-                    ? update.startingBalance
-                    : account.startingBalance,
-                startingCashBalance:
-                  update.startingCashBalance !== undefined
-                    ? update.startingCashBalance
-                    : account.startingCashBalance,
-                movements:
-                  update.movements !== undefined
-                    ? update.movements
-                    : account.movements,
+                ...filteredUpdate,
               };
             }
             return account;
