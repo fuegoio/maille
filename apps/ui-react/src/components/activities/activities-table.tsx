@@ -47,13 +47,6 @@ export function ActivitiesTable({
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      setFocusedActivity(null);
-    };
-  }, []);
-
   const activitiesFiltered = React.useMemo(() => {
     return activities
       .filter((activity) => searchCompare(search, activity.name))
