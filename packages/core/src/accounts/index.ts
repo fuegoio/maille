@@ -1,3 +1,6 @@
+export * from "./assets.js";
+export * from "./counterparties.js";
+
 export enum AccountType {
   BANK_ACCOUNT = "bank_account",
   INVESTMENT_ACCOUNT = "investment_account",

@@ -5,7 +5,6 @@ import { graphql } from "./gql";
 import { graphqlClient } from "./gql/client";
 import { useAccounts } from "./stores/accounts";
 import { useActivities } from "./stores/activities";
-import { useLiabilities } from "./stores/liabilities";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useWorkspaces } from "./stores/workspaces";
@@ -124,7 +123,6 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useLiabilities.setState({ liabilities: [] });
 
   // Populate accounts
   workspaceData.accounts.forEach((account) => {
@@ -181,7 +179,6 @@ export const clearAllStores = () => {
   });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useLiabilities.setState({ liabilities: [] });
   useWorkspaces.setState({
     currentWorkspace: null,
     availableWorkspaces: null,

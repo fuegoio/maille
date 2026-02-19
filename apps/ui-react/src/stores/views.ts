@@ -1,5 +1,4 @@
 import type { ActivityFilter } from "@maille/core/activities";
-import type { LiabilityFilter } from "@maille/core/liabilities";
 import type { MovementFilter } from "@maille/core/movements";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -12,11 +11,6 @@ type ActivityView = {
   filters: ActivityFilter[];
 };
 
-type LiabilityView = {
-  id: string;
-  filters: LiabilityFilter[];
-};
-
 type MovementView = {
   id: string;
   filters: MovementFilter[];
@@ -24,13 +18,11 @@ type MovementView = {
 
 interface ViewsState {
   activityViews: Record<string, ActivityView>;
-  liabilityViews: Record<string, LiabilityView>;
   movementViews: Record<string, MovementView>;
 
   getActivityView: (viewId: string) => ActivityView;
   deleteCategory: (categoryId: string) => void;
   deleteSubcategory: (subcategoryId: string) => void;
-  getLiabilityView: (viewId: string) => LiabilityView;
   getMovementView: (viewId: string) => MovementView;
 }
 
@@ -38,7 +30,6 @@ export const useViews = create<ViewsState>()(
   persist(
     (_set, get) => ({
       activityViews: {},
-      liabilityViews: {},
       movementViews: {},
 
       getActivityView: (viewId: string): ActivityView => {
@@ -74,18 +65,6 @@ export const useViews = create<ViewsState>()(
             }
           });
         });
-      },
-
-      getLiabilityView: (viewId: string): LiabilityView => {
-        const state = get();
-        if (!state.liabilityViews[viewId]) {
-          state.liabilityViews[viewId] = {
-            id: viewId,
-            filters: [] as LiabilityFilter[],
-          };
-        }
-
-        return state.liabilityViews[viewId];
       },
 
       getMovementView: (viewId: string): MovementView => {
