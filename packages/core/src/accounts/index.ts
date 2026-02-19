@@ -1,5 +1,5 @@
-export * from "./assets.js";
-export * from "./counterparties.js";
+export * from "./assets.ts";
+export * from "./counterparties.ts";
 
 export enum AccountType {
   BANK_ACCOUNT = "bank_account",

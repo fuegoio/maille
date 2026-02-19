@@ -15,6 +15,13 @@
       "when": 1770763139048,
       "tag": "0001_pink_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771506981793,
+      "tag": "0002_massive_inhumans",
+      "breakpoints": true
     }
   ]
 }

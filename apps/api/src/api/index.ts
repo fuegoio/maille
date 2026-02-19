@@ -13,6 +13,8 @@ import { registerProjectsQueries } from "./projects/queries";
 import { registerProjectsMutations } from "./projects/mutations";
 import { registerWorkspaceQueries } from "./workspaces/queries";
 import { registerWorkspaceMutations } from "./workspaces/mutations";
+import { registerAssetsQueries } from "./assets/queries";
+import { registerAssetsMutations } from "./assets/mutations";
 
 builder.queryType({});
 registerActivitiesQueries();
@@ -20,6 +22,7 @@ registerAccountsQueries();
 registerMovementsQueries();
 registerProjectsQueries();
 registerWorkspaceQueries();
+registerAssetsQueries();
 
 builder.mutationType({});
 registerActivitiesMutations();
@@ -27,6 +30,7 @@ registerMovementsMutations();
 registerProjectsMutations();
 registerAccountsMutations();
 registerWorkspaceMutations();
+registerAssetsMutations();
 
 export const schema = builder.toSchema();
 

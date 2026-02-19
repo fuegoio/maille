@@ -50,6 +50,15 @@ type ActivitySubCategory {
   name: String!
 }
 
+type Asset {
+  account: String!
+  description: String
+  id: String!
+  location: String
+  name: String!
+  value: Float!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -61,6 +70,11 @@ type DeleteAccountResponse {
 }
 
 type DeleteActivityResponse {
+  id: String!
+  success: Boolean!
+}
+
+type DeleteAssetResponse {
   id: String!
   success: Boolean!
 }
@@ -111,6 +125,7 @@ type Mutation {
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!, workspace: String!): Activity!
   createActivityCategory(id: String!, name: String!, type: String!, workspace: String!): ActivityCategory!
   createActivitySubCategory(category: String!, id: String!, name: String!, workspace: String!): ActivitySubCategory!
+  createAsset(account: String!, description: String, id: String!, location: String, name: String!, value: Float, workspace: String!): Asset!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!, workspace: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!, workspace: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!, workspace: String!): Project!
@@ -119,6 +134,7 @@ type Mutation {
   deleteActivity(id: String!): DeleteActivityResponse!
   deleteActivityCategory(id: String!): DeleteActivityResponse!
   deleteActivitySubCategory(id: String!): DeleteActivityResponse!
+  deleteAsset(id: String!): DeleteAssetResponse!
   deleteMovement(id: String!): DeleteMovementResponse!
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
@@ -128,6 +144,7 @@ type Mutation {
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!
+  updateAsset(account: String, description: String, id: String!, location: String, name: String, value: Float): Asset!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
@@ -147,6 +164,7 @@ type Query {
   activities(workspaceId: String!): [Activity!]!
   activityCategories(workspaceId: String!): [ActivityCategory!]!
   activitySubcategories(workspaceId: String!): [ActivitySubCategory!]!
+  assets(workspaceId: String!): [Asset!]!
   events(lastSync: Float!, workspace: String!): [Event!]!
   movements(workspaceId: String!): [Movement!]!
   projects(workspaceId: String!): [Project!]!

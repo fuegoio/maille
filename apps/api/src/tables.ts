@@ -191,6 +191,22 @@ export const accounts = sqliteTable("accounts", {
   movements: integer("movements", { mode: "boolean" }).notNull().default(false),
 });
 
+export const assets = sqliteTable("assets", {
+  id: text("id").primaryKey().$type<string>(),
+  account: text("account")
+    .notNull()
+    .$type<string>()
+    .references(() => accounts.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  location: text("location"),
+  value: integer("value").notNull().default(0),
+  workspace: text("workspace")
+    .notNull()
+    .$type<string>()
+    .references(() => workspaces.id),
+});
+
 export const movements = sqliteTable("movements", {
   id: text("id").primaryKey().$type<string>(),
   user: text("user").notNull(),
