@@ -4,7 +4,4 @@ export type Counterparty = {
   name: string;
   description: string | null;
   user: string | null;
-
-  // Computed
-  liability: number;
 };

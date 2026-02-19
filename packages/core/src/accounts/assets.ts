@@ -4,7 +4,4 @@ export type Asset = {
   name: string;
   description: string | null;
   location: string | null;
-
-  // Computed
-  value: number;
 };

@@ -244,7 +244,6 @@ export interface CreateAssetEvent extends BaseSyncEvent {
     name: string;
     description: string | null;
     location: string | null;
-    value: number;
   };
 }
 
@@ -256,7 +255,6 @@ export interface UpdateAssetEvent extends BaseSyncEvent {
     name?: string;
     description?: string | null;
     location?: string | null;
-    value?: number;
   };
 }
 
