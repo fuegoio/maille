@@ -99,7 +99,7 @@ function SubcategoryPage() {
   return (
     <>
       <SidebarInset>
-        <Tabs defaultValue="summary">
+        <Tabs defaultValue="summary" className="h-full">
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
@@ -140,10 +140,7 @@ function SubcategoryPage() {
               </TabsTrigger>
             </TabsList>
             <div className="flex-1" />
-            <SubcategorySettingsDialog
-              subcategory={subcategory}
-              categoryId={categoryId}
-            >
+            <SubcategorySettingsDialog subcategory={subcategory}>
               <Button variant="ghost" size="icon">
                 <Settings />
               </Button>
@@ -224,7 +221,7 @@ function SubcategoryPage() {
               </BarChart>
             </ChartContainer>
           </TabsContent>
-          <TabsContent value="activities">
+          <TabsContent value="activities" className="flex">
             <ActivitiesTable
               viewId={`subcategory-${subcategory.id}`}
               activities={viewActivities}
@@ -238,4 +235,3 @@ function SubcategoryPage() {
     </>
   );
 }
-

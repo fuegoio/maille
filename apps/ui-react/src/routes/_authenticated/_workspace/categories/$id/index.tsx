@@ -97,7 +97,7 @@ function CategoryPage() {
   return (
     <>
       <SidebarInset>
-        <Tabs defaultValue="summary">
+        <Tabs defaultValue="summary" className="h-full">
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
@@ -221,7 +221,7 @@ function CategoryPage() {
           <TabsContent value="subcategories">
             <SubcategoriesTable categoryId={category.id} />
           </TabsContent>
-          <TabsContent value="activities">
+          <TabsContent value="activities" className="flex">
             <ActivitiesTable
               viewId={`category-${category.id}`}
               activities={viewActivities}

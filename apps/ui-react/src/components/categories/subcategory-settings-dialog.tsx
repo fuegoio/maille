@@ -59,7 +59,6 @@ export function SubcategorySettingsDialog({
   const activities = useActivities((state) => state.activities);
 
   const [open, setOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   if (!workspace) {
     throw new Error("Workspace not found");
@@ -127,7 +126,6 @@ export function SubcategorySettingsDialog({
       ],
     });
 
-    setIsDeleteDialogOpen(false);
     setOpen(false);
   };
 
@@ -197,4 +195,3 @@ export function SubcategorySettingsDialog({
     </Dialog>
   );
 }
-

@@ -1,11 +1,6 @@
 import { type Activity } from "@maille/core/activities";
-import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  ChevronRight,
-  CircleCheck,
-  CircleDashed,
-  CircleDotDashed,
-} from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
@@ -39,7 +34,6 @@ export function ActivityLine({
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const getProjectById = useProjects((state) => state.getProjectById);
-  const navigate = useNavigate();
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -151,6 +145,7 @@ export function ActivityLine({
             <Badge
               variant="outline"
               asChild
+              className="h-6"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -162,7 +157,22 @@ export function ActivityLine({
           )}
 
           {activity.subcategory !== null && getSubcategoryName() && (
-            <Badge variant="outline">{getSubcategoryName()}</Badge>
+            <Badge
+              variant="outline"
+              asChild
+              onClick={(e) => e.stopPropagation()}
+              className="ml-2 h-6"
+            >
+              <Link
+                to={`/categories/$id/subcategories/$subcategoryId`}
+                params={{
+                  id: activity.category!,
+                  subcategoryId: activity.subcategory,
+                }}
+              >
+                {getSubcategoryName()}
+              </Link>
+            </Badge>
           )}
         </div>
 
