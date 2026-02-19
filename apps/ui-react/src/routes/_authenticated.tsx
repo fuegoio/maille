@@ -46,6 +46,8 @@ function AuthenticatedLayout() {
     queryKey: ["session"],
     queryFn: async () => {
       const res = await authClient.getSession();
+      if (res.error) throw new Error("error fetching session");
+
       if (res.data?.session) {
         setUser(res.data.user, res.data.session);
       } else {
@@ -60,7 +62,7 @@ function AuthenticatedLayout() {
     },
   });
 
-  if (!sessionData) {
+  if (!sessionData.data && !sessionData.isError) {
     throw redirect({
       to: "/login",
     });

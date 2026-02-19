@@ -1,4 +1,5 @@
 import type { SyncEvent } from "@maille/core/sync";
+import { ClientError } from "graphql-request";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -110,7 +111,7 @@ export const useSync = create<SyncState>()(
           });
           await get().dequeueMutations();
         } catch (e) {
-          if (e instanceof TypeError) {
+          if (e instanceof TypeError || e instanceof ClientError) {
             set({
               mutationsInProcessing: false,
             });

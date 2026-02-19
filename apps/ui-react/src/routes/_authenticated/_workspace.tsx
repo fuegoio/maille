@@ -63,20 +63,10 @@ function RouteComponent() {
   useQuery({
     queryKey: ["workspaces"],
     queryFn: async () => {
-      try {
-        return await fetchWorkspaces();
-      } catch (e) {
-        if (e instanceof Error && e.message === "Unauthorized") {
-          throw redirect({
-            to: "/join",
-          });
-        }
-        throw e;
-      }
+      return await fetchWorkspaces();
     },
     refetchInterval: WORKSPACE_REFRESH_INTERVAL,
     initialData: availableWorkspaces,
-    throwOnError: true,
   });
 
   const dequeueMutations = useSync((state) => state.dequeueMutations);
