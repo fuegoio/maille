@@ -22,6 +22,13 @@
       "when": 1771506981793,
       "tag": "0002_massive_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771530602640,
+      "tag": "0003_smiling_rage",
+      "breakpoints": true
     }
   ]
 }

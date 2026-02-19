@@ -267,6 +267,34 @@ export interface DeleteAssetEvent extends BaseSyncEvent {
   };
 }
 
+export interface CreateCounterpartyEvent extends BaseSyncEvent {
+  type: "createCounterparty";
+  payload: {
+    id: string;
+    account: string;
+    name: string;
+    description: string | null;
+    user: string | null;
+  };
+}
+
+export interface UpdateCounterpartyEvent extends BaseSyncEvent {
+  type: "updateCounterparty";
+  payload: {
+    id: string;
+    name?: string;
+    description?: string | null;
+    user?: string | null;
+  };
+}
+
+export interface DeleteCounterpartyEvent extends BaseSyncEvent {
+  type: "deleteCounterparty";
+  payload: {
+    id: string;
+  };
+}
+
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
@@ -316,5 +344,8 @@ export type SyncEvent =
   | CreateAssetEvent
   | UpdateAssetEvent
   | DeleteAssetEvent
+  | CreateCounterpartyEvent
+  | UpdateCounterpartyEvent
+  | DeleteCounterpartyEvent
   | CreateUserEvent
   | UpdateUserEvent;

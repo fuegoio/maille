@@ -240,6 +240,24 @@ export const movementsActivities = sqliteTable("movements_activities", {
   amount: integer("amount").notNull(),
 });
 
+export const counterparties = sqliteTable("counterparties", {
+  id: text("id").primaryKey().$type<string>(),
+  account: text("account")
+    .notNull()
+    .$type<string>()
+    .references(() => accounts.id),
+  workspace: text("workspace")
+    .notNull()
+    .$type<string>()
+    .references(() => workspaces.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  user: text("user")
+    .$type<string>()
+    .references(() => user.id),
+  liability: integer("liability").notNull().default(0),
+});
+
 export const events = sqliteTable("events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   user: text("user").notNull(),
