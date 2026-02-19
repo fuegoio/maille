@@ -2,11 +2,11 @@ export type Transaction = {
   id: string;
   amount: number;
   fromAccount: string;
-  fromUser: string | null;
-  fromAsset: string | null;
+  fromUser?: string | null;
+  fromAsset?: string | null;
   toAccount: string;
-  toUser: string | null;
-  toAsset: string | null;
+  toUser?: string | null;
+  toAsset?: string | null;
 };
 
 export enum ActivityType {

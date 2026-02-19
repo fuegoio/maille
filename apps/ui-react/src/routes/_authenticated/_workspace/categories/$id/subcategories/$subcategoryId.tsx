@@ -33,7 +33,9 @@ export const Route = createFileRoute(
   component: SubcategoryPage,
   loader: async ({ params }) => {
     const activities = useActivities.getState();
-    const subcategory = activities.getActivitySubcategoryById(params.subcategoryId);
+    const subcategory = activities.getActivitySubcategoryById(
+      params.subcategoryId,
+    );
     if (!subcategory) {
       throw notFound();
     }
@@ -111,8 +113,12 @@ function SubcategoryPage() {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to={`/categories/${categoryId}` as any}>
-                      {category ? <CategoryLabel categoryId={category.id} /> : "Category"}
+                    <Link to={`/categories/$id`} params={{ id: categoryId }}>
+                      {category ? (
+                        <CategoryLabel categoryId={category.id} />
+                      ) : (
+                        "Category"
+                      )}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -134,7 +140,10 @@ function SubcategoryPage() {
               </TabsTrigger>
             </TabsList>
             <div className="flex-1" />
-            <SubcategorySettingsDialog subcategory={subcategory} categoryId={categoryId}>
+            <SubcategorySettingsDialog
+              subcategory={subcategory}
+              categoryId={categoryId}
+            >
               <Button variant="ghost" size="icon">
                 <Settings />
               </Button>
@@ -229,3 +238,4 @@ function SubcategoryPage() {
     </>
   );
 }
+

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 
 import { getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -51,7 +51,8 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
       {sortedSubcategories.map((subcategory) => (
         <Link
           key={subcategory.id}
-          to={`/categories/${subcategory.category}/subcategories/${subcategory.id}` as any}
+          to={`/categories/$id/subcategories/$subcategoryId`}
+          params={{ id: categoryId, subcategoryId: subcategory.id }}
           className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
         >
           <div className="text-sm font-medium">{subcategory.name}</div>
@@ -70,4 +71,3 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
     </div>
   );
 }
-
