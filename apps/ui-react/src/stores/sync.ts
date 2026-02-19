@@ -111,11 +111,20 @@ export const useSync = create<SyncState>()(
           });
           await get().dequeueMutations();
         } catch (e) {
-          if (e instanceof TypeError || e instanceof ClientError) {
+          if (e instanceof TypeError) {
             set({
               mutationsInProcessing: false,
             });
             return;
+          }
+
+          if (e instanceof ClientError) {
+            if (e.response.status === 500) {
+              set({
+                mutationsInProcessing: false,
+              });
+              return;
+            }
           }
 
           set({

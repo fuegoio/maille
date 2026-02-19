@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
 
@@ -23,6 +23,7 @@ import {
 } from "@/mutations/projects";
 import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
+import { useWorkspaces } from "@/stores/workspaces";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -42,9 +43,8 @@ export function AddAndEditProjectModal({
   onCreate,
 }: AddAndEditProjectModalProps) {
   const projects = useProjects((state) => state.projects);
-  const addProject = useProjects((state) => state.addProject);
-  const updateProject = useProjects((state) => state.updateProject);
   const mutate = useSync((state) => state.mutate);
+  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,11 +52,10 @@ export function AddAndEditProjectModal({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      emoji: null,
     },
   });
 
-  const { control, handleSubmit, reset, setValue, watch } = form;
+  const { control, handleSubmit, setValue, watch } = form;
   const emoji = watch("emoji");
 
   const project = projectId
@@ -65,67 +64,44 @@ export function AddAndEditProjectModal({
 
   const isEditMode = !!project;
 
-  // Reset form when modal opens/closes or project changes
-  useEffect(() => {
-    if (open) {
-      if (project) {
-        reset({
-          name: project.name,
-          emoji: project.emoji || null,
-        });
-      } else {
-        reset({
-          name: "",
-          emoji: null,
-        });
-      }
-
-      // Focus the name input when modal opens
-      setTimeout(() => {
-        if (nameInputRef.current) {
-          nameInputRef.current.focus();
-        }
-      }, 100);
-    }
-  }, [open, project, reset]);
-
   const onSubmit = (data: FormValues) => {
     if (isEditMode && project) {
-      // Update existing project
-      updateProject(project.id, {
-        name: data.name,
-        emoji: data.emoji,
-      });
-
       mutate({
         name: "updateProject",
         mutation: updateProjectMutation,
         variables: {
           id: project.id,
-          name: data.name,
-          emoji: data.emoji,
+          ...data,
         },
         rollbackData: { ...project },
+        events: [
+          {
+            type: "updateProject",
+            payload: {
+              id: project.id,
+              ...data,
+            },
+          },
+        ],
       });
     } else {
-      // Create new project
-      const newProject = addProject({
-        name: data.name,
-        emoji: data.emoji,
-        startDate: null,
-        endDate: null,
-      });
-
+      const newProject = {
+        id: crypto.randomUUID(),
+        ...data,
+        emoji: data.emoji ?? null,
+        workspace: workspaceId,
+      };
       mutate({
         name: "createProject",
         mutation: createProjectMutation,
-        variables: {
-          id: newProject.id,
-          name: newProject.name,
-          emoji: newProject.emoji,
-          workspace: null, // This should be set to the current workspace
-        },
+        variables: newProject,
         rollbackData: undefined,
+        events: [
+          {
+            type: "createProject",
+            payload: newProject,
+          },
+        ],
       });
 
       if (onCreate) {
