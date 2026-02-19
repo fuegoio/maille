@@ -41,7 +41,6 @@ import {
 } from "../ui/select";
 import { SidebarInset } from "../ui/sidebar";
 
-import { ActivityLiabilities } from "./activity-liabilities";
 import { ActivityMovements } from "./activity-movements";
 import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
@@ -342,7 +341,6 @@ export function Activity() {
 
           <ActivityTransactions activity={activity} />
           <ActivityMovements activity={activity} />
-          <ActivityLiabilities activity={activity} />
         </div>
       </div>
 
