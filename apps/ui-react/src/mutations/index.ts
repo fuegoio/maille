@@ -1,6 +1,7 @@
 import type { AccountMutation } from "./accounts";
 import type { ActivityMutation } from "./activities";
 import type { AssetMutation } from "./assets";
+import type { CounterpartyMutation } from "./counterparties";
 import type { MovementMutation } from "./movements";
 import type { ProjectMutation } from "./projects";
 
@@ -9,4 +10,5 @@ export type Mutation =
   | MovementMutation
   | ProjectMutation
   | AccountMutation
-  | AssetMutation;
+  | AssetMutation
+  | CounterpartyMutation;

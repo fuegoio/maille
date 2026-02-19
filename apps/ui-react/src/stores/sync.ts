@@ -11,6 +11,7 @@ import { useAccounts } from "./accounts";
 import { useActivities } from "./activities";
 import { useAssets } from "./assets";
 import { useAuth } from "./auth";
+import { useCounterparties } from "./counterparties";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
 import { storage } from "./storage";
@@ -68,6 +69,7 @@ export const useSync = create<SyncState>()(
             useAccounts.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
+            useCounterparties.getState().handleEvent(event);
           });
 
         void get().dequeueMutations();
@@ -110,6 +112,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useCounterparties.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
 
           set({
             mutationsInProcessing: false,
@@ -143,6 +149,7 @@ export const useSync = create<SyncState>()(
           useProjects.getState().handleMutationError(mutation);
           useAccounts.getState().handleMutationError(mutation);
           useAssets.getState().handleMutationError(mutation);
+          useCounterparties.getState().handleMutationError(mutation);
           await get().dequeueMutations();
         }
       },
@@ -181,6 +188,7 @@ export const useSync = create<SyncState>()(
             useProjects.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
+            useCounterparties.getState().handleEvent(event);
           });
       },
 
