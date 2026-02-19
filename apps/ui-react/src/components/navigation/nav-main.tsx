@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { type LucideIcon } from "lucide-react";
 
 import {
@@ -27,6 +27,8 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const location = useRouterState({ select: (s) => s.location });
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
@@ -36,7 +38,12 @@ export function NavMain({
             <SidebarMenuButton
               asChild
               tooltip={item.title}
-              isActive={window.location.pathname === item.url}
+              isActive={
+                location.pathname.startsWith(item.url) &&
+                !item.items?.some((subItem) =>
+                  location.pathname.startsWith(subItem.url),
+                )
+              }
             >
               <Link to={item.url}>
                 <item.icon />
@@ -49,7 +56,7 @@ export function NavMain({
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton
                       asChild
-                      isActive={window.location.pathname === subItem.url}
+                      isActive={location.pathname.startsWith(subItem.url)}
                     >
                       <Link to={subItem.url}>
                         <span>{subItem.title}</span>
