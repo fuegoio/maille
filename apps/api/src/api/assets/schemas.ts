@@ -16,7 +16,6 @@ AssetSchema.implement({
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
     location: t.exposeString("location", { nullable: true }),
-    value: t.exposeFloat("value"),
   }),
 });
 
@@ -31,3 +30,4 @@ DeleteAssetResponseSchema.implement({
     success: t.exposeBoolean("success"),
   }),
 });
+

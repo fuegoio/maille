@@ -22,9 +22,9 @@ export const registerCounterpartiesQueries = () => {
 
         return counterpartiesQuery.map((counterparty) => ({
           ...counterparty,
-          liability: counterparty.liability,
         }));
       },
     }),
   );
 };
+

@@ -13,9 +13,6 @@ CounterpartySchema.implement({
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
     user: t.exposeString("user", { nullable: true }),
-    liability: t.field({
-      type: "Int",
-      resolve: (parent) => parent.liability,
-    }),
   }),
 });
+

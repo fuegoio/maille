@@ -56,14 +56,12 @@ type Asset {
   id: String!
   location: String
   name: String!
-  value: Float!
 }
 
 type Counterparty {
   account: String!
   description: String
   id: String!
-  liability: Int!
   name: String!
   user: String
 }
@@ -134,7 +132,7 @@ type Mutation {
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!, workspace: String!): Activity!
   createActivityCategory(id: String!, name: String!, type: String!, workspace: String!): ActivityCategory!
   createActivitySubCategory(category: String!, id: String!, name: String!, workspace: String!): ActivitySubCategory!
-  createAsset(account: String!, description: String, id: String!, location: String, name: String!, value: Float, workspace: String!): Asset!
+  createAsset(account: String!, description: String, id: String!, location: String, name: String!, workspace: String!): Asset!
   createCounterparty(account: String!, description: String, id: String!, name: String!, user: String, workspace: String!): Counterparty!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!, workspace: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!, workspace: String!): MovementActivity!
@@ -155,7 +153,7 @@ type Mutation {
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!
-  updateAsset(account: String, description: String, id: String!, location: String, name: String, value: Float): Asset!
+  updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateCounterparty(description: String, id: String!, name: String, user: String): Counterparty!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!

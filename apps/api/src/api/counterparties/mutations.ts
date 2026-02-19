@@ -27,22 +27,19 @@ export const registerCounterpartiesMutations = () => {
       resolve: async (root, args, ctx) => {
         await validateWorkspace(args.workspace, ctx.user.id);
 
-        const counterpartyResults = (
-          await db
-            .insert(counterparties)
-            .values({
-              id: args.id,
-              account: args.account,
-              workspace: args.workspace,
-              name: args.name,
-              description: args.description,
-              user: args.user,
-              liability: 0, // Default liability
-            })
-            .returning()
-        );
+        const counterpartyResults = await db
+          .insert(counterparties)
+          .values({
+            id: args.id,
+            account: args.account,
+            workspace: args.workspace,
+            name: args.name,
+            description: args.description,
+            user: args.user,
+          })
+          .returning();
         const counterparty = counterpartyResults[0];
-        
+
         if (!counterparty) {
           throw new GraphQLError("Failed to create counterparty");
         }
@@ -79,7 +76,9 @@ export const registerCounterpartiesMutations = () => {
         user: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
-        const counterparty = (await db.select().from(counterparties).where(eq(counterparties.id, args.id)))[0];
+        const counterparty = (
+          await db.select().from(counterparties).where(eq(counterparties.id, args.id))
+        )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
@@ -99,11 +98,13 @@ export const registerCounterpartiesMutations = () => {
           updates.user = args.user;
         }
 
-        const updatedCounterparties = (
-          await db.update(counterparties).set(updates).where(eq(counterparties.id, args.id)).returning()
-        );
+        const updatedCounterparties = await db
+          .update(counterparties)
+          .set(updates)
+          .where(eq(counterparties.id, args.id))
+          .returning();
         const updatedCounterparty = updatedCounterparties[0];
-        
+
         if (!updatedCounterparty) {
           throw new GraphQLError("Failed to update counterparty");
         }
@@ -122,7 +123,6 @@ export const registerCounterpartiesMutations = () => {
 
         return {
           ...updatedCounterparty,
-          liability: updatedCounterparty.liability,
         };
       },
     }),
@@ -137,7 +137,9 @@ export const registerCounterpartiesMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const counterparty = (await db.select().from(counterparties).where(eq(counterparties.id, args.id)))[0];
+        const counterparty = (
+          await db.select().from(counterparties).where(eq(counterparties.id, args.id))
+        )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
@@ -162,3 +164,4 @@ export const registerCounterpartiesMutations = () => {
     }),
   );
 };
+

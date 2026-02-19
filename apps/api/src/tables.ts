@@ -200,7 +200,6 @@ export const assets = sqliteTable("assets", {
   name: text("name").notNull(),
   description: text("description"),
   location: text("location"),
-  value: integer("value").notNull().default(0),
   workspace: text("workspace")
     .notNull()
     .$type<string>()
@@ -255,7 +254,6 @@ export const counterparties = sqliteTable("counterparties", {
   user: text("user")
     .$type<string>()
     .references(() => user.id),
-  liability: integer("liability").notNull().default(0),
 });
 
 export const events = sqliteTable("events", {

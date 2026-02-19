@@ -24,10 +24,6 @@ export const registerAssetsMutations = () => {
           type: "String",
           required: false,
         }),
-        value: t.arg({
-          type: "Float",
-          required: false,
-        }),
         workspace: t.arg({
           type: "String",
           required: true,
@@ -43,7 +39,6 @@ export const registerAssetsMutations = () => {
               name: args.name,
               description: args.description || undefined,
               location: args.location || undefined,
-              value: args.value || 0,
               workspace: args.workspace,
             })
             .returning()
@@ -91,10 +86,6 @@ export const registerAssetsMutations = () => {
           type: "String",
           required: false,
         }),
-        value: t.arg({
-          type: "Float",
-          required: false,
-        }),
       },
       resolve: async (root, args, ctx) => {
         const asset = (await db.select().from(assets).where(eq(assets.id, args.id)))[0];
@@ -114,9 +105,6 @@ export const registerAssetsMutations = () => {
         }
         if (args.location !== undefined) {
           assetUpdates.location = args.location ?? undefined;
-        }
-        if (args.value !== undefined) {
-          assetUpdates.value = args.value ?? undefined;
         }
 
         const updatedAssets = await db
@@ -182,3 +170,4 @@ export const registerAssetsMutations = () => {
     }),
   );
 };
+
