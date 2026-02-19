@@ -628,7 +628,7 @@ export function AddActivityModal({
               </div>
             </div>
 
-            {transactions.map((transaction, index) => (
+            {transactions.map((_transaction, index) => (
               <div key={index} className="my-3 flex items-center gap-2">
                 {/* From Account */}
                 <Controller

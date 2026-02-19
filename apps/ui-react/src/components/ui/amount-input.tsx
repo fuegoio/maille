@@ -63,7 +63,7 @@ export function AmountInput({
   value: externalValue,
   onChange,
   disabled = false,
-  clearable = false,
+  clearable,
   placeholder = "18,99 €",
   className,
   mode,
