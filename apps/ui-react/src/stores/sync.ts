@@ -9,6 +9,7 @@ import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
 import { useActivities } from "./activities";
+import { useAssets } from "./assets";
 import { useAuth } from "./auth";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
@@ -66,6 +67,7 @@ export const useSync = create<SyncState>()(
             useMovements.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
+            useAssets.getState().handleEvent(event);
           });
 
         void get().dequeueMutations();
@@ -104,6 +106,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useAssets.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
 
           set({
             mutationsInProcessing: false,
@@ -136,6 +142,7 @@ export const useSync = create<SyncState>()(
           useMovements.getState().handleMutationError(mutation);
           useProjects.getState().handleMutationError(mutation);
           useAccounts.getState().handleMutationError(mutation);
+          useAssets.getState().handleMutationError(mutation);
           await get().dequeueMutations();
         }
       },
@@ -173,6 +180,7 @@ export const useSync = create<SyncState>()(
             useMovements.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
+            useAssets.getState().handleEvent(event);
           });
       },
 

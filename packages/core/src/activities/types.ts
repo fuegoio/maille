@@ -2,10 +2,10 @@ export type Transaction = {
   id: string;
   amount: number;
   fromAccount: string;
-  fromUser?: string | null;
+  fromCounterparty?: string | null;
   fromAsset?: string | null;
   toAccount: string;
-  toUser?: string | null;
+  toCounterparty?: string | null;
   toAsset?: string | null;
 };
 

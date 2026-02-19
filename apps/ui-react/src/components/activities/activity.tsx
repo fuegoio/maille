@@ -149,7 +149,7 @@ export function Activity() {
   if (!activity) return null;
 
   return (
-    <SidebarInset className="max-w-lg">
+    <SidebarInset className="max-w-xl">
       <div className="flex h-full flex-col">
         <div className="flex h-12 w-full shrink-0 items-center border-b px-4 sm:px-6">
           <Button

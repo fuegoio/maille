@@ -164,12 +164,14 @@ export const transactions = sqliteTable("transactions", {
     .notNull()
     .$type<string>()
     .references(() => accounts.id),
-  fromUser: text("from_user").references(() => user.id),
+  fromAsset: text("from_asset").references(() => assets.id),
+  fromCounterparty: text("from_counterparty").references(() => counterparties.id),
   toAccount: text("to_account")
     .notNull()
     .$type<string>()
     .references(() => accounts.id),
-  toUser: text("to_user").references(() => user.id),
+  toAsset: text("to_asset").references(() => assets.id),
+  toCounterparty: text("to_counterparty").references(() => counterparties.id),
   activity: text("activity")
     .notNull()
     .references(() => activities.id)

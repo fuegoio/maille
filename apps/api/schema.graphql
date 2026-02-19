@@ -127,7 +127,7 @@ type MovementActivity {
 }
 
 type Mutation {
-  addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromUser: String, id: String!, toAccount: String!, toUser: String): Transaction!
+  addTransaction(activityId: String!, amount: Float!, fromAccount: String!, id: String!, toAccount: String!): Transaction!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!, workspace: String!): Account!
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!, workspace: String!): Activity!
   createActivityCategory(id: String!, name: String!, type: String!, workspace: String!): ActivityCategory!
@@ -158,7 +158,7 @@ type Mutation {
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
-  updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromUser: String, id: String!, toAccount: String, toUser: String): Transaction!
+  updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromAsset: String, fromCounterparty: String, id: String!, toAccount: String, toAsset: String, toCounterparty: String): Transaction!
 }
 
 type Project {
@@ -191,19 +191,19 @@ type Subscription {
 type Transaction {
   amount: Float!
   fromAccount: String!
-  fromUser: String
+  fromAsset: String
+  fromCounterparty: String
   id: String!
   toAccount: String!
-  toUser: String
+  toAsset: String
+  toCounterparty: String
 }
 
 input TransactionInput {
   amount: Float!
   fromAccount: String!
-  fromUser: String
   id: String!
   toAccount: String!
-  toUser: String
 }
 
 type User {

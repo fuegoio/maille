@@ -86,19 +86,29 @@ TransactionSchema.implement({
       type: "String",
       resolve: (parent) => parent.fromAccount,
     }),
-    fromUser: t.field({
+    fromAsset: t.field({
       type: "String",
       nullable: true,
-      resolve: (parent) => parent.fromUser,
+      resolve: (parent) => parent.fromAsset,
+    }),
+    fromCounterparty: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (parent) => parent.fromCounterparty,
     }),
     toAccount: t.field({
       type: "String",
       resolve: (parent) => parent.toAccount,
     }),
-    toUser: t.field({
+    toAsset: t.field({
       type: "String",
       nullable: true,
-      resolve: (parent) => parent.toUser,
+      resolve: (parent) => parent.toAsset,
+    }),
+    toCounterparty: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (parent) => parent.toCounterparty,
     }),
   }),
 });

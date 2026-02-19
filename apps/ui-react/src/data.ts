@@ -5,6 +5,7 @@ import { graphql } from "./gql";
 import { graphqlClient } from "./gql/client";
 import { useAccounts } from "./stores/accounts";
 import { useActivities } from "./stores/activities";
+import { useAssets } from "./stores/assets";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useWorkspaces } from "./stores/workspaces";
@@ -40,9 +41,11 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
         id
         amount
         fromAccount
-        fromUser
+        fromAsset
+        fromCounterparty
         toAccount
-        toUser
+        toAsset
+        toCounterparty
       }
       movements {
         id
@@ -96,6 +99,14 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       emoji
       startDate
       endDate
+    }
+
+    assets(workspaceId: $workspace) {
+      id
+      account
+      name
+      description
+      location
     }
   }
 `);
@@ -164,6 +175,22 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
     });
   });
 
+  // Populate projects
+  workspaceData.projects.forEach((project) => {
+    useProjects.getState().addProject({
+      ...project,
+      startDate: project.startDate ? new Date(project.startDate) : null,
+      endDate: project.endDate ? new Date(project.endDate) : null,
+    });
+  });
+
+  // Populate assets
+  workspaceData.assets.forEach((asset) => {
+    useAssets.getState().addAsset({
+      ...asset,
+    });
+  });
+
   return workspaceData;
 };
 
@@ -177,6 +204,7 @@ export const clearAllStores = () => {
     activityCategories: [],
     activitySubcategories: [],
   });
+  useAssets.setState({ assets: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
   useWorkspaces.setState({

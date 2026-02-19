@@ -147,18 +147,22 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
     $id: String!
     $amount: Float
     $fromAccount: String
-    $fromUser: String
+    $fromAsset: String
+    $fromCounterparty: String
     $toAccount: String
-    $toUser: String
+    $toAsset: String
+    $toCounterparty: String
   ) {
     updateTransaction(
       activityId: $activityId
       id: $id
       amount: $amount
       fromAccount: $fromAccount
-      fromUser: $fromUser
+      fromAsset: $fromAsset
+      fromCounterparty: $fromCounterparty
       toAccount: $toAccount
-      toUser: $toUser
+      toAsset: $toAsset
+      toCounterparty: $toCounterparty
     ) {
       id
     }

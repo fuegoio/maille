@@ -8,6 +8,7 @@ import {
   BookMarked,
   House,
   LayoutDashboard,
+  Plus,
   Settings,
   Users,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
+import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { ActivitiesTable } from "@/components/activities/activities-table";
@@ -64,6 +66,8 @@ function AccountPage() {
   if (!account) {
     throw notFound();
   }
+
+  const [selectedTab, setSelectedTab] = useState("summary");
 
   const { workspace } = Route.useRouteContext();
   const activities = useActivities((state) => state.activities);
@@ -136,7 +140,11 @@ function AccountPage() {
   return (
     <>
       <SidebarInset>
-        <Tabs defaultValue="summary">
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="h-full"
+        >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
@@ -179,6 +187,14 @@ function AccountPage() {
               )}
             </TabsList>
             <div className="flex-1" />
+            {selectedTab === "assets" && (
+              <AddAssetModal accountId={accountId}>
+                <Button size="sm">
+                  <Plus />
+                  Add asset
+                </Button>
+              </AddAssetModal>
+            )}
             <AccountSettingsDialog account={account}>
               <Button variant="ghost" size="icon">
                 <Settings />
@@ -286,8 +302,8 @@ function AccountPage() {
           </TabsContent>
 
           {account.type === AccountType.ASSETS && (
-            <TabsContent value="assets">
-              <AssetsTable />
+            <TabsContent value="assets" className="flex h-full">
+              <AssetsTable accountId={account.id} />
             </TabsContent>
           )}
 

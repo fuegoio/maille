@@ -36,9 +36,7 @@ const TransactionInput = builder.inputType("TransactionInput", {
     }),
     amount: t.float(),
     fromAccount: t.field({ type: "String" }),
-    fromUser: t.field({ type: "String", required: false }),
     toAccount: t.field({ type: "String" }),
-    toUser: t.field({ type: "String", required: false }),
   }),
 });
 
@@ -129,9 +127,7 @@ export const registerActivitiesMutations = () => {
                 id: transaction.id,
                 amount: transaction.amount,
                 fromAccount: transaction.fromAccount,
-                fromUser: transaction.fromUser,
                 toAccount: transaction.toAccount,
-                toUser: transaction.toUser,
                 activity: args.id,
               })
               .returning();
@@ -428,9 +424,7 @@ export const registerActivitiesMutations = () => {
           type: "Float",
         }),
         fromAccount: t.arg({ type: "String" }),
-        fromUser: t.arg({ type: "String", required: false }),
         toAccount: t.arg({ type: "String" }),
-        toUser: t.arg({ type: "String", required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -470,9 +464,7 @@ export const registerActivitiesMutations = () => {
             id: args.id,
             amount: args.amount,
             fromAccount: args.fromAccount,
-            fromUser: args.fromUser,
             toAccount: args.toAccount,
-            toUser: args.toUser,
             activity: args.activityId,
           })
           .returning();
@@ -519,7 +511,11 @@ export const registerActivitiesMutations = () => {
           type: "String",
           required: false,
         }),
-        fromUser: t.arg({
+        fromAsset: t.arg({
+          type: "String",
+          required: false,
+        }),
+        fromCounterparty: t.arg({
           type: "String",
           required: false,
         }),
@@ -527,7 +523,11 @@ export const registerActivitiesMutations = () => {
           type: "String",
           required: false,
         }),
-        toUser: t.arg({
+        toAsset: t.arg({
+          type: "String",
+          required: false,
+        }),
+        toCounterparty: t.arg({
           type: "String",
           required: false,
         }),
@@ -556,9 +556,11 @@ export const registerActivitiesMutations = () => {
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
         if (args.fromAccount) updatedFields.fromAccount = args.fromAccount;
-        if (args.fromUser) updatedFields.fromUser = args.fromUser;
+        if (args.fromAsset) updatedFields.fromAsset = args.fromAsset;
+        if (args.fromCounterparty) updatedFields.fromCounterparty = args.fromCounterparty;
         if (args.toAccount) updatedFields.toAccount = args.toAccount;
-        if (args.toUser) updatedFields.toUser = args.toUser;
+        if (args.toAsset) updatedFields.toAsset = args.toAsset;
+        if (args.toCounterparty) updatedFields.toCounterparty = args.toCounterparty;
 
         const updatedTransactions = await db
           .update(transactions)
