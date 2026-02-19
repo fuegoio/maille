@@ -88,9 +88,9 @@ function AccountPage() {
       .filter(
         (t) =>
           ((flow === "in" || flow === undefined) &&
-            t.fromAccount === account.id) ||
+            t.toAccount === account.id) ||
           ((flow === "out" || flow === undefined) &&
-            t.toAccount === account.id),
+            t.fromAccount === account.id),
       )
       .reduce((acc, t) => {
         if (t.fromAccount === account.id) {
