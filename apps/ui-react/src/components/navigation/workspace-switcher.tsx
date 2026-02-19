@@ -1,7 +1,7 @@
 import type { Workspace } from "@maille/core/workspaces";
 import { Link } from "@tanstack/react-router";
 import type { User } from "better-auth";
-import { ChevronsUpDown, LogOut, Plus } from "lucide-react";
+import { ChevronsUpDown, Loader, LogOut, Plus, GlobeOff } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -18,7 +18,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import useIsOnline from "@/lib/online";
+import { useSync } from "@/stores/sync";
 import type { AvailableWorkspace } from "@/stores/workspaces";
+
+import { Badge } from "../ui/badge";
 
 import { ThemeSwitcher } from "./theme-switcher";
 
@@ -33,6 +37,9 @@ export function WorkspaceSwitcher({
 }) {
   const { isMobile } = useSidebar();
 
+  const isOnline = useIsOnline();
+  const mutationsQueue = useSync((state) => state.mutationsQueue);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -41,9 +48,29 @@ export function WorkspaceSwitcher({
             <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <div className="flex aspect-square size-5 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"></div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {currentWorkspace.name}
-                </span>
+                {mutationsQueue.length > 0 || !isOnline ? (
+                  <Badge
+                    variant="secondary"
+                    className="h-6 font-normal text-muted-foreground"
+                  >
+                    {isOnline ? (
+                      <>
+                        <Loader className="size-3 animate-spin" />
+                        {mutationsQueue.length} event
+                        {mutationsQueue.length > 1 ? "s" : ""} syncing...
+                      </>
+                    ) : (
+                      <>
+                        <GlobeOff className="size-3" />
+                        Offline
+                      </>
+                    )}
+                  </Badge>
+                ) : (
+                  <span className="truncate font-medium">
+                    {currentWorkspace.name}
+                  </span>
+                )}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -77,8 +104,8 @@ export function WorkspaceSwitcher({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                <Avatar className="size-6 rounded-lg">
                   <AvatarImage src={user.image ?? undefined} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
                     {user.name[0]}

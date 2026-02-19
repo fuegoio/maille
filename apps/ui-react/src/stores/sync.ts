@@ -21,6 +21,7 @@ interface SyncState {
   mutate: (mutation: Mutation) => void;
   dequeueMutations: () => Promise<void>;
   fetchMissingEvents: (workspace: string) => Promise<void>;
+  clear: () => void;
 }
 
 const missingEventsQuery = graphql(/* GraphQL */ `
@@ -163,6 +164,14 @@ export const useSync = create<SyncState>()(
             useProjects.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
           });
+      },
+
+      clear: () => {
+        set({
+          lastEventTimestamp: 0,
+          mutationsQueue: [],
+          mutationsInProcessing: false,
+        });
       },
     }),
     {

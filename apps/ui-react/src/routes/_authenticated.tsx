@@ -1,6 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+
 import { authClient } from "@/lib/auth";
 import { useAuth } from "@/stores/auth";
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+
+const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60;
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -8,15 +12,10 @@ export const Route = createFileRoute("/_authenticated")({
     let session = useAuth.getState().session;
     let user = useAuth.getState().user;
 
-    if (session && user) {
-      authClient.getSession().then((res) => {
-        if (res.data?.session) {
-          useAuth.getState().setUser(res.data.user, res.data.session);
-        }
-      });
-    } else {
+    if (!session || !user) {
       const res = await authClient.getSession();
       if (!res.data?.session) {
+        useAuth.getState().clear();
         throw redirect({
           to: `/login`,
           search: {
@@ -38,5 +37,34 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
+  const { session, user } = Route.useRouteContext();
+
+  const setUser = useAuth((state) => state.setUser);
+  const clear = useAuth((state) => state.clear);
+
+  const sessionData = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const res = await authClient.getSession();
+      if (res.data?.session) {
+        setUser(res.data.user, res.data.session);
+      } else {
+        clear();
+      }
+      return res.data;
+    },
+    refetchInterval: SESSION_REFRESH_INTERVAL,
+    initialData: {
+      session,
+      user,
+    },
+  });
+
+  if (!sessionData) {
+    throw redirect({
+      to: "/login",
+    });
+  }
+
   return <Outlet />;
 }

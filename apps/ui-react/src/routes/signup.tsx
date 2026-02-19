@@ -1,19 +1,23 @@
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { authClient } from "@/lib/auth";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Logo } from "@/components/logo";
+import { authClient } from "@/lib/auth";
 
 const searchParamsSchema = z.object({
   redirect: z.string().optional(),
@@ -34,7 +38,9 @@ export const Route = createFileRoute("/signup")({
 });
 
 const formSchema = z.object({
-  firstName: z.string("First name is required.").min(1, "First name is required."),
+  firstName: z
+    .string("First name is required.")
+    .min(1, "First name is required."),
   lastName: z.string("Last name is required.").min(1, "Last name is required."),
   email: z.string("Email is required.").min(1, "Email is required."),
   password: z.string("Password is required.").min(1, "Password is required."),
@@ -56,7 +62,12 @@ function RouteComponent() {
 
   const [loading, setLoading] = useState(false);
 
-  const onSubmit = async ({ email, password, firstName, lastName }: z.infer<typeof formSchema>) => {
+  const onSubmit = async ({
+    email,
+    password,
+    firstName,
+    lastName,
+  }: z.infer<typeof formSchema>) => {
     setLoading(true);
     const { error } = await authClient.signUp.email({
       email,
@@ -86,11 +97,13 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-muted">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-sidebar">
       <Logo className="size-12 text-muted" />
       <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
         <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">Create an account</h1>
+          <h1 className="text-xl font-medium text-foreground">
+            Create an account
+          </h1>
           <div className="mt-2 text-sm text-muted-foreground">
             Welcome! Create an account to get started.
           </div>
@@ -98,7 +111,11 @@ function RouteComponent() {
 
         <AnimatePresence mode="wait">
           {!needsVerify && (
-            <motion.div key="signup-form" exit={{ opacity: 0 }} className="space-y-5">
+            <motion.div
+              key="signup-form"
+              exit={{ opacity: 0 }}
+              className="space-y-5"
+            >
               <FieldGroup>
                 <Controller
                   name="firstName"
@@ -112,7 +129,9 @@ function RouteComponent() {
                         aria-invalid={fieldState.invalid}
                         className="h-9"
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -129,7 +148,9 @@ function RouteComponent() {
                         aria-invalid={fieldState.invalid}
                         className="h-9"
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -147,7 +168,9 @@ function RouteComponent() {
                         autoComplete="email"
                         className="h-9"
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -166,7 +189,9 @@ function RouteComponent() {
                         autoComplete="new-password"
                         className="h-9"
                       />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -187,7 +212,9 @@ function RouteComponent() {
                           I agree to the Terms and Conditions
                         </Label>
                       </div>
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -251,8 +278,8 @@ function RouteComponent() {
               className="space-y-4"
             >
               <div className="text-center text-sm text-foreground">
-                We sent you an email with a link to verify your email address. Please check your
-                inbox and click the link to verify your email.
+                We sent you an email with a link to verify your email address.
+                Please check your inbox and click the link to verify your email.
               </div>
             </motion.div>
           )}
