@@ -57,32 +57,30 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
           </Empty>
         ) : (
           <div className="flex flex-1 flex-col overflow-x-hidden">
-            <div className="divide-y">
-              {accountAssets.map((asset) => (
-                <div
-                  key={asset.id}
-                  className="group flex h-10 w-full items-center pr-6 pl-14 hover:bg-muted/50"
-                >
-                  <div className="text-sm font-medium">{asset.name}</div>
-                  {asset.description && (
-                    <div className="mx-2 text-sm text-muted-foreground">
-                      {asset.description}
-                    </div>
-                  )}
-                  {asset.location && (
-                    <Badge className="ml-4" variant="outline">
-                      {asset.location}
-                    </Badge>
-                  )}
-
-                  <div className="flex-1" />
-
-                  <div className="text-right font-mono text-sm">
-                    {currencyFormatter.format(asset.value)}
+            {accountAssets.map((asset) => (
+              <div
+                key={asset.id}
+                className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+              >
+                <div className="text-sm font-medium">{asset.name}</div>
+                {asset.description && (
+                  <div className="mx-2 text-sm text-muted-foreground">
+                    {asset.description}
                   </div>
+                )}
+                {asset.location && (
+                  <Badge className="ml-4" variant="outline">
+                    {asset.location}
+                  </Badge>
+                )}
+
+                <div className="flex-1" />
+
+                <div className="text-right font-mono text-sm">
+                  {currencyFormatter.format(asset.value)}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

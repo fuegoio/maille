@@ -47,7 +47,7 @@ export function AccountSelect({
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger id={id}>
+      <SelectTrigger id={id} className="min-w-32">
         <SelectValue
           placeholder={
             <div className="flex min-w-0 shrink-0 items-center">

@@ -28,7 +28,7 @@ export function AssetSelect({
 
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
-      <SelectTrigger className={cn(className)}>
+      <SelectTrigger className={cn("w-full", className)}>
         <SelectValue placeholder="Select a asset" />
       </SelectTrigger>
       <SelectContent>

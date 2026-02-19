@@ -1,12 +1,6 @@
 import { AccountType } from "@maille/core/accounts";
 import type { Activity, Transaction } from "@maille/core/activities";
-import {
-  ArrowRight,
-  CornerDownRight,
-  Ellipsis,
-  MoveRight,
-  TrashIcon,
-} from "lucide-react";
+import { CornerDownRight, Ellipsis, MoveRight, TrashIcon } from "lucide-react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
@@ -26,6 +20,7 @@ import { useAccounts } from "@/stores/accounts";
 import { useSync } from "@/stores/sync";
 
 import { AssetSelect } from "../accounts/assets/assets-select";
+import { CounterpartiesSelect } from "../accounts/counterparties/counterparties-select";
 
 interface TransactionProps {
   activity: Activity;
@@ -103,6 +98,20 @@ export function Transaction({
             })
           }
         />
+        {fromAccount?.type === AccountType.LIABILITIES && (
+          <div className="flex items-center gap-1 pl-2">
+            <CornerDownRight className="size-4 text-muted-foreground" />
+            <CounterpartiesSelect
+              accountId={transaction.fromAccount}
+              value={transaction.fromCounterparty}
+              onValueChange={(counterparty) =>
+                handleTransactionUpdate(transaction, {
+                  fromCounterparty: counterparty,
+                })
+              }
+            />
+          </div>
+        )}
         {fromAccount?.type === AccountType.ASSETS && (
           <div className="flex items-center gap-1 pl-2">
             <CornerDownRight className="size-4 text-muted-foreground" />
@@ -130,6 +139,20 @@ export function Transaction({
             })
           }
         />
+        {toAccount?.type === AccountType.LIABILITIES && (
+          <div className="flex items-center gap-1 pl-2">
+            <CornerDownRight className="size-4 text-muted-foreground" />
+            <CounterpartiesSelect
+              accountId={transaction.toAccount}
+              value={transaction.toCounterparty}
+              onValueChange={(counterparty) =>
+                handleTransactionUpdate(transaction, {
+                  toCounterparty: counterparty,
+                })
+              }
+            />
+          </div>
+        )}
         {toAccount?.type === AccountType.ASSETS && (
           <div className="flex items-center gap-1 pl-2">
             <CornerDownRight className="size-4 text-muted-foreground" />

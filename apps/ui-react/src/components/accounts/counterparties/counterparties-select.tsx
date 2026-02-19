@@ -30,12 +30,12 @@ export function CounterpartiesSelect({
 
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
-      <SelectTrigger className={cn(className)}>
+      <SelectTrigger className={cn("w-full", className)}>
         <SelectValue placeholder="Select a counterparty" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Assets</SelectLabel>
+          <SelectLabel>Counterparties</SelectLabel>
           {accountCounterparties.map((counterparty) => (
             <SelectItem value={counterparty.id}>{counterparty.name}</SelectItem>
           ))}

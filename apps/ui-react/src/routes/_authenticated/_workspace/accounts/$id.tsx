@@ -19,6 +19,7 @@ import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
+import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-counterparty-modal";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
@@ -195,6 +196,14 @@ function AccountPage() {
                 </Button>
               </AddAssetModal>
             )}
+            {selectedTab === "counterparties" && (
+              <AddCounterpartyModal accountId={accountId}>
+                <Button size="sm">
+                  <Plus />
+                  Add counterparty
+                </Button>
+              </AddCounterpartyModal>
+            )}
             <AccountSettingsDialog account={account}>
               <Button variant="ghost" size="icon">
                 <Settings />
@@ -308,8 +317,8 @@ function AccountPage() {
           )}
 
           {account.type === AccountType.LIABILITIES && (
-            <TabsContent value="counterparties">
-              <CounterpartiesTable />
+            <TabsContent value="counterparties" className="flex h-full">
+              <CounterpartiesTable accountId={account.id} />
             </TabsContent>
           )}
         </Tabs>

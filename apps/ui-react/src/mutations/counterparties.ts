@@ -1,7 +1,11 @@
-import type { CreateCounterpartyEvent, UpdateCounterpartyEvent, DeleteCounterpartyEvent } from "@maille/core/sync";
-import type { Counterparty } from "@/gql/graphql";
+import type {
+  CreateCounterpartyEvent,
+  UpdateCounterpartyEvent,
+  DeleteCounterpartyEvent,
+} from "@maille/core/sync";
 
 import { graphql } from "@/gql";
+import type { Counterparty } from "@/gql/graphql";
 
 import type { MutationType } from "./type";
 
@@ -40,14 +44,12 @@ export const updateCounterpartyMutation = graphql(/* GraphQL */ `
     $name: String
     $description: String
     $user: String
-    $workspace: String!
   ) {
     updateCounterparty(
       id: $id
       name: $name
       description: $description
       user: $user
-      workspace: $workspace
     ) {
       id
     }
@@ -64,11 +66,9 @@ export type UpdateCounterpartyMutation = MutationType<
 export const deleteCounterpartyMutation = graphql(/* GraphQL */ `
   mutation DeleteCounterparty(
     $id: String!
-    $workspace: String!
   ) {
     deleteCounterparty(
       id: $id
-      workspace: $workspace
     )
   }
 `);
@@ -80,7 +80,7 @@ export type DeleteCounterpartyMutation = MutationType<
   [DeleteCounterpartyEvent]
 >;
 
-export type CounterpartyMutation = 
+export type CounterpartyMutation =
   | CreateCounterpartyMutation
   | UpdateCounterpartyMutation
   | DeleteCounterpartyMutation;
