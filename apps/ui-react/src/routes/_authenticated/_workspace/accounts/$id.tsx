@@ -1,3 +1,4 @@
+import { AccountType } from "@maille/core/accounts";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay } from "date-fns";
 import {
@@ -5,14 +6,18 @@ import {
   ArrowRight,
   ArrowUp,
   BookMarked,
+  House,
   LayoutDashboard,
   Settings,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
+import { AssetsTable } from "@/components/accounts/assets/assets-table";
+import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import {
@@ -160,6 +165,18 @@ function AccountPage() {
                 <BookMarked />
                 Activities
               </TabsTrigger>
+              {account.type === AccountType.ASSETS && (
+                <TabsTrigger value="assets">
+                  <House />
+                  Assets
+                </TabsTrigger>
+              )}
+              {account.type === AccountType.LIABILITIES && (
+                <TabsTrigger value="counterparties">
+                  <Users />
+                  Counterparties
+                </TabsTrigger>
+              )}
             </TabsList>
             <div className="flex-1" />
             <AccountSettingsDialog account={account}>
@@ -267,6 +284,18 @@ function AccountPage() {
               grouping="period"
             />
           </TabsContent>
+
+          {account.type === AccountType.ASSETS && (
+            <TabsContent value="assets">
+              <AssetsTable />
+            </TabsContent>
+          )}
+
+          {account.type === AccountType.LIABILITIES && (
+            <TabsContent value="counterparties">
+              <CounterpartiesTable />
+            </TabsContent>
+          )}
         </Tabs>
       </SidebarInset>
 

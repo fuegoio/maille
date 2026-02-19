@@ -109,7 +109,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 value={transaction.fromAccount}
                 onChange={(account) =>
                   handleTransactionUpdate(transaction, {
-                    fromAccount: account as string,
+                    fromAccount: account,
                   })
                 }
               />
@@ -118,7 +118,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 value={transaction.toAccount}
                 onChange={(account) =>
                   handleTransactionUpdate(transaction, {
-                    toAccount: account as string,
+                    toAccount: account,
                   })
                 }
               />
