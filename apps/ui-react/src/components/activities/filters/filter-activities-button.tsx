@@ -23,17 +23,22 @@ export function FilterActivitiesButton({
   viewId,
   className,
 }: FilterActivitiesButtonProps) {
-  const activityView = useViews((state) =>
-    state.getActivityView(viewId),
-  );
+  const activityView = useViews((state) => state.getActivityView(viewId));
+  const setActivityView = useViews((state) => state.setActivityView);
   const [open, setOpen] = React.useState(false);
 
   const selectField = (field: ActivityFilter["field"]) => {
-    activityView.filters.push({
-      field: field,
-      operator: undefined,
-      value: undefined,
-    } as ActivityFilter);
+    setActivityView(viewId, {
+      ...activityView,
+      filters: [
+        ...activityView.filters,
+        {
+          field: field,
+          operator: undefined,
+          value: undefined,
+        } as ActivityFilter,
+      ],
+    });
     setOpen(false);
   };
 

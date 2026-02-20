@@ -17,37 +17,58 @@ type MovementView = {
 };
 
 interface ViewsState {
-  activityViews: Record<string, ActivityView>;
-  movementViews: Record<string, MovementView>;
+  activityViews: ActivityView[];
+  movementViews: MovementView[];
 
   getActivityView: (viewId: string) => ActivityView;
   deleteCategory: (categoryId: string) => void;
   deleteSubcategory: (subcategoryId: string) => void;
+  setActivityView: (viewId: string, view: ActivityView) => void;
+
   getMovementView: (viewId: string) => MovementView;
+  setMovementView: (viewId: string, view: MovementView) => void;
 }
 
 export const useViews = create<ViewsState>()(
   persist(
-    (_set, get) => ({
-      activityViews: {},
-      movementViews: {},
+    (set, get) => ({
+      activityViews: [],
+      movementViews: [],
 
       getActivityView: (viewId: string): ActivityView => {
         const state = get();
-        if (!state.activityViews[viewId]) {
-          state.activityViews[viewId] = {
+        let view = state.activityViews.find((view) => view.id === viewId);
+        if (!view) {
+          view = {
             id: viewId,
             showTransactions: false,
             filters: [] as ActivityFilter[],
           };
+          set((state) => ({
+            activityViews: [...state.activityViews, view!],
+          }));
         }
 
-        return state.activityViews[viewId];
+        return view;
+      },
+      setActivityView: (viewId: string, view: ActivityView) => {
+        set((state) => {
+          const existingIndex = state.activityViews.findIndex(
+            (v) => v.id === viewId,
+          );
+          if (existingIndex !== -1) {
+            const newActivityViews = [...state.activityViews];
+            newActivityViews[existingIndex] = view;
+            return { activityViews: newActivityViews };
+          } else {
+            return { activityViews: [...state.activityViews, view] };
+          }
+        });
       },
 
       deleteCategory: (categoryId: string) => {
         const state = get();
-        Object.values(state.activityViews).forEach((view) => {
+        state.activityViews.forEach((view) => {
           view.filters.forEach((filter) => {
             if (filter.field === "category" && filter.value !== undefined) {
               filter.value = filter.value.filter((v) => v !== categoryId);
@@ -58,7 +79,7 @@ export const useViews = create<ViewsState>()(
 
       deleteSubcategory: (subcategoryId: string) => {
         const state = get();
-        Object.values(state.activityViews).forEach((view) => {
+        state.activityViews.forEach((view) => {
           view.filters.forEach((filter) => {
             if (filter.field === "subcategory" && filter.value !== undefined) {
               filter.value = filter.value.filter((v) => v !== subcategoryId);
@@ -69,14 +90,32 @@ export const useViews = create<ViewsState>()(
 
       getMovementView: (viewId: string): MovementView => {
         const state = get();
-        if (!state.movementViews[viewId]) {
-          state.movementViews[viewId] = {
+        let view = state.movementViews.find((view) => view.id === viewId);
+        if (!view) {
+          view = {
             id: viewId,
             filters: [] as MovementFilter[],
           };
+          set((state) => ({
+            movementViews: [...state.movementViews, view!],
+          }));
         }
 
-        return state.movementViews[viewId];
+        return view;
+      },
+      setMovementView: (viewId: string, view: MovementView) => {
+        set((state) => {
+          const existingIndex = state.movementViews.findIndex(
+            (v) => v.id === viewId,
+          );
+          if (existingIndex !== -1) {
+            const newMovementViews = [...state.movementViews];
+            newMovementViews[existingIndex] = view;
+            return { movementViews: newMovementViews };
+          } else {
+            return { movementViews: [...state.movementViews, view] };
+          }
+        });
       },
     }),
     {

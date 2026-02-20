@@ -1,4 +1,8 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
+import {
+  ActivityType,
+  type Activity,
+  type ActivityFilter,
+} from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Calendar, ChevronDown } from "lucide-react";
@@ -95,7 +99,7 @@ export function ActivitiesTable({
     categoryFilter,
     accountFilter,
     activityTypeFilter,
-    activityView.filters,
+    activityView,
   ]);
 
   const activitiesSorted = React.useMemo(() => {
