@@ -1,4 +1,3 @@
-import type { Counterparty } from "@/gql/graphql";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";
@@ -19,15 +18,24 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
+import { UserSelect } from "@/components/users/user-select";
+import type { Counterparty } from "@/gql/graphql";
 import { getCurrencyFormatter, cn } from "@/lib/utils";
-import { deleteCounterpartyMutation, updateCounterpartyMutation } from "@/mutations/counterparties";
+import {
+  deleteCounterpartyMutation,
+  updateCounterpartyMutation,
+} from "@/mutations/counterparties";
 import { useActivities } from "@/stores/activities";
 import { useCounterparties } from "@/stores/counterparties";
 import { useSync } from "@/stores/sync";
 
 export function Counterparty() {
-  const counterpartyId = useCounterparties((state) => state.focusedCounterparty);
-  const setFocusedCounterparty = useCounterparties((state) => state.setFocusedCounterparty);
+  const counterpartyId = useCounterparties(
+    (state) => state.focusedCounterparty,
+  );
+  const setFocusedCounterparty = useCounterparties(
+    (state) => state.setFocusedCounterparty,
+  );
 
   const onClose = () => {
     setFocusedCounterparty(null);
@@ -35,7 +43,9 @@ export function Counterparty() {
 
   const mutate = useSync((state) => state.mutate);
 
-  const counterparty = useCounterparties((state) => state.getCounterpartyById(counterpartyId));
+  const counterparty = useCounterparties((state) =>
+    state.getCounterpartyById(counterpartyId),
+  );
   const activities = useActivities((state) => state.activities);
 
   // Calculate the current liability of the counterparty based on transactions
@@ -158,13 +168,16 @@ export function Counterparty() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete counterparty</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete this counterparty? This action cannot
-                  be undone.
+                  Are you sure you want to delete this counterparty? This action
+                  cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={deleteCounterparty} variant="destructive">
+                <AlertDialogAction
+                  onClick={deleteCounterparty}
+                  variant="destructive"
+                >
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -189,7 +202,9 @@ export function Counterparty() {
                 <Input
                   id="name"
                   value={counterparty.name}
-                  onChange={(e) => handleUpdateCounterparty({ name: e.target.value })}
+                  onChange={(e) =>
+                    handleUpdateCounterparty({ name: e.target.value })
+                  }
                 />
               </Field>
 
@@ -199,7 +214,9 @@ export function Counterparty() {
                   id="description"
                   value={counterparty.description || ""}
                   onChange={(e) =>
-                    handleUpdateCounterparty({ description: e.target.value || null })
+                    handleUpdateCounterparty({
+                      description: e.target.value || null,
+                    })
                   }
                   className="resize-none"
                   placeholder="Add a description ..."
@@ -209,13 +226,12 @@ export function Counterparty() {
 
               <Field>
                 <FieldLabel htmlFor="user">User</FieldLabel>
-                <Input
+                <UserSelect
                   id="user"
                   value={counterparty.user || ""}
-                  onChange={(e) =>
-                    handleUpdateCounterparty({ user: e.target.value || null })
+                  onValueChange={(value) =>
+                    handleUpdateCounterparty({ user: value })
                   }
-                  placeholder="Add a user ..."
                 />
               </Field>
             </FieldGroup>
@@ -273,3 +289,4 @@ export function Counterparty() {
     </SidebarInset>
   );
 }
+

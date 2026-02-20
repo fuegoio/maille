@@ -35,7 +35,9 @@ export function AssetSelect({
         <SelectGroup>
           <SelectLabel>Assets</SelectLabel>
           {accountAssets.map((asset) => (
-            <SelectItem value={asset.id}>{asset.name}</SelectItem>
+            <SelectItem key={asset.id} value={asset.id}>
+              {asset.name}
+            </SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>

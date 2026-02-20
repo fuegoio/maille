@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, type ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { UserSelect } from "@/components/users/user-select";
 import { createCounterpartyMutation } from "@/mutations/counterparties";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
@@ -50,10 +51,10 @@ export function AddCounterpartyModal({
   const [isOpen, setIsOpen] = useState(false);
 
   const {
-    register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
     reset,
+    control,
   } = useForm<CreateCounterpartyFormValues>({
     resolver: zodResolver(createCounterpartySchema),
     defaultValues: {
@@ -99,39 +100,60 @@ export function AddCounterpartyModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Field>
-            <FieldLabel>Name</FieldLabel>
-            <FieldContent>
-              <Input
-                {...register("name")}
-                placeholder="e.g., John Doe, Acme Corp"
-                autoFocus
-              />
-            </FieldContent>
-            <FieldError>{errors.name?.message}</FieldError>
-          </Field>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Name</FieldLabel>
+                <FieldContent>
+                  <Input {...field} autoFocus />
+                </FieldContent>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          <Field>
-            <FieldLabel>User (optional)</FieldLabel>
-            <FieldContent>
-              <Input
-                {...register("user")}
-                placeholder="e.g., john@example.com, @johndoe"
-              />
-            </FieldContent>
-            <FieldDescription>User identifier or contact info</FieldDescription>
-          </Field>
+          <Controller
+            name="user"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>User (optional)</FieldLabel>
+                <FieldContent>
+                  <UserSelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                </FieldContent>
+                <FieldDescription>
+                  Link this counterparty to a user in this workspace.
+                </FieldDescription>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-          <Field>
-            <FieldLabel>Description (optional)</FieldLabel>
-            <FieldContent>
-              <Textarea
-                {...register("description")}
-                placeholder="Add any additional details about this counterparty..."
-                rows={3}
-              />
-            </FieldContent>
-          </Field>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>Description (optional)</FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    {...field}
+                    placeholder="Add any additional details about this counterparty..."
+                    rows={3}
+                  />
+                </FieldContent>
+              </Field>
+            )}
+          />
 
           <DialogFooter>
             <DialogClose asChild>

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useCounterparties } from "@/stores/counterparties";
+import { useWorkspaces } from "@/stores/workspaces";
 
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
@@ -24,9 +25,16 @@ interface CounterpartiesTableProps {
 
 export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   const counterparties = useCounterparties((state) => state.counterparties);
-  const focusedCounterparty = useCounterparties((state) => state.focusedCounterparty);
-  const setFocusedCounterparty = useCounterparties((state) => state.setFocusedCounterparty);
+  const focusedCounterparty = useCounterparties(
+    (state) => state.focusedCounterparty,
+  );
+  const setFocusedCounterparty = useCounterparties(
+    (state) => state.setFocusedCounterparty,
+  );
   const activities = useActivities((state) => state.activities);
+  const workspace = useWorkspaces((state) => state.currentWorkspace);
+  if (!workspace) throw new Error("new workspace");
+
   const currencyFormatter = getCurrencyFormatter();
 
   const accountCounterparties = useMemo(() => {
@@ -106,9 +114,13 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
                     {counterparty.description}
                   </div>
                 )}
+
                 {counterparty.user && (
                   <Badge className="ml-4" variant="outline">
-                    {counterparty.user}
+                    {
+                      workspace.users!.find((u) => u.id === counterparty.user)
+                        ?.name
+                    }
                   </Badge>
                 )}
 

@@ -6,6 +6,7 @@ import { graphqlClient } from "./gql/client";
 import { useAccounts } from "./stores/accounts";
 import { useActivities } from "./stores/activities";
 import { useAssets } from "./stores/assets";
+import { useCounterparties } from "./stores/counterparties";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useWorkspaces } from "./stores/workspaces";
@@ -108,6 +109,14 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       description
       location
     }
+    
+    counterparties(workspaceId: $workspace) {
+      id
+      account
+      name
+      user
+      description
+    }
   }
 `);
 
@@ -126,14 +135,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Clear existing data and populate stores
-  useAccounts.setState({ accounts: [] });
-  useActivities.setState({
-    activities: [],
-    activityCategories: [],
-    activitySubcategories: [],
-  });
-  useMovements.setState({ movements: [] });
-  useProjects.setState({ projects: [] });
+  clearAllStores();
 
   // Populate accounts
   workspaceData.accounts.forEach((account) => {
@@ -191,6 +193,13 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
     });
   });
 
+  // Populate counterparties
+  workspaceData.counterparties.forEach((counterparty) => {
+    useCounterparties.getState().addCounterparty({
+      ...counterparty,
+    });
+  });
+
   return workspaceData;
 };
 
@@ -205,10 +214,7 @@ export const clearAllStores = () => {
     activitySubcategories: [],
   });
   useAssets.setState({ assets: [] });
+  useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useWorkspaces.setState({
-    currentWorkspace: null,
-    availableWorkspaces: null,
-  });
 };

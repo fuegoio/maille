@@ -37,7 +37,9 @@ export function CounterpartiesSelect({
         <SelectGroup>
           <SelectLabel>Counterparties</SelectLabel>
           {accountCounterparties.map((counterparty) => (
-            <SelectItem value={counterparty.id}>{counterparty.name}</SelectItem>
+            <SelectItem key={counterparty.id} value={counterparty.id}>
+              {counterparty.name}
+            </SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
