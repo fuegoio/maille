@@ -82,6 +82,11 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
           </Empty>
         ) : (
           <div className="flex flex-1 flex-col overflow-x-hidden">
+            <header className="flex h-8 items-center border-b bg-muted/50 pr-6 pl-14 text-xs font-medium text-muted-foreground">
+              <div className="flex-1">Counterparty name</div>
+              <div className="text-right">Liability</div>
+            </header>
+
             {accountCounterparties.map((counterparty) => (
               <div
                 key={counterparty.id}

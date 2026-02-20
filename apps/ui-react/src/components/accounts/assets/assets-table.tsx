@@ -1,6 +1,7 @@
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
+import { useActivities } from "@/stores/activities";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { useAssets } from "@/stores/assets";
 
@@ -23,11 +24,32 @@ interface AssetsTableProps {
 
 export function AssetsTable({ accountId }: AssetsTableProps) {
   const assets = useAssets((state) => state.assets);
+  const activities = useActivities((state) => state.activities);
   const currencyFormatter = getCurrencyFormatter();
 
   const accountAssets = useMemo(() => {
     return assets.filter((asset) => asset.account === accountId);
   }, [assets, accountId]);
+
+  const getAssetValue = (assetId: string) => {
+    return activities
+      .flatMap((activity) => activity.transactions)
+      .filter((transaction) => 
+        transaction.fromAsset === assetId ||
+        transaction.toAsset === assetId
+      )
+      .reduce((total, transaction) => {
+        // If money flows TO the asset, it adds value
+        if (transaction.toAsset === assetId) {
+          return total + transaction.amount;
+        }
+        // If money flows FROM the asset, it subtracts value
+        else if (transaction.fromAsset === assetId) {
+          return total - transaction.amount;
+        }
+        return total;
+      }, 0);
+  };
 
   return (
     <>
@@ -57,6 +79,10 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
           </Empty>
         ) : (
           <div className="flex flex-1 flex-col overflow-x-hidden">
+            <header className="flex h-8 items-center border-b bg-muted/50 pr-6 pl-14 text-xs font-medium text-muted-foreground">
+              <div className="flex-1">Asset name</div>
+              <div className="text-right">Current value</div>
+            </header>
             {accountAssets.map((asset) => (
               <div
                 key={asset.id}
@@ -77,7 +103,7 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
                 <div className="flex-1" />
 
                 <div className="text-right font-mono text-sm">
-                  {currencyFormatter.format(asset.value)}
+                  {currencyFormatter.format(getAssetValue(asset.id))}
                 </div>
               </div>
             ))}
