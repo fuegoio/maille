@@ -21,6 +21,7 @@ import { Route as AuthenticatedWorkspaceCategoriesIndexRouteImport } from './rou
 import { Route as AuthenticatedWorkspaceAccountsIndexRouteImport } from './routes/_authenticated/_workspace/accounts/index'
 import { Route as AuthenticatedWorkspaceProjectsIdRouteImport } from './routes/_authenticated/_workspace/projects/$id'
 import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
+import { Route as AuthenticatedWorkspaceMonthsMonthRouteImport } from './routes/_authenticated/_workspace/months/$month'
 import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
 import { Route as AuthenticatedWorkspaceAccountsIdRouteImport } from './routes/_authenticated/_workspace/accounts/$id'
 import { Route as AuthenticatedWorkspaceCategoriesIdIndexRouteImport } from './routes/_authenticated/_workspace/categories/$id/index'
@@ -91,6 +92,12 @@ const AuthenticatedWorkspaceMovementsChar123IdChar125Route =
     path: '/movements/{-$id}',
     getParentRoute: () => AuthenticatedWorkspaceRoute,
   } as any)
+const AuthenticatedWorkspaceMonthsMonthRoute =
+  AuthenticatedWorkspaceMonthsMonthRouteImport.update({
+    id: '/months/$month',
+    path: '/months/$month',
+    getParentRoute: () => AuthenticatedWorkspaceRoute,
+  } as any)
 const AuthenticatedWorkspaceActivitiesChar123IdChar125Route =
   AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport.update({
     id: '/activities/{-$id}',
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/join': typeof AuthenticatedJoinRoute
   '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
   '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/accounts': typeof AuthenticatedWorkspaceAccountsIndexRoute
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/_workspace/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
   '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  '/_authenticated/_workspace/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
   '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   '/_authenticated/_workspace/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
   '/_authenticated/_workspace/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
+    | '/months/$month'
     | '/movements/{-$id}'
     | '/projects/$id'
     | '/accounts/'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
+    | '/months/$month'
     | '/movements/{-$id}'
     | '/projects/$id'
     | '/accounts'
@@ -212,6 +224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_workspace/'
     | '/_authenticated/_workspace/accounts/$id'
     | '/_authenticated/_workspace/activities/{-$id}'
+    | '/_authenticated/_workspace/months/$month'
     | '/_authenticated/_workspace/movements/{-$id}'
     | '/_authenticated/_workspace/projects/$id'
     | '/_authenticated/_workspace/accounts/'
@@ -314,6 +327,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport
       parentRoute: typeof AuthenticatedWorkspaceRoute
     }
+    '/_authenticated/_workspace/months/$month': {
+      id: '/_authenticated/_workspace/months/$month'
+      path: '/months/$month'
+      fullPath: '/months/$month'
+      preLoaderRoute: typeof AuthenticatedWorkspaceMonthsMonthRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRoute
+    }
     '/_authenticated/_workspace/activities/{-$id}': {
       id: '/_authenticated/_workspace/activities/{-$id}'
       path: '/activities/{-$id}'
@@ -349,6 +369,7 @@ interface AuthenticatedWorkspaceRouteChildren {
   AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
   AuthenticatedWorkspaceAccountsIdRoute: typeof AuthenticatedWorkspaceAccountsIdRoute
   AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
+  AuthenticatedWorkspaceMonthsMonthRoute: typeof AuthenticatedWorkspaceMonthsMonthRoute
   AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
   AuthenticatedWorkspaceProjectsIdRoute: typeof AuthenticatedWorkspaceProjectsIdRoute
   AuthenticatedWorkspaceAccountsIndexRoute: typeof AuthenticatedWorkspaceAccountsIndexRoute
@@ -366,6 +387,8 @@ const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
       AuthenticatedWorkspaceAccountsIdRoute,
     AuthenticatedWorkspaceActivitiesChar123IdChar125Route:
       AuthenticatedWorkspaceActivitiesChar123IdChar125Route,
+    AuthenticatedWorkspaceMonthsMonthRoute:
+      AuthenticatedWorkspaceMonthsMonthRoute,
     AuthenticatedWorkspaceMovementsChar123IdChar125Route:
       AuthenticatedWorkspaceMovementsChar123IdChar125Route,
     AuthenticatedWorkspaceProjectsIdRoute:

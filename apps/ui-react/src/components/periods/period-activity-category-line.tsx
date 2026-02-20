@@ -21,23 +21,31 @@ export function PeriodActivityCategoryLine({
 }: PeriodActivityCategoryLineProps) {
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
-  const viewFilters = usePeriods((state) => state.viewFilters);
-  const periodsActivityData = usePeriods((state) =>
-    state.getPeriodsAvailable(),
-  );
   const [expanded, setExpanded] = useState(false);
 
+  const viewFilters = {
+    activityType: null,
+    category: null,
+    subcategory: null,
+  };
+
   const periodActivityCategoryValue = useMemo<number>(() => {
-    return (
-      periodsActivityData
-        .find(
-          (p) =>
-            p.month === periodDate.getMonth() &&
-            p.year === periodDate.getFullYear(),
-        )
-        ?.categories.find((c) => c.category === category.id)?.value ?? 0
+    const startOfMonth = new Date(
+      periodDate.getFullYear(),
+      periodDate.getMonth(),
+      1,
     );
-  }, [periodsActivityData, periodDate, category.id]);
+    const endOfMonth = new Date(
+      periodDate.getFullYear(),
+      periodDate.getMonth() + 1,
+      0,
+    );
+
+    return activities
+      .filter((a) => a.category === category.id)
+      .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
+      .reduce((total, a) => total + a.amount, 0);
+  }, [periodDate, category.id]);
 
   const categorySubcategories = useMemo(() => {
     return subcategories.filter((sc) => sc.category === category.id);

@@ -97,26 +97,40 @@ function CategoryPage() {
   return (
     <>
       <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/categories">Categories</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  <CategoryLabel categoryId={category.id} />
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+
+          <div className="flex-1" />
+          <CreateSubcategoryDialog categoryId={category.id}>
+            <Button variant="ghost" size="icon">
+              <Plus />
+            </Button>
+          </CreateSubcategoryDialog>
+          <CategorySettingsDialog category={category}>
+            <Button variant="ghost" size="icon">
+              <Settings />
+            </Button>
+          </CategorySettingsDialog>
+        </header>
+
         <Tabs defaultValue="summary" className="h-full">
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
-
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/categories">Categories</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <CategoryLabel categoryId={category.id} />
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
             <TabsList className="ml-5">
               <TabsTrigger value="summary">
                 <LayoutDashboard />
@@ -131,17 +145,6 @@ function CategoryPage() {
                 Activities
               </TabsTrigger>
             </TabsList>
-            <div className="flex-1" />
-            <CreateSubcategoryDialog categoryId={category.id}>
-              <Button variant="ghost" size="icon">
-                <Plus />
-              </Button>
-            </CreateSubcategoryDialog>
-            <CategorySettingsDialog category={category}>
-              <Button variant="ghost" size="icon">
-                <Settings />
-              </Button>
-            </CategorySettingsDialog>
           </header>
 
           <TabsContent value="summary">

@@ -1,4 +1,6 @@
 import { ActivityType } from "@maille/core/activities";
+import { Link } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { Calendar, CalendarClock } from "lucide-react";
 import { useMemo } from "react";
 
@@ -65,7 +67,7 @@ export function MonthsTable() {
       .reduce((total, a) => total + a.amount, 0);
   };
 
-  const getAccountTotalUpToMonth = (monthDate: Date): number => {
+  const getBalanceForMonth = (monthDate: Date): number => {
     // Calculate the balance for the previous month
     const previousMonth = new Date(
       monthDate.getFullYear(),
@@ -74,7 +76,7 @@ export function MonthsTable() {
     );
     const previousBalance =
       previousMonth >= new Date(currentWorkspace!.startingDate)
-        ? getAccountTotalUpToMonth(previousMonth)
+        ? getBalanceForMonth(previousMonth)
         : accounts.reduce(
             (total, account) => total + (account.startingBalance ?? 0),
             0,
@@ -106,7 +108,7 @@ export function MonthsTable() {
       {months.length > 0 ? (
         <div className="flex-1 overflow-y-auto">
           {months.map((monthDate) => {
-            const balance = getAccountTotalUpToMonth(monthDate);
+            const balance = getBalanceForMonth(monthDate);
             const revenue = getActivityTypeTotalForMonth(
               monthDate,
               ActivityType.REVENUE,
@@ -125,8 +127,12 @@ export function MonthsTable() {
             );
 
             return (
-              <div
+              <Link
                 key={`${monthDate.getMonth()}-${monthDate.getFullYear()}`}
+                to="/months/$month"
+                params={{
+                  month: format(monthDate, "MM-yyyy"),
+                }}
                 className={cn(
                   "flex h-12 shrink-0 items-center gap-2 border-b pr-6 hover:bg-muted/50",
                   monthDate.getMonth() === today.getMonth() &&
@@ -212,7 +218,7 @@ export function MonthsTable() {
                     {currencyFormatter.format(neutral)}
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

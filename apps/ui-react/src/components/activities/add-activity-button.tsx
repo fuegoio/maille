@@ -12,6 +12,7 @@ interface AddActivityButtonProps {
   className?: string;
   movement?: Movement;
   onCreated?: (activityNumber: number) => void;
+  size?: "default" | "sm" | "lg";
 }
 
 export function AddActivityButton({
@@ -19,6 +20,7 @@ export function AddActivityButton({
   className,
   movement,
   onCreated,
+  size = "default",
 }: AddActivityButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -36,7 +38,12 @@ export function AddActivityButton({
 
   return (
     <>
-      <Button onClick={handleClick} className={className} variant="default">
+      <Button
+        onClick={handleClick}
+        className={className}
+        variant="default"
+        size={size}
+      >
         <Plus />
         Add activity
       </Button>

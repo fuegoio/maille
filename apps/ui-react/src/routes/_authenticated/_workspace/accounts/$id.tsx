@@ -25,6 +25,8 @@ import { CounterpartiesTable } from "@/components/accounts/counterparties/counte
 import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { AddActivityModal } from "@/components/activities/add-activity-modal";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -143,30 +145,38 @@ function AccountPage() {
   return (
     <>
       <SidebarInset>
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/accounts">Accounts</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  <AccountLabel accountId={account.id} />
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex-1" />
+          <AccountSettingsDialog account={account}>
+            <Button variant="ghost" size="icon">
+              <Settings />
+            </Button>
+          </AccountSettingsDialog>
+        </header>
+
         <Tabs
           value={selectedTab}
           onValueChange={setSelectedTab}
           className="h-full"
         >
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
-
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/accounts">Accounts</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <AccountLabel accountId={account.id} />
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
             <TabsList className="ml-5">
               <TabsTrigger value="summary">
                 <LayoutDashboard />
@@ -190,6 +200,7 @@ function AccountPage() {
               )}
             </TabsList>
             <div className="flex-1" />
+            {selectedTab === "activities" && <AddActivityButton size="sm" />}
             {selectedTab === "assets" && (
               <AddAssetModal accountId={accountId}>
                 <Button size="sm">
@@ -206,11 +217,6 @@ function AccountPage() {
                 </Button>
               </AddCounterpartyModal>
             )}
-            <AccountSettingsDialog account={account}>
-              <Button variant="ghost" size="icon">
-                <Settings />
-              </Button>
-            </AccountSettingsDialog>
           </header>
 
           <TabsContent value="summary">
