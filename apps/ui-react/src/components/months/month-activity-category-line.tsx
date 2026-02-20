@@ -6,19 +6,18 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
-import { usePeriods } from "@/stores/periods";
 
-interface PeriodActivityCategoryLineProps {
-  periodDate: Date;
+interface MonthActivityCategoryLineProps {
+  monthDate: Date;
   category: ActivityCategory;
 }
 
-export function PeriodActivityCategoryLine({
-  periodDate,
+export function MonthActivityCategoryLine({
+  monthDate,
   category,
-}: PeriodActivityCategoryLineProps) {
+}: MonthActivityCategoryLineProps) {
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
@@ -29,15 +28,15 @@ export function PeriodActivityCategoryLine({
     subcategory: null,
   };
 
-  const periodActivityCategoryValue = useMemo<number>(() => {
+  const monthActivityCategoryValue = useMemo<number>(() => {
     const startOfMonth = new Date(
-      periodDate.getFullYear(),
-      periodDate.getMonth(),
+      monthDate.getFullYear(),
+      monthDate.getMonth(),
       1,
     );
     const endOfMonth = new Date(
-      periodDate.getFullYear(),
-      periodDate.getMonth() + 1,
+      monthDate.getFullYear(),
+      monthDate.getMonth() + 1,
       0,
     );
 
@@ -45,7 +44,7 @@ export function PeriodActivityCategoryLine({
       .filter((a) => a.category === category.id)
       .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
       .reduce((total, a) => total + a.amount, 0);
-  }, [periodDate, category.id]);
+  }, [monthDate, category.id, activities]);
 
   const categorySubcategories = useMemo(() => {
     return subcategories.filter((sc) => sc.category === category.id);
@@ -60,8 +59,8 @@ export function PeriodActivityCategoryLine({
     activities
       .filter(
         (activity) =>
-          activity.date.getMonth() === periodDate.getMonth() &&
-          activity.date.getFullYear() === periodDate.getFullYear() &&
+          activity.date.getMonth() === monthDate.getMonth() &&
+          activity.date.getFullYear() === monthDate.getFullYear() &&
           activity.category === category.id &&
           activity.subcategory !== null,
       )
@@ -72,7 +71,7 @@ export function PeriodActivityCategoryLine({
       });
 
     return values;
-  }, [activities, periodDate, category.id, categorySubcategories]);
+  }, [activities, monthDate, category.id, categorySubcategories]);
 
   const selectCategoryToFilterActivities = () => {
     viewFilters.subcategory = null;
@@ -99,17 +98,19 @@ export function PeriodActivityCategoryLine({
   return (
     <div className="space-y-2">
       <div
-        className={`group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors ${
-          viewFilters.category === category.id
-            ? "bg-primary-800"
-            : "hover:bg-primary-800"
-        }`}
+        className={cn(
+          "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
+          {
+            "bg-muted": viewFilters.category === category.id,
+            "hover:bg-muted/50": viewFilters.category !== category.id,
+          },
+        )}
         onClick={selectCategoryToFilterActivities}
       >
         <div
-          className={`flex items-center text-xs font-medium text-white ${
-            categorySubcategories.length === 0 ? "pl-6" : ""
-          }`}
+          className={cn("flex items-center text-xs font-medium", {
+            "pl-6": categorySubcategories.length === 0,
+          })}
         >
           {categorySubcategories.length > 0 && (
             <Button
@@ -133,51 +134,51 @@ export function PeriodActivityCategoryLine({
 
         <div className="flex items-center">
           <div
-            className={`text-primary-200 mr-4 text-sm ${
-              viewFilters.category === category.id
-                ? ""
-                : "hidden group-hover:block"
-            }`}
+            className={cn("mr-4 text-sm text-muted-foreground", {
+              "hidden group-hover:block": viewFilters.category !== category.id,
+            })}
           >
             {viewFilters.category === category.id ? "Clear filter" : "Filter"}
           </div>
 
           <div className="font-mono text-sm whitespace-nowrap text-white">
-            {getCurrencyFormatter().format(periodActivityCategoryValue)}
+            {getCurrencyFormatter().format(monthActivityCategoryValue)}
           </div>
         </div>
       </div>
 
       {expanded && (
-        <div className="mb-2 space-y-1">
+        <div className="space-y-1 border-b pb-2">
           {categorySubcategories.map((subcategory) => (
             <div
               key={subcategory.id}
-              className={`group ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-5 ${
-                viewFilters.subcategory === subcategory.id
-                  ? "bg-primary-800"
-                  : "hover:bg-primary-950"
-              }`}
+              className={cn(
+                "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
+                {
+                  "bg-muted": viewFilters.subcategory === subcategory.id,
+                  "hover:bg-muted/50":
+                    viewFilters.subcategory !== subcategory.id,
+                },
+              )}
               onClick={() => selectSubcategoryToFilterActivities(subcategory)}
             >
-              <div className="text-primary-700 flex items-center text-xs font-medium">
+              <div className="flex items-center text-xs font-medium">
                 {subcategory.name}
               </div>
 
               <div className="flex items-center">
                 <div
-                  className={`text-primary-300 mr-4 text-sm ${
-                    viewFilters.subcategory === subcategory.id
-                      ? ""
-                      : "hidden group-hover:block"
-                  }`}
+                  className={cn("mr-4 text-sm text-muted-foreground", {
+                    "hidden group-hover:block":
+                      viewFilters.subcategory !== subcategory.id,
+                  })}
                 >
                   {viewFilters.subcategory === subcategory.id
                     ? "Clear filter"
                     : "Filter"}
                 </div>
 
-                <div className="text-primary-300 text-sm whitespace-nowrap">
+                <div className="font-mono text-xs whitespace-nowrap">
                   {getCurrencyFormatter().format(
                     subcategoriesValues[subcategory.id],
                   )}
