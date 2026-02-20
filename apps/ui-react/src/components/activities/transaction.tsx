@@ -95,6 +95,8 @@ export function Transaction({
           onChange={(account) =>
             handleTransactionUpdate(transaction, {
               fromAccount: account,
+              fromCounterparty: null,
+              fromAsset: null,
             })
           }
         />
@@ -136,6 +138,8 @@ export function Transaction({
           onChange={(account) =>
             handleTransactionUpdate(transaction, {
               toAccount: account,
+              toCounterparty: null,
+              toAsset: null,
             })
           }
         />
