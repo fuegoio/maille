@@ -62,7 +62,7 @@ export function AccountsTable() {
   };
 
   return ACCOUNT_TYPES.map((accountType) => (
-    <div>
+    <div key={accountType}>
       <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
         <ChevronDown
           className={cn(
