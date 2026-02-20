@@ -101,10 +101,10 @@ export const registerAssetsMutations = () => {
           assetUpdates.name = args.name;
         }
         if (args.description !== undefined) {
-          assetUpdates.description = args.description ?? undefined;
+          assetUpdates.description = args.description;
         }
         if (args.location !== undefined) {
-          assetUpdates.location = args.location ?? undefined;
+          assetUpdates.location = args.location;
         }
 
         const updatedAssets = await db
@@ -170,4 +170,3 @@ export const registerAssetsMutations = () => {
     }),
   );
 };
-

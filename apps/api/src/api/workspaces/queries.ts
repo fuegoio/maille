@@ -3,6 +3,7 @@ import { db } from "@/database";
 import { workspaces, workspaceUsers, user } from "@/tables";
 import { WorkspaceSchema } from "./schemas";
 import { eq, inArray } from "drizzle-orm";
+import { GraphQLError } from "graphql/error";
 
 export const registerWorkspaceQueries = () => {
   builder.queryField("workspaces", (t) =>
@@ -34,7 +35,7 @@ export const registerWorkspaceQueries = () => {
           .then((res) => res[0]);
 
         if (!workspace) {
-          throw new Error("Workspace not found");
+          throw new GraphQLError("Workspace not found");
         }
 
         // Get users for this workspace
@@ -42,11 +43,8 @@ export const registerWorkspaceQueries = () => {
           .select()
           .from(workspaceUsers)
           .where(eq(workspaceUsers.workspace, args.id));
-
         const userIds = workspaceUsersList.map((wu) => wu.user);
-
         const usersList = await db.select().from(user).where(inArray(user.id, userIds));
-
         const usersData = usersList.map((user) => ({
           id: user.id,
           email: user.email,

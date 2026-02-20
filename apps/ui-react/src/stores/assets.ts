@@ -9,6 +9,7 @@ import { storage } from "./storage";
 
 interface AssetsState {
   assets: Asset[];
+  focusedAsset: string | null;
   getAssetById: (assetId: string) => Asset | undefined;
   getAssetsByAccount: (accountId: string) => Asset[];
   addAsset: (asset: Omit<Asset, "value">) => Asset;
@@ -23,6 +24,7 @@ interface AssetsState {
   ) => void;
   deleteAsset: (assetId: string) => void;
   restoreAsset: (asset: Asset) => void;
+  setFocusedAsset: (assetId: string | null) => void;
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
@@ -32,6 +34,7 @@ export const useAssets = create<AssetsState>()(
   persist(
     (set, get) => ({
       assets: [],
+      focusedAsset: null,
 
       getAssetById: (assetId: string): Asset | undefined => {
         return get().assets.find((a) => a.id === assetId);
@@ -82,6 +85,10 @@ export const useAssets = create<AssetsState>()(
         set((state) => ({
           assets: [...state.assets, asset],
         }));
+      },
+
+      setFocusedAsset: (assetId: string | null) => {
+        set({ focusedAsset: assetId });
       },
 
       handleEvent: (event: SyncEvent) => {

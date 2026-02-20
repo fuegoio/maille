@@ -1,8 +1,8 @@
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
+import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
 import { useAssets } from "@/stores/assets";
 
 import { Badge } from "../../ui/badge";
@@ -24,6 +24,8 @@ interface AssetsTableProps {
 
 export function AssetsTable({ accountId }: AssetsTableProps) {
   const assets = useAssets((state) => state.assets);
+  const focusedAsset = useAssets((state) => state.focusedAsset);
+  const setFocusedAsset = useAssets((state) => state.setFocusedAsset);
   const activities = useActivities((state) => state.activities);
   const currencyFormatter = getCurrencyFormatter();
 
@@ -34,9 +36,9 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
   const getAssetValue = (assetId: string) => {
     return activities
       .flatMap((activity) => activity.transactions)
-      .filter((transaction) => 
-        transaction.fromAsset === assetId ||
-        transaction.toAsset === assetId
+      .filter(
+        (transaction) =>
+          transaction.fromAsset === assetId || transaction.toAsset === assetId,
       )
       .reduce((total, transaction) => {
         // If money flows TO the asset, it adds value
@@ -86,21 +88,27 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
             {accountAssets.map((asset) => (
               <div
                 key={asset.id}
-                className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+                className={cn(
+                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 hover:bg-muted/50",
+                  focusedAsset === asset.id
+                    ? "border-l-4 border-l-primary bg-accent pl-13"
+                    : "pl-14",
+                )}
+                onClick={() => setFocusedAsset(asset.id)}
               >
-                <div className="text-sm font-medium">{asset.name}</div>
+                <div className="text-sm font-semibold">{asset.name}</div>
                 {asset.description && (
-                  <div className="mx-2 text-sm text-muted-foreground">
+                  <div className="ml-4 text-sm text-muted-foreground">
                     {asset.description}
                   </div>
                 )}
+                <div className="flex-1" />
+
                 {asset.location && (
-                  <Badge className="ml-4" variant="outline">
+                  <Badge className="mr-4" variant="outline">
                     {asset.location}
                   </Badge>
                 )}
-
-                <div className="flex-1" />
 
                 <div className="text-right font-mono text-sm">
                   {currencyFormatter.format(getAssetValue(asset.id))}

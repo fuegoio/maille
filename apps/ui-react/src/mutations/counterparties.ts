@@ -59,7 +59,7 @@ export const updateCounterpartyMutation = graphql(/* GraphQL */ `
 export type UpdateCounterpartyMutation = MutationType<
   "updateCounterparty",
   typeof updateCounterpartyMutation,
-  CreateCounterpartyEvent,
+  Partial<Counterparty>,
   [UpdateCounterpartyEvent]
 >;
 

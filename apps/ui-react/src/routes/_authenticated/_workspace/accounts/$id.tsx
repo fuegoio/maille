@@ -18,6 +18,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
+import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-counterparty-modal";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
@@ -324,7 +325,8 @@ function AccountPage() {
         </Tabs>
       </SidebarInset>
 
-      <Activity />
+      {selectedTab === "activities" && <Activity />}
+      {selectedTab === "assets" && <Asset />}
     </>
   );
 }

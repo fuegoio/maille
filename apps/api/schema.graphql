@@ -159,6 +159,7 @@ type Mutation {
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
   updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromAsset: String, fromCounterparty: String, id: String!, toAccount: String, toAsset: String, toCounterparty: String): Transaction!
+  updateWorkspace(currency: String!, id: String!, name: String!, startingDate: Date!): Workspace!
 }
 
 type Project {

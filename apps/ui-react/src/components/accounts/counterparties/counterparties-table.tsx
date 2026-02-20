@@ -92,7 +92,7 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
                 key={counterparty.id}
                 className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
               >
-                <div className="text-sm font-medium">{counterparty.name}</div>
+                <div className="text-sm font-semibold">{counterparty.name}</div>
                 {counterparty.description && (
                   <div className="mx-2 text-sm text-muted-foreground">
                     {counterparty.description}
