@@ -143,6 +143,7 @@ export type MovementActivity = {
 
 export type Mutation = {
   addTransaction: Transaction;
+  addUser: Workspace;
   createAccount: Account;
   createActivity: Activity;
   createActivityCategory: ActivityCategory;
@@ -184,6 +185,14 @@ export type MutationAddTransactionArgs = {
   fromAccount: Scalars['String']['input'];
   id: Scalars['String']['input'];
   toAccount: Scalars['String']['input'];
+};
+
+
+export type MutationAddUserArgs = {
+  currency: Scalars['String']['input'];
+  id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  startingDate: Scalars['Date']['input'];
 };
 
 

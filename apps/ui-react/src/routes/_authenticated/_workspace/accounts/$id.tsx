@@ -22,6 +22,7 @@ import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-counterparty-modal";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
+import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import {
@@ -327,6 +328,7 @@ function AccountPage() {
 
       {selectedTab === "activities" && <Activity />}
       {selectedTab === "assets" && <Asset />}
+      {selectedTab === "counterparties" && <Counterparty />}
     </>
   );
 }

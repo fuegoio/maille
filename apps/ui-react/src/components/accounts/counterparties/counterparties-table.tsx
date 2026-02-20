@@ -1,7 +1,7 @@
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import { getCurrencyFormatter } from "@/lib/utils";
+import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useCounterparties } from "@/stores/counterparties";
 
@@ -24,6 +24,8 @@ interface CounterpartiesTableProps {
 
 export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   const counterparties = useCounterparties((state) => state.counterparties);
+  const focusedCounterparty = useCounterparties((state) => state.focusedCounterparty);
+  const setFocusedCounterparty = useCounterparties((state) => state.setFocusedCounterparty);
   const activities = useActivities((state) => state.activities);
   const currencyFormatter = getCurrencyFormatter();
 
@@ -90,7 +92,13 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
             {accountCounterparties.map((counterparty) => (
               <div
                 key={counterparty.id}
-                className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+                className={cn(
+                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 hover:bg-muted/50",
+                  focusedCounterparty === counterparty.id
+                    ? "border-l-4 border-l-primary bg-accent pl-13"
+                    : "pl-14",
+                )}
+                onClick={() => setFocusedCounterparty(counterparty.id)}
               >
                 <div className="text-sm font-semibold">{counterparty.name}</div>
                 {counterparty.description && (

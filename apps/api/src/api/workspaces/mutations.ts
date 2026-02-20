@@ -1,9 +1,9 @@
 import { builder } from "@/api/builder";
 import { db } from "@/database";
-import { workspaces, workspaceUsers } from "@/tables";
+import { user, workspaces, workspaceUsers } from "@/tables";
 import { WorkspaceSchema } from "./schemas";
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 export const registerWorkspaceMutations = () => {
@@ -78,6 +78,66 @@ export const registerWorkspaceMutations = () => {
         if (!workspace) {
           throw new GraphQLError("Workspace not found");
         }
+
+        // Get users for this workspace
+        const workspaceUsersList = await db
+          .select()
+          .from(workspaceUsers)
+          .where(eq(workspaceUsers.workspace, args.id));
+        const userIds = workspaceUsersList.map((wu) => wu.user);
+        const usersList = await db.select().from(user).where(inArray(user.id, userIds));
+        const usersData = usersList.map((user) => ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image || null,
+        }));
+
+        return {
+          ...workspace,
+          createdAt: workspace.createdAt.toISOString(),
+          users: usersData,
+        };
+      },
+    }),
+  );
+
+  builder.mutationField("addUser", (t) =>
+    t.field({
+      type: WorkspaceSchema,
+      args: {
+        id: t.arg({ type: "String", required: true }),
+        user: t.arg({ type: "String", required: true }),
+      },
+      resolve: async (root, args) => {
+        const workspace = await db
+          .select()
+          .from(workspaces)
+          .where(eq(workspaces.id, args.id))
+          .limit(1)
+          .then((res) => res[0]);
+
+        if (!workspace) {
+          throw new GraphQLError("Workspace not found");
+        }
+
+        const dbUser = await db
+          .select()
+          .from(user)
+          .where(eq(user.email, args.user))
+          .limit(1)
+          .then((res) => res[0]);
+        if (!dbUser) {
+          throw new GraphQLError("User not found");
+        }
+
+        // Add the creating user to the workspace
+        await db.insert(workspaceUsers).values({
+          id: randomUUID(),
+          user: dbUser.id,
+          workspace: args.id,
+          createdAt: new Date(),
+        });
 
         // Get users for this workspace
         const workspaceUsersList = await db
