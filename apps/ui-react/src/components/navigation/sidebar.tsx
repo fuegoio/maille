@@ -30,6 +30,7 @@ const data = {
       title: "Dashboard",
       url: "/",
       icon: LayoutDashboard,
+      exact: true,
     },
     {
       title: "Months",

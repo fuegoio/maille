@@ -1,7 +1,5 @@
-import { useMemo } from "react";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useAuth } from "@/stores/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useWorkspaces } from "@/stores/workspaces";
 
 interface UserAvatarProps {
   userId: string;
@@ -9,16 +7,19 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ userId, className }: UserAvatarProps) {
-  const authUser = useAuth((state) => state.user);
+  const workspace = useWorkspaces((state) => state.currentWorkspace);
+  if (!workspace) {
+    throw new Error("workspace not found");
+  }
 
-  const userInitials = useMemo(() => {
-    if (!authUser) return "?";
-    if (authUser.id !== userId) return "?";
-    return authUser.name[0];
-  }, [authUser, userId]);
+  const user = workspace.users?.find((u) => u.id === userId);
+  if (!user) return null;
+
+  const userInitials = user.name.at(0);
 
   return (
     <Avatar className={className}>
+      <AvatarImage src={user.image ?? undefined} />
       <AvatarFallback>{userInitials}</AvatarFallback>
     </Avatar>
   );

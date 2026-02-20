@@ -21,6 +21,7 @@ export function NavMain({
     title: string;
     url: string;
     icon: LucideIcon;
+    exact?: boolean;
     items?: {
       title: string;
       url: string;
@@ -39,10 +40,12 @@ export function NavMain({
               asChild
               tooltip={item.title}
               isActive={
-                location.pathname.startsWith(item.url) &&
-                !item.items?.some((subItem) =>
-                  location.pathname.startsWith(subItem.url),
-                )
+                !item.exact
+                  ? location.pathname.startsWith(item.url) &&
+                    !item.items?.some((subItem) =>
+                      location.pathname.startsWith(subItem.url),
+                    )
+                  : location.pathname === item.url
               }
             >
               <Link to={item.url}>

@@ -304,7 +304,7 @@ function AccountPage() {
             </ChartContainer>
           </TabsContent>
 
-          <TabsContent value="activities">
+          <TabsContent value="activities" className="flex h-full">
             <ActivitiesTable
               viewId={`account-${account.id}`}
               activities={viewActivities}

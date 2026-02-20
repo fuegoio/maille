@@ -23,6 +23,7 @@ import { useSync } from "@/stores/sync";
 import type { AvailableWorkspace } from "@/stores/workspaces";
 
 import { Badge } from "../ui/badge";
+import { WorkspaceUsers } from "../users/workspace-users";
 
 import { ThemeSwitcher } from "./theme-switcher";
 
@@ -102,6 +103,8 @@ export function WorkspaceSwitcher({
                 <div className="text-muted-foreground">Create workspace</div>
               </Link>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <WorkspaceUsers />
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
