@@ -102,7 +102,7 @@ export const registerWorkspaceMutations = () => {
     }),
   );
 
-  builder.mutationField("addUser", (t) =>
+  builder.mutationField("inviteUser", (t) =>
     t.field({
       type: WorkspaceSchema,
       args: {

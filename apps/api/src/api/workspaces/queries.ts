@@ -3,18 +3,23 @@ import { db } from "@/database";
 import { workspaces, workspaceUsers, user } from "@/tables";
 import { WorkspaceSchema } from "./schemas";
 import { eq, inArray } from "drizzle-orm";
-import { GraphQLError } from "graphql/error";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerWorkspaceQueries = () => {
   builder.queryField("workspaces", (t) =>
     t.field({
       type: [WorkspaceSchema],
-      resolve: async () => {
-        const workspacesList = await db.select().from(workspaces);
+      resolve: async (root, args, ctx) => {
+        const workspacesList = await db
+          .select()
+          .from(workspaces)
+          .leftJoin(workspaceUsers, eq(workspaceUsers.workspace, workspaces.id))
+          .where(eq(workspaceUsers.user, ctx.user.id));
+
         return workspacesList.map((workspace) => ({
-          ...workspace,
+          ...workspace.workspaces,
           users: [],
-          createdAt: workspace.createdAt.toISOString(),
+          createdAt: workspace.workspaces.createdAt.toISOString(),
         }));
       },
     }),
@@ -26,17 +31,8 @@ export const registerWorkspaceQueries = () => {
       args: {
         id: t.arg({ type: "String", required: true }),
       },
-      resolve: async (root, args) => {
-        const workspace = await db
-          .select()
-          .from(workspaces)
-          .where(eq(workspaces.id, args.id))
-          .limit(1)
-          .then((res) => res[0]);
-
-        if (!workspace) {
-          throw new GraphQLError("Workspace not found");
-        }
+      resolve: async (root, args, ctx) => {
+        const workspace = await validateWorkspace(args.id, ctx.user.id);
 
         // Get users for this workspace
         const workspaceUsersList = await db

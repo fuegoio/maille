@@ -42,7 +42,7 @@ const formSchema = z.object({
     .string("First name is required.")
     .min(1, "First name is required."),
   lastName: z.string("Last name is required.").min(1, "Last name is required."),
-  email: z.string("Email is required.").min(1, "Email is required."),
+  email: z.email("Email is required.").min(1, "Email is required."),
   password: z.string("Password is required.").min(1, "Password is required."),
   terms: z.boolean().refine((val) => val === true, {
     message: "You must accept the terms and conditions.",

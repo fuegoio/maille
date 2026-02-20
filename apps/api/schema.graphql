@@ -128,7 +128,6 @@ type MovementActivity {
 
 type Mutation {
   addTransaction(activityId: String!, amount: Float!, fromAccount: String!, id: String!, toAccount: String!): Transaction!
-  addUser(id: String!, user: String!): Workspace!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!, workspace: String!): Account!
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!, workspace: String!): Activity!
   createActivityCategory(id: String!, name: String!, type: String!, workspace: String!): ActivityCategory!
@@ -150,6 +149,7 @@ type Mutation {
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
   deleteWorkspace(id: String!): Boolean!
+  inviteUser(id: String!, user: String!): Workspace!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!

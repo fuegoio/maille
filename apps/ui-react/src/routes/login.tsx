@@ -35,7 +35,7 @@ export const Route = createFileRoute("/login")({
 });
 
 const formSchema = z.object({
-  email: z.string("Email is required.").min(1, "Email is required."),
+  email: z.email("Email is required.").min(1, "Email is required."),
   password: z.string("Password is required.").min(1, "Password is required."),
 });
 

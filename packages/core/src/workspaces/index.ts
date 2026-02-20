@@ -1,5 +1,4 @@
 import type { User } from "#users/types.js";
-// Remove incorrect crypto import
 
 export interface Workspace {
   id: string;
