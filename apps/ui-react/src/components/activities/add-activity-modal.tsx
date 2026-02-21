@@ -40,7 +40,6 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
-import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
 
@@ -96,7 +95,6 @@ export function AddActivityModal({
   const accounts = useAccounts((state) => state.accounts);
   const mutate = useSync((state) => state.mutate);
   const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
-  const userId = useAuth((state) => state.user!.id);
   const activities = useActivities((state) => state.activities);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
@@ -322,7 +320,6 @@ export function AddActivityModal({
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
         id: randomstring(),
-        user: userId,
         fromAccount: t.fromAccount,
         toAccount: t.toAccount,
         amount: t.amount,
@@ -378,7 +375,6 @@ export function AddActivityModal({
         transactions: [
           {
             id: randomstring(),
-            user: userId,
             fromAccount: fromAccount!,
             toAccount: toAccount!,
             amount: Math.abs(movement.amount),

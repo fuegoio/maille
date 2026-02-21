@@ -20,7 +20,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
     category: string | null;
     subcategory: string | null;
     project: string | null;
-    transactions: Transaction[];
+    transactions: Omit<Transaction, "user">[];
     movement?: {
       id: string;
       amount: number;

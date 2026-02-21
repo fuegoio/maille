@@ -551,9 +551,13 @@ export const useActivities = create<ActivitiesState>()(
           const user = useAuth.getState().user;
           get().addActivity({
             ...event.payload,
-            users: [user!.id],
-            liabilities: event.payload.liabilities ?? [],
             date: new Date(event.payload.date),
+            users: [user!.id],
+            transactions: event.payload.transactions.map((t) => ({
+              ...t,
+              user: user!.id,
+            })),
+            liabilities: event.payload.liabilities ?? [],
             movements: event.payload.movement ? [event.payload.movement] : [],
           });
         } else if (event.type === "updateActivity") {
