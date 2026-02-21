@@ -5,7 +5,7 @@ import { db } from "@/database";
 import { accounts, movements, transactions } from "@/tables";
 import { addEvent } from "../events";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 export const registerAccountsMutations = () => {
@@ -101,7 +101,12 @@ export const registerAccountsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const account = (await db.select().from(accounts).where(eq(accounts.id, args.id)))[0];
+        const account = (
+          await db
+            .select()
+            .from(accounts)
+            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
         }
@@ -157,7 +162,12 @@ export const registerAccountsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const account = (await db.select().from(accounts).where(eq(accounts.id, args.id)))[0];
+        const account = (
+          await db
+            .select()
+            .from(accounts)
+            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
         }

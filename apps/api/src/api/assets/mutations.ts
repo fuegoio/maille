@@ -1,10 +1,11 @@
 import { builder } from "../builder";
 import { AssetSchema, DeleteAssetResponseSchema } from "./schemas";
 import { db } from "@/database";
-import { assets } from "@/tables";
+import { accounts, assets, transactions } from "@/tables";
 import { addEvent } from "../events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { validateWorkspace } from "@/services/workspaces";
 
 export const registerAssetsMutations = () => {
   builder.mutationField("createAsset", (t) =>
@@ -30,12 +31,31 @@ export const registerAssetsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
+        await validateWorkspace(args.workspace, ctx.user.id);
+
+        const account = (
+          await db
+            .select()
+            .from(accounts)
+            .where(
+              and(
+                eq(accounts.id, args.account),
+                eq(accounts.workspace, args.workspace),
+                eq(accounts.user, ctx.user.id),
+              ),
+            )
+            .limit(1)
+        )[0];
+        if (!account) {
+          throw new GraphQLError("Account not found");
+        }
+
         const asset = (
           await db
             .insert(assets)
             .values({
               id: args.id,
-              account: args.account,
+              account: account.id,
               name: args.name,
               description: args.description || undefined,
               location: args.location || undefined,
@@ -88,10 +108,18 @@ export const registerAssetsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const asset = (await db.select().from(assets).where(eq(assets.id, args.id)))[0];
+        const asset = (
+          await db
+            .select()
+            .from(assets)
+            .innerJoin(accounts, eq(accounts.id, assets.account))
+            .where(and(eq(assets.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0]?.assets;
         if (!asset) {
           throw new GraphQLError("Asset not found");
         }
+
+        await validateWorkspace(asset.workspace, ctx.user.id);
 
         const assetUpdates: Partial<typeof asset> = {};
         if (args.account) {
@@ -144,12 +172,28 @@ export const registerAssetsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const asset = (await db.select().from(assets).where(eq(assets.id, args.id)))[0];
+        const asset = (
+          await db
+            .select()
+            .from(assets)
+            .innerJoin(accounts, eq(accounts.id, assets.account))
+            .where(and(eq(assets.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0]?.assets;
         if (!asset) {
           throw new GraphQLError("Asset not found");
         }
 
+        await validateWorkspace(asset.workspace, ctx.user.id);
+
         await db.delete(assets).where(eq(assets.id, args.id));
+        await db
+          .update(transactions)
+          .set({ fromAsset: null })
+          .where(eq(transactions.fromAsset, args.id));
+        await db
+          .update(transactions)
+          .set({ toAsset: null })
+          .where(eq(transactions.toAsset, args.id));
 
         await addEvent({
           type: "deleteAsset",

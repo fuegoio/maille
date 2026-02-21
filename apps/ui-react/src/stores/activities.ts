@@ -4,6 +4,7 @@ import {
   getActivityTransactionsReconciliationSum,
   type Activity,
   type ActivityCategory,
+  type ActivityLiability,
   type ActivityMovement,
   type ActivitySubCategory,
   type Transaction,
@@ -16,6 +17,7 @@ import { randomstring } from "@/lib/utils";
 import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
+import { useAuth } from "./auth";
 import { useMovements } from "./movements";
 import { storage } from "./storage";
 
@@ -77,6 +79,7 @@ interface ActivitiesState {
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
+      liabilities?: ActivityLiability[];
     },
   ) => void;
   deleteActivity: (activityId: string) => void;
@@ -545,8 +548,11 @@ export const useActivities = create<ActivitiesState>()(
 
       handleEvent: (event: SyncEvent) => {
         if (event.type === "createActivity") {
+          const user = useAuth.getState().user;
           get().addActivity({
             ...event.payload,
+            users: [user!.id],
+            liabilities: event.payload.liabilities ?? [],
             date: new Date(event.payload.date),
             movements: event.payload.movement ? [event.payload.movement] : [],
           });
@@ -596,6 +602,10 @@ export const useActivities = create<ActivitiesState>()(
             event.payload.activity,
             event.payload.id,
           );
+        } else if (event.type === "updateActivityLiabilities") {
+          get().updateActivity(event.payload.activityId, {
+            liabilities: event.payload.liabilities,
+          });
         }
       },
 

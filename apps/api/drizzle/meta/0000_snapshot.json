@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "24141de6-540e-41e4-93b1-3973e573492e",
+  "id": "8ec53fdc-4b01-474e-894c-96da5a8c8c27",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -102,7 +102,9 @@
       "indexes": {
         "account_userId_idx": {
           "name": "account_userId_idx",
-          "columns": ["user_id"],
+          "columns": [
+            "user_id"
+          ],
           "isUnique": false
         }
       },
@@ -111,8 +113,12 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -198,8 +204,12 @@
           "name": "accounts_workspace_workspaces_id_fk",
           "tableFrom": "accounts",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -237,13 +247,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
-        },
-        "user": {
-          "name": "user",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
           "autoincrement": false
         },
         "workspace": {
@@ -291,21 +294,16 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "activities_user_user_id_fk": {
-          "name": "activities_user_user_id_fk",
-          "tableFrom": "activities",
-          "tableTo": "user",
-          "columnsFrom": ["user"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "activities_workspace_workspaces_id_fk": {
           "name": "activities_workspace_workspaces_id_fk",
           "tableFrom": "activities",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -313,8 +311,12 @@
           "name": "activities_category_activity_categories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_categories",
-          "columnsFrom": ["category"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -322,8 +324,12 @@
           "name": "activities_subcategory_activity_subcategories_id_fk",
           "tableFrom": "activities",
           "tableTo": "activity_subcategories",
-          "columnsFrom": ["subcategory"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "subcategory"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -331,8 +337,70 @@
           "name": "activities_project_projects_id_fk",
           "tableFrom": "activities",
           "tableTo": "projects",
-          "columnsFrom": ["project"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "project"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "activities_users": {
+      "name": "activities_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity": {
+          "name": "activity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user": {
+          "name": "user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "activities_users_activity_activities_id_fk": {
+          "name": "activities_users_activity_activities_id_fk",
+          "tableFrom": "activities_users",
+          "tableTo": "activities",
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "activities_users_user_user_id_fk": {
+          "name": "activities_users_user_user_id_fk",
+          "tableFrom": "activities_users",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -379,8 +447,12 @@
           "name": "activity_categories_workspace_workspaces_id_fk",
           "tableFrom": "activity_categories",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -427,8 +499,12 @@
           "name": "activity_subcategories_workspace_workspaces_id_fk",
           "tableFrom": "activity_subcategories",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -436,8 +512,183 @@
           "name": "activity_subcategories_category_activity_categories_id_fk",
           "tableFrom": "activity_subcategories",
           "tableTo": "activity_categories",
-          "columnsFrom": ["category"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "category"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "assets": {
+      "name": "assets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account": {
+          "name": "account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "workspace": {
+          "name": "workspace",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "assets_account_accounts_id_fk": {
+          "name": "assets_account_accounts_id_fk",
+          "tableFrom": "assets",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assets_workspace_workspaces_id_fk": {
+          "name": "assets_workspace_workspaces_id_fk",
+          "tableFrom": "assets",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "counterparties": {
+      "name": "counterparties",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account": {
+          "name": "account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "workspace": {
+          "name": "workspace",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user": {
+          "name": "user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "counterparties_account_accounts_id_fk": {
+          "name": "counterparties_account_accounts_id_fk",
+          "tableFrom": "counterparties",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counterparties_workspace_workspaces_id_fk": {
+          "name": "counterparties_workspace_workspaces_id_fk",
+          "tableFrom": "counterparties",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "counterparties_user_user_id_fk": {
+          "name": "counterparties_user_user_id_fk",
+          "tableFrom": "counterparties",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -490,10 +741,31 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "workspace": {
+          "name": "workspace",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "events_workspace_workspaces_id_fk": {
+          "name": "events_workspace_workspaces_id_fk",
+          "tableFrom": "events",
+          "tableTo": "workspaces",
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -557,8 +829,12 @@
           "name": "movements_workspace_workspaces_id_fk",
           "tableFrom": "movements",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -566,8 +842,12 @@
           "name": "movements_account_accounts_id_fk",
           "tableFrom": "movements",
           "tableTo": "accounts",
-          "columnsFrom": ["account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -621,8 +901,12 @@
           "name": "movements_activities_workspace_workspaces_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -630,8 +914,12 @@
           "name": "movements_activities_activity_activities_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "activities",
-          "columnsFrom": ["activity"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -639,8 +927,12 @@
           "name": "movements_activities_movement_movements_id_fk",
           "tableFrom": "movements_activities",
           "tableTo": "movements",
-          "columnsFrom": ["movement"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "movement"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -701,8 +993,12 @@
           "name": "projects_workspace_workspaces_id_fk",
           "tableFrom": "projects",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -774,12 +1070,16 @@
       "indexes": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "columns": ["token"],
+          "columns": [
+            "token"
+          ],
           "isUnique": true
         },
         "session_userId_idx": {
           "name": "session_userId_idx",
-          "columns": ["user_id"],
+          "columns": [
+            "user_id"
+          ],
           "isUnique": false
         }
       },
@@ -788,8 +1088,12 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -808,6 +1112,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "user": {
+          "name": "user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "amount": {
           "name": "amount",
           "type": "integer",
@@ -822,8 +1133,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "from_user": {
-          "name": "from_user",
+        "from_asset": {
+          "name": "from_asset",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "from_counterparty": {
+          "name": "from_counterparty",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -836,8 +1154,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "to_user": {
-          "name": "to_user",
+        "to_asset": {
+          "name": "to_asset",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "to_counterparty": {
+          "name": "to_counterparty",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -857,17 +1182,38 @@
           "name": "transactions_from_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": ["from_account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "from_account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "transactions_from_user_user_id_fk": {
-          "name": "transactions_from_user_user_id_fk",
+        "transactions_from_asset_assets_id_fk": {
+          "name": "transactions_from_asset_assets_id_fk",
           "tableFrom": "transactions",
-          "tableTo": "user",
-          "columnsFrom": ["from_user"],
-          "columnsTo": ["id"],
+          "tableTo": "assets",
+          "columnsFrom": [
+            "from_asset"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transactions_from_counterparty_counterparties_id_fk": {
+          "name": "transactions_from_counterparty_counterparties_id_fk",
+          "tableFrom": "transactions",
+          "tableTo": "counterparties",
+          "columnsFrom": [
+            "from_counterparty"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -875,17 +1221,38 @@
           "name": "transactions_to_account_accounts_id_fk",
           "tableFrom": "transactions",
           "tableTo": "accounts",
-          "columnsFrom": ["to_account"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "to_account"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "transactions_to_user_user_id_fk": {
-          "name": "transactions_to_user_user_id_fk",
+        "transactions_to_asset_assets_id_fk": {
+          "name": "transactions_to_asset_assets_id_fk",
           "tableFrom": "transactions",
-          "tableTo": "user",
-          "columnsFrom": ["to_user"],
-          "columnsTo": ["id"],
+          "tableTo": "assets",
+          "columnsFrom": [
+            "to_asset"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transactions_to_counterparty_counterparties_id_fk": {
+          "name": "transactions_to_counterparty_counterparties_id_fk",
+          "tableFrom": "transactions",
+          "tableTo": "counterparties",
+          "columnsFrom": [
+            "to_counterparty"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -893,8 +1260,12 @@
           "name": "transactions_activity_activities_id_fk",
           "tableFrom": "transactions",
           "tableTo": "activities",
-          "columnsFrom": ["activity"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "activity"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -960,7 +1331,9 @@
       "indexes": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": ["email"],
+          "columns": [
+            "email"
+          ],
           "isUnique": true
         }
       },
@@ -1018,7 +1391,9 @@
       "indexes": {
         "verification_identifier_idx": {
           "name": "verification_identifier_idx",
-          "columns": ["identifier"],
+          "columns": [
+            "identifier"
+          ],
           "isUnique": false
         }
       },
@@ -1065,8 +1440,12 @@
           "name": "workspace_users_user_user_id_fk",
           "tableFrom": "workspace_users",
           "tableTo": "user",
-          "columnsFrom": ["user"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1074,8 +1453,12 @@
           "name": "workspace_users_workspace_workspaces_id_fk",
           "tableFrom": "workspace_users",
           "tableTo": "workspaces",
-          "columnsFrom": ["workspace"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "workspace"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1103,9 +1486,9 @@
         },
         "starting_date": {
           "name": "starting_date",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "currency": {

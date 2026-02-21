@@ -51,7 +51,6 @@ export const createActivityMutation = graphql(/* GraphQL */ `
       type: $type
     ) {
       id
-      user
       number
     }
   }

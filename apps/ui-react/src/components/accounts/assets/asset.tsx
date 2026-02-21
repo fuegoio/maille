@@ -35,7 +35,9 @@ export function Asset() {
 
   const mutate = useSync((state) => state.mutate);
 
-  const asset = useAssets((state) => state.getAssetById(assetId));
+  const asset = useAssets((state) =>
+    assetId ? state.getAssetById(assetId) : undefined,
+  );
   const activities = useActivities((state) => state.activities);
 
   // Calculate the current value of the asset based on transactions
@@ -273,4 +275,3 @@ export function Asset() {
     </SidebarInset>
   );
 }
-

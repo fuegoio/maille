@@ -177,13 +177,9 @@ export function ActivityLine({
         </div>
 
         <div
-          className={cn(
-            "text-right font-mono font-medium whitespace-nowrap lg:w-20",
-            {
-              "text-muted-foreground":
-                accountFilter !== null || showTransactions,
-            },
-          )}
+          className={cn("text-right font-mono font-medium whitespace-nowrap", {
+            "text-muted-foreground": accountFilter !== null || showTransactions,
+          })}
         >
           {currencyFormatter.format(activity.amount)}
         </div>
@@ -202,7 +198,7 @@ export function ActivityLine({
                 <AccountLabel accountId={transaction.toAccount} />
 
                 <div className="flex-1" />
-                <div className="text-right font-mono font-medium whitespace-nowrap lg:w-20">
+                <div className="text-right font-mono font-medium whitespace-nowrap">
                   {currencyFormatter.format(transaction.amount)}
                 </div>
               </div>

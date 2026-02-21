@@ -102,9 +102,6 @@ export const activities = sqliteTable("activities", {
   name: text("name").notNull(),
   date: integer("date", { mode: "timestamp" }).notNull(),
   description: text("description"),
-  user: text("user")
-    .notNull()
-    .references(() => user.id),
   workspace: text("workspace")
     .notNull()
     .$type<string>()
@@ -120,6 +117,17 @@ export const activities = sqliteTable("activities", {
   project: text("project")
     .$type<string>()
     .references(() => projects.id),
+});
+
+export const activitiesUsers = sqliteTable("activities_users", {
+  id: text("id").primaryKey().$type<string>(),
+  activity: text("activity")
+    .notNull()
+    .references(() => activities.id)
+    .$type<string>(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id),
 });
 
 export const activityCategories = sqliteTable("activity_categories", {
@@ -159,6 +167,7 @@ export const projects = sqliteTable("projects", {
 
 export const transactions = sqliteTable("transactions", {
   id: text("id").primaryKey().$type<string>(),
+  user: text("user").notNull(),
   amount: integer("amount").notNull(),
   fromAccount: text("from_account")
     .notNull()

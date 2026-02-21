@@ -47,7 +47,9 @@ export function Movement() {
   const [showMovement, setShowMovement] = React.useState(true);
   const mutate = useSync((state) => state.mutate);
 
-  const movement = useMovements((state) => state.getMovementById(movementId));
+  const movement = useMovements((state) =>
+    movementId ? state.getMovementById(movementId) : undefined,
+  );
 
   const activities = useActivities((state) => state.activities);
 

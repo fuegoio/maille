@@ -1,5 +1,6 @@
 import {
   ActivityType,
+  getActivityLiabilities,
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
   type ActivityMovement,
@@ -16,15 +17,17 @@ import {
 import {
   accounts,
   activities,
+  activitiesUsers,
   activityCategories,
   activitySubcategories,
+  counterparties,
   movements,
   movementsActivities,
   transactions,
 } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
-import { and, eq, max } from "drizzle-orm";
+import { and, eq, inArray, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { validateWorkspace } from "@/services/workspaces";
@@ -106,7 +109,6 @@ export const registerActivitiesMutations = () => {
 
         await db.insert(activities).values({
           id: args.id,
-          user: ctx.user.id,
           workspace: args.workspace,
           number,
           name: args.name,
@@ -118,6 +120,13 @@ export const registerActivitiesMutations = () => {
           project: args.project,
         });
 
+        // Acttivity users
+        await db.insert(activitiesUsers).values({
+          id: args.id,
+          user: ctx.user.id,
+          activity: args.id,
+        });
+
         // Transactions
         const transactionPromises =
           args.transactions?.map(async (transaction) => {
@@ -125,6 +134,7 @@ export const registerActivitiesMutations = () => {
               .insert(transactions)
               .values({
                 id: transaction.id,
+                user: ctx.user.id,
                 amount: transaction.amount,
                 fromAccount: transaction.fromAccount,
                 toAccount: transaction.toAccount,
@@ -162,7 +172,6 @@ export const registerActivitiesMutations = () => {
           payload: {
             id: args.id,
             number,
-            user: ctx.user.id,
             name: args.name,
             description: args.description ?? null,
             date: args.date.toISOString(),
@@ -182,7 +191,7 @@ export const registerActivitiesMutations = () => {
         return {
           id: args.id,
           number,
-          user: ctx.user.id,
+          users: [ctx.user.id],
           name: args.name,
           description: args.description ?? null,
           date: args.date,
@@ -213,6 +222,7 @@ export const registerActivitiesMutations = () => {
               };
             },
           ),
+          liabilities: [],
         };
       },
     }),
@@ -224,6 +234,10 @@ export const registerActivitiesMutations = () => {
       args: {
         id: t.arg({
           type: "String",
+        }),
+        users: t.arg({
+          type: ["String"],
+          required: false,
         }),
         name: t.arg({
           type: "String",
@@ -259,9 +273,10 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
+            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
+            .where(and(eq(activities.id, args.id), eq(activitiesUsers.user, ctx.user.id)))
             .limit(1)
-        )[0];
+        )[0]?.activities;
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
@@ -304,22 +319,98 @@ export const registerActivitiesMutations = () => {
           .where(eq(activities.id, args.id))
           .returning();
         const updatedActivity = updatedActivities[0];
-
         if (!updatedActivity) {
           throw new GraphQLError("Failed to update activity");
         }
 
-        void addEvent({
-          type: "updateActivity",
-          payload: {
-            id: args.id,
-            ...activityUpdates,
-            date: activityUpdates.date?.toISOString(),
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-          workspace: activity.workspace,
+        // Counterparties
+        const counterpartiesData = await db
+          .select()
+          .from(counterparties)
+          .where(eq(counterparties.workspace, activity.workspace));
+
+        // Users
+        const activityUsers = await db
+          .select()
+          .from(activitiesUsers)
+          .where(eq(activitiesUsers.activity, args.id));
+        if (args.users) {
+          const usersToAdd = args.users.filter(
+            (user) => !activityUsers.some((u) => u.user === user),
+          );
+          const usersToRemove = activityUsers
+            .filter((u) => !args.users?.includes(u.user))
+            .map((u) => u.user);
+
+          if (usersToAdd.length > 0) {
+            await db.insert(activitiesUsers).values(
+              usersToAdd.map((user) => ({
+                id: crypto.randomUUID(),
+                user,
+                activity: args.id,
+              })),
+            );
+
+            usersToAdd.forEach((user) => {
+              void addEvent({
+                type: "createActivity",
+                payload: {
+                  ...updatedActivity,
+                  date: updatedActivity.date.toISOString(),
+                  transactions: [],
+                  liabilities: getActivityLiabilities(
+                    transactionsData,
+                    counterpartiesData,
+                    ctx.user.id,
+                  ),
+                },
+                createdAt: new Date(),
+                clientId: ctx.session.id,
+                user,
+                workspace: activity.workspace,
+              });
+            });
+          }
+
+          if (usersToRemove.length > 0) {
+            await db
+              .delete(activitiesUsers)
+              .where(
+                and(
+                  eq(activitiesUsers.activity, args.id),
+                  inArray(activitiesUsers.user, usersToRemove),
+                ),
+              );
+
+            usersToRemove.forEach((user) => {
+              void addEvent({
+                type: "deleteActivity",
+                payload: {
+                  id: args.id,
+                },
+                createdAt: new Date(),
+                clientId: ctx.session.id,
+                user,
+                workspace: activity.workspace,
+              });
+            });
+          }
+        }
+
+        activityUsers.forEach((activityUser) => {
+          void addEvent({
+            type: "updateActivity",
+            payload: {
+              id: args.id,
+              ...activityUpdates,
+              users: args.users ?? undefined,
+              date: activityUpdates.date?.toISOString(),
+            },
+            createdAt: new Date(),
+            clientId: ctx.session.id,
+            user: activityUser.user,
+            workspace: activity.workspace,
+          });
         });
 
         const accountsQuery = await db.select().from(accounts);
@@ -334,8 +425,9 @@ export const registerActivitiesMutations = () => {
 
         return {
           ...updatedActivity,
+          users: args.users ?? activityUsers.map((u) => u.user),
           date: updatedActivity.date,
-          transactions: transactionsData,
+          transactions: transactionsData.filter((t) => t.user === ctx.user.id),
           movements: movementsData,
           amount: getActivityTransactionsReconciliationSum(
             updatedActivity.type,
@@ -358,6 +450,7 @@ export const registerActivitiesMutations = () => {
               };
             },
           ),
+          liabilities: getActivityLiabilities(transactionsData, counterpartiesData, ctx.user.id),
         };
       },
     }),
@@ -373,8 +466,13 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db.select().from(activities).where(eq(activities.id, args.id)).limit(1)
-        )[0];
+          await db
+            .select()
+            .from(activities)
+            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
+            .where(and(eq(activities.id, args.id), eq(activitiesUsers.user, ctx.user.id)))
+            .limit(1)
+        )[0]?.activities;
         if (!activity) {
           return {
             id: args.id,
@@ -383,23 +481,31 @@ export const registerActivitiesMutations = () => {
         }
 
         // Validate workspace from the activity
-        if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user.id);
-        }
+        await validateWorkspace(activity.workspace, ctx.user.id);
 
+        // Users
+        const activityUsers = await db
+          .select()
+          .from(activitiesUsers)
+          .where(eq(activitiesUsers.activity, args.id));
+
+        // Delete activity
+        await db.delete(activitiesUsers).where(eq(activitiesUsers.activity, args.id));
         await db.delete(transactions).where(eq(transactions.activity, args.id));
         await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
         await db.delete(activities).where(eq(activities.id, args.id));
 
-        await addEvent({
-          type: "deleteActivity",
-          payload: {
-            id: args.id,
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-          workspace: activity.workspace,
+        activityUsers.forEach((activityUser) => {
+          void addEvent({
+            type: "deleteActivity",
+            payload: {
+              id: args.id,
+            },
+            createdAt: new Date(),
+            clientId: ctx.session.id,
+            user: activityUser.user,
+            workspace: activity.workspace,
+          });
         });
 
         return {
@@ -428,16 +534,19 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
-        )[0];
+          await db
+            .select()
+            .from(activities)
+            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
+            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .limit(1)
+        )[0]?.activities;
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
 
         // Validate workspace from the activity
-        if (activity.workspace) {
-          await validateWorkspace(activity.workspace, ctx.user.id);
-        }
+        await validateWorkspace(activity.workspace, ctx.user.id);
 
         // Validate accounts
         const fromAccount = await db
@@ -462,6 +571,7 @@ export const registerActivitiesMutations = () => {
           .insert(transactions)
           .values({
             id: args.id,
+            user: ctx.user.id,
             amount: args.amount,
             fromAccount: args.fromAccount,
             toAccount: args.toAccount,
@@ -534,8 +644,13 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
-        )[0];
+          await db
+            .select()
+            .from(activities)
+            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
+            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .limit(1)
+        )[0]?.activities;
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
@@ -546,13 +661,20 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
+            .where(
+              and(
+                eq(transactions.id, args.id),
+                eq(transactions.activity, args.activityId),
+                eq(transactions.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!transaction) {
           throw new GraphQLError("Transaction not found");
         }
 
+        // TODO: missing validation for accounts, assets and counterparties
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
         if (args.fromAccount) updatedFields.fromAccount = args.fromAccount;
@@ -586,6 +708,42 @@ export const registerActivitiesMutations = () => {
           workspace: activity.workspace,
         });
 
+        // Update liabilities if counterparties are updated
+        if (args.fromCounterparty || args.toCounterparty) {
+          const transactionsData = await db
+            .select()
+            .from(transactions)
+            .where(eq(transactions.activity, args.activityId));
+
+          const counterpartiesData = await db
+            .select()
+            .from(counterparties)
+            .where(eq(counterparties.workspace, activity.workspace));
+
+          const activityUsers = await db
+            .select()
+            .from(activitiesUsers)
+            .where(eq(activitiesUsers.activity, args.activityId));
+
+          activityUsers.forEach((activityUser) => {
+            void addEvent({
+              type: "updateActivityLiabilities",
+              payload: {
+                activityId: transaction.activity,
+                liabilities: getActivityLiabilities(
+                  transactionsData,
+                  counterpartiesData,
+                  activityUser.user,
+                ),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activityUser.user,
+              workspace: activity.workspace,
+            });
+          });
+        }
+
         return updatedTransaction;
       },
     }),
@@ -606,8 +764,13 @@ export const registerActivitiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const activity = (
-          await db.select().from(activities).where(eq(activities.id, args.activityId)).limit(1)
-        )[0];
+          await db
+            .select()
+            .from(activities)
+            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
+            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .limit(1)
+        )[0]?.activities;
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
@@ -618,7 +781,13 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
+            .where(
+              and(
+                eq(transactions.id, args.id),
+                eq(transactions.activity, args.activityId),
+                eq(transactions.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!transaction) {
@@ -638,6 +807,42 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
           workspace: activity.workspace,
         });
+
+        // Update liabilities if counterparties are updated
+        if (transaction.fromCounterparty || transaction.toCounterparty) {
+          const transactionsData = await db
+            .select()
+            .from(transactions)
+            .where(eq(transactions.activity, args.activityId));
+
+          const counterpartiesData = await db
+            .select()
+            .from(counterparties)
+            .where(eq(counterparties.workspace, activity.workspace));
+
+          const activityUsers = await db
+            .select()
+            .from(activitiesUsers)
+            .where(eq(activitiesUsers.activity, args.activityId));
+
+          activityUsers.forEach((activityUser) => {
+            void addEvent({
+              type: "updateActivityLiabilities",
+              payload: {
+                activityId: transaction.activity,
+                liabilities: getActivityLiabilities(
+                  transactionsData,
+                  counterpartiesData,
+                  activityUser.user,
+                ),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activityUser.user,
+              workspace: activity.workspace,
+            });
+          });
+        }
 
         return { id: args.id, success: true };
       },
@@ -773,7 +978,7 @@ export const registerActivitiesMutations = () => {
             category: null,
             subcategory: null,
           })
-          .where(and(eq(activities.category, args.id), eq(activities.user, ctx.user.id)));
+          .where(eq(activities.category, args.id));
         await db.delete(activityCategories).where(eq(activityCategories.id, args.id));
 
         await addEvent({

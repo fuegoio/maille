@@ -312,7 +312,6 @@ export function AddActivityModal({
   const createActivity = (data: FormValues) => {
     const newActivity = {
       id: randomstring(),
-      user: userId,
       number: activities.length + 1,
       name: data.name,
       description: data.description || null,
@@ -323,9 +322,8 @@ export function AddActivityModal({
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
         id: randomstring(),
-        fromUser: null,
+        user: userId,
         fromAccount: t.fromAccount,
-        toUser: null,
         toAccount: t.toAccount,
         amount: t.amount,
       })),
@@ -369,7 +367,6 @@ export function AddActivityModal({
 
       const newActivity = {
         id: randomstring(),
-        user: userId,
         number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
@@ -381,9 +378,8 @@ export function AddActivityModal({
         transactions: [
           {
             id: randomstring(),
-            fromUser: null,
+            user: userId,
             fromAccount: fromAccount!,
-            toUser: null,
             toAccount: toAccount!,
             amount: Math.abs(movement.amount),
           },

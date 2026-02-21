@@ -13,7 +13,7 @@ export const registerWorkspaceQueries = () => {
         const workspacesList = await db
           .select()
           .from(workspaces)
-          .leftJoin(workspaceUsers, eq(workspaceUsers.workspace, workspaces.id))
+          .innerJoin(workspaceUsers, eq(workspaceUsers.workspace, workspaces.id))
           .where(eq(workspaceUsers.user, ctx.user.id));
 
         return workspacesList.map((workspace) => ({

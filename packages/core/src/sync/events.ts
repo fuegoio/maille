@@ -1,5 +1,5 @@
 import type { Account, AccountType } from "#accounts/index.js";
-import type { ActivityType, Transaction } from "#activities/types.ts";
+import type { ActivityLiability, ActivityType, Transaction } from "#activities/types.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -13,7 +13,6 @@ export interface CreateActivityEvent extends BaseSyncEvent {
   payload: {
     id: string;
     number: number;
-    user: string;
     name: string;
     description: string | null;
     date: string;
@@ -27,6 +26,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
       amount: number;
       movement: string;
     };
+    liabilities?: ActivityLiability[];
   };
 }
 
@@ -64,7 +64,7 @@ export interface UpdateTransactionEvent extends BaseSyncEvent {
   payload: {
     activityId: string;
     id: string;
-  } & Partial<Omit<Transaction, "id">>;
+  } & Partial<Omit<Transaction, "id" | "user">>;
 }
 
 export interface DeleteTransactionEvent extends BaseSyncEvent {
@@ -72,6 +72,14 @@ export interface DeleteTransactionEvent extends BaseSyncEvent {
   payload: {
     activityId: string;
     id: string;
+  };
+}
+
+export interface UpdateActivityLiabilities extends BaseSyncEvent {
+  type: "updateActivityLiabilities";
+  payload: {
+    activityId: string;
+    liabilities: ActivityLiability[];
   };
 }
 
@@ -321,6 +329,7 @@ export type SyncEvent =
   | AddTransactionEvent
   | UpdateTransactionEvent
   | DeleteTransactionEvent
+  | UpdateActivityLiabilities
   | CreateMovementEvent
   | UpdateMovementEvent
   | DeleteMovementEvent

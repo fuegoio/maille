@@ -5,8 +5,9 @@ import {
   type ActivityStatus,
   type ActivityMovement,
   type Transaction,
+  type ActivityLiability,
 } from "./types.js";
-import { AccountType, type Account } from "../accounts/index.js";
+import { AccountType, type Account, type Counterparty } from "../accounts/index.js";
 import type { Movement, MovementWithLink } from "../movements/types.js";
 
 export const getActivityStatus = (
@@ -234,4 +235,39 @@ export const getActivityMovementsReconciliated = (
     getMovementById,
   );
   return movementsReconciliatedByAccount.every((mrba) => mrba.reconcilied);
+};
+
+export const getActivityLiabilities = (
+  transactions: Transaction[],
+  counterparties: Counterparty[],
+  user: string,
+): ActivityLiability[] => {
+  const liabilities = transactions
+    .filter((t) => t.user !== user)
+    .reduce(
+      (liabilities, transaction) => {
+        if (transaction.fromCounterparty) {
+          const counterparty = counterparties.find((c) => c.id === transaction.fromCounterparty);
+          if (counterparty?.user === user) {
+            liabilities[counterparty.user] =
+              (liabilities[counterparty.user] ?? 0) + transaction.amount;
+          }
+        } else if (transaction.toCounterparty) {
+          const counterparty = counterparties.find((c) => c.id === transaction.toCounterparty);
+          if (counterparty?.user === user) {
+            liabilities[counterparty.user] =
+              (liabilities[counterparty.user] ?? 0) + transaction.amount * -1;
+          }
+        }
+
+        return liabilities;
+      },
+      {} as Record<string, number>,
+    );
+
+  return Object.entries(liabilities).map(([user, amount]) => ({
+    id: user,
+    user,
+    amount,
+  }));
 };

@@ -29,7 +29,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
 
     activities(workspaceId: $workspace) {
       id
-      user
+      users
       number
       name
       description
@@ -40,6 +40,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       project
       transactions {
         id
+        user
         amount
         fromAccount
         fromAsset
@@ -55,6 +56,11 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       }
       amount
       status
+      liabilities { 
+        id
+        user
+        amount
+      }
     }
 
     activityCategories(workspaceId: $workspace) {

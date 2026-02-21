@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1770070404103,
-      "tag": "0000_demonic_robbie_robertson",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1770763139048,
-      "tag": "0001_pink_swordsman",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1771506981793,
-      "tag": "0002_massive_inhumans",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1771530602640,
-      "tag": "0003_smiling_rage",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1771534727804,
-      "tag": "0004_whole_red_hulk",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1771543501029,
-      "tag": "0005_melted_morg",
+      "when": 1771707140813,
+      "tag": "0000_glossy_gamma_corps",
       "breakpoints": true
     }
   ]

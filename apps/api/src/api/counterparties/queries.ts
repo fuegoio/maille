@@ -1,9 +1,9 @@
 import { builder } from "../builder";
 import { CounterpartySchema } from "./schemas";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/database";
 import { validateWorkspace } from "@/services/workspaces";
-import { counterparties } from "@/tables";
+import { accounts, counterparties } from "@/tables";
 
 export const registerCounterpartiesQueries = () => {
   builder.queryField("counterparties", (t) =>
@@ -18,13 +18,13 @@ export const registerCounterpartiesQueries = () => {
         const counterpartiesQuery = await db
           .select()
           .from(counterparties)
-          .where(eq(counterparties.workspace, args.workspaceId));
+          .innerJoin(accounts, eq(accounts.id, counterparties.account))
+          .where(
+            and(eq(counterparties.workspace, args.workspaceId), eq(accounts.user, ctx.user.id)),
+          );
 
-        return counterpartiesQuery.map((counterparty) => ({
-          ...counterparty,
-        }));
+        return counterpartiesQuery.map((counterparty) => counterparty.counterparties);
       },
     }),
   );
 };
-

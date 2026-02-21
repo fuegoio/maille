@@ -44,7 +44,7 @@ export function Counterparty() {
   const mutate = useSync((state) => state.mutate);
 
   const counterparty = useCounterparties((state) =>
-    state.getCounterpartyById(counterpartyId),
+    counterpartyId ? state.getCounterpartyById(counterpartyId) : undefined,
   );
   const activities = useActivities((state) => state.activities);
 
@@ -289,4 +289,3 @@ export function Counterparty() {
     </SidebarInset>
   );
 }
-

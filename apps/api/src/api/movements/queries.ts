@@ -14,7 +14,6 @@ export const registerMovementsQueries = () => {
         workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
         await validateWorkspace(args.workspaceId, ctx.user.id);
 
         const movementsData = await db

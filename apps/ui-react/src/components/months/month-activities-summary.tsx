@@ -239,7 +239,7 @@ export function MonthActivitiesSummary({
                             <div
                               className="h-full transition-all hover:opacity-50"
                               style={{
-                                background: color,
+                                background: color.toString(),
                                 width: `${percentage}%`,
                               }}
                             />

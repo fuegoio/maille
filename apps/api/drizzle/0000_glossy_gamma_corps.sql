@@ -34,18 +34,24 @@ CREATE TABLE `activities` (
 	`name` text NOT NULL,
 	`date` integer NOT NULL,
 	`description` text,
-	`user` text NOT NULL,
 	`workspace` text NOT NULL,
 	`number` integer NOT NULL,
 	`type` text NOT NULL,
 	`category` text,
 	`subcategory` text,
 	`project` text,
-	FOREIGN KEY (`user`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`workspace`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`category`) REFERENCES `activity_categories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`subcategory`) REFERENCES `activity_subcategories`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`project`) REFERENCES `projects`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `activities_users` (
+	`id` text PRIMARY KEY NOT NULL,
+	`activity` text NOT NULL,
+	`user` text NOT NULL,
+	FOREIGN KEY (`activity`) REFERENCES `activities`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`user`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `activity_categories` (
@@ -65,13 +71,38 @@ CREATE TABLE `activity_subcategories` (
 	FOREIGN KEY (`category`) REFERENCES `activity_categories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `assets` (
+	`id` text PRIMARY KEY NOT NULL,
+	`account` text NOT NULL,
+	`name` text NOT NULL,
+	`description` text,
+	`location` text,
+	`workspace` text NOT NULL,
+	FOREIGN KEY (`account`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`workspace`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `counterparties` (
+	`id` text PRIMARY KEY NOT NULL,
+	`account` text NOT NULL,
+	`workspace` text NOT NULL,
+	`name` text NOT NULL,
+	`description` text,
+	`user` text,
+	FOREIGN KEY (`account`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`workspace`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`user`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `events` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user` text NOT NULL,
 	`type` text NOT NULL,
 	`payload` text NOT NULL,
 	`created_at` integer NOT NULL,
-	`client_id` text NOT NULL
+	`client_id` text NOT NULL,
+	`workspace` text NOT NULL,
+	FOREIGN KEY (`workspace`) REFERENCES `workspaces`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `movements` (
@@ -123,16 +154,21 @@ CREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-
 CREATE INDEX `session_userId_idx` ON `session` (`user_id`);--> statement-breakpoint
 CREATE TABLE `transactions` (
 	`id` text PRIMARY KEY NOT NULL,
+	`user` text NOT NULL,
 	`amount` integer NOT NULL,
 	`from_account` text NOT NULL,
-	`from_user` text,
+	`from_asset` text,
+	`from_counterparty` text,
 	`to_account` text NOT NULL,
-	`to_user` text,
+	`to_asset` text,
+	`to_counterparty` text,
 	`activity` text NOT NULL,
 	FOREIGN KEY (`from_account`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`from_user`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`from_asset`) REFERENCES `assets`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`from_counterparty`) REFERENCES `counterparties`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`to_account`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`to_user`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`to_asset`) REFERENCES `assets`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`to_counterparty`) REFERENCES `counterparties`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`activity`) REFERENCES `activities`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -169,7 +205,7 @@ CREATE TABLE `workspace_users` (
 CREATE TABLE `workspaces` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`starting_date` text,
+	`starting_date` integer NOT NULL,
 	`currency` text NOT NULL,
 	`created_at` integer NOT NULL
 );

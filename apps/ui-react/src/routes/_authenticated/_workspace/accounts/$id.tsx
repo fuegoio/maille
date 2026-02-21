@@ -26,7 +26,6 @@ import { Counterparty } from "@/components/accounts/counterparties/counterparty"
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
-import { AddActivityModal } from "@/components/activities/add-activity-modal";
 import {
   Breadcrumb,
   BreadcrumbItem,

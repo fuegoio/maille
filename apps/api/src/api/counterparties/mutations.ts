@@ -2,10 +2,10 @@ import { db } from "@/database";
 import { builder } from "../builder";
 import { CounterpartySchema } from "./schemas";
 import { addEvent } from "../events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { validateWorkspace } from "@/services/workspaces";
-import { counterparties } from "@/tables";
+import { accounts, counterparties, transactions } from "@/tables";
 
 export const registerCounterpartiesMutations = () => {
   builder.mutationField("createCounterparty", (t) =>
@@ -27,11 +27,28 @@ export const registerCounterpartiesMutations = () => {
       resolve: async (root, args, ctx) => {
         await validateWorkspace(args.workspace, ctx.user.id);
 
+        const account = (
+          await db
+            .select()
+            .from(accounts)
+            .where(
+              and(
+                eq(accounts.id, args.account),
+                eq(accounts.workspace, args.workspace),
+                eq(accounts.user, ctx.user.id),
+              ),
+            )
+            .limit(1)
+        )[0];
+        if (!account) {
+          throw new GraphQLError("Account not found");
+        }
+
         const counterpartyResults = await db
           .insert(counterparties)
           .values({
             id: args.id,
-            account: args.account,
+            account: account.id,
             workspace: args.workspace,
             name: args.name,
             description: args.description,
@@ -77,8 +94,12 @@ export const registerCounterpartiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const counterparty = (
-          await db.select().from(counterparties).where(eq(counterparties.id, args.id))
-        )[0];
+          await db
+            .select()
+            .from(counterparties)
+            .innerJoin(accounts, eq(accounts.id, counterparties.account))
+            .where(and(eq(counterparties.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0]?.counterparties;
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
@@ -138,8 +159,12 @@ export const registerCounterpartiesMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const counterparty = (
-          await db.select().from(counterparties).where(eq(counterparties.id, args.id))
-        )[0];
+          await db
+            .select()
+            .from(counterparties)
+            .innerJoin(accounts, eq(accounts.id, counterparties.account))
+            .where(and(eq(counterparties.id, args.id), eq(accounts.user, ctx.user.id)))
+        )[0]?.counterparties;
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
@@ -147,6 +172,14 @@ export const registerCounterpartiesMutations = () => {
         await validateWorkspace(counterparty.workspace, ctx.user.id);
 
         await db.delete(counterparties).where(eq(counterparties.id, args.id));
+        await db
+          .update(transactions)
+          .set({ fromCounterparty: null })
+          .where(eq(transactions.fromCounterparty, args.id));
+        await db
+          .update(transactions)
+          .set({ toCounterparty: null })
+          .where(eq(transactions.toCounterparty, args.id));
 
         await addEvent({
           type: "deleteCounterparty",

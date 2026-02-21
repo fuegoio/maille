@@ -22,15 +22,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { addTransactionMutation } from "@/mutations/activities";
+import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 
 // Form schema using zod
 const formSchema = z.object({
   amount: z.number().min(0.01, "Amount must be greater than 0"),
   fromAccount: z.string().min(1, "From account is required"),
-  fromUser: z.string().optional(),
   toAccount: z.string().min(1, "To account is required"),
-  toUser: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -46,6 +45,7 @@ export function AddTransactionButton({
 }: AddTransactionButtonProps) {
   const mutate = useSync((state) => state.mutate);
   const [showDialog, setShowDialog] = useState(false);
+  const user = useAuth((state) => state.user);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -76,8 +76,7 @@ export function AddTransactionButton({
             activityId: activity.id,
             id: transactionId,
             ...data,
-            fromCounterparty: data.fromUser ?? null,
-            toCounterparty: data.toUser ?? null,
+            user: user!.id,
           },
         },
       ],

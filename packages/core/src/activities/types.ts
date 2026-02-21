@@ -1,5 +1,6 @@
 export type Transaction = {
   id: string;
+  user: string;
   amount: number;
   fromAccount: string;
   fromCounterparty?: string | null;
@@ -36,9 +37,14 @@ export type ActivityMovement = {
   amount: number;
 };
 
-export type Activity = {
+export type ActivityLiability = {
   id: string;
   user: string;
+  amount: number;
+};
+
+export type BaseActivity = {
+  id: string;
   number: number;
   name: string;
   description: string | null;
@@ -47,11 +53,16 @@ export type Activity = {
   category: string | null;
   subcategory: string | null;
   project: string | null;
+
+  users: string[];
   transactions: Transaction[];
   movements: ActivityMovement[];
+};
 
+export type Activity = BaseActivity & {
   // Computed
   amount: number;
+  liabilities: ActivityLiability[];
   status: ActivityStatus;
 };
 
