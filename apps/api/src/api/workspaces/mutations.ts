@@ -5,6 +5,7 @@ import { WorkspaceSchema } from "./schemas";
 import { randomUUID } from "crypto";
 import { eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { createUserAccounts } from "@/services/users";
 
 export const registerWorkspaceMutations = () => {
   builder.mutationField("createWorkspace", (t) =>
@@ -42,6 +43,7 @@ export const registerWorkspaceMutations = () => {
           workspace: workspaceId,
           createdAt: createdAt,
         });
+        await createUserAccounts(ctx.user.id, workspaceId);
 
         return {
           ...workspace,
@@ -138,6 +140,7 @@ export const registerWorkspaceMutations = () => {
           workspace: args.id,
           createdAt: new Date(),
         });
+        await createUserAccounts(dbUser.id, args.id);
 
         // Get users for this workspace
         const workspaceUsersList = await db

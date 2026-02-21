@@ -1,21 +1,10 @@
-import { accounts, workspaces } from "@/tables";
+import { accounts } from "@/tables";
 import { db } from "@/database";
 import { AccountType } from "@maille/core/accounts";
 import { logger } from "@/logger";
 
-export const bootstrapUser = async (userId: string) => {
+export const createUserAccounts = async (userId: string, workspaceId: string) => {
   logger.info({ userId }, "Bootstrapping user ...");
-
-  // Get or create a default workspace
-  const workspace = await db
-    .select()
-    .from(workspaces)
-    .limit(1)
-    .then((res) => res[0]);
-
-  if (!workspace) {
-    throw new Error("No workspace found for user");
-  }
 
   // Create accounts
   const userAccounts = await db
@@ -24,7 +13,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Revenue",
         type: AccountType.REVENUE,
         default: true,
@@ -33,7 +22,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Expense",
         type: AccountType.EXPENSE,
         default: true,
@@ -42,7 +31,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Cash",
         type: AccountType.CASH,
         default: true,
@@ -51,7 +40,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Liabilities",
         type: AccountType.LIABILITIES,
         default: true,
@@ -60,7 +49,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Bank account",
         type: AccountType.BANK_ACCOUNT,
         default: false,
@@ -69,7 +58,7 @@ export const bootstrapUser = async (userId: string) => {
       {
         id: crypto.randomUUID(),
         user: userId,
-        workspace: workspace.id,
+        workspace: workspaceId,
         name: "Investment account",
         type: AccountType.INVESTMENT_ACCOUNT,
         default: false,
