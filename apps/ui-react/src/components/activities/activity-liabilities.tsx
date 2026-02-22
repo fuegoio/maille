@@ -55,6 +55,8 @@ export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
       return Math.abs(currentAmount - liability.amount) < 0.01;
     }) || false;
 
+  if (!activity.liabilities || activity.liabilities.length === 0) return null;
+
   return (
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
@@ -68,44 +70,33 @@ export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
       </div>
 
       <div className="my-2">
-        {activity.liabilities && activity.liabilities.length === 0 ? (
-          <div className="py-4 text-sm text-muted-foreground">
-            No liabilities for this activity.
-          </div>
-        ) : (
-          activity.liabilities?.map((liability) => {
-            const currentAmount = currentAmounts[liability.user] || 0;
-            const userAmountReconciled =
-              Math.abs(currentAmount - liability.amount) < 0.01;
+        {activity.liabilities?.map((liability) => {
+          const currentAmount = currentAmounts[liability.user] || 0;
+          const userAmountReconciled =
+            Math.abs(currentAmount - liability.amount) < 0.01;
 
-            const user = workspace?.users?.find((u) => u.id === liability.user);
-            return (
-              <div key={liability.user} className="flex items-center py-2">
-                <div className="mr-3 flex items-center">
-                  <UserAvatar
-                    userId={liability.user}
-                    className="mr-2 h-6 w-6"
-                  />
-                  <span className="text-sm">
-                    {user?.name || `User ${liability.user.slice(0, 6)}...`}
-                  </span>
-                </div>
-                <div className="flex-1" />
-                <div
-                  className={cn(
-                    "pr-2 font-mono text-sm whitespace-nowrap",
-                    userAmountReconciled
-                      ? "text-indigo-400"
-                      : "text-orange-300",
-                  )}
-                >
-                  {currencyFormatter.format(currentAmount)}/
-                  {currencyFormatter.format(liability.amount)}
-                </div>
+          const user = workspace?.users?.find((u) => u.id === liability.user);
+          return (
+            <div key={liability.user} className="flex items-center py-2">
+              <div className="mr-3 flex items-center">
+                <UserAvatar userId={liability.user} className="mr-2 h-6 w-6" />
+                <span className="text-sm">
+                  {user?.name || `User ${liability.user.slice(0, 6)}...`}
+                </span>
               </div>
-            );
-          })
-        )}
+              <div className="flex-1" />
+              <div
+                className={cn(
+                  "pr-2 font-mono text-sm whitespace-nowrap",
+                  userAmountReconciled ? "text-indigo-400" : "text-orange-300",
+                )}
+              >
+                {currencyFormatter.format(currentAmount)}/
+                {currencyFormatter.format(liability.amount)}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
