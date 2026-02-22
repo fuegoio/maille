@@ -1,7 +1,5 @@
-import { parse } from "csv-parse/browser/esm/sync";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import utc from "dayjs/plugin/utc";
+import { parse as parseCSV } from "csv-parse/browser/esm/sync";
+import { parse } from "date-fns";
 import { Upload } from "lucide-react";
 import * as React from "react";
 
@@ -22,12 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UploadDropZone } from "@/components/upload-drop-zone";
+import { getGraphQLDate } from "@/lib/date";
 import { createMovementMutation } from "@/mutations/movements";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
-
-dayjs.extend(customParseFormat);
-dayjs.extend(utc);
+import { useWorkspaces } from "@/stores/workspaces";
 
 interface ImportMovementsButtonProps {
   className?: string;
@@ -47,7 +44,9 @@ export function ImportMovementsButton({
     name: undefined as string | undefined,
   });
   const [account, setAccount] = React.useState<string | undefined>(undefined);
+  const mutate = useSync((state) => state.mutate);
 
+  const workspace = useWorkspaces((state) => state.currentWorkspace!.id);
   const movements = useMovements((state) => state.movements);
 
   const headers = React.useMemo(() => {
@@ -59,7 +58,7 @@ export function ImportMovementsButton({
     const reader = new FileReader();
     reader.addEventListener("load", (event) => {
       const data = event.target!.result as string;
-      const parsedRecords = parse(data, {
+      const parsedRecords = parseCSV(data, {
         delimiter: [";", ","],
         columns: true,
         skip_empty_lines: true,
@@ -67,7 +66,7 @@ export function ImportMovementsButton({
         relax_column_count: true,
       });
 
-      setRecords(parsedRecords);
+      setRecords(parsedRecords as Record<string, string>[]);
       if (parsedRecords.length !== 0) {
         setStep(1);
       }
@@ -80,11 +79,18 @@ export function ImportMovementsButton({
 
     records.forEach((record) => {
       const movementName = record[mapping.name!];
-      const movementDate = dayjs(record[mapping.date!], [
-        "DD/MM/YYYY",
-        "D/M/YYYY",
-        "YYYY-MM-DD",
-      ]).toDate();
+
+      const dateString = record[mapping.date!];
+      const formats = ["dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"];
+      let movementDate = new Date(dateString);
+
+      for (const format of formats) {
+        const parsedDate = parse(dateString, format, new Date());
+        if (!isNaN(parsedDate.getTime())) {
+          movementDate = parsedDate;
+          break;
+        }
+      }
       const movementAmount = parseFloat(
         record[mapping.amount!].replace(/ /g, "").replace(/,/g, "."),
       );
@@ -98,27 +104,26 @@ export function ImportMovementsButton({
       );
 
       if (!existingMovement) {
-        const addMovement = useMovements((state) => state.addMovement);
-        const movement = addMovement({
-          date: movementDate,
-          amount: movementAmount,
-          account: account,
+        const movement = {
+          id: crypto.randomUUID(),
           name: movementName,
-          activities: [],
-        });
+          date: getGraphQLDate(movementDate),
+          account,
+          amount: movementAmount,
+          workspace,
+        };
 
-        const mutate = useSync((state) => state.mutate);
         mutate({
           name: "createMovement",
           mutation: createMovementMutation,
-          variables: {
-            id: movement.id,
-            name: movement.name,
-            date: movement.date.toISOString().split("T")[0],
-            account: movement.account,
-            amount: movement.amount,
-          },
+          variables: movement,
           rollbackData: undefined,
+          events: [
+            {
+              type: "createMovement",
+              payload: movement,
+            },
+          ],
         });
       }
     });
