@@ -1,7 +1,10 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse/browser/esm/sync";
 import { parse } from "date-fns";
 import { Upload } from "lucide-react";
 import * as React from "react";
+import { useForm, Controller } from "react-hook-form";
+import z from "zod";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { Button } from "@/components/ui/button";
@@ -12,6 +15,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -26,6 +35,20 @@ import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 import { useWorkspaces } from "@/stores/workspaces";
 
+import { Separator } from "../ui/separator";
+
+// Form schema using zod
+const formSchema = z.object({
+  account: z.string().min(1, "Account is required"),
+  mapping: z.object({
+    date: z.string().min(1, "Date field is required"),
+    amount: z.string().min(1, "Amount field is required"),
+    name: z.string().min(1, "Name field is required"),
+  }),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 interface ImportMovementsButtonProps {
   className?: string;
   onImported?: () => void;
@@ -38,16 +61,24 @@ export function ImportMovementsButton({
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
-  const [mapping, setMapping] = React.useState({
-    date: undefined as string | undefined,
-    amount: undefined as string | undefined,
-    name: undefined as string | undefined,
-  });
-  const [account, setAccount] = React.useState<string | undefined>(undefined);
   const mutate = useSync((state) => state.mutate);
 
   const workspace = useWorkspaces((state) => state.currentWorkspace!.id);
   const movements = useMovements((state) => state.movements);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      account: "",
+      mapping: {
+        date: "",
+        amount: "",
+        name: "",
+      },
+    },
+  });
+
+  const { control, handleSubmit, reset, setValue } = form;
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
@@ -74,13 +105,13 @@ export function ImportMovementsButton({
     reader.readAsText(file);
   };
 
-  const processFile = () => {
-    if (!account || !mapping.name || !mapping.date || !mapping.amount) return;
+  const processFile = (data: FormValues) => {
+    const { account, mapping } = data;
 
     records.forEach((record) => {
-      const movementName = record[mapping.name!];
+      const movementName = record[mapping.name];
 
-      const dateString = record[mapping.date!];
+      const dateString = record[mapping.date];
       const formats = ["dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"];
       let movementDate = new Date(dateString);
 
@@ -92,7 +123,7 @@ export function ImportMovementsButton({
         }
       }
       const movementAmount = parseFloat(
-        record[mapping.amount!].replace(/ /g, "").replace(/,/g, "."),
+        record[mapping.amount].replace(/ /g, "").replace(/,/g, "."),
       );
 
       const existingMovement = movements.find(
@@ -136,12 +167,14 @@ export function ImportMovementsButton({
     setDialogOpen(false);
     setStep(0);
     setRecords([]);
-    setMapping({
-      date: undefined,
-      amount: undefined,
-      name: undefined,
+    reset({
+      account: "",
+      mapping: {
+        date: "",
+        amount: "",
+        name: "",
+      },
     });
-    setAccount(undefined);
   };
 
   return (
@@ -167,98 +200,117 @@ export function ImportMovementsButton({
               <UploadDropZone onFile={handleInputFile} />
             </div>
           ) : (
-            <div className="w-full">
-              <div className="flex flex-col gap-4 border-b px-0 py-4 sm:flex-row sm:items-center">
-                <label className="text-primary-100 w-32 text-sm">Account</label>
-                <div className="flex-1">
-                  <AccountSelect
-                    value={account}
-                    onChange={setAccount}
-                    movementsOnly
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleSubmit(processFile)}>
+              <FieldGroup>
+                <Controller
+                  name="account"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="account">Account</FieldLabel>
+                      <AccountSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        movementsOnly
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
 
-              <div className="border-b py-2">
-                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">
-                    Name field
-                  </label>
-                  <div className="flex-1">
-                    <Select
-                      value={mapping.name}
-                      onValueChange={(value) =>
-                        setMapping((prev) => ({ ...prev, name: value }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select name field" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {headers.map((header) => (
-                          <SelectItem key={header} value={header}>
-                            {header}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                <Separator />
 
-                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">
-                    Amount field
-                  </label>
-                  <div className="flex-1">
-                    <Select
-                      value={mapping.amount}
-                      onValueChange={(value) =>
-                        setMapping((prev) => ({ ...prev, amount: value }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select amount field" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {headers.map((header) => (
-                          <SelectItem key={header} value={header}>
-                            {header}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                <Controller
+                  name="mapping.name"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="name-field">Name field</FieldLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select name field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {headers.map((header) => (
+                            <SelectItem key={header} value={header}>
+                              {header}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
 
-                <div className="flex flex-col gap-4 px-0 py-2 sm:flex-row sm:items-center">
-                  <label className="text-primary-100 w-32 text-sm">
-                    Date field
-                  </label>
-                  <div className="flex-1">
-                    <Select
-                      value={mapping.date}
-                      onValueChange={(value) =>
-                        setMapping((prev) => ({ ...prev, date: value }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select date field" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {headers.map((header) => (
-                          <SelectItem key={header} value={header}>
-                            {header}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+                <Controller
+                  name="mapping.amount"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="amount-field">
+                        Amount field
+                      </FieldLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select amount field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {headers.map((header) => (
+                            <SelectItem key={header} value={header}>
+                              {header}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
 
-              <div className="text-primary-100 mt-4 mb-2 px-0 text-sm">
-                CSV data
-              </div>
+                <Controller
+                  name="mapping.date"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="date-field">Date field</FieldLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select date field" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {headers.map((header) => (
+                            <SelectItem key={header} value={header}>
+                              {header}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              </FieldGroup>
+
+              <Separator className="mt-4" />
+              <div className="mt-4 mb-2 px-0 text-sm">CSV data</div>
               <div className="max-h-44 w-full overflow-auto px-0 py-4">
                 <table className="w-full border-collapse">
                   <thead>
@@ -294,11 +346,11 @@ export function ImportMovementsButton({
                 <Button variant="outline" onClick={resetDialog}>
                   Cancel
                 </Button>
-                <Button onClick={processFile} className="ml-2">
+                <Button type="submit" className="ml-2">
                   Import movements
                 </Button>
               </DialogFooter>
-            </div>
+            </form>
           )}
         </DialogContent>
       </Dialog>
