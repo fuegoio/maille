@@ -350,6 +350,8 @@ export function Activity() {
 
           <ActivityTransactions activity={activity} />
           <ActivityMovements activity={activity} />
+
+          {JSON.stringify(activity.liabilities)}
         </div>
       </div>
 

@@ -12,12 +12,11 @@ import {
   movementsActivities,
   transactions,
 } from "@/tables";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   getActivityLiabilities,
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
-  type BaseActivity,
 } from "@maille/core/activities";
 import { validateWorkspace } from "@/services/workspaces";
 
@@ -29,7 +28,6 @@ export const registerActivitiesQueries = () => {
         workspaceId: t.arg({ type: "String", required: true }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
         await validateWorkspace(args.workspaceId, ctx.user.id);
 
         const accountsQuery = await db
@@ -42,73 +40,65 @@ export const registerActivitiesQueries = () => {
           .from(counterparties)
           .where(eq(counterparties.workspace, args.workspaceId));
 
-        const activitiesUsersData = await db
-          .select()
-          .from(activitiesUsers)
-          .where(eq(activitiesUsers.user, ctx.user.id));
-
         const activitiesData = await db
           .select()
           .from(activities)
-          .leftJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
+          .innerJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
           .leftJoin(transactions, eq(activities.id, transactions.activity))
           .leftJoin(movementsActivities, and(eq(activities.id, movementsActivities.activity)))
           .where(
-            and(
-              inArray(
-                activities.id,
-                activitiesUsersData.map((a) => a.activity),
-              ),
-              eq(activities.workspace, args.workspaceId),
-            ),
+            and(eq(activitiesUsers.user, ctx.user.id), eq(activities.workspace, args.workspaceId)),
           );
 
-        return activitiesData
-          .reduce<BaseActivity[]>((acc, row) => {
-            if (!row.activities) return acc;
+        return activitiesData.map(async (activity) => {
+          const activityTransactions = await db
+            .select()
+            .from(transactions)
+            .where(eq(transactions.activity, activity.activities.id));
 
-            let activity = acc.find((a) => a.id === row.activities.id);
-            if (!activity) {
-              activity = {
-                ...row.activities,
-                date: row.activities.date,
-                users: [],
-                transactions: [],
-                movements: [],
-              };
-              acc.push(activity);
-            }
+          const activityMovements = await db
+            .select()
+            .from(movementsActivities)
+            .where(eq(movementsActivities.activity, activity.activities.id));
 
-            if (row.transactions) {
-              activity.transactions.push(row.transactions);
-            }
+          const activityUsers = await db
+            .select()
+            .from(activitiesUsers)
+            .where(eq(activitiesUsers.id, activity.activities.id));
 
-            if (row.movements_activities) {
-              activity.movements.push(row.movements_activities);
-            }
-
-            if (row.activities_users) {
-              activity.users.push(row.activities_users.user);
-            }
-
-            return acc;
-          }, [])
-          .map((a) => ({
-            ...a,
-            transactions: a.transactions.filter((t) => t.user === ctx.user.id),
-            amount: getActivityTransactionsReconciliationSum(a.type, a.transactions, accountsQuery),
-            status: getActivityStatus(a.date, a.transactions, a.movements, accountsQuery, (id) => {
-              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
-              if (!movement) return;
-              return {
-                ...movement,
-                date: movement.date,
-                status: "completed",
-                activities: [],
-              };
-            }),
-            liabilities: getActivityLiabilities(a.transactions, counterpartiesData, ctx.user.id),
-          }));
+          return {
+            ...activity.activities,
+            users: activityUsers.map((au) => au.user),
+            transactions: activityTransactions.filter((t) => t.user === ctx.user.id),
+            movements: activityMovements,
+            amount: getActivityTransactionsReconciliationSum(
+              activity.activities.type,
+              activityTransactions,
+              accountsQuery,
+            ),
+            status: getActivityStatus(
+              activity.activities.date,
+              activityTransactions,
+              activityMovements,
+              accountsQuery,
+              (id) => {
+                const movement = db.select().from(movements).where(eq(movements.id, id)).get();
+                if (!movement) return;
+                return {
+                  ...movement,
+                  date: movement.date,
+                  status: "completed",
+                  activities: [],
+                };
+              },
+            ),
+            liabilities: getActivityLiabilities(
+              activityTransactions,
+              counterpartiesData,
+              ctx.user.id,
+            ),
+          };
+        });
       },
     }),
   );

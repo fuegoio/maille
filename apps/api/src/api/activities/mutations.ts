@@ -683,11 +683,12 @@ export const registerActivitiesMutations = () => {
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
         if (args.fromAccount) updatedFields.fromAccount = args.fromAccount;
-        if (args.fromAsset) updatedFields.fromAsset = args.fromAsset;
-        if (args.fromCounterparty) updatedFields.fromCounterparty = args.fromCounterparty;
+        if (args.fromAsset !== undefined) updatedFields.fromAsset = args.fromAsset;
+        if (args.fromCounterparty !== undefined)
+          updatedFields.fromCounterparty = args.fromCounterparty;
         if (args.toAccount) updatedFields.toAccount = args.toAccount;
-        if (args.toAsset) updatedFields.toAsset = args.toAsset;
-        if (args.toCounterparty) updatedFields.toCounterparty = args.toCounterparty;
+        if (args.toAsset !== undefined) updatedFields.toAsset = args.toAsset;
+        if (args.toCounterparty !== undefined) updatedFields.toCounterparty = args.toCounterparty;
 
         const updatedTransactions = await db
           .update(transactions)
@@ -714,7 +715,7 @@ export const registerActivitiesMutations = () => {
         });
 
         // Update liabilities if counterparties are updated
-        if (args.fromCounterparty || args.toCounterparty) {
+        if (args.fromCounterparty !== undefined || args.toCounterparty !== undefined) {
           const transactionsData = await db
             .select()
             .from(transactions)
