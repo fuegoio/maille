@@ -42,6 +42,7 @@ import {
 import { SidebarInset } from "../ui/sidebar";
 import { UserMultiSelect } from "../users/user-multi-select";
 
+import { ActivityLiabilities } from "./activity-liabilities";
 import { ActivityMovements } from "./activity-movements";
 import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
@@ -350,8 +351,7 @@ export function Activity() {
 
           <ActivityTransactions activity={activity} />
           <ActivityMovements activity={activity} />
-
-          {JSON.stringify(activity.liabilities)}
+          <ActivityLiabilities activity={activity} />
         </div>
       </div>
 

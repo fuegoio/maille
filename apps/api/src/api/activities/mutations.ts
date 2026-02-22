@@ -342,14 +342,16 @@ export const registerActivitiesMutations = () => {
           .select()
           .from(activitiesUsers)
           .where(eq(activitiesUsers.activity, args.id));
+        let usersToRemove: string[] = [];
         if (args.users) {
           const usersToAdd = args.users.filter(
             (user) => !activityUsers.some((u) => u.user === user),
           );
-          const usersToRemove = activityUsers
+          usersToRemove = activityUsers
             .filter((u) => !args.users?.includes(u.user))
             .map((u) => u.user);
 
+          console.log(usersToAdd, usersToRemove);
           if (usersToAdd.length > 0) {
             await db.insert(activitiesUsers).values(
               usersToAdd.map((user) => ({
@@ -359,26 +361,28 @@ export const registerActivitiesMutations = () => {
               })),
             );
 
-            usersToAdd.forEach((user) => {
-              void addEvent({
-                type: "createActivity",
-                payload: {
-                  ...activity,
-                  users: activityUsers.map((a) => a.user).concat(usersToAdd),
-                  date: activity.date.toISOString(),
-                  transactions: [],
-                  liabilities: getActivityLiabilities(
-                    transactionsData,
-                    counterpartiesData,
-                    ctx.user.id,
-                  ),
-                },
-                createdAt: new Date(),
-                clientId: ctx.session.id,
-                user,
-                workspace: activity.workspace,
-              });
-            });
+            await Promise.all(
+              usersToAdd.map((user) =>
+                addEvent({
+                  type: "createActivity",
+                  payload: {
+                    ...activity,
+                    users: activityUsers.map((a) => a.user).concat(usersToAdd),
+                    date: activity.date.toISOString(),
+                    transactions: [],
+                    liabilities: getActivityLiabilities(
+                      transactionsData,
+                      counterpartiesData,
+                      ctx.user.id,
+                    ),
+                  },
+                  createdAt: new Date(),
+                  clientId: ctx.session.id,
+                  user,
+                  workspace: activity.workspace,
+                }),
+              ),
+            );
           }
 
           if (usersToRemove.length > 0) {
@@ -391,36 +395,40 @@ export const registerActivitiesMutations = () => {
                 ),
               );
 
-            usersToRemove.forEach((user) => {
-              void addEvent({
-                type: "deleteActivity",
-                payload: {
-                  id: args.id,
-                },
-                createdAt: new Date(),
-                clientId: ctx.session.id,
-                user,
-                workspace: activity.workspace,
-              });
-            });
+            await Promise.all(
+              usersToRemove.map((user) =>
+                addEvent({
+                  type: "deleteActivity",
+                  payload: {
+                    id: args.id,
+                  },
+                  createdAt: new Date(),
+                  clientId: ctx.session.id,
+                  user,
+                  workspace: activity.workspace,
+                }),
+              ),
+            );
           }
         }
 
-        activityUsers.forEach((activityUser) => {
-          void addEvent({
-            type: "updateActivity",
-            payload: {
-              id: args.id,
-              ...activityUpdates,
-              users: args.users ?? undefined,
-              date: activityUpdates.date?.toISOString(),
-            },
-            createdAt: new Date(),
-            clientId: ctx.session.id,
-            user: activityUser.user,
-            workspace: activity.workspace,
+        activityUsers
+          .filter((a) => !usersToRemove.includes(a.user))
+          .forEach((activityUser) => {
+            void addEvent({
+              type: "updateActivity",
+              payload: {
+                id: args.id,
+                ...activityUpdates,
+                users: args.users ?? undefined,
+                date: activityUpdates.date?.toISOString(),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activityUser.user,
+              workspace: activity.workspace,
+            });
           });
-        });
 
         const accountsQuery = await db.select().from(accounts);
         const movementsData = await db
@@ -494,12 +502,6 @@ export const registerActivitiesMutations = () => {
           .from(activitiesUsers)
           .where(eq(activitiesUsers.activity, args.id));
 
-        // Delete activity
-        await db.delete(activitiesUsers).where(eq(activitiesUsers.activity, args.id));
-        await db.delete(transactions).where(eq(transactions.activity, args.id));
-        await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
-        await db.delete(activities).where(eq(activities.id, args.id));
-
         activityUsers.forEach((activityUser) => {
           void addEvent({
             type: "deleteActivity",
@@ -512,6 +514,12 @@ export const registerActivitiesMutations = () => {
             workspace: activity.workspace,
           });
         });
+
+        // Delete activity
+        await db.delete(activitiesUsers).where(eq(activitiesUsers.activity, args.id));
+        await db.delete(transactions).where(eq(transactions.activity, args.id));
+        await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
+        await db.delete(activities).where(eq(activities.id, args.id));
 
         return {
           id: args.id,
@@ -714,8 +722,11 @@ export const registerActivitiesMutations = () => {
           workspace: activity.workspace,
         });
 
-        // Update liabilities if counterparties are updated
-        if (args.fromCounterparty !== undefined || args.toCounterparty !== undefined) {
+        // Update liabilities if counterparties are defined
+        if (
+          updatedTransaction.fromCounterparty !== undefined ||
+          updatedTransaction.toCounterparty !== undefined
+        ) {
           const transactionsData = await db
             .select()
             .from(transactions)
@@ -814,7 +825,7 @@ export const registerActivitiesMutations = () => {
           workspace: activity.workspace,
         });
 
-        // Update liabilities if counterparties are updated
+        // Update liabilities if counterparties are defined
         if (transaction.fromCounterparty || transaction.toCounterparty) {
           const transactionsData = await db
             .select()

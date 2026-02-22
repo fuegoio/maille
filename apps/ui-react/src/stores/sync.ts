@@ -1,6 +1,6 @@
 import type { SyncEvent } from "@maille/core/sync";
 import { ClientError } from "graphql-request";
-import { createClient } from "graphql-sse";
+import { createClient, type Client } from "graphql-sse";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -22,6 +22,7 @@ interface SyncState {
   lastEventTimestamp: number;
   mutationsQueue: Mutation[];
   mutationsInProcessing: boolean;
+  syncClient: Client<true> | null;
   mutate: (mutation: Mutation) => void;
   dequeueMutations: () => Promise<void>;
   fetchMissingEvents: (workspace: string) => Promise<void>;
@@ -49,6 +50,7 @@ export const useSync = create<SyncState>()(
       lastEventTimestamp: 0,
       mutationsQueue: [],
       mutationsInProcessing: false,
+      syncClient: null,
 
       mutate: (mutation) => {
         set({
@@ -195,13 +197,26 @@ export const useSync = create<SyncState>()(
       },
 
       subscribe: async () => {
+        if (get().syncClient !== null) return;
         const client = createClient({
-          url: `${window.location.origin}/api/graphql/stream`,
+          url: `http://localhost:3000/api/graphql/stream`,
           singleConnection: true,
+          credentials: "include",
+          on: {
+            connecting: (reconnecting) => {
+              console.log("Connecting", reconnecting);
+            },
+          },
+          lazy: false,
         });
+        set({ syncClient: client });
+
+        const workspaceId = useWorkspaces.getState().currentWorkspace!.id;
+        await get().fetchMissingEvents(workspaceId);
+
         const subscription = client.iterate({
           query:
-            "subscription { events { type, payload, createdAt, clientId } }",
+            "subscription { events { type, payload, createdAt, clientId, workspace } }",
         });
 
         const clientId = useAuth.getState().session!.id;
@@ -220,6 +235,7 @@ export const useSync = create<SyncState>()(
             lastEventTimestamp: eventData.createdAt,
           });
           if (eventData.clientId === clientId) continue;
+          if (eventData.workspace !== workspaceId) continue;
 
           const event = {
             type: eventData.type,
@@ -236,6 +252,8 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleEvent(event);
           useCounterparties.getState().handleEvent(event);
         }
+
+        console.log("Finished subscription");
       },
 
       clear: () => {
@@ -252,7 +270,7 @@ export const useSync = create<SyncState>()(
       partialize: (state) =>
         Object.fromEntries(
           Object.entries(state).filter(
-            ([key]) => !["mutationsInProcessing"].includes(key),
+            ([key]) => !["mutationsInProcessing", "syncClient"].includes(key),
           ),
         ),
     },

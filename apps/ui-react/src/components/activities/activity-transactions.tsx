@@ -36,6 +36,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         ) : (
           activity.transactions.map((transaction, index) => (
             <Transaction
+              key={index}
               activity={activity}
               className={
                 index !== activity.transactions.length - 1 ? "border-b" : ""

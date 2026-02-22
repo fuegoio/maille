@@ -38,7 +38,6 @@ export type ActivityMovement = {
 };
 
 export type ActivityLiability = {
-  id: string;
   user: string;
   amount: number;
 };

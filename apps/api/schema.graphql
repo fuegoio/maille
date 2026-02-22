@@ -35,7 +35,6 @@ type ActivityCategory {
 
 type ActivityLiability {
   amount: Float!
-  id: String!
   user: String!
 }
 

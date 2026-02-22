@@ -44,8 +44,6 @@ export const registerActivitiesQueries = () => {
           .select()
           .from(activities)
           .innerJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
-          .leftJoin(transactions, eq(activities.id, transactions.activity))
-          .leftJoin(movementsActivities, and(eq(activities.id, movementsActivities.activity)))
           .where(
             and(eq(activitiesUsers.user, ctx.user.id), eq(activities.workspace, args.workspaceId)),
           );

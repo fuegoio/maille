@@ -82,10 +82,6 @@ export const ActivityLiabilitySchema = builder.objectRef<ActivityLiability>("Act
 
 ActivityLiabilitySchema.implement({
   fields: (t) => ({
-    id: t.field({
-      type: "String",
-      resolve: (parent) => parent.id,
-    }),
     user: t.field({
       type: "String",
       resolve: (parent) => parent.user,

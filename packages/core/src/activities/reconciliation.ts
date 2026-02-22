@@ -249,14 +249,14 @@ export const getActivityLiabilities = (
         if (transaction.fromCounterparty) {
           const counterparty = counterparties.find((c) => c.id === transaction.fromCounterparty);
           if (counterparty?.user === user) {
-            liabilities[counterparty.user] =
-              (liabilities[counterparty.user] ?? 0) + transaction.amount;
+            liabilities[transaction.user] =
+              (liabilities[transaction.user] ?? 0) + transaction.amount;
           }
         } else if (transaction.toCounterparty) {
           const counterparty = counterparties.find((c) => c.id === transaction.toCounterparty);
           if (counterparty?.user === user) {
-            liabilities[counterparty.user] =
-              (liabilities[counterparty.user] ?? 0) + transaction.amount * -1;
+            liabilities[transaction.user] =
+              (liabilities[transaction.user] ?? 0) + transaction.amount * -1;
           }
         }
 
@@ -266,7 +266,6 @@ export const getActivityLiabilities = (
     );
 
   return Object.entries(liabilities).map(([user, amount]) => ({
-    id: user,
     user,
     amount,
   }));

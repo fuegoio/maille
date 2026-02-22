@@ -9,6 +9,7 @@ import { useAssets } from "./stores/assets";
 import { useCounterparties } from "./stores/counterparties";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
+import { useSync } from "./stores/sync";
 import { useWorkspaces } from "./stores/workspaces";
 
 const workspaceDataQuery = graphql(/* GraphQL */ `
@@ -57,7 +58,6 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       amount
       status
       liabilities { 
-        id
         user
         amount
       }
@@ -132,6 +132,9 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
 export const fetchWorkspaceData = async (workspaceId: string) => {
   const workspaceData = await graphqlClient.request(workspaceDataQuery, {
     workspace: workspaceId,
+  });
+  useSync.setState({
+    lastEventTimestamp: Date.now(),
   });
 
   // Set workspace data
