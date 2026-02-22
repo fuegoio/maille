@@ -12,7 +12,7 @@ import {
   movementsActivities,
   transactions,
 } from "@/tables";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import {
   getActivityLiabilities,
   getActivityStatus,
@@ -42,14 +42,25 @@ export const registerActivitiesQueries = () => {
           .from(counterparties)
           .where(eq(counterparties.workspace, args.workspaceId));
 
+        const activitiesUsersData = await db
+          .select()
+          .from(activitiesUsers)
+          .where(eq(activitiesUsers.user, ctx.user.id));
+
         const activitiesData = await db
           .select()
           .from(activities)
-          .innerJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
+          .leftJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
           .leftJoin(transactions, eq(activities.id, transactions.activity))
           .leftJoin(movementsActivities, and(eq(activities.id, movementsActivities.activity)))
           .where(
-            and(eq(activitiesUsers.user, ctx.user.id), eq(activities.workspace, args.workspaceId)),
+            and(
+              inArray(
+                activities.id,
+                activitiesUsersData.map((a) => a.activity),
+              ),
+              eq(activities.workspace, args.workspaceId),
+            ),
           );
 
         return activitiesData

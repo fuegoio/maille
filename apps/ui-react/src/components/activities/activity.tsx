@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { SidebarInset } from "../ui/sidebar";
+import { UserMultiSelect } from "../users/user-multi-select";
 
 import { ActivityMovements } from "./activity-movements";
 import { ActivityTransactions } from "./activity-transactions";
@@ -110,6 +111,7 @@ export function Activity() {
     category?: string | null;
     subcategory?: string | null;
     project?: string | null;
+    users?: string[];
   }) => {
     if (!activity) return;
 
@@ -334,6 +336,13 @@ export function Activity() {
                       ))}
                     </SelectContent>
                   </Select>
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="users">Users</FieldLabel>
+                  <UserMultiSelect
+                    value={activity.users}
+                    onChange={(value) => updateActivity({ users: value })}
+                  />
                 </Field>
               </FieldGroup>
             </FieldSet>

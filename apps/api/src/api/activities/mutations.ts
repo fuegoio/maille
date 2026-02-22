@@ -269,7 +269,7 @@ export const registerActivitiesMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const activity = (
+        let activity = (
           await db
             .select()
             .from(activities)
@@ -313,14 +313,16 @@ export const registerActivitiesMutations = () => {
           activityUpdates.project = args.project;
         }
 
-        const updatedActivities = await db
-          .update(activities)
-          .set(activityUpdates)
-          .where(eq(activities.id, args.id))
-          .returning();
-        const updatedActivity = updatedActivities[0];
-        if (!updatedActivity) {
-          throw new GraphQLError("Failed to update activity");
+        if (Object.keys(activityUpdates).length > 0) {
+          const updatedActivities = await db
+            .update(activities)
+            .set(activityUpdates)
+            .where(eq(activities.id, args.id))
+            .returning();
+          activity = updatedActivities[0];
+          if (!activity) {
+            throw new GraphQLError("Failed to update activity");
+          }
         }
 
         // Counterparties
@@ -328,6 +330,12 @@ export const registerActivitiesMutations = () => {
           .select()
           .from(counterparties)
           .where(eq(counterparties.workspace, activity.workspace));
+
+        // Transactions
+        const transactionsData = await db
+          .select()
+          .from(transactions)
+          .where(eq(transactions.activity, args.id));
 
         // Users
         const activityUsers = await db
@@ -355,8 +363,9 @@ export const registerActivitiesMutations = () => {
               void addEvent({
                 type: "createActivity",
                 payload: {
-                  ...updatedActivity,
-                  date: updatedActivity.date.toISOString(),
+                  ...activity,
+                  users: activityUsers.map((a) => a.user).concat(usersToAdd),
+                  date: activity.date.toISOString(),
                   transactions: [],
                   liabilities: getActivityLiabilities(
                     transactionsData,
@@ -414,28 +423,24 @@ export const registerActivitiesMutations = () => {
         });
 
         const accountsQuery = await db.select().from(accounts);
-        const transactionsData = await db
-          .select()
-          .from(transactions)
-          .where(eq(transactions.activity, args.id));
         const movementsData = await db
           .select()
           .from(movementsActivities)
           .where(eq(movementsActivities.activity, args.id));
 
         return {
-          ...updatedActivity,
+          ...activity,
           users: args.users ?? activityUsers.map((u) => u.user),
-          date: updatedActivity.date,
+          date: activity.date,
           transactions: transactionsData.filter((t) => t.user === ctx.user.id),
           movements: movementsData,
           amount: getActivityTransactionsReconciliationSum(
-            updatedActivity.type,
+            activity.type,
             transactionsData,
             accountsQuery,
           ),
           status: getActivityStatus(
-            updatedActivity.date,
+            activity.date,
             transactionsData,
             movementsData,
             accountsQuery,

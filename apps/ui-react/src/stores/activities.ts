@@ -552,7 +552,7 @@ export const useActivities = create<ActivitiesState>()(
           get().addActivity({
             ...event.payload,
             date: new Date(event.payload.date),
-            users: [user!.id],
+            users: event.payload.users ? event.payload.users : [user!.id],
             transactions: event.payload.transactions.map((t) => ({
               ...t,
               user: user!.id,

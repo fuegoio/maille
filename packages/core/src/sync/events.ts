@@ -27,6 +27,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
       movement: string;
     };
     liabilities?: ActivityLiability[];
+    users?: string[];
   };
 }
 

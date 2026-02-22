@@ -1,5 +1,6 @@
 import type { SyncEvent } from "@maille/core/sync";
 import { ClientError } from "graphql-request";
+import { createClient } from "graphql-sse";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -24,6 +25,7 @@ interface SyncState {
   mutate: (mutation: Mutation) => void;
   dequeueMutations: () => Promise<void>;
   fetchMissingEvents: (workspace: string) => Promise<void>;
+  subscribe: () => Promise<void>;
   clear: () => void;
 }
 
@@ -190,6 +192,50 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
           });
+      },
+
+      subscribe: async () => {
+        const client = createClient({
+          url: `${window.location.origin}/api/graphql/stream`,
+          singleConnection: true,
+        });
+        const subscription = client.iterate({
+          query:
+            "subscription { events { type, payload, createdAt, clientId } }",
+        });
+
+        const clientId = useAuth.getState().session!.id;
+        console.log("Events subscription started");
+
+        for await (const eventSerialized of subscription) {
+          console.log("Received event", eventSerialized.data);
+          const eventData = eventSerialized.data!.events as {
+            type: SyncEvent["type"];
+            payload: string;
+            createdAt: number;
+            clientId: string;
+            workspace: string;
+          };
+          set({
+            lastEventTimestamp: eventData.createdAt,
+          });
+          if (eventData.clientId === clientId) continue;
+
+          const event = {
+            type: eventData.type,
+            workspace: eventData.workspace,
+            payload: JSON.parse(eventData.payload),
+            createdAt: new Date(eventData.createdAt * 1000),
+            clientId: eventData.clientId,
+          } as SyncEvent;
+
+          useActivities.getState().handleEvent(event);
+          useMovements.getState().handleEvent(event);
+          useProjects.getState().handleEvent(event);
+          useAccounts.getState().handleEvent(event);
+          useAssets.getState().handleEvent(event);
+          useCounterparties.getState().handleEvent(event);
+        }
       },
 
       clear: () => {

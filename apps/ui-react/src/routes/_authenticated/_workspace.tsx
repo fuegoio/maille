@@ -59,6 +59,7 @@ function RouteComponent() {
     (state) => state.availableWorkspaces,
   );
   const fetchWorkspaces = useWorkspaces((state) => state.fetchWorkspaces);
+  const subscribe = useSync((state) => state.subscribe);
 
   useQuery({
     queryKey: ["workspaces"],
@@ -77,6 +78,10 @@ function RouteComponent() {
       void dequeueMutations();
     }
   }, [online, dequeueMutations]);
+
+  useEffect(() => {
+    void subscribe();
+  }, []);
 
   return (
     <SidebarProvider>

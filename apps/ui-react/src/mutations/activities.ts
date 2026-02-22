@@ -66,6 +66,7 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
     $project: String
     $subcategory: String
     $type: String
+    $users: [String!]
   ) {
     updateActivity(
       id: $id
@@ -76,6 +77,7 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
       project: $project
       subcategory: $subcategory
       type: $type
+      users: $users
     ) {
       id
     }
