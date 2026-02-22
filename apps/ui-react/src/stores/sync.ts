@@ -199,7 +199,7 @@ export const useSync = create<SyncState>()(
       subscribe: async () => {
         if (get().syncClient !== null) return;
         const client = createClient({
-          url: `http://localhost:3000/api/graphql/stream`,
+          url: `${import.meta.env.VITE_API_URL}/graphql/stream`,
           singleConnection: true,
           credentials: "include",
           on: {
