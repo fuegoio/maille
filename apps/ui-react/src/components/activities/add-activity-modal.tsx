@@ -99,6 +99,18 @@ export function AddActivityModal({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
+      description: "",
+      date: new Date(),
+      transactions: [],
+    },
+  });
+
+  const { control, handleSubmit, watch, setValue, reset, formState } = form;
+  const { errors } = formState;
+
+  React.useEffect(() => {
+    reset({
       name: movement ? movement.name : initialName || "",
       description: "",
       date: movement ? movement.date : initialDate || new Date(),
@@ -111,14 +123,7 @@ export function AddActivityModal({
       subcategory: undefined,
       project: undefined,
       transactions: [],
-    },
-  });
-
-  const { control, handleSubmit, watch, setValue, reset, formState } = form;
-  const { errors } = formState;
-
-  React.useEffect(() => {
-    reset();
+    });
   }, [
     movement,
     movements,
