@@ -106,7 +106,7 @@ export function ActivityLine({
           )}
         />
 
-        <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
+        <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
           {format(activity.date, "dd EEE")}
         </div>
         <div className="w-10 shrink-0 text-muted-foreground lg:hidden">

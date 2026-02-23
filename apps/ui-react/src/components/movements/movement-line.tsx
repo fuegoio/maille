@@ -56,7 +56,7 @@ export function MovementLine({
         )}
       />
 
-      <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
+      <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
         {format(movement.date, "dd EEE")}
       </div>
       <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
