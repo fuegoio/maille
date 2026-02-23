@@ -76,7 +76,6 @@ interface AddActivityModalProps {
   name?: string;
   date?: Date;
   type?: ActivityType;
-  onCreated?: (activityNumber: number) => void;
 }
 
 export function AddActivityModal({
@@ -88,7 +87,6 @@ export function AddActivityModal({
   name: initialName,
   date: initialDate,
   type: initialType,
-  onCreated,
 }: AddActivityModalProps) {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -352,7 +350,6 @@ export function AddActivityModal({
     reset();
     onOpenChange(false);
     setFocusedActivity(newActivity.id);
-    onCreated?.(newActivity.number);
   };
 
   // Create multiple activities from movements

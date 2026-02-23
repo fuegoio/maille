@@ -1,6 +1,7 @@
 import type { Movement } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useRouter } from "@tanstack/react-router";
+import { format } from "date-fns";
 import _ from "lodash";
 import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";
@@ -98,8 +99,8 @@ export function Movement() {
     });
   };
 
-  const focusActivity = (activityNumber: number) => {
-    router.navigate({
+  const focusActivity = async (activityNumber: number) => {
+    await router.navigate({
       to: "/activities/{-$id}",
       params: { id: activityNumber.toString() },
     });
@@ -238,10 +239,7 @@ export function Movement() {
             <div className="text-sm font-medium">Activities linked</div>
             <div className="flex-1" />
 
-            <AddActivityButton
-              movement={movement}
-              onCreated={(activityNumber) => focusActivity(activityNumber)}
-            />
+            <AddActivityButton movement={movement} />
           </div>
 
           <div className="mt-4 mb-2 rounded border bg-muted/50">
@@ -261,22 +259,11 @@ export function Movement() {
                     focusActivity(movementActivity.activity!.number)
                   }
                 >
-                  <div className="jext-muted-foreground hidden w-8 shrink-0 sm:block">
-                    #{movementActivity.activity!.number}
-                  </div>
-                  <div className="ml-2 hidden w-20 shrink-0 text-muted-foreground sm:block">
-                    {movementActivity.activity!.date.toLocaleDateString(
-                      "fr-FR",
-                    )}
+                  <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
+                    {format(movementActivity.activity!.date, "dd/MM/yyyy")}
                   </div>
                   <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
-                    {movementActivity.activity!.date.toLocaleDateString(
-                      "fr-FR",
-                      {
-                        day: "2-digit",
-                        month: "2-digit",
-                      },
-                    )}
+                    {format(movementActivity.activity!.date, "dd/MM")}
                   </div>
 
                   <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">

@@ -1,5 +1,6 @@
 import { type Activity } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -106,17 +107,10 @@ export function ActivityLine({
         />
 
         <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
-          {activity.date.toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "2-digit",
-            day: "2-digit",
-          })}
+          {format(activity.date, "dd EEE")}
         </div>
         <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
-          {activity.date.toLocaleDateString(undefined, {
-            month: "2-digit",
-            day: "2-digit",
-          })}
+          {format(activity.date, "dd EEEEE")}
         </div>
 
         {getStatusIcon()}

@@ -1,4 +1,5 @@
 import type { Movement } from "@maille/core/movements";
+import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -56,17 +57,10 @@ export function MovementLine({
       />
 
       <div className="mx-1 hidden w-18 shrink-0 text-muted-foreground lg:block">
-        {movement.date.toLocaleDateString(undefined, {
-          weekday: "short",
-          month: "2-digit",
-          day: "2-digit",
-        })}
+        {format(movement.date, "dd EEE")}
       </div>
       <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
-        {movement.date.toLocaleDateString(undefined, {
-          month: "2-digit",
-          day: "2-digit",
-        })}
+        {format(movement.date, "dd EEEEE")}
       </div>
 
       {movement.status === "incomplete" ? (
