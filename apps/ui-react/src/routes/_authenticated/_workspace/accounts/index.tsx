@@ -37,9 +37,7 @@ function AccountsPage() {
         </CreateAccountDialog>
       </header>
 
-      <div className="flex flex-1 flex-col">
-        <AccountsTable />
-      </div>
+      <AccountsTable />
     </SidebarInset>
   );
 }

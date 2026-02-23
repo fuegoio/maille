@@ -111,13 +111,11 @@ function MovementsPage() {
           <SearchBar />
         </header>
 
-        <div className="flex flex-1 flex-col">
-          <MovementsTable
-            viewId={movementsView.id}
-            movements={viewMovements}
-            grouping="period"
-          />
-        </div>
+        <MovementsTable
+          viewId={movementsView.id}
+          movements={viewMovements}
+          grouping="period"
+        />
       </SidebarInset>
 
       <Movement />

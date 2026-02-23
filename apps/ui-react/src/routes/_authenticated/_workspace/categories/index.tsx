@@ -37,9 +37,7 @@ function CategoriesPage() {
         </CreateCategoryDialog>
       </header>
 
-      <div className="flex flex-1 flex-col">
-        <CategoriesTable />
-      </div>
+      <CategoriesTable />
     </SidebarInset>
   );
 }

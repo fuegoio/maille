@@ -120,13 +120,11 @@ function ActivitiesPage() {
           <SearchBar />
         </header>
 
-        <div className="flex flex-1 flex-col">
-          <ActivitiesTable
-            viewId={activityView.id}
-            activities={viewActivities}
-            grouping="period"
-          />
-        </div>
+        <ActivitiesTable
+          viewId={activityView.id}
+          activities={viewActivities}
+          grouping="period"
+        />
       </SidebarInset>
 
       <Activity />

@@ -30,9 +30,7 @@ function ProjectsPage() {
         <AddAndEditProjectModal />
       </header>
 
-      <div className="flex flex-1 flex-col">
-        <ProjectsTable />
-      </div>
+      <ProjectsTable />
     </SidebarInset>
   );
 }

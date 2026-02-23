@@ -38,9 +38,7 @@ function RouteComponent() {
           <div className="w-32 text-right">Neutral</div>
         </header>
 
-        <div className="flex flex-1 flex-col">
-          <MonthsTable />
-        </div>
+        <MonthsTable />
       </SidebarInset>
     </>
   );
