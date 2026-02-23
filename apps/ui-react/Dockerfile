@@ -12,7 +12,7 @@ COPY . .
 
 WORKDIR /app/apps/ui-react
 ENV NODE_ENV=production
-ENV VITE_API_URL=/api
+ENV VITE_API_URL=https://maille.alexistac.net/api
 RUN bun run build
 
 FROM nginx:alpine AS release
