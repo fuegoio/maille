@@ -44,14 +44,14 @@ export function MovementLine({
         }
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "opacity-0 transition-opacity group-hover:opacity-100",
+          "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
           checked && "opacity-100",
         )}
       />
 
       <div
         className={cn(
-          "ml-3.5 size-2 shrink-0 rounded-lg",
+          "size-2 shrink-0 rounded-lg",
           movement.amount > 0 ? "bg-green-400" : "bg-red-400",
         )}
       />

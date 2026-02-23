@@ -34,7 +34,7 @@ import {
 } from "../ui/alert-dialog";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
 import { Input } from "../ui/input";
-import { SidebarInset } from "../ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 
 export function Movement() {
   const router = useRouter();
@@ -147,19 +147,14 @@ export function Movement() {
   if (!movement || !showMovement) return null;
 
   return (
-    <SidebarInset className="max-w-lg">
+    <SidebarInset className="xl:max-w-lg">
       <div className="flex h-full flex-col">
-        <div className="flex h-12 w-full shrink-0 items-center border-b px-4 sm:px-6">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="mr-4 ml-8 h-8 w-6 lg:ml-0"
-            onClick={onClose}
-          >
-            <ChevronRight className="h-6 w-6 transition hover:text-white" />
+        <div className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
+          <SidebarTrigger className="xl:hidden" />
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <ChevronRight />
           </Button>
-          <div className="text-sm font-medium text-white">Movement</div>
+          <div className="text-sm font-medium">Movement</div>
 
           <div className="flex-1" />
           <AlertDialog>

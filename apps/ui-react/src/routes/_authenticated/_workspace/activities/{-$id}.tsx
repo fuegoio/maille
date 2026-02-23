@@ -75,7 +75,7 @@ function ActivitiesPage() {
       <SidebarInset
         className={cn("min-w-0 shrink", focusedActivity && "hidden xl:flex")}
       >
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-3 sm:pl-4">
           <SidebarTrigger className="mr-1" />
           <Breadcrumb>
             <BreadcrumbList>
@@ -99,20 +99,20 @@ function ActivitiesPage() {
           <div className="flex-1" />
           <AddActivityButton />
           <Button
-            className="gap-1"
+            className="hidden gap-1 sm:flex"
             variant="outline"
             onClick={() => setShowTransactions(!showTransactions)}
           >
             {showTransactions ? "Hide" : "Show"} transactions
           </Button>
-          <div className="h-full w-px bg-border" />
+          <div className="h-full w-px shrink-0 bg-border" />
           <ExportActivitiesButton
             viewId={activityView.id}
             activities={viewActivities}
           />
         </header>
 
-        <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-11.25">
+        <header className="flex h-11 shrink-0 items-center gap-2 border-b px-2 sm:pl-11.25">
           {activityView.filters.length === 0 && (
             <FilterActivitiesButton viewId={activityView.id} />
           )}

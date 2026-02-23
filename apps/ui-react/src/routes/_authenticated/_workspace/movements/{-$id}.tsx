@@ -23,6 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 import { useViews } from "@/stores/views";
 
@@ -47,6 +48,7 @@ export const Route = createFileRoute(
 function MovementsPage() {
   const params = Route.useParams();
   const movements = useMovements((state) => state.movements);
+  const focusedMovement = useMovements((state) => state.focusedMovement);
 
   const movementsView = useViews((state) =>
     state.getMovementView(
@@ -65,8 +67,10 @@ function MovementsPage() {
 
   return (
     <>
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+      <SidebarInset
+        className={cn("min-w-0 shrink", focusedMovement && "hidden xl:flex")}
+      >
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-3 sm:pl-4">
           <SidebarTrigger className="mr-1" />
           <Breadcrumb>
             <BreadcrumbList>
@@ -103,7 +107,7 @@ function MovementsPage() {
           </Tooltip>
         </header>
 
-        <header className="flex h-11 shrink-0 items-center gap-2 border-b pr-2 pl-11.25">
+        <header className="flex h-11 shrink-0 items-center gap-2 border-b px-2 sm:pl-11.25">
           {movementsView.filters.length === 0 && (
             <FilterMovementsButton viewId={movementsView.id} />
           )}
