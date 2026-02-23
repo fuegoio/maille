@@ -99,10 +99,14 @@ export function AddActivityModal({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: movement ? movement.name : initialName || "",
       description: "",
-      date: new Date(),
-      type: undefined,
+      date: movement ? movement.date : initialDate || new Date(),
+      type: movement
+        ? movement.amount < 0
+          ? ActivityType.EXPENSE
+          : ActivityType.REVENUE
+        : initialType,
       category: undefined,
       subcategory: undefined,
       project: undefined,
@@ -134,72 +138,11 @@ export function AddActivityModal({
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  const handleOpenChange = (open: boolean) => {
-    if (open) {
-      if (initialName) setValue("name", initialName);
-      if (initialDate) setValue("date", initialDate);
-      if (initialType) setValue("type", initialType);
-      if (initialAmount) {
-        setValue("transactions", [
-          {
-            fromAccount: "",
-            toAccount: "",
-            amount: initialAmount,
-          },
-        ]);
-      }
-
-      // Handle movement/movements
-      if (movement) {
-        setValue("name", movement.name || "");
-        setValue("date", movement.date);
-        setValue(
-          "type",
-          movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
-        );
-        setValue("transactions", [
-          {
-            fromAccount: "",
-            toAccount: "",
-            amount: Math.abs(movement.amount),
-          },
-        ]);
-      } else if (movements && movements.length > 0) {
-        const firstMovement = movements[0];
-        setValue("name", firstMovement.name || "");
-
-        if (movements.every((m) => m.amount < 0)) {
-          setValue("type", ActivityType.EXPENSE);
-        } else if (movements.every((m) => m.amount > 0)) {
-          setValue("type", ActivityType.REVENUE);
-        }
-
-        setValue(
-          "transactions",
-          movements.map((m) => ({
-            fromAccount: "",
-            toAccount: "",
-            amount: Math.abs(m.amount),
-          })),
-        );
-      }
-
-      // Focus name input
-      setTimeout(() => {
-        if (nameInputRef.current) {
-          nameInputRef.current.focus();
-        }
-      }, 100);
-    }
-
-    onOpenChange(open);
-  };
-
   // Add transaction when form becomes valid and has no transactions
   React.useEffect(() => {
     if (type && transactions.length === 0) {
       const { fromAccount, toAccount } = guessBestTransaction();
-      let amount = 0;
+      let amount = initialAmount || 0;
 
       if (movement) {
         amount = Math.abs(movement.amount);
@@ -408,7 +351,7 @@ export function AddActivityModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
