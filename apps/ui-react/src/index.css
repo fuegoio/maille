@@ -147,7 +147,7 @@
   }
 
   html {
-    @apply font-sans h-full w-full;
+    @apply font-sans h-full w-full select-none;
   }
 
   body {
