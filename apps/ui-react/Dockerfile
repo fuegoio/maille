@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS release
+FROM oven/bun:1 AS build
 
 WORKDIR /app
 
@@ -10,9 +10,13 @@ RUN bun install --frozen-lockfile --production
 
 COPY . .
 
-EXPOSE 3000/tcp
+WORKDIR /app/apps/ui-react
 ENV NODE_ENV production
+RUN bun run build
 
-WORKDIR /app/apps/api
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/ui-react/dist /usr/share/nginx/html
+EXPOSE 80
 
-ENTRYPOINT ["bun", "run", "start"]
+CMD ["nginx", "-g", "daemon off;"]
