@@ -14,8 +14,9 @@ WORKDIR /app/apps/ui-react
 ENV NODE_ENV production
 RUN bun run build
 
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM nginx:alpine as release
+
+COPY /apps/ui-react/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/ui-react/dist /usr/share/nginx/html
 EXPOSE 80
 
