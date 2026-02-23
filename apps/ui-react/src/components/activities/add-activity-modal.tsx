@@ -117,6 +117,18 @@ export function AddActivityModal({
   const { control, handleSubmit, watch, setValue, reset, formState } = form;
   const { errors } = formState;
 
+  React.useEffect(() => {
+    reset();
+  }, [
+    movement,
+    movements,
+    initialAmount,
+    initialName,
+    initialDate,
+    initialType,
+    reset,
+  ]);
+
   const nameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Watch form values
