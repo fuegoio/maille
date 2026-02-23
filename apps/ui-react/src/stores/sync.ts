@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
+import { baseApiURL } from "@/lib/api";
 import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
@@ -199,7 +200,7 @@ export const useSync = create<SyncState>()(
       subscribe: async () => {
         if (get().syncClient !== null) return;
         const client = createClient({
-          url: `${import.meta.env.VITE_API_URL}/graphql/stream`,
+          url: `${baseApiURL}/graphql/stream`,
           singleConnection: true,
           credentials: "include",
           on: {
