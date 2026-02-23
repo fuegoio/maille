@@ -26,6 +26,7 @@
     "cmdk": "^1.1.1",
     "colorjs.io": "^0.6.1",
     "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.19",
     "embla-carousel-react": "^8.6.0",
