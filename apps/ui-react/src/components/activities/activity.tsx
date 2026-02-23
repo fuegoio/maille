@@ -39,7 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { SidebarInset } from "../ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { UserMultiSelect } from "../users/user-multi-select";
 
 import { ActivityLiabilities } from "./activity-liabilities";
@@ -152,16 +152,12 @@ export function Activity() {
   if (!activity) return null;
 
   return (
-    <SidebarInset className="max-w-xl">
+    <SidebarInset className="xl:max-w-lg">
       <div className="flex h-full flex-col">
-        <div className="flex h-12 w-full shrink-0 items-center border-b px-4 sm:px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mr-4 ml-8 inline-flex h-8 w-6 items-center justify-center lg:ml-0"
-            onClick={close}
-          >
-            <ChevronRight className="text-primary-100 h-5 w-5 transition hover:text-white" />
+        <div className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
+          <SidebarTrigger className="xl:hidden" />
+          <Button variant="ghost" size="icon" onClick={close}>
+            <ChevronRight />
           </Button>
           <div className="font-medium">Activity #{activity.number}</div>
 

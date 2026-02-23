@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useViews } from "@/stores/views";
 
@@ -42,6 +43,7 @@ export const Route = createFileRoute(
 
 function ActivitiesPage() {
   const params = Route.useParams();
+  const focusedActivity = useActivities((state) => state.focusedActivity);
   const activities = useActivities((state) => state.activities);
   const showTransactions = useActivities((state) => state.showTransactions);
   const setShowTransactions = useActivities(
@@ -70,7 +72,9 @@ function ActivitiesPage() {
 
   return (
     <>
-      <SidebarInset>
+      <SidebarInset
+        className={cn("min-w-0 shrink", focusedActivity && "hidden xl:flex")}
+      >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
           <SidebarTrigger className="mr-1" />
           <Breadcrumb>
