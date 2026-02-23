@@ -73,7 +73,7 @@ function RouteComponent() {
       email,
       password,
       name: `${firstName} ${lastName}`,
-      callbackURL: redirect || "/",
+      callbackURL: redirect || window.location.origin,
     });
 
     if (error) {
@@ -91,7 +91,7 @@ function RouteComponent() {
     setLoading(true);
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: redirect || "/",
+      callbackURL: redirect || window.location.origin,
     });
     setLoading(false);
   };

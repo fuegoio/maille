@@ -30,4 +30,5 @@ export const auth = betterAuth({
     requireSpecialChar: true,
     requireNumber: true,
   },
+  trustedOrigins: ["http://localhost:3000", "http://localhost:5173"],
 });
