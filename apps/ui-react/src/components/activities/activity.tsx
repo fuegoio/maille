@@ -36,6 +36,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
@@ -297,7 +298,7 @@ export function Activity() {
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="category">Category</FieldLabel>
                   <Select
-                    value={activity.category || undefined}
+                    value={activity.category || ""}
                     onValueChange={(value) =>
                       updateActivity({ category: value, subcategory: null })
                     }
@@ -317,7 +318,7 @@ export function Activity() {
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
                   <Select
-                    value={activity.subcategory || undefined}
+                    value={activity.subcategory || ""}
                     onValueChange={(value) =>
                       updateActivity({ subcategory: value })
                     }
