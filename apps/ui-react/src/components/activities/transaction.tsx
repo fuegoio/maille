@@ -105,7 +105,7 @@ export function Transaction({
             <CornerDownRight className="size-4 text-muted-foreground" />
             <CounterpartiesSelect
               accountId={transaction.fromAccount}
-              value={transaction.fromCounterparty}
+              value={transaction.fromCounterparty || ""}
               onValueChange={(counterparty) =>
                 handleTransactionUpdate(transaction, {
                   fromCounterparty: counterparty,
@@ -119,7 +119,7 @@ export function Transaction({
             <CornerDownRight className="size-4 text-muted-foreground" />
             <AssetSelect
               accountId={transaction.fromAccount}
-              value={transaction.fromAsset}
+              value={transaction.fromAsset || ""}
               onValueChange={(asset) =>
                 handleTransactionUpdate(transaction, {
                   fromAsset: asset,
@@ -148,7 +148,7 @@ export function Transaction({
             <CornerDownRight className="size-4 text-muted-foreground" />
             <CounterpartiesSelect
               accountId={transaction.toAccount}
-              value={transaction.toCounterparty}
+              value={transaction.toCounterparty || ""}
               onValueChange={(counterparty) =>
                 handleTransactionUpdate(transaction, {
                   toCounterparty: counterparty,
@@ -162,7 +162,7 @@ export function Transaction({
             <CornerDownRight className="size-4 text-muted-foreground" />
             <AssetSelect
               accountId={transaction.toAccount}
-              value={transaction.toAsset}
+              value={transaction.toAsset || ""}
               onValueChange={(asset) =>
                 handleTransactionUpdate(transaction, {
                   toAsset: asset,
