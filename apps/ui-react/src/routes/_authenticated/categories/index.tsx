@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { AccountsTable } from "@/components/accounts/accounts-table";
-import { CreateAccountDialog } from "@/components/accounts/create-account-dialog";
+import { CategoriesTable } from "@/components/categories/categories-table";
+import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,11 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute("/_authenticated/_workspace/accounts/")({
-  component: AccountsPage,
+export const Route = createFileRoute("/_authenticated/categories/")({
+  component: CategoriesPage,
 });
 
-function AccountsPage() {
+function CategoriesPage() {
   return (
     <SidebarInset>
       <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
@@ -24,20 +24,20 @@ function AccountsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage>Accounts</BreadcrumbPage>
+              <BreadcrumbPage>Categories</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex-1" />
-        <CreateAccountDialog>
+        <CreateCategoryDialog>
           <Button variant="default">
             <Plus />
-            Create account
+            Create category
           </Button>
-        </CreateAccountDialog>
+        </CreateCategoryDialog>
       </header>
 
-      <AccountsTable />
+      <CategoriesTable />
     </SidebarInset>
   );
 }

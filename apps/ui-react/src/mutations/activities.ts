@@ -25,7 +25,6 @@ import type { MutationType } from "./type";
 
 export const createActivityMutation = graphql(/* GraphQL */ `
   mutation CreateActivity(
-    $workspace: String!
     $category: String
     $date: Date!
     $description: String
@@ -38,7 +37,6 @@ export const createActivityMutation = graphql(/* GraphQL */ `
     $type: String!
   ) {
     createActivity(
-      workspace: $workspace
       category: $category
       date: $date
       description: $description
@@ -209,13 +207,11 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String!
     $type: String!
-    $workspace: String!
   ) {
     createActivityCategory(
       id: $id
       name: $name
       type: $type
-      workspace: $workspace
     ) {
       id
     }
@@ -243,13 +239,11 @@ export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String!
     $category: String!
-    $workspace: String!
   ) {
     createActivitySubCategory(
       id: $id
       name: $name
       category: $category
-      workspace: $workspace
     ) {
       id
     }

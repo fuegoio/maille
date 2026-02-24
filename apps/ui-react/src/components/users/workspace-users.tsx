@@ -16,7 +16,6 @@ import {
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
 import { useAuth } from "@/stores/auth";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

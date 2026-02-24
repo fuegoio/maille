@@ -7,6 +7,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     LOG_LEVEL: z.string().default("info"),
     DATA_DIR: z.string().default("."),
+    DATABASE_URL: z.string().default("postgres://postgres:postgres@localhost:5432/maille"),
   },
   client: {},
   runtimeEnv: {
@@ -14,6 +15,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     LOG_LEVEL: process.env.LOG_LEVEL,
     DATA_DIR: process.env.DATA_DIR,
+    DATABASE_URL: process.env.DATABASE_URL,
   },
 
   /**

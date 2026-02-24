@@ -10,25 +10,10 @@ import { useCounterparties } from "./stores/counterparties";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
-import { useWorkspaces } from "./stores/workspaces";
 
-const workspaceDataQuery = graphql(/* GraphQL */ `
-  query WorkspaceData($workspace: String!) {
-    workspace(id: $workspace) {
-      id
-      name
-      startingDate
-      currency
-      createdAt
-      users {
-        id
-        name
-        email
-        image
-      }
-    }
-
-    activities(workspaceId: $workspace) {
+const userDataQuery = graphql(/* GraphQL */ `
+  query UserData() {
+    activities() {
       id
       users
       number
@@ -41,7 +26,6 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       project
       transactions {
         id
-        user
         amount
         fromAccount
         fromAsset
@@ -63,19 +47,19 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       }
     }
 
-    activityCategories(workspaceId: $workspace) {
+    activityCategories() {
       id
       name
       type
     }
 
-    activitySubcategories(workspaceId: $workspace) {
+    activitySubcategories() {
       id
       name
       category
     }
 
-    accounts(workspaceId: $workspace) {
+    accounts() {
       id
       name
       type
@@ -86,7 +70,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       user
     }
 
-    movements(workspaceId: $workspace) {
+    movements() {
       id
       date
       amount
@@ -100,7 +84,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       status
     }
 
-    projects(workspaceId: $workspace) {
+    projects() {
       id
       name
       emoji
@@ -108,7 +92,7 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       endDate
     }
 
-    assets(workspaceId: $workspace) {
+    assets() {
       id
       account
       name
@@ -116,38 +100,27 @@ const workspaceDataQuery = graphql(/* GraphQL */ `
       location
     }
     
-    counterparties(workspaceId: $workspace) {
+    counterparties() {
       id
       account
       name
-      user
       description
+      contact
     }
   }
 `);
 
-/**
- * Fetch workspace data and populate all stores
- */
-export const fetchWorkspaceData = async (workspaceId: string) => {
-  const workspaceData = await graphqlClient.request(workspaceDataQuery, {
-    workspace: workspaceId,
-  });
+export const fetchUserData = async () => {
+  const userData = await graphqlClient.request(userDataQuery);
   useSync.setState({
     lastEventTimestamp: Date.now(),
-  });
-
-  // Set workspace data
-  useWorkspaces.getState().setCurrentWorkspace({
-    ...workspaceData.workspace,
-    startingDate: new Date(workspaceData.workspace.startingDate),
   });
 
   // Clear existing data and populate stores
   clearAllStores();
 
   // Populate accounts
-  workspaceData.accounts.forEach((account) => {
+  userData.accounts.forEach((account) => {
     useAccounts.getState().addAccount({
       ...account,
       type: account.type as AccountType,
@@ -155,7 +128,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Populate movements
-  workspaceData.movements.forEach((movement) => {
+  userData.movements.forEach((movement) => {
     useMovements.getState().addMovement({
       ...movement,
       date: new Date(movement.date),
@@ -163,7 +136,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Populate activities
-  workspaceData.activities.forEach((activity) => {
+  userData.activities.forEach((activity) => {
     useActivities.getState().addActivity({
       ...activity,
       date: new Date(activity.date),
@@ -172,7 +145,7 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Populate activity categories
-  workspaceData.activityCategories.forEach((category) => {
+  userData.activityCategories.forEach((category) => {
     useActivities.getState().addActivityCategory({
       ...category,
       type: category.type as ActivityType,
@@ -180,14 +153,14 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Populate activity subcategories
-  workspaceData.activitySubcategories.forEach((subcategory) => {
+  userData.activitySubcategories.forEach((subcategory) => {
     useActivities.getState().addActivitySubcategory({
       ...subcategory,
     });
   });
 
   // Populate projects
-  workspaceData.projects.forEach((project) => {
+  userData.projects.forEach((project) => {
     useProjects.getState().addProject({
       ...project,
       startDate: project.startDate ? new Date(project.startDate) : null,
@@ -196,20 +169,20 @@ export const fetchWorkspaceData = async (workspaceId: string) => {
   });
 
   // Populate assets
-  workspaceData.assets.forEach((asset) => {
+  userData.assets.forEach((asset) => {
     useAssets.getState().addAsset({
       ...asset,
     });
   });
 
   // Populate counterparties
-  workspaceData.counterparties.forEach((counterparty) => {
+  userData.counterparties.forEach((counterparty) => {
     useCounterparties.getState().addCounterparty({
       ...counterparty,
     });
   });
 
-  return workspaceData;
+  return userData;
 };
 
 /**

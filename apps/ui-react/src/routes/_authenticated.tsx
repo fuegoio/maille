@@ -1,8 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
 
+import { AppSidebar } from "@/components/navigation/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { fetchUserData } from "@/data";
 import { authClient } from "@/lib/auth";
+import useIsOnline from "@/lib/online";
 import { useAuth } from "@/stores/auth";
+import { useSync } from "@/stores/sync";
 
 const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60;
 
@@ -27,6 +33,8 @@ export const Route = createFileRoute("/_authenticated")({
       useAuth.getState().setUser(res.data.user, res.data.session);
       session = res.data.session;
       user = res.data.user;
+
+      await fetchUserData();
     }
 
     return {
@@ -68,5 +76,24 @@ function AuthenticatedLayout() {
     });
   }
 
-  return <Outlet />;
+  const subscribe = useSync((state) => state.subscribe);
+  const dequeueMutations = useSync((state) => state.dequeueMutations);
+  const online = useIsOnline();
+
+  useEffect(() => {
+    if (online) {
+      void dequeueMutations();
+    }
+  }, [online, dequeueMutations]);
+
+  useEffect(() => {
+    void subscribe();
+  }, []);
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <Outlet />
+    </SidebarProvider>
+  );
 }

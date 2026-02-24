@@ -420,7 +420,6 @@ export const useActivities = create<ActivitiesState>()(
           id: id ?? randomstring(),
           name,
           type,
-          workspace: null,
         };
 
         set((state) => ({
@@ -480,7 +479,6 @@ export const useActivities = create<ActivitiesState>()(
           id: id ?? randomstring(),
           name,
           category,
-          workspace: null,
         };
 
         set((state) => ({

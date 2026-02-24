@@ -7,7 +7,7 @@ import { env } from "./env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: "pg",
     schema: {
       user,
       session,
@@ -31,4 +31,14 @@ export const auth = betterAuth({
     requireNumber: true,
   },
   trustedOrigins: ["http://localhost:3000", "http://localhost:5173"],
+  user: {
+    additionalFields: {
+      currency: {
+        type: "string",
+      },
+      startingDate: {
+        type: "date",
+      },
+    },
+  },
 });

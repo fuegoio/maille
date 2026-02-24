@@ -1,6 +1,6 @@
 import { writeFileSync } from "fs";
 import { lexicographicSortSchema, printSchema } from "graphql";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { db } from "@/database";
 import { logger } from "@/logger";
 import { startServer } from "@/server";

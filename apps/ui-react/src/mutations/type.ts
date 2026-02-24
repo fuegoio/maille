@@ -33,5 +33,5 @@ export type MutationType<
    * The expected events from the mutation.
    * This is used to optimistically update the UI before the mutation is actually executed.
    */
-  events: Array<Omit<Events[number], "clientId" | "workspace" | "createdAt" | "user">>;
+  events: Array<Omit<Events[number], "clientId" | "createdAt" | "user">>;
 };

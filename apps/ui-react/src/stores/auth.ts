@@ -1,6 +1,7 @@
-import type { User, Session } from "better-auth";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+import type { Session, User } from "@/lib/auth";
 
 import { storage } from "./storage";
 
@@ -8,6 +9,7 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   setUser: (user: User, session: Session) => void;
+  updateUser: (update: Partial<User>) => void;
   clear: () => void;
 }
 
@@ -20,6 +22,20 @@ export const useAuth = create<AuthState>()(
         set({
           user,
           session,
+        });
+      },
+      updateUser: (update) => {
+        const updateFieldWithoutUndefined = Object.fromEntries(
+          Object.entries(update).filter(([_, value]) => value !== undefined),
+        );
+        const user = useAuth.getState().user;
+        if (!user) return;
+
+        set({
+          user: {
+            ...user,
+            ...updateFieldWithoutUndefined,
+          },
         });
       },
       clear: () => {

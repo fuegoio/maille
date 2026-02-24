@@ -1,4 +1,4 @@
-import type { Account, AccountType } from "#accounts/index.js";
+import type { Account, AccountType } from "#accounts/index.ts";
 import type { ActivityLiability, ActivityType, Transaction } from "#activities/types.ts";
 
 export interface BaseSyncEvent {

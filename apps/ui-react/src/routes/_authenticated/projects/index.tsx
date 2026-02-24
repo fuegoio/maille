@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute("/_authenticated/_workspace/projects/")({
+export const Route = createFileRoute("/_authenticated/projects/")({
   component: ProjectsPage,
 });
 

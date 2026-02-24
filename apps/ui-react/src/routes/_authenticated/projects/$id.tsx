@@ -2,14 +2,14 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Settings } from "lucide-react";
 import { useState } from "react";
 
-import { AddAndEditProjectModal } from "@/components/projects/add-and-edit-project-modal";
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { AddAndEditProjectModal } from "@/components/projects/add-and-edit-project-modal";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { useProjects } from "@/stores/projects";
 import { useActivities } from "@/stores/activities";
+import { useProjects } from "@/stores/projects";
 
-export const Route = createFileRoute("/_authenticated/_workspace/projects/$id")({
+export const Route = createFileRoute("/_authenticated/projects/$id")({
   component: ProjectPage,
   loader: async ({ params }) => {
     const projects = useProjects.getState().projects;
@@ -44,17 +44,29 @@ function ProjectPage() {
           {project.startDate || project.endDate ? (
             <span className="ml-2 text-sm text-muted-foreground">
               {project.startDate ? (
-                <span>{project.startDate instanceof Date ? project.startDate.toLocaleDateString() : new Date(project.startDate).toLocaleDateString()}</span>
+                <span>
+                  {project.startDate instanceof Date
+                    ? project.startDate.toLocaleDateString()
+                    : new Date(project.startDate).toLocaleDateString()}
+                </span>
               ) : null}
               {project.startDate && project.endDate ? <span> - </span> : null}
               {project.endDate ? (
-                <span>{project.endDate instanceof Date ? project.endDate.toLocaleDateString() : new Date(project.endDate).toLocaleDateString()}</span>
+                <span>
+                  {project.endDate instanceof Date
+                    ? project.endDate.toLocaleDateString()
+                    : new Date(project.endDate).toLocaleDateString()}
+                </span>
               ) : null}
             </span>
           ) : null}
         </div>
         <div className="flex-1" />
-        <Button variant="outline" size="sm" onClick={() => setShowEditModal(true)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowEditModal(true)}
+        >
           <Settings className="mr-2 h-4 w-4" />
           Edit
         </Button>
@@ -85,3 +97,4 @@ function ProjectPage() {
     </SidebarInset>
   );
 }
+

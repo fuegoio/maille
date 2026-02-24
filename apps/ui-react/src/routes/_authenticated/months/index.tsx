@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute("/_authenticated/_workspace/months/")({
+export const Route = createFileRoute("/_authenticated/months/")({
   component: RouteComponent,
 });
 

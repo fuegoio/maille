@@ -4,7 +4,7 @@ import type {
   ActivityFilterDateValues,
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
-} from "../activities/types.js";
+} from "../activities/types";
 
 export type MovementStatus = "incomplete" | "completed";
 

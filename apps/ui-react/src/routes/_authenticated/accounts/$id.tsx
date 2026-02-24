@@ -46,21 +46,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrencyFormatter } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 
-export const Route = createFileRoute("/_authenticated/_workspace/accounts/$id")(
-  {
-    component: AccountPage,
-    loader: async ({ params }) => {
-      const accounts = useAccounts.getState().accounts;
-      const account = accounts.find((a) => a.id === params.id);
-      if (!account) {
-        throw notFound();
-      }
+export const Route = createFileRoute("/_authenticated/accounts/$id")({
+  component: AccountPage,
+  loader: async ({ params }) => {
+    const accounts = useAccounts.getState().accounts;
+    const account = accounts.find((a) => a.id === params.id);
+    if (!account) {
+      throw notFound();
+    }
 
-      return { account };
-    },
+    return { account };
   },
-);
+});
 
 type Kpi = "balance" | "in" | "out";
 
@@ -71,12 +70,10 @@ function AccountPage() {
     throw notFound();
   }
 
-  const [selectedTab, setSelectedTab] = useState("summary");
-
-  const { workspace } = Route.useRouteContext();
-  const activities = useActivities((state) => state.activities);
-
   const [activeChart, setActiveChart] = useState<Kpi>("balance");
+  const [selectedTab, setSelectedTab] = useState("summary");
+  const user = useAuth((state) => state.user!);
+  const activities = useActivities((state) => state.activities);
 
   const currencyFormatter = getCurrencyFormatter();
 
@@ -117,7 +114,7 @@ function AccountPage() {
   };
 
   const days = eachDayOfInterval({
-    start: workspace.startingDate,
+    start: user.startingDate,
     end: new Date(),
   });
 

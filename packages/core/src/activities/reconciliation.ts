@@ -6,9 +6,9 @@ import {
   type ActivityMovement,
   type Transaction,
   type ActivityLiability,
-} from "./types.js";
-import { AccountType, type Account, type Counterparty } from "../accounts/index.js";
-import type { Movement, MovementWithLink } from "../movements/types.js";
+} from "./types";
+import { AccountType, type Account, type Counterparty } from "../accounts/index";
+import type { Movement, MovementWithLink } from "../movements/types";
 
 export const getActivityStatus = (
   activityDate: Date,

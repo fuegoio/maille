@@ -15,16 +15,14 @@ export const createCounterpartyMutation = graphql(/* GraphQL */ `
     $account: String!
     $name: String!
     $description: String
-    $user: String
-    $workspace: String!
+    $contact: String
   ) {
     createCounterparty(
       id: $id
       account: $account
       name: $name
       description: $description
-      user: $user
-      workspace: $workspace
+      contact: $contact
     ) {
       id
     }
@@ -43,13 +41,13 @@ export const updateCounterpartyMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String
     $description: String
-    $user: String
+    $contact: String
   ) {
     updateCounterparty(
       id: $id
       name: $name
       description: $description
-      user: $user
+      contact: $contact
     ) {
       id
     }

@@ -21,9 +21,7 @@ import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useViews } from "@/stores/views";
 
-export const Route = createFileRoute(
-  "/_authenticated/_workspace/activities/{-$id}",
-)({
+export const Route = createFileRoute("/_authenticated/activities/{-$id}")({
   component: ActivitiesPage,
   loader: async ({ params }) => {
     const setFocusedActivity = useActivities.getState().setFocusedActivity;

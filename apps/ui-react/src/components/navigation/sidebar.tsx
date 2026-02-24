@@ -18,11 +18,10 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/stores/auth";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
-import { WorkspaceSwitcher } from "./workspace-switcher";
+import { UserNavigation } from "./user-navigation";
 
 const data = {
   navAnalysis: [
@@ -105,28 +104,14 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuth((state) => state.user);
-
   if (!user) {
     throw new Error("no user available");
-  }
-
-  const availableWorkspaces = useWorkspaces(
-    (state) => state.availableWorkspaces,
-  );
-  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
-
-  if (!availableWorkspaces || !currentWorkspace) {
-    throw new Error("no workspace available");
   }
 
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
-        <WorkspaceSwitcher
-          user={user}
-          availableWorkspaces={availableWorkspaces}
-          currentWorkspace={currentWorkspace}
-        />
+        <UserNavigation user={user} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain title="Analysis" items={data.navAnalysis} />

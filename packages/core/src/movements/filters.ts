@@ -1,4 +1,4 @@
-import { type Movement, type MovementFilter } from "./types.js";
+import { type Movement, type MovementFilter } from "./types";
 import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
 
 const hasValue = (

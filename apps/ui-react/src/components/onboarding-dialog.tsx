@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
@@ -21,58 +21,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { fetchWorkspaceData } from "@/data";
-import { graphql } from "@/gql";
-import { graphqlClient } from "@/gql/client";
-import { getGraphQLDate } from "@/lib/date";
-import { useWorkspaces } from "@/stores/workspaces";
-
-export const CreateWorkspaceMutation = graphql(`
-  mutation CreateWorkspace(
-    $name: String!
-    $currency: String!
-    $startingDate: Date!
-  ) {
-    createWorkspace(
-      name: $name
-      currency: $currency
-      startingDate: $startingDate
-    ) {
-      id
-      name
-      currency
-      startingDate
-      createdAt
-      users {
-        id
-        email
-        name
-        image
-      }
-    }
-  }
-`);
-
-export const Route = createFileRoute("/_authenticated/join")({
-  component: RouteComponent,
-});
+import { authClient } from "@/lib/auth";
+import { useAuth } from "@/stores/auth";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Workspace name is required"),
   currency: z.string().min(1, "Currency is required"),
   startingDate: z.date(),
 });
 
-function RouteComponent() {
-  const { user } = Route.useRouteContext();
-  const navigate = Route.useNavigate();
-
-  const createWorkspace = useWorkspaces((state) => state.createWorkspace);
+export function OnboardingDialog() {
+  const updateUser = useAuth((state) => state.updateUser);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       currency: "EUR",
       startingDate: new Date(),
     },
@@ -84,25 +46,17 @@ function RouteComponent() {
     setLoading(true);
 
     try {
-      const response = await graphqlClient.request(CreateWorkspaceMutation, {
-        name: data.name,
+      const response = await authClient.updateUser({
         currency: data.currency,
-        startingDate: getGraphQLDate(data.startingDate),
+        startingDate: data.startingDate,
       });
-
-      createWorkspace({
-        ...response.createWorkspace,
-        startingDate: new Date(response.createWorkspace.startingDate),
-      });
-
-      await fetchWorkspaceData(response.createWorkspace.id);
-      navigate({ to: "/" });
+      if (response.data?.status) {
+        updateUser({
+          ...data,
+        });
+      }
     } catch (error) {
-      console.error("Failed to create workspace:", error);
-      form.setError("name", {
-        message:
-          error instanceof Error ? error.message : "Failed to create workspace",
-      });
+      console.error("Failed to upate user:", error);
     } finally {
       setLoading(false);
     }
@@ -114,36 +68,15 @@ function RouteComponent() {
       <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
         <div className="text-center">
           <h1 className="text-xl font-medium text-foreground">
-            Create your Workspace
+            Setup your account
           </h1>
           <div className="mt-2 text-sm text-muted-foreground">
-            Set up your financial workspace to get started.
+            Set up your financial settings to get started.
           </div>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <FieldGroup>
-            <Controller
-              name="name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="name">Workspace name</FieldLabel>
-                  <Input
-                    {...field}
-                    id="name"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="organization"
-                    className="h-9"
-                    placeholder={user.name}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
             <Controller
               name="currency"
               control={form.control}
@@ -205,13 +138,12 @@ function RouteComponent() {
             {loading ? (
               <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
             ) : (
-              "Create Workspace"
+              "Continue"
             )}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
-            Already have a workspace? You'll be able to switch between them
-            later.
+            You can always change these settings later.
           </div>
         </form>
       </div>

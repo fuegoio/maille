@@ -17,7 +17,6 @@ import { useCounterparties } from "./counterparties";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
 import { storage } from "./storage";
-import { useWorkspaces } from "./workspaces";
 
 interface SyncState {
   lastEventTimestamp: number;
@@ -26,7 +25,7 @@ interface SyncState {
   syncClient: Client<true> | null;
   mutate: (mutation: Mutation) => void;
   dequeueMutations: () => Promise<void>;
-  fetchMissingEvents: (workspace: string) => Promise<void>;
+  fetchMissingEvents: () => Promise<void>;
   subscribe: () => Promise<void>;
   clear: () => void;
 }
@@ -34,9 +33,8 @@ interface SyncState {
 const missingEventsQuery = graphql(/* GraphQL */ `
   query MissingEvents(
       $lastSync: Float!,
-      $workspace: String!
   ) {
-    events(lastSync: $lastSync, workspace: $workspace) {
+    events(lastSync: $lastSync) {
       type
       payload
       createdAt
@@ -64,7 +62,6 @@ export const useSync = create<SyncState>()(
               ...event,
               user: useAuth.getState().user!.id,
               clientId: useAuth.getState().session!.id,
-              workspace: useWorkspaces.getState().currentWorkspace!.id,
               createdAt: new Date(),
             };
           })
@@ -159,12 +156,11 @@ export const useSync = create<SyncState>()(
         }
       },
 
-      fetchMissingEvents: async (workspace) => {
+      fetchMissingEvents: async () => {
         const missingEventsRequest = await graphqlClient.request(
           missingEventsQuery,
           {
             lastSync: get().lastEventTimestamp,
-            workspace,
           },
         );
         set({
@@ -184,7 +180,6 @@ export const useSync = create<SyncState>()(
                 payload: JSON.parse(event.payload),
                 createdAt: new Date(event.createdAt),
                 user: useAuth.getState().user!.id,
-                workspace,
               }) as SyncEvent,
           )
           .forEach((event) => {
@@ -212,12 +207,11 @@ export const useSync = create<SyncState>()(
         });
         set({ syncClient: client });
 
-        const workspaceId = useWorkspaces.getState().currentWorkspace!.id;
-        await get().fetchMissingEvents(workspaceId);
+        await get().fetchMissingEvents();
 
         const subscription = client.iterate({
           query:
-            "subscription { events { type, payload, createdAt, clientId, workspace } }",
+            "subscription { events { type, payload, createdAt, clientId } }",
         });
 
         const clientId = useAuth.getState().session!.id;
@@ -230,17 +224,14 @@ export const useSync = create<SyncState>()(
             payload: string;
             createdAt: number;
             clientId: string;
-            workspace: string;
           };
           set({
             lastEventTimestamp: eventData.createdAt,
           });
           if (eventData.clientId === clientId) continue;
-          if (eventData.workspace !== workspaceId) continue;
 
           const event = {
             type: eventData.type,
-            workspace: eventData.workspace,
             payload: JSON.parse(eventData.payload),
             createdAt: new Date(eventData.createdAt * 1000),
             clientId: eventData.clientId,

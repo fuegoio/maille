@@ -16,7 +16,6 @@ export const createAssetMutation = graphql(/* GraphQL */ `
     $name: String!
     $description: String
     $location: String
-    $workspace: String!
   ) {
     createAsset(
       id: $id
@@ -24,7 +23,6 @@ export const createAssetMutation = graphql(/* GraphQL */ `
       name: $name
       description: $description
       location: $location
-      workspace: $workspace
     ) {
       id
     }

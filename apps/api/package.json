@@ -4,7 +4,7 @@
   "module": "index.ts",
   "scripts": {
     "dev": "bun run --watch index.ts | pino-pretty",
-    "db:generate": "bunx drizzle-kit generate --dialect sqlite --schema ./src/tables.ts",
+    "db:generate": "bunx drizzle-kit generate --dialect postgresql --schema ./src/tables.ts",
     "start": "bun run index.ts | pino-pretty",
     "typecheck": "tsc",
     "lint": "oxlint",
@@ -20,6 +20,7 @@
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "graphql": "^16.9.0",
+    "postgres": "^3.4.4",
     "graphql-scalars": "^1.23.0",
     "graphql-yoga": "^5.6.1",
     "jose": "^5.6.3",

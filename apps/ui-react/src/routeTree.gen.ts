@@ -12,20 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
-import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/_workspace'
-import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/_workspace/index'
-import { Route as AuthenticatedWorkspaceProjectsIndexRouteImport } from './routes/_authenticated/_workspace/projects/index'
-import { Route as AuthenticatedWorkspaceMonthsIndexRouteImport } from './routes/_authenticated/_workspace/months/index'
-import { Route as AuthenticatedWorkspaceCategoriesIndexRouteImport } from './routes/_authenticated/_workspace/categories/index'
-import { Route as AuthenticatedWorkspaceAccountsIndexRouteImport } from './routes/_authenticated/_workspace/accounts/index'
-import { Route as AuthenticatedWorkspaceProjectsIdRouteImport } from './routes/_authenticated/_workspace/projects/$id'
-import { Route as AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/movements/{-$id}'
-import { Route as AuthenticatedWorkspaceMonthsMonthRouteImport } from './routes/_authenticated/_workspace/months/$month'
-import { Route as AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/_workspace/activities/{-$id}'
-import { Route as AuthenticatedWorkspaceAccountsIdRouteImport } from './routes/_authenticated/_workspace/accounts/$id'
-import { Route as AuthenticatedWorkspaceCategoriesIdIndexRouteImport } from './routes/_authenticated/_workspace/categories/$id/index'
-import { Route as AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport } from './routes/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
+import { Route as AuthenticatedMonthsIndexRouteImport } from './routes/_authenticated/months/index'
+import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
+import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authenticated/accounts/index'
+import { Route as AuthenticatedProjectsIdRouteImport } from './routes/_authenticated/projects/$id'
+import { Route as AuthenticatedMovementsChar123IdChar125RouteImport } from './routes/_authenticated/movements/{-$id}'
+import { Route as AuthenticatedMonthsMonthRouteImport } from './routes/_authenticated/months/$month'
+import { Route as AuthenticatedActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/activities/{-$id}'
+import { Route as AuthenticatedAccountsIdRouteImport } from './routes/_authenticated/accounts/$id'
+import { Route as AuthenticatedCategoriesIdIndexRouteImport } from './routes/_authenticated/categories/$id/index'
+import { Route as AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRouteImport } from './routes/_authenticated/categories/$id/subcategories/$subcategoryId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -41,143 +39,125 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedJoinRoute = AuthenticatedJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
-  id: '/_workspace',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedWorkspaceIndexRoute =
-  AuthenticatedWorkspaceIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceProjectsIndexRoute =
-  AuthenticatedWorkspaceProjectsIndexRouteImport.update({
+const AuthenticatedProjectsIndexRoute =
+  AuthenticatedProjectsIndexRouteImport.update({
     id: '/projects/',
     path: '/projects/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceMonthsIndexRoute =
-  AuthenticatedWorkspaceMonthsIndexRouteImport.update({
+const AuthenticatedMonthsIndexRoute =
+  AuthenticatedMonthsIndexRouteImport.update({
     id: '/months/',
     path: '/months/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceCategoriesIndexRoute =
-  AuthenticatedWorkspaceCategoriesIndexRouteImport.update({
+const AuthenticatedCategoriesIndexRoute =
+  AuthenticatedCategoriesIndexRouteImport.update({
     id: '/categories/',
     path: '/categories/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceAccountsIndexRoute =
-  AuthenticatedWorkspaceAccountsIndexRouteImport.update({
+const AuthenticatedAccountsIndexRoute =
+  AuthenticatedAccountsIndexRouteImport.update({
     id: '/accounts/',
     path: '/accounts/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceProjectsIdRoute =
-  AuthenticatedWorkspaceProjectsIdRouteImport.update({
-    id: '/projects/$id',
-    path: '/projects/$id',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceMovementsChar123IdChar125Route =
-  AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport.update({
+const AuthenticatedProjectsIdRoute = AuthenticatedProjectsIdRouteImport.update({
+  id: '/projects/$id',
+  path: '/projects/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMovementsChar123IdChar125Route =
+  AuthenticatedMovementsChar123IdChar125RouteImport.update({
     id: '/movements/{-$id}',
     path: '/movements/{-$id}',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceMonthsMonthRoute =
-  AuthenticatedWorkspaceMonthsMonthRouteImport.update({
+const AuthenticatedMonthsMonthRoute =
+  AuthenticatedMonthsMonthRouteImport.update({
     id: '/months/$month',
     path: '/months/$month',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceActivitiesChar123IdChar125Route =
-  AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport.update({
+const AuthenticatedActivitiesChar123IdChar125Route =
+  AuthenticatedActivitiesChar123IdChar125RouteImport.update({
     id: '/activities/{-$id}',
     path: '/activities/{-$id}',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceAccountsIdRoute =
-  AuthenticatedWorkspaceAccountsIdRouteImport.update({
-    id: '/accounts/$id',
-    path: '/accounts/$id',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
-  } as any)
-const AuthenticatedWorkspaceCategoriesIdIndexRoute =
-  AuthenticatedWorkspaceCategoriesIdIndexRouteImport.update({
+const AuthenticatedAccountsIdRoute = AuthenticatedAccountsIdRouteImport.update({
+  id: '/accounts/$id',
+  path: '/accounts/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCategoriesIdIndexRoute =
+  AuthenticatedCategoriesIdIndexRouteImport.update({
     id: '/categories/$id/',
     path: '/categories/$id/',
-    getParentRoute: () => AuthenticatedWorkspaceRoute,
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute =
-  AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport.update(
-    {
-      id: '/categories/$id/subcategories/$subcategoryId',
-      path: '/categories/$id/subcategories/$subcategoryId',
-      getParentRoute: () => AuthenticatedWorkspaceRoute,
-    } as any,
-  )
+const AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute =
+  AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRouteImport.update({
+    id: '/categories/$id/subcategories/$subcategoryId',
+    path: '/categories/$id/subcategories/$subcategoryId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedWorkspaceIndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/join': typeof AuthenticatedJoinRoute
-  '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
-  '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
-  '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
-  '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
-  '/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
-  '/months/': typeof AuthenticatedWorkspaceMonthsIndexRoute
-  '/projects/': typeof AuthenticatedWorkspaceProjectsIndexRoute
-  '/categories/$id/': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
-  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
+  '/accounts/$id': typeof AuthenticatedAccountsIdRoute
+  '/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/months/$month': typeof AuthenticatedMonthsMonthRoute
+  '/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/projects/$id': typeof AuthenticatedProjectsIdRoute
+  '/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/categories/': typeof AuthenticatedCategoriesIndexRoute
+  '/months/': typeof AuthenticatedMonthsIndexRoute
+  '/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
+  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AuthenticatedWorkspaceIndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/join': typeof AuthenticatedJoinRoute
-  '/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
-  '/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
-  '/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
-  '/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
-  '/accounts': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/categories': typeof AuthenticatedWorkspaceCategoriesIndexRoute
-  '/months': typeof AuthenticatedWorkspaceMonthsIndexRoute
-  '/projects': typeof AuthenticatedWorkspaceProjectsIndexRoute
-  '/categories/$id': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
-  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/accounts/$id': typeof AuthenticatedAccountsIdRoute
+  '/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/months/$month': typeof AuthenticatedMonthsMonthRoute
+  '/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/projects/$id': typeof AuthenticatedProjectsIdRoute
+  '/accounts': typeof AuthenticatedAccountsIndexRoute
+  '/categories': typeof AuthenticatedCategoriesIndexRoute
+  '/months': typeof AuthenticatedMonthsIndexRoute
+  '/projects': typeof AuthenticatedProjectsIndexRoute
+  '/categories/$id': typeof AuthenticatedCategoriesIdIndexRoute
+  '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_authenticated/_workspace': typeof AuthenticatedWorkspaceRouteWithChildren
-  '/_authenticated/join': typeof AuthenticatedJoinRoute
-  '/_authenticated/_workspace/': typeof AuthenticatedWorkspaceIndexRoute
-  '/_authenticated/_workspace/accounts/$id': typeof AuthenticatedWorkspaceAccountsIdRoute
-  '/_authenticated/_workspace/activities/{-$id}': typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  '/_authenticated/_workspace/months/$month': typeof AuthenticatedWorkspaceMonthsMonthRoute
-  '/_authenticated/_workspace/movements/{-$id}': typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
-  '/_authenticated/_workspace/projects/$id': typeof AuthenticatedWorkspaceProjectsIdRoute
-  '/_authenticated/_workspace/accounts/': typeof AuthenticatedWorkspaceAccountsIndexRoute
-  '/_authenticated/_workspace/categories/': typeof AuthenticatedWorkspaceCategoriesIndexRoute
-  '/_authenticated/_workspace/months/': typeof AuthenticatedWorkspaceMonthsIndexRoute
-  '/_authenticated/_workspace/projects/': typeof AuthenticatedWorkspaceProjectsIndexRoute
-  '/_authenticated/_workspace/categories/$id/': typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
-  '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/accounts/$id': typeof AuthenticatedAccountsIdRoute
+  '/_authenticated/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/_authenticated/months/$month': typeof AuthenticatedMonthsMonthRoute
+  '/_authenticated/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/_authenticated/projects/$id': typeof AuthenticatedProjectsIdRoute
+  '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
+  '/_authenticated/months/': typeof AuthenticatedMonthsIndexRoute
+  '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
+  '/_authenticated/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
+  '/_authenticated/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,7 +165,6 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/signup'
-    | '/join'
     | '/accounts/$id'
     | '/activities/{-$id}'
     | '/months/$month'
@@ -199,10 +178,9 @@ export interface FileRouteTypes {
     | '/categories/$id/subcategories/$subcategoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/login'
     | '/signup'
-    | '/join'
+    | '/'
     | '/accounts/$id'
     | '/activities/{-$id}'
     | '/months/$month'
@@ -219,20 +197,18 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/signup'
-    | '/_authenticated/_workspace'
-    | '/_authenticated/join'
-    | '/_authenticated/_workspace/'
-    | '/_authenticated/_workspace/accounts/$id'
-    | '/_authenticated/_workspace/activities/{-$id}'
-    | '/_authenticated/_workspace/months/$month'
-    | '/_authenticated/_workspace/movements/{-$id}'
-    | '/_authenticated/_workspace/projects/$id'
-    | '/_authenticated/_workspace/accounts/'
-    | '/_authenticated/_workspace/categories/'
-    | '/_authenticated/_workspace/months/'
-    | '/_authenticated/_workspace/projects/'
-    | '/_authenticated/_workspace/categories/$id/'
-    | '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
+    | '/_authenticated/'
+    | '/_authenticated/accounts/$id'
+    | '/_authenticated/activities/{-$id}'
+    | '/_authenticated/months/$month'
+    | '/_authenticated/movements/{-$id}'
+    | '/_authenticated/projects/$id'
+    | '/_authenticated/accounts/'
+    | '/_authenticated/categories/'
+    | '/_authenticated/months/'
+    | '/_authenticated/projects/'
+    | '/_authenticated/categories/$id/'
+    | '/_authenticated/categories/$id/subcategories/$subcategoryId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -264,162 +240,124 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/join': {
-      id: '/_authenticated/join'
-      path: '/join'
-      fullPath: '/join'
-      preLoaderRoute: typeof AuthenticatedJoinRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/_workspace': {
-      id: '/_authenticated/_workspace'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/_workspace/': {
-      id: '/_authenticated/_workspace/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/projects/': {
-      id: '/_authenticated/_workspace/projects/'
+    '/_authenticated/projects/': {
+      id: '/_authenticated/projects/'
       path: '/projects'
       fullPath: '/projects/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceProjectsIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/months/': {
-      id: '/_authenticated/_workspace/months/'
+    '/_authenticated/months/': {
+      id: '/_authenticated/months/'
       path: '/months'
       fullPath: '/months/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceMonthsIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedMonthsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/categories/': {
-      id: '/_authenticated/_workspace/categories/'
+    '/_authenticated/categories/': {
+      id: '/_authenticated/categories/'
       path: '/categories'
       fullPath: '/categories/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedCategoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/accounts/': {
-      id: '/_authenticated/_workspace/accounts/'
+    '/_authenticated/accounts/': {
+      id: '/_authenticated/accounts/'
       path: '/accounts'
       fullPath: '/accounts/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceAccountsIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedAccountsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/projects/$id': {
-      id: '/_authenticated/_workspace/projects/$id'
+    '/_authenticated/projects/$id': {
+      id: '/_authenticated/projects/$id'
       path: '/projects/$id'
       fullPath: '/projects/$id'
-      preLoaderRoute: typeof AuthenticatedWorkspaceProjectsIdRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedProjectsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/movements/{-$id}': {
-      id: '/_authenticated/_workspace/movements/{-$id}'
+    '/_authenticated/movements/{-$id}': {
+      id: '/_authenticated/movements/{-$id}'
       path: '/movements/{-$id}'
       fullPath: '/movements/{-$id}'
-      preLoaderRoute: typeof AuthenticatedWorkspaceMovementsChar123IdChar125RouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedMovementsChar123IdChar125RouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/months/$month': {
-      id: '/_authenticated/_workspace/months/$month'
+    '/_authenticated/months/$month': {
+      id: '/_authenticated/months/$month'
       path: '/months/$month'
       fullPath: '/months/$month'
-      preLoaderRoute: typeof AuthenticatedWorkspaceMonthsMonthRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedMonthsMonthRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/activities/{-$id}': {
-      id: '/_authenticated/_workspace/activities/{-$id}'
+    '/_authenticated/activities/{-$id}': {
+      id: '/_authenticated/activities/{-$id}'
       path: '/activities/{-$id}'
       fullPath: '/activities/{-$id}'
-      preLoaderRoute: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125RouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedActivitiesChar123IdChar125RouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/accounts/$id': {
-      id: '/_authenticated/_workspace/accounts/$id'
+    '/_authenticated/accounts/$id': {
+      id: '/_authenticated/accounts/$id'
       path: '/accounts/$id'
       fullPath: '/accounts/$id'
-      preLoaderRoute: typeof AuthenticatedWorkspaceAccountsIdRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedAccountsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/categories/$id/': {
-      id: '/_authenticated/_workspace/categories/$id/'
+    '/_authenticated/categories/$id/': {
+      id: '/_authenticated/categories/$id/'
       path: '/categories/$id'
       fullPath: '/categories/$id/'
-      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdIndexRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedCategoriesIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId': {
-      id: '/_authenticated/_workspace/categories/$id/subcategories/$subcategoryId'
+    '/_authenticated/categories/$id/subcategories/$subcategoryId': {
+      id: '/_authenticated/categories/$id/subcategories/$subcategoryId'
       path: '/categories/$id/subcategories/$subcategoryId'
       fullPath: '/categories/$id/subcategories/$subcategoryId'
-      preLoaderRoute: typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRouteImport
-      parentRoute: typeof AuthenticatedWorkspaceRoute
+      preLoaderRoute: typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
-interface AuthenticatedWorkspaceRouteChildren {
-  AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
-  AuthenticatedWorkspaceAccountsIdRoute: typeof AuthenticatedWorkspaceAccountsIdRoute
-  AuthenticatedWorkspaceActivitiesChar123IdChar125Route: typeof AuthenticatedWorkspaceActivitiesChar123IdChar125Route
-  AuthenticatedWorkspaceMonthsMonthRoute: typeof AuthenticatedWorkspaceMonthsMonthRoute
-  AuthenticatedWorkspaceMovementsChar123IdChar125Route: typeof AuthenticatedWorkspaceMovementsChar123IdChar125Route
-  AuthenticatedWorkspaceProjectsIdRoute: typeof AuthenticatedWorkspaceProjectsIdRoute
-  AuthenticatedWorkspaceAccountsIndexRoute: typeof AuthenticatedWorkspaceAccountsIndexRoute
-  AuthenticatedWorkspaceCategoriesIndexRoute: typeof AuthenticatedWorkspaceCategoriesIndexRoute
-  AuthenticatedWorkspaceMonthsIndexRoute: typeof AuthenticatedWorkspaceMonthsIndexRoute
-  AuthenticatedWorkspaceProjectsIndexRoute: typeof AuthenticatedWorkspaceProjectsIndexRoute
-  AuthenticatedWorkspaceCategoriesIdIndexRoute: typeof AuthenticatedWorkspaceCategoriesIdIndexRoute
-  AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute: typeof AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute
-}
-
-const AuthenticatedWorkspaceRouteChildren: AuthenticatedWorkspaceRouteChildren =
-  {
-    AuthenticatedWorkspaceIndexRoute: AuthenticatedWorkspaceIndexRoute,
-    AuthenticatedWorkspaceAccountsIdRoute:
-      AuthenticatedWorkspaceAccountsIdRoute,
-    AuthenticatedWorkspaceActivitiesChar123IdChar125Route:
-      AuthenticatedWorkspaceActivitiesChar123IdChar125Route,
-    AuthenticatedWorkspaceMonthsMonthRoute:
-      AuthenticatedWorkspaceMonthsMonthRoute,
-    AuthenticatedWorkspaceMovementsChar123IdChar125Route:
-      AuthenticatedWorkspaceMovementsChar123IdChar125Route,
-    AuthenticatedWorkspaceProjectsIdRoute:
-      AuthenticatedWorkspaceProjectsIdRoute,
-    AuthenticatedWorkspaceAccountsIndexRoute:
-      AuthenticatedWorkspaceAccountsIndexRoute,
-    AuthenticatedWorkspaceCategoriesIndexRoute:
-      AuthenticatedWorkspaceCategoriesIndexRoute,
-    AuthenticatedWorkspaceMonthsIndexRoute:
-      AuthenticatedWorkspaceMonthsIndexRoute,
-    AuthenticatedWorkspaceProjectsIndexRoute:
-      AuthenticatedWorkspaceProjectsIndexRoute,
-    AuthenticatedWorkspaceCategoriesIdIndexRoute:
-      AuthenticatedWorkspaceCategoriesIdIndexRoute,
-    AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute:
-      AuthenticatedWorkspaceCategoriesIdSubcategoriesSubcategoryIdRoute,
-  }
-
-const AuthenticatedWorkspaceRouteWithChildren =
-  AuthenticatedWorkspaceRoute._addFileChildren(
-    AuthenticatedWorkspaceRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
-  AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRouteWithChildren
-  AuthenticatedJoinRoute: typeof AuthenticatedJoinRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAccountsIdRoute: typeof AuthenticatedAccountsIdRoute
+  AuthenticatedActivitiesChar123IdChar125Route: typeof AuthenticatedActivitiesChar123IdChar125Route
+  AuthenticatedMonthsMonthRoute: typeof AuthenticatedMonthsMonthRoute
+  AuthenticatedMovementsChar123IdChar125Route: typeof AuthenticatedMovementsChar123IdChar125Route
+  AuthenticatedProjectsIdRoute: typeof AuthenticatedProjectsIdRoute
+  AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
+  AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
+  AuthenticatedMonthsIndexRoute: typeof AuthenticatedMonthsIndexRoute
+  AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
+  AuthenticatedCategoriesIdIndexRoute: typeof AuthenticatedCategoriesIdIndexRoute
+  AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute: typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedWorkspaceRoute: AuthenticatedWorkspaceRouteWithChildren,
-  AuthenticatedJoinRoute: AuthenticatedJoinRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAccountsIdRoute: AuthenticatedAccountsIdRoute,
+  AuthenticatedActivitiesChar123IdChar125Route:
+    AuthenticatedActivitiesChar123IdChar125Route,
+  AuthenticatedMonthsMonthRoute: AuthenticatedMonthsMonthRoute,
+  AuthenticatedMovementsChar123IdChar125Route:
+    AuthenticatedMovementsChar123IdChar125Route,
+  AuthenticatedProjectsIdRoute: AuthenticatedProjectsIdRoute,
+  AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
+  AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
+  AuthenticatedMonthsIndexRoute: AuthenticatedMonthsIndexRoute,
+  AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
+  AuthenticatedCategoriesIdIndexRoute: AuthenticatedCategoriesIdIndexRoute,
+  AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute:
+    AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

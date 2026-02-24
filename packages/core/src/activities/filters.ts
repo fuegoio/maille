@@ -1,5 +1,5 @@
 import { add, isAfter, isBefore, isEqual, startOfDay, sub } from "date-fns";
-import { OperatorsWithoutValue, type Activity, type ActivityFilter } from "./types.js";
+import { OperatorsWithoutValue, type Activity, type ActivityFilter } from "./types";
 
 const hasValue = (
   filter: ActivityFilter,

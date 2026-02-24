@@ -14,7 +14,6 @@ import type { MutationType } from "./type";
 
 export const createMovementMutation = graphql(/* GraphQL */ `
   mutation CreateMovement(
-    $workspace: String!
     $id: String!
     $date: Date!
     $name: String!
@@ -22,7 +21,6 @@ export const createMovementMutation = graphql(/* GraphQL */ `
     $amount: Float!
   ) {
     createMovement(
-      workspace: $workspace
       id: $id
       date: $date
       name: $name
@@ -77,14 +75,12 @@ export type DeleteMovementMutation = MutationType<
 
 export const createMovementActivityMutation = graphql(/* GraphQL */ `
   mutation CreateMovementActivity(
-    $workspace: String!
     $id: String!
     $movementId: String!
     $activityId: String!
     $amount: Float!
   ) {
     createMovementActivity(
-      workspace: $workspace
       id: $id
       movementId: $movementId
       activityId: $activityId

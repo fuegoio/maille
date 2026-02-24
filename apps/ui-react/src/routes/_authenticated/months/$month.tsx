@@ -20,9 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
-export const Route = createFileRoute(
-  "/_authenticated/_workspace/months/$month",
-)({
+export const Route = createFileRoute("/_authenticated/months/$month")({
   component: MonthPage,
   loader: async ({ params }) => {
     if (params.month === "current") {

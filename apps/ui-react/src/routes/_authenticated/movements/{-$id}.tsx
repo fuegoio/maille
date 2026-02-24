@@ -27,9 +27,7 @@ import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 import { useViews } from "@/stores/views";
 
-export const Route = createFileRoute(
-  "/_authenticated/_workspace/movements/{-$id}",
-)({
+export const Route = createFileRoute("/_authenticated/movements/{-$id}")({
   component: MovementsPage,
   loader: async ({ params }) => {
     const setFocusedMovement = useMovements.getState().setFocusedMovement;

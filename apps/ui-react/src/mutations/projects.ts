@@ -14,9 +14,8 @@ export const createProjectMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String!
     $emoji: String
-    $workspace: String!
   ) {
-    createProject(id: $id, name: $name, emoji: $emoji, workspace: $workspace) {
+    createProject(id: $id, name: $name, emoji: $emoji) {
       id
     }
   }
