@@ -3,5 +3,5 @@ export type Counterparty = {
   account: string;
   name: string;
   description: string | null;
-  user: string | null;
+  contact: string | null;
 };

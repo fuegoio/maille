@@ -15,6 +15,8 @@ import { registerAssetsQueries } from "./assets/queries";
 import { registerAssetsMutations } from "./assets/mutations";
 import { registerCounterpartiesQueries } from "./counterparties/queries";
 import { registerCounterpartiesMutations } from "./counterparties/mutations";
+import { registerContactsQueries } from "./contacts/queries";
+import { registerContactsMutations } from "./contacts/mutations";
 
 builder.queryType({});
 registerActivitiesQueries();
@@ -23,6 +25,7 @@ registerMovementsQueries();
 registerProjectsQueries();
 registerAssetsQueries();
 registerCounterpartiesQueries();
+registerContactsQueries();
 
 builder.mutationType({});
 registerActivitiesMutations();
@@ -31,6 +34,7 @@ registerProjectsMutations();
 registerAccountsMutations();
 registerAssetsMutations();
 registerCounterpartiesMutations();
+registerContactsMutations();
 
 export const schema = builder.toSchema();
 

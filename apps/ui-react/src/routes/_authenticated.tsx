@@ -46,9 +46,9 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const { session, user } = Route.useRouteContext();
+  const navigate = Route.useNavigate();
 
   const setUser = useAuth((state) => state.setUser);
-  const clear = useAuth((state) => state.clear);
 
   const sessionData = useQuery({
     queryKey: ["session"],
@@ -59,7 +59,8 @@ function AuthenticatedLayout() {
       if (res.data?.session) {
         setUser(res.data.user, res.data.session);
       } else {
-        clear();
+        localStorage.clear();
+        await navigate({ to: "/login" });
       }
       return res.data;
     },

@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useContacts } from "@/stores/contacts";
 
 import { UserAvatar } from "./user-avatar";
 
@@ -27,13 +27,7 @@ export function UserSelect({
   className,
   placeholder = "Select a user",
 }: UserSelectProps) {
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  if (!workspace) {
-    throw new Error("workspace not found");
-  }
-
-  const users = workspace.users || [];
-
+  const contacts = useContacts((state) => state.contacts);
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
       <SelectTrigger className={cn("w-full", className)} id={id}>
@@ -41,12 +35,12 @@ export function UserSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Workspace users</SelectLabel>
-          {users.map((user) => (
+          <SelectLabel>Contacts</SelectLabel>
+          {contacts.map((user) => (
             <SelectItem key={user.id} value={user.id}>
               <div className="flex items-center gap-2">
-                <UserAvatar userId={user.id} className="size-6" />
-                <span>{user.name}</span>
+                <UserAvatar user={user.contact} className="size-6" />
+                <span>{user.contact.name}</span>
               </div>
             </SelectItem>
           ))}

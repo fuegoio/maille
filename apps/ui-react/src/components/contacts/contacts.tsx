@@ -16,15 +16,14 @@ import {
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
 import { useAuth } from "@/stores/auth";
+import { useContacts } from "@/stores/contacts";
 
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { Field, FieldError } from "../ui/field";
 import { Input } from "../ui/input";
 import {
   Item,
-  ItemActions,
   ItemContent,
   ItemDescription,
   ItemMedia,
@@ -32,24 +31,24 @@ import {
 } from "../ui/item";
 import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
-
-import { UserAvatar } from "./user-avatar";
+import { UserAvatar } from "../users/user-avatar";
 
 const formSchema = z.object({
   email: z.email("Email is required.").min(1, "Email is required."),
 });
 
-const inviteUserMutation = graphql(/* GraphQL */ `
-  mutation InviteUser(
+const createContactMutation = graphql(/* GraphQL */ `
+  mutation CreateContact(
     $id: String!
-    $user: String!
+    $contact: String!
   ) {
-    inviteUser(
+    createContact(
       id: $id
-      user: $user
+      contact: $contact
     ) {
       id
-      users {
+      createdAt
+      contact {
         id
         email
         name
@@ -59,16 +58,12 @@ const inviteUserMutation = graphql(/* GraphQL */ `
   }
 `);
 
-export function WorkspaceUsers() {
+export function Contacts() {
   const currentUser = useAuth((state) => state.user);
   if (!currentUser) throw new Error("no main user");
 
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  if (!workspace) throw new Error("no workspace");
-
-  const setCurrentWorkspace = useWorkspaces(
-    (state) => state.setCurrentWorkspace,
-  );
+  const contacts = useContacts((state) => state.contacts);
+  const addContact = useContacts((state) => state.addContact);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,12 +77,16 @@ export function WorkspaceUsers() {
     setLoading(true);
 
     try {
-      const response = await graphqlClient.request(inviteUserMutation, {
-        id: workspace.id,
-        user: email,
+      const response = await graphqlClient.request(createContactMutation, {
+        id: crypto.randomUUID(),
+        contact: email,
       });
-      setCurrentWorkspace({ ...workspace, users: response.inviteUser.users });
-    } catch (_error) {
+      addContact({
+        ...response.createContact,
+        createdAt: new Date(response.createContact.createdAt),
+      });
+    } catch {
+      // User not found or other error
       form.setError("email", {
         message: "User not found.",
       });
@@ -104,15 +103,15 @@ export function WorkspaceUsers() {
           onSelect={(e) => e.preventDefault()}
         >
           <Users />
-          Users
+          Contacts
         </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Workspace members</DialogTitle>
+          <DialogTitle>Contacts</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <div className="px-1 font-medium">Invite member</div>
+          <div className="px-1 font-medium">Invite user</div>
           <div className="px-1 text-muted-foreground">
             Enter the email of the user you want to invite.
           </div>
@@ -139,24 +138,17 @@ export function WorkspaceUsers() {
             </Button>
           </form>
           <Separator className="my-4" />
-          <div className="px-1 font-medium">
-            Workspace members ({workspace.users?.length})
-          </div>
+          <div className="px-1 font-medium">Contacts ({contacts?.length})</div>
           <div>
-            {workspace.users?.map((user) => (
-              <Item className="px-0" key={user.id}>
+            {contacts?.map((contact) => (
+              <Item className="px-0" key={contact.id}>
                 <ItemMedia>
-                  <UserAvatar userId={user.id} />
+                  <UserAvatar user={contact.contact} />
                 </ItemMedia>
                 <ItemContent className="gap-0">
-                  <ItemTitle>{user.name}</ItemTitle>
-                  <ItemDescription>{user.email}</ItemDescription>
+                  <ItemTitle>{contact.contact.name}</ItemTitle>
+                  <ItemDescription>{contact.contact.email}</ItemDescription>
                 </ItemContent>
-                {user.id === currentUser.id && (
-                  <ItemActions>
-                    <Badge>You</Badge>
-                  </ItemActions>
-                )}
               </Item>
             ))}
           </div>

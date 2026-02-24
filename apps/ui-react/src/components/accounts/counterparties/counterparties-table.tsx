@@ -3,8 +3,8 @@ import { useMemo } from "react";
 
 import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
+import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
@@ -32,8 +32,7 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
     (state) => state.setFocusedCounterparty,
   );
   const activities = useActivities((state) => state.activities);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  if (!workspace) throw new Error("new workspace");
+  const contacts = useContacts((state) => state.contacts);
 
   const currencyFormatter = getCurrencyFormatter();
 
@@ -115,11 +114,12 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
                   </div>
                 )}
 
-                {counterparty.user && (
+                {counterparty.contact && (
                   <Badge className="ml-4" variant="outline">
                     {
-                      workspace.users!.find((u) => u.id === counterparty.user)
-                        ?.name
+                      contacts.find(
+                        (c) => c.contact.id === counterparty.contact,
+                      )?.contact.name
                     }
                   </Badge>
                 )}

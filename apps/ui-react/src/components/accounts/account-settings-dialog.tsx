@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { updateAccountMutation } from "@/mutations/accounts";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useAuth } from "@/stores/auth";
 
 const accountSettingsSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -54,10 +54,7 @@ export function AccountSettingsDialog({
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  if (!workspace) {
-    throw new Error("Workspace not found");
-  }
+  const user = useAuth((state) => state.user);
 
   const {
     control,
@@ -147,7 +144,7 @@ export function AccountSettingsDialog({
                 />
                 <FieldDescription>
                   The initial balance of this account in{" "}
-                  {format(workspace.startingDate, "MMMM yyyy")}.
+                  {format(user?.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -193,7 +190,7 @@ export function AccountSettingsDialog({
                 />
                 <FieldDescription>
                   The initial cash balance for this account in{" "}
-                  {format(workspace.startingDate, "MMMM yyyy")}.
+                  {format(user?.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>

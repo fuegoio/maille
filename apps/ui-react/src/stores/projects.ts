@@ -78,7 +78,6 @@ export const useProjects = create<ProjectsState>()(
           emoji,
           startDate,
           endDate,
-          workspace: null,
         };
 
         set((state) => ({

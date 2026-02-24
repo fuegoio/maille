@@ -301,6 +301,21 @@ export interface DeleteCounterpartyEvent extends BaseSyncEvent {
   };
 }
 
+export interface CreateContactEvent extends BaseSyncEvent {
+  type: "createContact";
+  payload: {
+    id: string;
+    contact: string;
+  };
+}
+
+export interface DeleteContactEvent extends BaseSyncEvent {
+  type: "deleteContact";
+  payload: {
+    id: string;
+  };
+}
+
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
@@ -354,5 +369,7 @@ export type SyncEvent =
   | CreateCounterpartyEvent
   | UpdateCounterpartyEvent
   | DeleteCounterpartyEvent
+  | CreateContactEvent
+  | DeleteContactEvent
   | CreateUserEvent
   | UpdateUserEvent;

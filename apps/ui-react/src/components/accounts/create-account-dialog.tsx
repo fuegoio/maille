@@ -38,7 +38,7 @@ import { cn, randomstring } from "@/lib/utils";
 import { createAccountMutation } from "@/mutations/accounts";
 import { ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useAuth } from "@/stores/auth";
 
 const createAccountSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -56,12 +56,8 @@ export function CreateAccountDialog({
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
+  const user = useAuth((state) => state.user);
   const [open, setOpen] = useState(false);
-
-  if (!workspace) {
-    throw new Error("Workspace not found");
-  }
 
   const {
     control,
@@ -95,7 +91,6 @@ export function CreateAccountDialog({
         variables: {
           ...account,
           startingCashBalance: data.movements ? data.startingCashBalance : null,
-          workspace: workspace.id,
         },
         rollbackData: undefined,
         events: [
@@ -209,7 +204,7 @@ export function CreateAccountDialog({
                 />
                 <FieldDescription>
                   The initial balance of this account in{" "}
-                  {format(workspace.startingDate, "MMMM yyyy")}.
+                  {format(user?.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -255,7 +250,7 @@ export function CreateAccountDialog({
                 />
                 <FieldDescription>
                   The initial cash balance for this account in{" "}
-                  {format(workspace.startingDate, "MMMM yyyy")}.
+                  {format(user?.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>

@@ -109,7 +109,7 @@ export function Counterparty() {
   const handleUpdateCounterparty = (update: {
     name?: string;
     description?: string | null;
-    user?: string | null;
+    contact?: string | null;
   }) => {
     if (!counterparty) return;
     const counterpartyData = { ...counterparty };
@@ -225,12 +225,12 @@ export function Counterparty() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="user">User</FieldLabel>
+                <FieldLabel htmlFor="contact">Contact</FieldLabel>
                 <UserSelect
-                  id="user"
-                  value={counterparty.user || ""}
+                  id="contact"
+                  value={counterparty.contact || ""}
                   onValueChange={(value) =>
-                    handleUpdateCounterparty({ user: value })
+                    handleUpdateCounterparty({ contact: value })
                   }
                 />
               </Field>

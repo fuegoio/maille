@@ -15,7 +15,7 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useAuth } from "@/stores/auth";
 
 import { Button } from "../ui/button";
 
@@ -31,7 +31,7 @@ export function MonthActivitiesSummary({
   const categories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);
   const accounts = useAccounts((state) => state.accounts);
-  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
+  const user = useAuth((state) => state.user);
 
   const viewFilters = {
     activityType: null,
@@ -95,7 +95,7 @@ export function MonthActivitiesSummary({
     // Calculate the balance for the previous month
     const previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
     const previousBalance =
-      previousMonth >= new Date(currentWorkspace!.startingDate)
+      previousMonth >= new Date(user!.startingDate)
         ? getBalanceForMonth(previousMonth)
         : accounts.reduce(
             (total, account) => total + (account.startingBalance ?? 0),

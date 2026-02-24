@@ -41,7 +41,6 @@ import {
   useActivities,
 } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { AccountSelect } from "../accounts/account-select";
 import { AmountInput } from "../ui/amount-input";
@@ -92,7 +91,6 @@ export function AddActivityModal({
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
   const mutate = useSync((state) => state.mutate);
-  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
   const activities = useActivities((state) => state.activities);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
@@ -296,7 +294,6 @@ export function AddActivityModal({
       mutation: createActivityMutation,
       variables: {
         ...newActivity,
-        workspace: currentWorkspace!.id,
       },
       rollbackData: undefined,
       events: [
@@ -351,7 +348,6 @@ export function AddActivityModal({
         mutation: createActivityMutation,
         variables: {
           ...newActivity,
-          workspace: currentWorkspace!.id,
         },
         rollbackData: undefined,
         events: [

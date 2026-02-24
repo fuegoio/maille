@@ -29,7 +29,6 @@ import {
 import { getGraphQLDate } from "@/lib/date";
 import { createMovementMutation } from "@/mutations/movements";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { AmountInput } from "../ui/amount-input";
 import { DatePicker } from "../ui/date-picker";
@@ -50,7 +49,6 @@ interface AddMovementButtonProps {
 
 export function AddMovementButton({ className }: AddMovementButtonProps) {
   const mutate = useSync((state) => state.mutate);
-  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const form = useForm<FormValues>({
@@ -84,7 +82,6 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
       id: crypto.randomUUID(),
       ...data,
       date: getGraphQLDate(data.date),
-      workspace: workspaceId,
     };
 
     mutate({

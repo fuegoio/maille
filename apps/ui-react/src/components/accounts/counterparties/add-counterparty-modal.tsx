@@ -25,13 +25,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
 import { createCounterpartyMutation } from "@/mutations/counterparties";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 // Define the form schema for creating a counterparty
 const createCounterpartySchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  user: z.string().optional(),
+  contact: z.string().optional(),
 });
 
 type CreateCounterpartyFormValues = z.infer<typeof createCounterpartySchema>;
@@ -45,7 +44,6 @@ export function AddCounterpartyModal({
   accountId,
   children,
 }: AddCounterpartyModalProps) {
-  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
   const mutate = useSync((state) => state.mutate);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +58,7 @@ export function AddCounterpartyModal({
     defaultValues: {
       name: "",
       description: "",
-      user: "",
+      contact: "",
     },
   });
 
@@ -70,8 +68,7 @@ export function AddCounterpartyModal({
       account: accountId,
       name: data.name,
       description: data.description || null,
-      user: data.user || null,
-      workspace: workspaceId,
+      contact: data.contact || null,
     };
 
     mutate({
@@ -117,11 +114,11 @@ export function AddCounterpartyModal({
           />
 
           <Controller
-            name="user"
+            name="contact"
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel>User (optional)</FieldLabel>
+                <FieldLabel>Contact (optional)</FieldLabel>
                 <FieldContent>
                   <UserSelect
                     value={field.value}
@@ -129,7 +126,7 @@ export function AddCounterpartyModal({
                   />
                 </FieldContent>
                 <FieldDescription>
-                  Link this counterparty to a user in this workspace.
+                  Link this counterparty to a contact.
                 </FieldDescription>
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

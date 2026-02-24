@@ -24,7 +24,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createAssetMutation } from "@/mutations/assets";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 // Define the form schema for creating an asset
 const createAssetSchema = z.object({
@@ -41,7 +40,6 @@ interface AddAssetModalProps {
 }
 
 export function AddAssetModal({ accountId, children }: AddAssetModalProps) {
-  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
   const mutate = useSync((state) => state.mutate);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -67,7 +65,6 @@ export function AddAssetModal({ accountId, children }: AddAssetModalProps) {
       name: data.name,
       description: data.description || null,
       location: data.location || null,
-      workspace: workspaceId,
     };
 
     mutate({

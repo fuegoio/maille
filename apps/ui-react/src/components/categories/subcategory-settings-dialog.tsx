@@ -27,7 +27,6 @@ import {
 } from "@/mutations/activities";
 import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import {
   AlertDialog,
@@ -55,14 +54,9 @@ export function SubcategorySettingsDialog({
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
   const activities = useActivities((state) => state.activities);
 
   const [open, setOpen] = useState(false);
-
-  if (!workspace) {
-    throw new Error("Workspace not found");
-  }
 
   const {
     control,

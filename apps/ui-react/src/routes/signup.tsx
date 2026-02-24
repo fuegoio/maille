@@ -52,6 +52,7 @@ const formSchema = z.object({
 function RouteComponent() {
   const { redirect } = Route.useSearch();
   const [needsVerify, setNeedsVerify] = useState(false);
+  const navigate = Route.useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +75,8 @@ function RouteComponent() {
       password,
       name: `${firstName} ${lastName}`,
       callbackURL: redirect || window.location.origin,
+      currency: "EUR",
+      startingDate: new Date(),
     });
 
     if (error) {
@@ -81,6 +84,7 @@ function RouteComponent() {
         message: error.message,
       });
     } else {
+      await navigate({ to: "/" });
       setNeedsVerify(true);
     }
 

@@ -30,4 +30,3 @@ DeleteAssetResponseSchema.implement({
     success: t.exposeBoolean("success"),
   }),
 });
-

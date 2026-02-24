@@ -4,8 +4,8 @@ import { CircleCheck, TriangleAlert } from "lucide-react";
 import { UserAvatar } from "@/components/users/user-avatar";
 import { cn } from "@/lib/utils";
 import { getCurrencyFormatter } from "@/lib/utils";
+import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
-import { useWorkspaces } from "@/stores/workspaces";
 
 interface ActivityLiabilitiesProps {
   activity: Activity;
@@ -14,7 +14,7 @@ interface ActivityLiabilitiesProps {
 export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
   const currencyFormatter = getCurrencyFormatter();
   const counterparties = useCounterparties((state) => state.counterparties);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
+  const contacts = useContacts((state) => state.contacts);
 
   // Compute current amounts from transactions and counterparties
   const computeCurrentAmounts = () => {
@@ -31,15 +31,15 @@ export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
         : null;
 
       // If from transaction has a counterparty linked to a user, subtract from that user
-      if (fromCounterparty?.user) {
-        userAmounts[fromCounterparty.user] =
-          (userAmounts[fromCounterparty.user] || 0) - transaction.amount;
+      if (fromCounterparty?.contact) {
+        userAmounts[fromCounterparty.contact] =
+          (userAmounts[fromCounterparty.contact] || 0) - transaction.amount;
       }
 
       // If to transaction has a counterparty linked to a user, add to that user
-      if (toCounterparty?.user) {
-        userAmounts[toCounterparty.user] =
-          (userAmounts[toCounterparty.user] || 0) + transaction.amount;
+      if (toCounterparty?.contact) {
+        userAmounts[toCounterparty.contact] =
+          (userAmounts[toCounterparty.contact] || 0) + transaction.amount;
       }
     }
 
@@ -75,11 +75,14 @@ export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
           const userAmountReconciled =
             Math.abs(currentAmount - liability.amount) < 0.01;
 
-          const user = workspace?.users?.find((u) => u.id === liability.user);
+          const user = contacts.find(
+            (u) => u.contact.id === liability.user,
+          )?.contact;
+          if (!user) return null;
           return (
             <div key={liability.user} className="flex items-center py-2">
               <div className="mr-3 flex items-center">
-                <UserAvatar userId={liability.user} className="mr-2 h-6 w-6" />
+                <UserAvatar user={user} className="mr-2 h-6 w-6" />
                 <span className="text-sm">
                   {user?.name || `User ${liability.user.slice(0, 6)}...`}
                 </span>

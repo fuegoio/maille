@@ -6,14 +6,15 @@ import { graphqlClient } from "./gql/client";
 import { useAccounts } from "./stores/accounts";
 import { useActivities } from "./stores/activities";
 import { useAssets } from "./stores/assets";
+import { useContacts } from "./stores/contacts";
 import { useCounterparties } from "./stores/counterparties";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
 
 const userDataQuery = graphql(/* GraphQL */ `
-  query UserData() {
-    activities() {
+  query UserData {
+    activities {
       id
       users
       number
@@ -47,19 +48,19 @@ const userDataQuery = graphql(/* GraphQL */ `
       }
     }
 
-    activityCategories() {
+    activityCategories {
       id
       name
       type
     }
 
-    activitySubcategories() {
+    activitySubcategories {
       id
       name
       category
     }
 
-    accounts() {
+    accounts {
       id
       name
       type
@@ -67,10 +68,9 @@ const userDataQuery = graphql(/* GraphQL */ `
       startingBalance
       startingCashBalance
       movements
-      user
     }
 
-    movements() {
+    movements {
       id
       date
       amount
@@ -84,7 +84,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       status
     }
 
-    projects() {
+    projects {
       id
       name
       emoji
@@ -92,7 +92,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       endDate
     }
 
-    assets() {
+    assets {
       id
       account
       name
@@ -100,7 +100,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       location
     }
     
-    counterparties() {
+    counterparties {
       id
       account
       name
@@ -196,6 +196,7 @@ export const clearAllStores = () => {
     activitySubcategories: [],
   });
   useAssets.setState({ assets: [] });
+  useContacts.setState({ contacts: [] });
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });

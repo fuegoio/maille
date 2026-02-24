@@ -33,7 +33,6 @@ import { getGraphQLDate } from "@/lib/date";
 import { createMovementMutation } from "@/mutations/movements";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 import { Separator } from "../ui/separator";
 
@@ -62,8 +61,6 @@ export function ImportMovementsButton({
   const [step, setStep] = React.useState(0);
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
   const mutate = useSync((state) => state.mutate);
-
-  const workspace = useWorkspaces((state) => state.currentWorkspace!.id);
   const movements = useMovements((state) => state.movements);
 
   const form = useForm<FormValues>({
@@ -141,7 +138,6 @@ export function ImportMovementsButton({
           date: getGraphQLDate(movementDate),
           account,
           amount: movementAmount,
-          workspace,
         };
 
         mutate({

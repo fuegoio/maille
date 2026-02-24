@@ -1,20 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useWorkspaces } from "@/stores/workspaces";
 
 interface UserAvatarProps {
-  userId: string;
+  user: {
+    name: string;
+    image?: string | null;
+  };
   className?: string;
 }
 
-export function UserAvatar({ userId, className }: UserAvatarProps) {
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  if (!workspace) {
-    throw new Error("workspace not found");
-  }
-
-  const user = workspace.users?.find((u) => u.id === userId);
-  if (!user) return null;
-
+export function UserAvatar({ user, className }: UserAvatarProps) {
   const userInitials = user.name.at(0);
 
   return (

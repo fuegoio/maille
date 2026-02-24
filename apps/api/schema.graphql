@@ -63,12 +63,25 @@ type Asset {
   name: String!
 }
 
+type Contact {
+  contact: ContactUser!
+  createdAt: Date!
+  id: String!
+}
+
+type ContactUser {
+  email: String!
+  id: String!
+  image: String!
+  name: String!
+}
+
 type Counterparty {
   account: String!
+  contact: String
   description: String
   id: String!
   name: String!
-  user: String
 }
 
 """
@@ -137,6 +150,7 @@ type Mutation {
   createActivityCategory(id: String!, name: String!, type: String!): ActivityCategory!
   createActivitySubCategory(category: String!, id: String!, name: String!): ActivitySubCategory!
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
+  createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, name: String!): Counterparty!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
@@ -146,6 +160,7 @@ type Mutation {
   deleteActivityCategory(id: String!): DeleteActivityResponse!
   deleteActivitySubCategory(id: String!): DeleteActivityResponse!
   deleteAsset(id: String!): DeleteAssetResponse!
+  deleteContact(id: String!): Boolean!
   deleteCounterparty(id: String!): Boolean!
   deleteMovement(id: String!): DeleteMovementResponse!
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
@@ -177,6 +192,7 @@ type Query {
   activityCategories: [ActivityCategory!]!
   activitySubcategories: [ActivitySubCategory!]!
   assets: [Asset!]!
+  contacts: [Contact!]!
   counterparties: [Counterparty!]!
   events(lastSync: Float!): [Event!]!
   movements: [Movement!]!
@@ -197,7 +213,6 @@ type Transaction {
   toAccount: String!
   toAsset: String
   toCounterparty: String
-  user: String!
 }
 
 input TransactionInput {

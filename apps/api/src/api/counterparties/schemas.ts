@@ -12,7 +12,6 @@ CounterpartySchema.implement({
     account: t.exposeString("account"),
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
-    user: t.exposeString("user", { nullable: true }),
+    contact: t.exposeString("contact", { nullable: true }),
   }),
 });
-

@@ -33,7 +33,6 @@ import { randomstring } from "@/lib/utils";
 import { createActivityCategoryMutation } from "@/mutations/activities";
 import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 const createCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -48,12 +47,7 @@ export function CreateCategoryDialog({
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
   const [open, setOpen] = useState(false);
-
-  if (!workspace) {
-    throw new Error("Workspace not found");
-  }
 
   const {
     control,
@@ -81,7 +75,6 @@ export function CreateCategoryDialog({
         mutation: createActivityCategoryMutation,
         variables: {
           ...category,
-          workspace: workspace.id,
         },
         rollbackData: undefined,
         events: [

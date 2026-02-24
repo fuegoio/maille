@@ -4,6 +4,7 @@ import { db } from "@/database";
 import { bearer } from "better-auth/plugins";
 import { account, session, user, verification } from "./tables";
 import { env } from "./env";
+import { createUserAccounts } from "./services/users";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -38,6 +39,15 @@ export const auth = betterAuth({
       },
       startingDate: {
         type: "date",
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await createUserAccounts(user.id);
+        },
       },
     },
   },

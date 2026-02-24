@@ -9,7 +9,8 @@
     "./accounts": "./src/accounts/index.ts",
     "./movements": "./src/movements/index.ts",
     "./projects": "./src/projects/index.ts",
-    "./sync": "./src/sync/index.ts"
+    "./sync": "./src/sync/index.ts",
+    "./contacts": "./src/contacts/index.ts"
   },
   "scripts": {
     "dev": "tsc --watch",

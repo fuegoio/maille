@@ -7,26 +7,26 @@ import { useMemo } from "react";
 import { cn, getCurrencyFormatter } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useAuth } from "@/stores/auth";
 
 export function MonthsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
-  const currentWorkspace = useWorkspaces((state) => state.currentWorkspace);
+  const user = useAuth((state) => state.user);
   const currencyFormatter = getCurrencyFormatter();
 
   const today = new Date();
 
-  // Generate months from workspace start date to 12 months in the future
+  // Generate months from user start date to 12 months in the future
   const months = useMemo(() => {
-    if (!currentWorkspace?.startingDate) return [];
+    if (!user?.startingDate) return [];
 
     const months = [];
-    const startDate = new Date(currentWorkspace.startingDate);
+    const startDate = new Date(user.startingDate);
     const endDate = new Date(today);
     endDate.setMonth(endDate.getMonth() + 12); // 12 months in the future
 
-    // Start from the beginning of the workspace start month
+    // Start from the beginning of the user start month
     let currentMonth = new Date(
       startDate.getFullYear(),
       startDate.getMonth(),
@@ -44,7 +44,7 @@ export function MonthsTable() {
     }
 
     return months;
-  }, [currentWorkspace?.startingDate]);
+  }, [user?.startingDate]);
 
   const getActivityTypeTotalForMonth = (
     monthDate: Date,
@@ -75,7 +75,7 @@ export function MonthsTable() {
       1,
     );
     const previousBalance =
-      previousMonth >= new Date(currentWorkspace!.startingDate)
+      previousMonth >= new Date(user!.startingDate)
         ? getBalanceForMonth(previousMonth)
         : accounts.reduce(
             (total, account) => total + (account.startingBalance ?? 0),
@@ -225,7 +225,7 @@ export function MonthsTable() {
       ) : (
         <div className="flex flex-1 items-center justify-center overflow-hidden">
           <div className="text-sm text-muted-foreground">
-            No workspace data available.
+            No user data available.
           </div>
         </div>
       )}

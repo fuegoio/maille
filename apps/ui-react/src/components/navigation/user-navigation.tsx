@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import type { User } from "better-auth";
-import { ChevronsUpDown, Loader, LogOut, Plus, GlobeOff } from "lucide-react";
+import { ChevronsUpDown, Loader, LogOut, GlobeOff } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +21,7 @@ import { authClient } from "@/lib/auth";
 import useIsOnline from "@/lib/online";
 import { useSync } from "@/stores/sync";
 
+import { Contacts } from "../contacts/contacts";
 import { Badge } from "../ui/badge";
 
 import { ThemeSwitcher } from "./theme-switcher";
@@ -72,9 +73,7 @@ export function UserNavigation({ user }: { user: User }) {
                     )}
                   </Badge>
                 ) : (
-                  <span className="truncate font-medium">
-                    {currentWorkspace.name}
-                  </span>
+                  <span className="truncate font-medium">{user.name}</span>
                 )}
               </div>
               <ChevronsUpDown className="ml-auto" />
@@ -86,15 +85,20 @@ export function UserNavigation({ user }: { user: User }) {
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
-            <DropdownMenuSeparator />
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                <Avatar className="size-7">
+                  <AvatarImage src={user.image ?? undefined} alt={user.name} />
+                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <Contacts />
             <DropdownMenuSeparator />
             <ThemeSwitcher />
             <DropdownMenuItem className="gap-2 px-3" onClick={logout}>

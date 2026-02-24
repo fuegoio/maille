@@ -23,7 +23,6 @@ import {
 } from "@/mutations/projects";
 import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -44,7 +43,7 @@ export function AddAndEditProjectModal({
 }: AddAndEditProjectModalProps) {
   const projects = useProjects((state) => state.projects);
   const mutate = useSync((state) => state.mutate);
-  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
+
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,7 +88,6 @@ export function AddAndEditProjectModal({
         id: crypto.randomUUID(),
         ...data,
         emoji: data.emoji ?? null,
-        workspace: workspaceId,
       };
       mutate({
         name: "createProject",

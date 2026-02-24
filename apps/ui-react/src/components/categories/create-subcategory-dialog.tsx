@@ -22,7 +22,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { createActivitySubCategoryMutation } from "@/mutations/activities";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 import { randomstring } from "@/lib/utils";
 
 const createSubcategorySchema = z.object({
@@ -39,12 +38,7 @@ export function CreateSubcategoryDialog({
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
   const [open, setOpen] = useState(false);
-
-  if (!workspace) {
-    throw new Error("Workspace not found");
-  }
 
   const {
     control,
@@ -71,7 +65,6 @@ export function CreateSubcategoryDialog({
         mutation: createActivitySubCategoryMutation,
         variables: {
           ...subcategory,
-          workspace: workspace.id,
         },
         rollbackData: undefined,
         events: [

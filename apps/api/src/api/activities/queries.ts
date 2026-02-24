@@ -39,6 +39,11 @@ export const registerActivitiesQueries = () => {
           .from(activities)
           .where(eq(activities.user, ctx.user.id));
 
+        const movementsData = await db
+          .select()
+          .from(movements)
+          .where(eq(movements.user, ctx.user.id));
+
         return activitiesData.map(async (activity) => {
           const activityTransactions = await db
             .select()
@@ -80,7 +85,7 @@ export const registerActivitiesQueries = () => {
               activityMovements,
               accountsQuery,
               (id) => {
-                const movement = db.select().from(movements).where(eq(movements.id, id)).get();
+                const movement = movementsData.find((m) => m.id === id);
                 if (!movement) return;
                 return {
                   ...movement,

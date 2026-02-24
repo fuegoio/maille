@@ -19,7 +19,6 @@ import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
-import { useWorkspaces } from "@/stores/workspaces";
 
 interface LinkMovementButtonProps {
   activity: Activity;
@@ -39,7 +38,7 @@ export function LinkMovementButton({
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);
-  const workspaceId = useWorkspaces((state) => state.currentWorkspace!.id);
+
 
   const filteredMovements = React.useMemo(() => {
     const transactionsSumByAccount = getActivityTransactionsSumByAccount(
@@ -85,7 +84,6 @@ export function LinkMovementButton({
       mutation: createMovementActivityMutation,
       variables: {
         id: newId,
-        workspace: workspaceId,
         movementId: movement.id,
         activityId: activity.id,
         amount: movement.amount,

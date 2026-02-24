@@ -171,6 +171,11 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
         });
 
+        const userMovements = await db
+          .select()
+          .from(movements)
+          .where(eq(movements.user, ctx.user.id));
+
         return {
           id: args.id,
           number,
@@ -195,7 +200,7 @@ export const registerActivitiesMutations = () => {
             newMovements,
             accountsQuery,
             (id) => {
-              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
+              const movement = userMovements.find((m) => m.id === id);
               if (!movement) return;
               return {
                 ...movement,
@@ -409,6 +414,11 @@ export const registerActivitiesMutations = () => {
           .from(movementsActivities)
           .where(eq(movementsActivities.activity, args.id));
 
+        const userMovements = await db
+          .select()
+          .from(movements)
+          .where(eq(movements.user, ctx.user.id));
+
         return {
           ...activity,
           users: args.users ?? activityUsers.map((u) => u.user),
@@ -426,7 +436,7 @@ export const registerActivitiesMutations = () => {
             movementsData,
             accountsQuery,
             (id) => {
-              const movement = db.select().from(movements).where(eq(movements.id, id)).get();
+              const movement = userMovements.find((m) => m.id === id);
               if (!movement) return;
               return {
                 ...movement,

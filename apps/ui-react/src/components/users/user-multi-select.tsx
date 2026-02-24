@@ -9,7 +9,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useWorkspaces } from "@/stores/workspaces";
+import { useContacts } from "@/stores/contacts";
 
 /**
  * A multi-select component for users that displays avatars of selected users
@@ -40,8 +40,7 @@ export function UserMultiSelect({
   placeholder = "Select users...",
 }: UserMultiSelectProps) {
   const [open, setOpen] = React.useState(false);
-  const workspace = useWorkspaces((state) => state.currentWorkspace);
-  const users = workspace?.users || [];
+  const users = useContacts((state) => state.contacts.map((c) => c.contact));
 
   const handleCheckboxChange = (userId: string) => {
     const newValue = value.includes(userId)

@@ -98,10 +98,6 @@ TransactionSchema.implement({
       type: "String",
       resolve: (parent) => parent.id,
     }),
-    user: t.field({
-      type: "String",
-      resolve: (parent) => parent.user,
-    }),
     amount: t.exposeFloat("amount"),
     fromAccount: t.field({
       type: "String",

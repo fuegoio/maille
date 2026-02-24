@@ -54,7 +54,7 @@ builder.queryField("events", (t) =>
       }),
     },
     resolve: async (root, args, ctx) => {
-      const lastSyncDate = new Date(args.lastSync * 1000);
+      const lastSyncDate = new Date(args.lastSync);
       const eventsQuery = await db
         .select()
         .from(events)
