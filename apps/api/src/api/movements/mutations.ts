@@ -10,7 +10,6 @@ import { db } from "@/database";
 import { addEvent } from "@/api/events";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { validateWorkspace } from "@/services/workspaces";
 
 export const registerMovementsMutations = () => {
   builder.mutationField("createMovement", (t) =>
@@ -26,19 +25,11 @@ export const registerMovementsMutations = () => {
         account: t.arg({
           type: "String",
         }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         await db.insert(movements).values({
           id: args.id,
           user: ctx.user.id,
-          workspace: args.workspace,
           name: args.name,
           date: new Date(args.date),
           amount: args.amount,
@@ -57,7 +48,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return {
@@ -110,8 +100,6 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Movement not found");
         }
 
-        await validateWorkspace(movement.workspace, ctx.user.id);
-
         const updates: Partial<typeof movement> = {};
         if (args.date) {
           updates.date = args.date;
@@ -147,7 +135,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: movement.workspace,
         });
 
         const activitiesData = await db
@@ -187,11 +174,6 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Movement not found");
         }
 
-        // Validate workspace from the movement
-        if (movement.workspace) {
-          await validateWorkspace(movement.workspace, ctx.user.id);
-        }
-
         await db.delete(movementsActivities).where(eq(movementsActivities.movement, args.id));
         await db.delete(movements).where(eq(movements.id, args.id));
 
@@ -203,7 +185,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: movement.workspace,
         });
 
         return {
@@ -228,18 +209,10 @@ export const registerMovementsMutations = () => {
           type: "String",
         }),
         amount: t.arg.float(),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         await db.insert(movementsActivities).values({
           id: args.id,
-          workspace: args.workspace,
           movement: args.movementId,
           activity: args.activityId,
           amount: args.amount,
@@ -256,7 +229,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return {
@@ -291,8 +263,6 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("MovementActivity not found");
         }
 
-        await validateWorkspace(movementActivity.workspace, ctx.user.id);
-
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
 
@@ -318,7 +288,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: movementActivity.workspace,
         });
 
         return updatedMovementActivity;
@@ -346,9 +315,6 @@ export const registerMovementsMutations = () => {
         if (!movementActivity) {
           throw new GraphQLError("MovementActivity not found");
         }
-
-        await validateWorkspace(movementActivity.workspace, ctx.user.id);
-
         await db.delete(movementsActivities).where(eq(movementsActivities.id, args.id));
 
         await addEvent({
@@ -361,7 +327,6 @@ export const registerMovementsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: movementActivity.workspace,
         });
 
         return { id: args.id, success: true };

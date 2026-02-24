@@ -1,6 +1,5 @@
 export type Transaction = {
   id: string;
-  user: string;
   amount: number;
   fromAccount: string;
   fromCounterparty?: string | null;

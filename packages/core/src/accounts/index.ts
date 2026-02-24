@@ -35,5 +35,4 @@ export type Account = {
   startingBalance: number | null;
   startingCashBalance: number | null;
   movements: boolean;
-  user: string | null;
 };

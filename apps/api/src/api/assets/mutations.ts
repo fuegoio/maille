@@ -5,7 +5,6 @@ import { accounts, assets, transactions } from "@/tables";
 import { addEvent } from "../events";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { validateWorkspace } from "@/services/workspaces";
 
 export const registerAssetsMutations = () => {
   builder.mutationField("createAsset", (t) =>
@@ -25,25 +24,13 @@ export const registerAssetsMutations = () => {
           type: "String",
           required: false,
         }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         const account = (
           await db
             .select()
             .from(accounts)
-            .where(
-              and(
-                eq(accounts.id, args.account),
-                eq(accounts.workspace, args.workspace),
-                eq(accounts.user, ctx.user.id),
-              ),
-            )
+            .where(and(eq(accounts.id, args.account), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -55,11 +42,11 @@ export const registerAssetsMutations = () => {
             .insert(assets)
             .values({
               id: args.id,
+              user: ctx.user.id,
               account: account.id,
               name: args.name,
               description: args.description || undefined,
               location: args.location || undefined,
-              workspace: args.workspace,
             })
             .returning()
         )[0];
@@ -75,7 +62,6 @@ export const registerAssetsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return asset;
@@ -119,8 +105,6 @@ export const registerAssetsMutations = () => {
           throw new GraphQLError("Asset not found");
         }
 
-        await validateWorkspace(asset.workspace, ctx.user.id);
-
         const assetUpdates: Partial<typeof asset> = {};
         if (args.account) {
           assetUpdates.account = args.account;
@@ -155,7 +139,6 @@ export const registerAssetsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: asset.workspace,
         });
 
         return updatedAsset;
@@ -183,8 +166,6 @@ export const registerAssetsMutations = () => {
           throw new GraphQLError("Asset not found");
         }
 
-        await validateWorkspace(asset.workspace, ctx.user.id);
-
         await db.delete(assets).where(eq(assets.id, args.id));
         await db
           .update(transactions)
@@ -203,7 +184,6 @@ export const registerAssetsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: asset.workspace,
         });
 
         return {

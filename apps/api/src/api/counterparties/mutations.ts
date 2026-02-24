@@ -4,7 +4,6 @@ import { CounterpartySchema } from "./schemas";
 import { addEvent } from "../events";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { validateWorkspace } from "@/services/workspaces";
 import { accounts, counterparties, transactions } from "@/tables";
 
 export const registerCounterpartiesMutations = () => {
@@ -18,26 +17,14 @@ export const registerCounterpartiesMutations = () => {
         account: t.arg.string(),
         name: t.arg.string(),
         description: t.arg.string({ required: false }),
-        user: t.arg.string({ required: false }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
+        contact: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         const account = (
           await db
             .select()
             .from(accounts)
-            .where(
-              and(
-                eq(accounts.id, args.account),
-                eq(accounts.workspace, args.workspace),
-                eq(accounts.user, ctx.user.id),
-              ),
-            )
+            .where(and(eq(accounts.id, args.account), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -48,11 +35,11 @@ export const registerCounterpartiesMutations = () => {
           .insert(counterparties)
           .values({
             id: args.id,
+            user: ctx.user.id,
             account: account.id,
-            workspace: args.workspace,
             name: args.name,
             description: args.description,
-            user: args.user,
+            contact: args.contact,
           })
           .returning();
         const counterparty = counterpartyResults[0];
@@ -68,12 +55,11 @@ export const registerCounterpartiesMutations = () => {
             account: args.account,
             name: args.name,
             description: args.description ?? null,
-            user: args.user ?? null,
+            contact: args.contact ?? null,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return { ...counterparty, liability: 0 };
@@ -90,21 +76,18 @@ export const registerCounterpartiesMutations = () => {
         }),
         name: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
-        user: t.arg.string({ required: false }),
+        contact: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const counterparty = (
           await db
             .select()
             .from(counterparties)
-            .innerJoin(accounts, eq(accounts.id, counterparties.account))
-            .where(and(eq(counterparties.id, args.id), eq(accounts.user, ctx.user.id)))
-        )[0]?.counterparties;
+            .where(and(eq(counterparties.id, args.id), eq(counterparties.user, ctx.user.id)))
+        )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
-
-        await validateWorkspace(counterparty.workspace, ctx.user.id);
 
         const updates: Partial<typeof counterparty> = {};
         if (args.name) {
@@ -115,8 +98,8 @@ export const registerCounterpartiesMutations = () => {
         if (args.description !== undefined) {
           updates.description = args.description;
         }
-        if (args.user !== undefined) {
-          updates.user = args.user;
+        if (args.contact !== undefined) {
+          updates.contact = args.contact;
         }
 
         const updatedCounterparties = await db
@@ -139,7 +122,6 @@ export const registerCounterpartiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: counterparty.workspace,
         });
 
         return {
@@ -162,14 +144,11 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .innerJoin(accounts, eq(accounts.id, counterparties.account))
-            .where(and(eq(counterparties.id, args.id), eq(accounts.user, ctx.user.id)))
-        )[0]?.counterparties;
+            .where(and(eq(counterparties.id, args.id), eq(counterparties.user, ctx.user.id)))
+        )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
-
-        await validateWorkspace(counterparty.workspace, ctx.user.id);
 
         await db.delete(counterparties).where(eq(counterparties.id, args.id));
         await db
@@ -189,7 +168,6 @@ export const registerCounterpartiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: counterparty.workspace,
         });
 
         return true;

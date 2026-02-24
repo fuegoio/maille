@@ -3,9 +3,8 @@ import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
 import { activities, projects } from "@/tables";
 import { addEvent } from "../events";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { validateWorkspace } from "@/services/workspaces";
 
 export const registerProjectsMutations = () => {
   builder.mutationField("createProject", (t) =>
@@ -17,27 +16,19 @@ export const registerProjectsMutations = () => {
         }),
         name: t.arg.string(),
         emoji: t.arg.string({ required: false }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        await validateWorkspace(args.workspace, ctx.user.id);
-
-        const projectResults = (
-          await db
-            .insert(projects)
-            .values({
-              id: args.id,
-              workspace: args.workspace,
-              name: args.name,
-              emoji: args.emoji,
-            })
-            .returning()
-        );
+        const projectResults = await db
+          .insert(projects)
+          .values({
+            id: args.id,
+            user: ctx.user.id,
+            name: args.name,
+            emoji: args.emoji,
+          })
+          .returning();
         const project = projectResults[0];
-        
+
         if (!project) {
           throw new GraphQLError("Failed to create project");
         }
@@ -52,7 +43,6 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return { ...project, startDate: null, endDate: null };
@@ -79,12 +69,15 @@ export const registerProjectsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const project = (await db.select().from(projects).where(eq(projects.id, args.id)))[0];
+        const project = (
+          await db
+            .select()
+            .from(projects)
+            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user.id)))
+        )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
-
-        await validateWorkspace(project.workspace, ctx.user.id);
 
         const updates: Partial<typeof project> = {};
         if (args.name) {
@@ -103,11 +96,13 @@ export const registerProjectsMutations = () => {
           updates.endDate = args.endDate;
         }
 
-        const updatedProjects = (
-          await db.update(projects).set(updates).where(eq(projects.id, args.id)).returning()
-        );
+        const updatedProjects = await db
+          .update(projects)
+          .set(updates)
+          .where(eq(projects.id, args.id))
+          .returning();
         const updatedProject = updatedProjects[0];
-        
+
         if (!updatedProject) {
           throw new GraphQLError("Failed to update project");
         }
@@ -123,7 +118,6 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: project.workspace,
         });
 
         return {
@@ -144,15 +138,17 @@ export const registerProjectsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        const project = (await db.select().from(projects).where(eq(projects.id, args.id)))[0];
+        const project = (
+          await db
+            .select()
+            .from(projects)
+            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user.id)))
+        )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
 
-        await validateWorkspace(project.workspace, ctx.user.id);
-
         await db.update(activities).set({ project: null }).where(eq(activities.project, args.id));
-
         await db.delete(projects).where(eq(projects.id, args.id));
 
         await addEvent({
@@ -163,7 +159,6 @@ export const registerProjectsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: project.workspace,
         });
 
         return true;

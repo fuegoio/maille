@@ -98,67 +98,57 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 export const activities = sqliteTable("activities", {
-  id: text("id").primaryKey().$type<string>(),
+  id: text("id").primaryKey(),
   name: text("name").notNull(),
   date: integer("date", { mode: "timestamp" }).notNull(),
   description: text("description"),
-  workspace: text("workspace")
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   number: integer("number").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
-  category: text("category")
-    .$type<string>()
-    .references(() => activityCategories.id),
-  subcategory: text("subcategory")
-    .$type<string>()
-    .references(() => activitySubcategories.id),
-  project: text("project")
-    .$type<string>()
-    .references(() => projects.id),
+  category: text("category").references(() => activityCategories.id),
+  subcategory: text("subcategory").references(() => activitySubcategories.id),
+  project: text("project").references(() => projects.id),
 });
 
-export const activitiesUsers = sqliteTable("activities_users", {
-  id: text("id").primaryKey().$type<string>(),
+export const activitiesSharing = sqliteTable("activities_sharing", {
+  id: text("id").primaryKey(),
+  sharingId: text("sharing_id").notNull(),
+  role: text("role").notNull().$type<"primary" | "secondary">(),
   activity: text("activity")
     .notNull()
-    .references(() => activities.id)
-    .$type<string>(),
+    .references(() => activities.id),
   user: text("user")
     .notNull()
     .references(() => user.id),
 });
 
 export const activityCategories = sqliteTable("activity_categories", {
-  id: text("id").primaryKey().$type<string>(),
-  workspace: text("workspace")
+  id: text("id").primaryKey(),
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   name: text("name").notNull(),
   type: text("type").notNull().$type<ActivityType>(),
 });
 
 export const activitySubcategories = sqliteTable("activity_subcategories", {
-  id: text("id").primaryKey().$type<string>(),
-  workspace: text("workspace")
+  id: text("id").primaryKey(),
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   name: text("name").notNull(),
   category: text("category")
     .notNull()
-    .$type<string>()
     .references(() => activityCategories.id),
 });
 
 export const projects = sqliteTable("projects", {
-  id: text("id").primaryKey().$type<string>(),
-  workspace: text("workspace")
+  id: text("id").primaryKey(),
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   name: text("name").notNull(),
   emoji: text("emoji"),
   startDate: integer("start_date", { mode: "timestamp" }),
@@ -166,34 +156,28 @@ export const projects = sqliteTable("projects", {
 });
 
 export const transactions = sqliteTable("transactions", {
-  id: text("id").primaryKey().$type<string>(),
-  user: text("user").notNull(),
+  id: text("id").primaryKey(),
+  activity: text("activity")
+    .notNull()
+    .references(() => activities.id),
   amount: integer("amount").notNull(),
   fromAccount: text("from_account")
     .notNull()
-    .$type<string>()
     .references(() => accounts.id),
   fromAsset: text("from_asset").references(() => assets.id),
   fromCounterparty: text("from_counterparty").references(() => counterparties.id),
   toAccount: text("to_account")
     .notNull()
-    .$type<string>()
     .references(() => accounts.id),
   toAsset: text("to_asset").references(() => assets.id),
   toCounterparty: text("to_counterparty").references(() => counterparties.id),
-  activity: text("activity")
-    .notNull()
-    .references(() => activities.id)
-    .$type<string>(),
 });
 
 export const accounts = sqliteTable("accounts", {
-  id: text("id").primaryKey().$type<string>(),
-  user: text("user"),
-  workspace: text("workspace")
+  id: text("id").primaryKey(),
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   name: text("name").notNull(),
   type: text("type").notNull().$type<AccountType>(),
   startingBalance: integer("starting_balance").notNull().default(0),
@@ -202,100 +186,86 @@ export const accounts = sqliteTable("accounts", {
   movements: integer("movements", { mode: "boolean" }).notNull().default(false),
 });
 
-export const assets = sqliteTable("assets", {
-  id: text("id").primaryKey().$type<string>(),
+export const accountsSharing = sqliteTable("accounts_sharing", {
+  id: text("id").primaryKey(),
+  sharingId: text("sharing_id").notNull(),
+  role: text("role").notNull().$type<"primary" | "secondary">(),
   account: text("account")
     .notNull()
-    .$type<string>()
+    .references(() => accounts.id),
+  user: text("user")
+    .notNull()
+    .references(() => user.id),
+});
+
+export const assets = sqliteTable("assets", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id),
+  account: text("account")
+    .notNull()
     .references(() => accounts.id),
   name: text("name").notNull(),
   description: text("description"),
   location: text("location"),
-  workspace: text("workspace")
-    .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
 });
 
 export const movements = sqliteTable("movements", {
-  id: text("id").primaryKey().$type<string>(),
-  user: text("user").notNull(),
-  workspace: text("workspace")
+  id: text("id").primaryKey(),
+  user: text("user")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   date: integer("date", { mode: "timestamp" }).notNull(),
   amount: integer("amount").notNull(),
   account: text("account")
     .notNull()
-    .references(() => accounts.id)
-    .$type<string>(),
+    .references(() => accounts.id),
   name: text("name").notNull(),
 });
 
 export const movementsActivities = sqliteTable("movements_activities", {
-  id: text("id").primaryKey().$type<string>(),
-  workspace: text("workspace")
-    .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+  id: text("id").primaryKey(),
   activity: text("activity")
     .notNull()
-    .references(() => activities.id)
-    .$type<string>(),
+    .references(() => activities.id),
   movement: text("movement")
     .notNull()
-    .references(() => movements.id)
-    .$type<string>(),
+    .references(() => movements.id),
   amount: integer("amount").notNull(),
 });
 
 export const counterparties = sqliteTable("counterparties", {
-  id: text("id").primaryKey().$type<string>(),
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id),
   account: text("account")
     .notNull()
-    .$type<string>()
     .references(() => accounts.id),
-  workspace: text("workspace")
-    .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
   name: text("name").notNull(),
   description: text("description"),
-  user: text("user")
-    .$type<string>()
-    .references(() => user.id),
+  contact: text("contact").references(() => user.id),
 });
 
 export const events = sqliteTable("events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  user: text("user").notNull(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id),
   type: text("type").notNull().$type<SyncEvent["type"]>(),
   payload: text("payload").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   clientId: text("client_id").notNull(),
-  workspace: text("workspace")
-    .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
 });
 
-export const workspaces = sqliteTable("workspaces", {
-  id: text("id").primaryKey().$type<string>(),
-  name: text("name").notNull(),
-  startingDate: integer("starting_date", { mode: "timestamp" }).notNull(),
-  currency: text("currency").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
-
-export const workspaceUsers = sqliteTable("workspace_users", {
-  id: text("id").primaryKey().$type<string>(),
+export const contacts = sqliteTable("contacts", {
+  id: text("id").primaryKey(),
   user: text("user")
     .notNull()
     .references(() => user.id),
-  workspace: text("workspace")
+  contact: text("contact")
     .notNull()
-    .$type<string>()
-    .references(() => workspaces.id),
+    .references(() => user.id),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });

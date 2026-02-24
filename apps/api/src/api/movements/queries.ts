@@ -4,23 +4,17 @@ import { MovementSchema } from "./schemas";
 import { movements, movementsActivities } from "@/tables";
 import { eq, and } from "drizzle-orm";
 import type { Movement } from "@maille/core/movements";
-import { validateWorkspace } from "@/services/workspaces";
 
 export const registerMovementsQueries = () => {
   builder.queryField("movements", (t) =>
     t.field({
       type: [MovementSchema],
-      args: {
-        workspaceId: t.arg({ type: "String", required: true }),
-      },
       resolve: async (root, args, ctx) => {
-        await validateWorkspace(args.workspaceId, ctx.user.id);
-
         const movementsData = await db
           .select()
           .from(movements)
-          .where(and(eq(movements.user, ctx.user.id), eq(movements.workspace, args.workspaceId)))
-          .leftJoin(movementsActivities, eq(movements.id, movementsActivities.movement));
+          .leftJoin(movementsActivities, eq(movements.id, movementsActivities.movement))
+          .where(and(eq(movements.user, ctx.user.id)));
 
         return movementsData
           .reduce<Omit<Movement, "status">[]>((acc, row) => {

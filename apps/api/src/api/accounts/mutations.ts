@@ -18,10 +18,6 @@ export const registerAccountsMutations = () => {
         }),
         name: t.arg.string(),
         type: t.arg.string(),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
         startingBalance: t.arg({
           type: "Float",
           required: false,
@@ -52,7 +48,6 @@ export const registerAccountsMutations = () => {
               movements: args.movements || false,
               type: accountType,
               user: ctx.user.id,
-              workspace: args.workspace,
             })
             .returning()
         )[0];
@@ -68,7 +63,6 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return account;
@@ -145,7 +139,6 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: account.workspace,
         });
 
         return updatedAccount;
@@ -185,7 +178,6 @@ export const registerAccountsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: account.workspace,
         });
 
         return {

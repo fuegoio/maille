@@ -17,7 +17,7 @@ import {
 import {
   accounts,
   activities,
-  activitiesUsers,
+  activitiesSharing,
   activityCategories,
   activitySubcategories,
   counterparties,
@@ -27,10 +27,9 @@ import {
 } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
-import { and, eq, inArray, max } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
-import { validateWorkspace } from "@/services/workspaces";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -79,10 +78,6 @@ export const registerActivitiesMutations = () => {
           type: "String",
           required: false,
         }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
         transactions: t.arg({
           type: [TransactionInput],
           required: false,
@@ -93,9 +88,6 @@ export const registerActivitiesMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         const ActivityTypeEnum = z.enum(ActivityType);
         const activityType = ActivityTypeEnum.parse(args.type);
 
@@ -103,14 +95,15 @@ export const registerActivitiesMutations = () => {
         const maxNumberResult = await db
           .select({ number: max(activities.number) })
           .from(activities)
+          .where(eq(activities.user, ctx.user.id))
           .then((result) => result[0]);
 
         const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
         await db.insert(activities).values({
           id: args.id,
-          workspace: args.workspace,
           number,
+          user: ctx.user.id,
           name: args.name,
           description: args.description,
           date: new Date(args.date),
@@ -120,13 +113,6 @@ export const registerActivitiesMutations = () => {
           project: args.project,
         });
 
-        // Acttivity users
-        await db.insert(activitiesUsers).values({
-          id: args.id,
-          user: ctx.user.id,
-          activity: args.id,
-        });
-
         // Transactions
         const transactionPromises =
           args.transactions?.map(async (transaction) => {
@@ -134,7 +120,6 @@ export const registerActivitiesMutations = () => {
               .insert(transactions)
               .values({
                 id: transaction.id,
-                user: ctx.user.id,
                 amount: transaction.amount,
                 fromAccount: transaction.fromAccount,
                 toAccount: transaction.toAccount,
@@ -158,7 +143,6 @@ export const registerActivitiesMutations = () => {
           const movementActivity = {
             id: args.movement.id,
             user: ctx.user.id,
-            workspace: args.workspace ?? null,
             activity: args.id,
             movement: args.movement.movement,
             amount: args.movement.amount,
@@ -185,7 +169,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return {
@@ -273,16 +256,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
-            .where(and(eq(activities.id, args.id), eq(activitiesUsers.user, ctx.user.id)))
+            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
             .limit(1)
-        )[0]?.activities;
+        )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
-
-        // Validate workspace from the activity
-        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const activityUpdates: Partial<typeof activity> = {};
         if (args.name) {
@@ -329,7 +308,7 @@ export const registerActivitiesMutations = () => {
         const counterpartiesData = await db
           .select()
           .from(counterparties)
-          .where(eq(counterparties.workspace, activity.workspace));
+          .where(eq(counterparties.user, ctx.user.id));
 
         // Transactions
         const transactionsData = await db
@@ -337,98 +316,92 @@ export const registerActivitiesMutations = () => {
           .from(transactions)
           .where(eq(transactions.activity, args.id));
 
-        // Users
-        const activityUsers = await db
-          .select()
-          .from(activitiesUsers)
-          .where(eq(activitiesUsers.activity, args.id));
-        let usersToRemove: string[] = [];
+        // Sharing
+        const activitySharing = (
+          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+        )[0];
+        let sharingId = activitySharing?.sharingId;
+        const activityUsers = sharingId
+          ? await db
+              .select()
+              .from(activitiesSharing)
+              .where(eq(activitiesSharing.sharingId, sharingId))
+          : [];
         if (args.users) {
           const usersToAdd = args.users.filter(
             (user) => !activityUsers.some((u) => u.user === user),
           );
-          usersToRemove = activityUsers
-            .filter((u) => !args.users?.includes(u.user))
-            .map((u) => u.user);
 
-          console.log(usersToAdd, usersToRemove);
           if (usersToAdd.length > 0) {
-            await db.insert(activitiesUsers).values(
-              usersToAdd.map((user) => ({
+            if (!sharingId) {
+              sharingId = crypto.randomUUID();
+              await db.insert(activitiesSharing).values({
                 id: crypto.randomUUID(),
-                user,
+                sharingId,
+                user: ctx.user.id,
                 activity: args.id,
-              })),
-            );
+                role: "primary",
+              });
+            }
 
             await Promise.all(
-              usersToAdd.map((user) =>
-                addEvent({
+              usersToAdd.map(async (user) => {
+                const newActivity = (
+                  await db
+                    .insert(activities)
+                    .values({
+                      id: crypto.randomUUID(),
+                      number: 0,
+                      user,
+                      name: activity.name,
+                      description: activity.description,
+                      date: activity.date,
+                      type: activity.type,
+                    })
+                    .returning()
+                )[0];
+                if (!newActivity) {
+                  throw new GraphQLError("Failed to share activity");
+                }
+
+                await db.insert(activitiesSharing).values({
+                  id: crypto.randomUUID(),
+                  sharingId: sharingId!,
+                  user,
+                  activity: newActivity.id,
+                  role: "secondary",
+                });
+
+                await addEvent({
                   type: "createActivity",
                   payload: {
-                    ...activity,
+                    ...newActivity,
                     users: activityUsers.map((a) => a.user).concat(usersToAdd),
-                    date: activity.date.toISOString(),
+                    date: newActivity.date.toISOString(),
                     transactions: [],
-                    liabilities: getActivityLiabilities(
-                      transactionsData,
-                      counterpartiesData,
-                      ctx.user.id,
-                    ),
+                    liabilities: getActivityLiabilities(transactionsData, counterpartiesData, user),
                   },
                   createdAt: new Date(),
                   clientId: ctx.session.id,
                   user,
-                  workspace: activity.workspace,
-                }),
-              ),
-            );
-          }
-
-          if (usersToRemove.length > 0) {
-            await db
-              .delete(activitiesUsers)
-              .where(
-                and(
-                  eq(activitiesUsers.activity, args.id),
-                  inArray(activitiesUsers.user, usersToRemove),
-                ),
-              );
-
-            await Promise.all(
-              usersToRemove.map((user) =>
-                addEvent({
-                  type: "deleteActivity",
-                  payload: {
-                    id: args.id,
-                  },
-                  createdAt: new Date(),
-                  clientId: ctx.session.id,
-                  user,
-                  workspace: activity.workspace,
-                }),
-              ),
+                });
+              }),
             );
           }
         }
 
-        activityUsers
-          .filter((a) => !usersToRemove.includes(a.user))
-          .forEach((activityUser) => {
-            void addEvent({
-              type: "updateActivity",
-              payload: {
-                id: args.id,
-                ...activityUpdates,
-                users: args.users ?? undefined,
-                date: activityUpdates.date?.toISOString(),
-              },
-              createdAt: new Date(),
-              clientId: ctx.session.id,
-              user: activityUser.user,
-              workspace: activity.workspace,
-            });
-          });
+        void addEvent({
+          type: "updateActivity",
+          payload: {
+            id: args.id,
+            ...activityUpdates,
+            users: args.users ?? undefined,
+            date: activityUpdates.date?.toISOString(),
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
 
         const accountsQuery = await db.select().from(accounts);
         const movementsData = await db
@@ -440,7 +413,7 @@ export const registerActivitiesMutations = () => {
           ...activity,
           users: args.users ?? activityUsers.map((u) => u.user),
           date: activity.date,
-          transactions: transactionsData.filter((t) => t.user === ctx.user.id),
+          transactions: transactionsData,
           movements: movementsData,
           amount: getActivityTransactionsReconciliationSum(
             activity.type,
@@ -482,10 +455,9 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
-            .where(and(eq(activities.id, args.id), eq(activitiesUsers.user, ctx.user.id)))
+            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
             .limit(1)
-        )[0]?.activities;
+        )[0];
         if (!activity) {
           return {
             id: args.id,
@@ -493,30 +465,18 @@ export const registerActivitiesMutations = () => {
           };
         }
 
-        // Validate workspace from the activity
-        await validateWorkspace(activity.workspace, ctx.user.id);
-
-        // Users
-        const activityUsers = await db
-          .select()
-          .from(activitiesUsers)
-          .where(eq(activitiesUsers.activity, args.id));
-
-        activityUsers.forEach((activityUser) => {
-          void addEvent({
-            type: "deleteActivity",
-            payload: {
-              id: args.id,
-            },
-            createdAt: new Date(),
-            clientId: ctx.session.id,
-            user: activityUser.user,
-            workspace: activity.workspace,
-          });
+        void addEvent({
+          type: "deleteActivity",
+          payload: {
+            id: args.id,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
         });
 
         // Delete activity
-        await db.delete(activitiesUsers).where(eq(activitiesUsers.activity, args.id));
+        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, args.id));
         await db.delete(transactions).where(eq(transactions.activity, args.id));
         await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
         await db.delete(activities).where(eq(activities.id, args.id));
@@ -550,16 +510,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
-            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
             .limit(1)
-        )[0]?.activities;
+        )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
-
-        // Validate workspace from the activity
-        await validateWorkspace(activity.workspace, ctx.user.id);
 
         // Validate accounts
         const fromAccount = await db
@@ -584,7 +540,6 @@ export const registerActivitiesMutations = () => {
           .insert(transactions)
           .values({
             id: args.id,
-            user: ctx.user.id,
             amount: args.amount,
             fromAccount: args.fromAccount,
             toAccount: args.toAccount,
@@ -606,7 +561,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: activity.workspace,
         });
 
         return newTransaction;
@@ -660,27 +614,18 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
-            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
             .limit(1)
-        )[0]?.activities;
+        )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
-
-        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const transaction = (
           await db
             .select()
             .from(transactions)
-            .where(
-              and(
-                eq(transactions.id, args.id),
-                eq(transactions.activity, args.activityId),
-                eq(transactions.user, ctx.user.id),
-              ),
-            )
+            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
             .limit(1)
         )[0];
         if (!transaction) {
@@ -719,7 +664,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: activity.workspace,
         });
 
         // Update liabilities if counterparties are defined
@@ -735,12 +679,18 @@ export const registerActivitiesMutations = () => {
           const counterpartiesData = await db
             .select()
             .from(counterparties)
-            .where(eq(counterparties.workspace, activity.workspace));
+            .where(eq(counterparties.user, ctx.user.id));
 
-          const activityUsers = await db
-            .select()
-            .from(activitiesUsers)
-            .where(eq(activitiesUsers.activity, args.activityId));
+          const activitySharing = (
+            await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+          )[0];
+          let sharingId = activitySharing?.sharingId;
+          const activityUsers = sharingId
+            ? await db
+                .select()
+                .from(activitiesSharing)
+                .where(eq(activitiesSharing.sharingId, sharingId))
+            : [];
 
           activityUsers.forEach((activityUser) => {
             void addEvent({
@@ -756,7 +706,6 @@ export const registerActivitiesMutations = () => {
               createdAt: new Date(),
               clientId: ctx.session.id,
               user: activityUser.user,
-              workspace: activity.workspace,
             });
           });
         }
@@ -784,27 +733,18 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .innerJoin(activitiesUsers, eq(activities.id, activitiesUsers.activity))
-            .where(and(eq(activities.id, args.activityId), eq(activitiesUsers.user, ctx.user.id)))
+            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
             .limit(1)
-        )[0]?.activities;
+        )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
-
-        await validateWorkspace(activity.workspace, ctx.user.id);
 
         const transaction = (
           await db
             .select()
             .from(transactions)
-            .where(
-              and(
-                eq(transactions.id, args.id),
-                eq(transactions.activity, args.activityId),
-                eq(transactions.user, ctx.user.id),
-              ),
-            )
+            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
             .limit(1)
         )[0];
         if (!transaction) {
@@ -822,7 +762,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: activity.workspace,
         });
 
         // Update liabilities if counterparties are defined
@@ -835,12 +774,18 @@ export const registerActivitiesMutations = () => {
           const counterpartiesData = await db
             .select()
             .from(counterparties)
-            .where(eq(counterparties.workspace, activity.workspace));
+            .where(eq(counterparties.user, ctx.user.id));
 
-          const activityUsers = await db
-            .select()
-            .from(activitiesUsers)
-            .where(eq(activitiesUsers.activity, args.activityId));
+          const activitySharing = (
+            await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+          )[0];
+          let sharingId = activitySharing?.sharingId;
+          const activityUsers = sharingId
+            ? await db
+                .select()
+                .from(activitiesSharing)
+                .where(eq(activitiesSharing.sharingId, sharingId))
+            : [];
 
           activityUsers.forEach((activityUser) => {
             void addEvent({
@@ -856,7 +801,6 @@ export const registerActivitiesMutations = () => {
               createdAt: new Date(),
               clientId: ctx.session.id,
               user: activityUser.user,
-              workspace: activity.workspace,
             });
           });
         }
@@ -875,21 +819,14 @@ export const registerActivitiesMutations = () => {
         }),
         name: t.arg.string(),
         type: t.arg.string(),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         const activityTypeSchema = z.enum(ActivityType);
         const parsedType = activityTypeSchema.parse(args.type);
 
         const category = {
           id: args.id,
-          workspace: args.workspace,
+          user: ctx.user.id,
           name: args.name,
           type: parsedType,
         };
@@ -901,7 +838,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return category;
@@ -931,8 +867,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity category not found");
         }
 
-        await validateWorkspace(category.workspace, ctx.user.id);
-
         const updatedCategories = await db
           .update(activityCategories)
           .set({
@@ -955,7 +889,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: category.workspace,
         });
 
         return updatedCategory;
@@ -984,11 +917,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity category not found");
         }
 
-        // Validate workspace from the category
-        if (category.workspace) {
-          await validateWorkspace(category.workspace, ctx.user.id);
-        }
-
         await db
           .update(activities)
           .set({
@@ -1006,7 +934,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: category.workspace,
         });
 
         return { id: args.id, success: true };
@@ -1025,18 +952,11 @@ export const registerActivitiesMutations = () => {
         category: t.arg({
           type: "String",
         }),
-        workspace: t.arg({
-          type: "String",
-          required: true,
-        }),
       },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspace, ctx.user.id);
-
         const subcategory = {
           id: args.id,
-          workspace: args.workspace,
+          user: ctx.user.id,
           name: args.name,
           category: args.category,
         };
@@ -1048,7 +968,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: args.workspace,
         });
 
         return subcategory;
@@ -1078,11 +997,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity subcategory not found");
         }
 
-        // Validate workspace from the subcategory
-        if (subcategory.workspace) {
-          await validateWorkspace(subcategory.workspace, ctx.user.id);
-        }
-
         const updatedSubCategories = await db
           .update(activitySubcategories)
           .set({
@@ -1105,7 +1019,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: subcategory.workspace,
         });
 
         return updatedSubCategory;
@@ -1134,8 +1047,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity subcategory not found");
         }
 
-        await validateWorkspace(subCategory.workspace, ctx.user.id);
-
         await db
           .update(activities)
           .set({
@@ -1152,7 +1063,6 @@ export const registerActivitiesMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
-          workspace: subCategory.workspace,
         });
 
         return { id: args.id, success: true };

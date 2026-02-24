@@ -3,7 +3,6 @@ import type { ActivityLiability, ActivityType, Transaction } from "#activities/t
 
 export interface BaseSyncEvent {
   user: string;
-  workspace: string;
   createdAt: Date;
   clientId: string;
 }
@@ -281,7 +280,7 @@ export interface CreateCounterpartyEvent extends BaseSyncEvent {
     account: string;
     name: string;
     description: string | null;
-    user: string | null;
+    contact: string | null;
   };
 }
 
@@ -291,7 +290,7 @@ export interface UpdateCounterpartyEvent extends BaseSyncEvent {
     id: string;
     name?: string;
     description?: string | null;
-    user?: string | null;
+    contact?: string | null;
   };
 }
 

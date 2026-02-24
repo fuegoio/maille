@@ -11,8 +11,6 @@ import { registerMovementsQueries } from "./movements/queries";
 import { registerMovementsMutations } from "./movements/mutations";
 import { registerProjectsQueries } from "./projects/queries";
 import { registerProjectsMutations } from "./projects/mutations";
-import { registerWorkspaceQueries } from "./workspaces/queries";
-import { registerWorkspaceMutations } from "./workspaces/mutations";
 import { registerAssetsQueries } from "./assets/queries";
 import { registerAssetsMutations } from "./assets/mutations";
 import { registerCounterpartiesQueries } from "./counterparties/queries";
@@ -23,7 +21,6 @@ registerActivitiesQueries();
 registerAccountsQueries();
 registerMovementsQueries();
 registerProjectsQueries();
-registerWorkspaceQueries();
 registerAssetsQueries();
 registerCounterpartiesQueries();
 
@@ -32,7 +29,6 @@ registerActivitiesMutations();
 registerMovementsMutations();
 registerProjectsMutations();
 registerAccountsMutations();
-registerWorkspaceMutations();
 registerAssetsMutations();
 registerCounterpartiesMutations();
 

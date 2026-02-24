@@ -4,7 +4,7 @@ import { ActivityCategorySchema, ActivitySchema, ActivitySubCategorySchema } fro
 import {
   accounts,
   activities,
-  activitiesUsers,
+  activitiesSharing,
   activityCategories,
   activitySubcategories,
   counterparties,
@@ -18,64 +18,64 @@ import {
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
 } from "@maille/core/activities";
-import { validateWorkspace } from "@/services/workspaces";
 
 export const registerActivitiesQueries = () => {
   builder.queryField("activities", (t) =>
     t.field({
       type: [ActivitySchema],
-      args: {
-        workspaceId: t.arg({ type: "String", required: true }),
-      },
       resolve: async (root, args, ctx) => {
-        await validateWorkspace(args.workspaceId, ctx.user.id);
-
         const accountsQuery = await db
           .select()
           .from(accounts)
-          .where(and(eq(accounts.workspace, args.workspaceId), eq(accounts.user, ctx.user.id)));
+          .where(eq(accounts.user, ctx.user.id));
 
         const counterpartiesData = await db
           .select()
           .from(counterparties)
-          .where(eq(counterparties.workspace, args.workspaceId));
+          .where(eq(counterparties.user, ctx.user.id));
 
         const activitiesData = await db
           .select()
           .from(activities)
-          .innerJoin(activitiesUsers, eq(activitiesUsers.activity, activities.id))
-          .where(
-            and(eq(activitiesUsers.user, ctx.user.id), eq(activities.workspace, args.workspaceId)),
-          );
+          .where(eq(activities.user, ctx.user.id));
 
         return activitiesData.map(async (activity) => {
           const activityTransactions = await db
             .select()
             .from(transactions)
-            .where(eq(transactions.activity, activity.activities.id));
+            .where(eq(transactions.activity, activity.id));
 
           const activityMovements = await db
             .select()
             .from(movementsActivities)
-            .where(eq(movementsActivities.activity, activity.activities.id));
+            .where(eq(movementsActivities.activity, activity.id));
 
-          const activityUsers = await db
-            .select()
-            .from(activitiesUsers)
-            .where(eq(activitiesUsers.id, activity.activities.id));
+          const activitySharing = (
+            await db
+              .select()
+              .from(activitiesSharing)
+              .where(eq(activitiesSharing.activity, activity.id))
+          )[0];
+          let sharingId = activitySharing?.sharingId;
+          const activityUsers = sharingId
+            ? await db
+                .select()
+                .from(activitiesSharing)
+                .where(eq(activitiesSharing.sharingId, sharingId))
+            : [];
 
           return {
-            ...activity.activities,
+            ...activity,
             users: activityUsers.map((au) => au.user),
-            transactions: activityTransactions.filter((t) => t.user === ctx.user.id),
+            transactions: activityTransactions,
             movements: activityMovements,
             amount: getActivityTransactionsReconciliationSum(
-              activity.activities.type,
+              activity.type,
               activityTransactions,
               accountsQuery,
             ),
             status: getActivityStatus(
-              activity.activities.date,
+              activity.date,
               activityTransactions,
               activityMovements,
               accountsQuery,
@@ -104,17 +104,11 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activityCategories", (t) =>
     t.field({
       type: [ActivityCategorySchema],
-      args: {
-        workspaceId: t.arg({ type: "String", required: true }),
-      },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user.id);
-
         return await db
           .select()
           .from(activityCategories)
-          .where(eq(activityCategories.workspace, args.workspaceId));
+          .where(eq(activityCategories.user, ctx.user.id));
       },
     }),
   );
@@ -122,17 +116,11 @@ export const registerActivitiesQueries = () => {
   builder.queryField("activitySubcategories", (t) =>
     t.field({
       type: [ActivitySubCategorySchema],
-      args: {
-        workspaceId: t.arg({ type: "String", required: true }),
-      },
       resolve: async (root, args, ctx) => {
-        // Validate workspace
-        await validateWorkspace(args.workspaceId, ctx.user.id);
-
         return await db
           .select()
           .from(activitySubcategories)
-          .where(eq(activitySubcategories.workspace, args.workspaceId));
+          .where(eq(activitySubcategories.user, ctx.user.id));
       },
     }),
   );

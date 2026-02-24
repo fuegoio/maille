@@ -27,10 +27,6 @@ EventSchema.implement({
       type: "String",
       resolve: (parent) => parent.user,
     }),
-    workspace: t.field({
-      type: "String",
-      resolve: (parent) => parent.workspace,
-    }),
   }),
 });
 
@@ -56,9 +52,6 @@ builder.queryField("events", (t) =>
       lastSync: t.arg({
         type: "Float",
       }),
-      workspace: t.arg({
-        type: "String",
-      }),
     },
     resolve: async (root, args, ctx) => {
       const lastSyncDate = new Date(args.lastSync * 1000);
@@ -70,12 +63,11 @@ builder.queryField("events", (t) =>
             gt(events.createdAt, lastSyncDate),
             eq(events.user, ctx.user.id),
             not(eq(events.clientId, ctx.session.id)),
-            eq(events.workspace, args.workspace),
           ),
         );
 
       logger.info(
-        `[${ctx.user.id}] ${eventsQuery.length} events to catch up since ${lastSyncDate}`,
+        `[${ctx.user.id}] ${eventsQuery.length} events to catch up since ${lastSyncDate.toISOString()}`,
       );
 
       const syncEvents = eventsQuery.map(
