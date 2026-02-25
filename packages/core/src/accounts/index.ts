@@ -35,4 +35,9 @@ export type Account = {
   startingBalance: number | null;
   startingCashBalance: number | null;
   movements: boolean;
+  sharing?: {
+    id: string;
+    role: "primary" | "secondary";
+    sharedWith?: string;
+  }[];
 };

@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { updateAccountMutation } from "@/mutations/accounts";
 import { useSync } from "@/stores/sync";
 import { useAuth } from "@/stores/auth";
+import { ShareAccountDialog } from "./share-account-dialog";
 
 const accountSettingsSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -202,6 +203,11 @@ export function AccountSettingsDialog({
                 Cancel
               </Button>
             </DialogClose>
+            <ShareAccountDialog accountId={account.id}>
+              <Button type="button" variant="outline" disabled={isSubmitting}>
+                Share Account
+              </Button>
+            </ShareAccountDialog>
             <DialogClose asChild>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Saving..." : "Save Changes"}

@@ -1,8 +1,8 @@
 import {
   ActivityType,
-  getActivityLiabilities,
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
+  getActivitySharingsReconciliation,
   type ActivityMovement,
 } from "@maille/core/activities";
 import { builder } from "../builder";
@@ -27,6 +27,7 @@ import {
 } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
+import { getActivitySharings } from "@/services/sharing";
 import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
@@ -210,7 +211,10 @@ export const registerActivitiesMutations = () => {
               };
             },
           ),
-          liabilities: [],
+          sharing: getActivitySharingsReconciliation(
+            await getActivitySharings(args.id),
+            ctx.user.id,
+          ),
         };
       },
     }),
@@ -446,7 +450,10 @@ export const registerActivitiesMutations = () => {
               };
             },
           ),
-          liabilities: getActivityLiabilities(transactionsData, counterpartiesData, ctx.user.id),
+          sharing: getActivitySharingsReconciliation(
+            await getActivitySharings(args.id),
+            ctx.user.id,
+          ),
         };
       },
     }),

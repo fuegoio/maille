@@ -237,36 +237,83 @@ export const getActivityMovementsReconciliated = (
   return movementsReconciliatedByAccount.every((mrba) => mrba.reconcilied);
 };
 
-export const getActivityLiabilities = (
-  transactions: Transaction[],
-  counterparties: Counterparty[],
+export const getActivitySharingsReconciliation = (
+  activitySharings: {
+    user: string;
+    transactions: Transaction[];
+    counterparties: Counterparty[];
+    accountsSharing: { account: string; user: string }[];
+  }[],
   user: string,
-): ActivityLiability[] => {
-  const liabilities = transactions
-    .filter((t) => t.user !== user)
-    .reduce(
-      (liabilities, transaction) => {
-        if (transaction.fromCounterparty) {
-          const counterparty = counterparties.find((c) => c.id === transaction.fromCounterparty);
-          if (counterparty?.user === user) {
-            liabilities[transaction.user] =
-              (liabilities[transaction.user] ?? 0) + transaction.amount;
-          }
-        } else if (transaction.toCounterparty) {
-          const counterparty = counterparties.find((c) => c.id === transaction.toCounterparty);
-          if (counterparty?.user === user) {
-            liabilities[transaction.user] =
-              (liabilities[transaction.user] ?? 0) + transaction.amount * -1;
+) => {
+  return activitySharings.map((activitySharing) => {
+    const liabilitySum = activitySharing.transactions.reduce((s, transaction) => {
+      let amount = 0;
+      if (transaction.fromCounterparty) {
+        const fromCounterparty = activitySharing.counterparties.find(
+          (c) => c.id === transaction.fromCounterparty,
+        );
+        if (fromCounterparty?.contact === user) {
+          amount += transaction.amount;
+        }
+      }
+
+      if (transaction.toCounterparty) {
+        const toCounterparty = activitySharing.counterparties.find(
+          (c) => c.id === transaction.toCounterparty,
+        );
+        if (toCounterparty?.contact === user) {
+          amount += transaction.amount * -1;
+        }
+      }
+      return amount + s;
+    }, 0);
+
+    const accountsSharingReconciliation = activitySharing.transactions.reduce(
+      (accounts, transaction) => {
+        if (transaction.fromAccount) {
+          const fromAccountSharing = activitySharing.accountsSharing.find(
+            (as) => as.account === transaction.fromAccount,
+          );
+          if (fromAccountSharing) {
+            const account = accounts.find((a) => a.account === transaction.fromAccount);
+            if (account) {
+              account.amount += transaction.amount * -1;
+            } else {
+              accounts.push({
+                account: transaction.fromAccount,
+                amount: transaction.amount * -1,
+              });
+            }
           }
         }
 
-        return liabilities;
+        if (transaction.toAccount) {
+          const toAccountSharing = activitySharing.accountsSharing.find(
+            (as) => as.account === transaction.toAccount,
+          );
+          if (toAccountSharing) {
+            const account = accounts.find((a) => a.account === transaction.toAccount);
+            if (account) {
+              account.amount += transaction.amount;
+            } else {
+              accounts.push({
+                account: transaction.toAccount,
+                amount: transaction.amount,
+              });
+            }
+          }
+        }
+
+        return accounts;
       },
-      {} as Record<string, number>,
+      [] as { account: string; amount: number }[],
     );
 
-  return Object.entries(liabilities).map(([user, amount]) => ({
-    user,
-    amount,
-  }));
+    return {
+      user: activitySharing.user,
+      liability: liabilitySum,
+      accounts: accountsSharingReconciliation,
+    };
+  });
 };

@@ -2,11 +2,19 @@ import { AccountType } from "@maille/core/accounts";
 import { builder } from "../builder";
 import { AccountSchema, DeleteAccountResponseSchema } from "./schemas";
 import { db } from "@/database";
-import { accounts, movements, transactions } from "@/tables";
+import {
+  accounts,
+  movements,
+  transactions,
+  accountsSharing,
+  user as userTable,
+  contacts,
+} from "@/tables";
 import { addEvent } from "../events";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { randomUUID } from "crypto";
 
 export const registerAccountsMutations = () => {
   builder.mutationField("createAccount", (t) =>
@@ -183,6 +191,148 @@ export const registerAccountsMutations = () => {
         return {
           id: args.id,
           success: true,
+        };
+      },
+    }),
+  );
+
+  builder.mutationField("shareAccount", (t) =>
+    t.field({
+      type: AccountSchema,
+      args: {
+        accountId: t.arg({
+          type: "String",
+        }),
+        contactId: t.arg({
+          type: "String",
+        }),
+      },
+      resolve: async (root, args, ctx) => {
+        // 1. Verify the account exists and belongs to the current user
+        const originalAccount = (
+          await db
+            .select()
+            .from(accounts)
+            .where(and(eq(accounts.id, args.accountId), eq(accounts.user, ctx.user.id)))
+        )[0];
+        if (!originalAccount) {
+          throw new GraphQLError("Account not found or doesn't belong to you");
+        }
+
+        // 2. Verify the contact exists and belongs to the current user
+        const contact = (
+          await db
+            .select()
+            .from(contacts)
+            .where(and(eq(contacts.id, args.contactId), eq(contacts.user, ctx.user.id)))
+        )[0];
+        if (!contact) {
+          throw new GraphQLError("Contact not found or doesn't belong to you");
+        }
+
+        // 3. Verify the contact user exists
+        const contactUser = (
+          await db.select().from(userTable).where(eq(userTable.id, contact.contact))
+        )[0];
+        if (!contactUser) {
+          throw new GraphQLError("Contact user not found");
+        }
+
+        // 4. Create a new account (duplicate) for the contact user
+        const sharedAccountId = randomUUID();
+        const sharedAccount = (
+          await db
+            .insert(accounts)
+            .values({
+              id: sharedAccountId,
+              name: `${originalAccount.name} (Shared)`,
+              startingBalance: originalAccount.startingBalance,
+              startingCashBalance: originalAccount.startingCashBalance,
+              movements: originalAccount.movements,
+              type: originalAccount.type,
+              user: contactUser.id, // This account belongs to the contact user
+              default: false,
+            })
+            .returning()
+        )[0];
+
+        if (!sharedAccount) {
+          throw new GraphQLError("Failed to create shared account");
+        }
+
+        // 5. Create sharing records
+        const sharingId = randomUUID();
+
+        // Primary sharing record (original user)
+        await db.insert(accountsSharing).values({
+          id: randomUUID(),
+          sharingId: sharingId,
+          role: "primary",
+          account: originalAccount.id,
+          user: ctx.user.id,
+        });
+
+        // Secondary sharing record (contact user)
+        await db.insert(accountsSharing).values({
+          id: randomUUID(),
+          sharingId: sharingId,
+          role: "secondary",
+          account: sharedAccount.id,
+          user: contactUser.id,
+        });
+
+        // 6. Add events
+        await addEvent({
+          type: "shareAccount",
+          payload: {
+            originalAccountId: originalAccount.id,
+            sharedAccountId: sharedAccount.id,
+            contactId: args.contactId,
+            sharingId: sharingId,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        await addEvent({
+          type: "createAccountSharing",
+          payload: {
+            id: randomUUID(),
+            sharingId: sharingId,
+            role: "primary",
+            account: originalAccount.id,
+            user: ctx.user.id,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        await addEvent({
+          type: "createAccountSharing",
+          payload: {
+            id: randomUUID(),
+            sharingId: sharingId,
+            role: "secondary",
+            account: sharedAccount.id,
+            user: contactUser.id,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        // 7. Return the original account with updated sharing info
+        return {
+          ...originalAccount,
+          sharing: [
+            {
+              id: sharingId,
+              role: "primary",
+              sharedWith: contactUser.id,
+            },
+          ],
         };
       },
     }),

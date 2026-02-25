@@ -36,9 +36,13 @@ export type ActivityMovement = {
   amount: number;
 };
 
-export type ActivityLiability = {
+export type ActivitySharing = {
   user: string;
-  amount: number;
+  liability: number;
+  accounts: {
+    account: string;
+    amount: number;
+  }[];
 };
 
 export type BaseActivity = {
@@ -52,7 +56,6 @@ export type BaseActivity = {
   subcategory: string | null;
   project: string | null;
 
-  users: string[];
   transactions: Transaction[];
   movements: ActivityMovement[];
 };
@@ -60,7 +63,7 @@ export type BaseActivity = {
 export type Activity = BaseActivity & {
   // Computed
   amount: number;
-  liabilities: ActivityLiability[];
+  sharing: ActivitySharing[];
   status: ActivityStatus;
 };
 

@@ -316,6 +316,27 @@ export interface DeleteContactEvent extends BaseSyncEvent {
   };
 }
 
+export interface ShareAccountEvent extends BaseSyncEvent {
+  type: "shareAccount";
+  payload: {
+    originalAccountId: string;
+    sharedAccountId: string;
+    contactId: string;
+    sharingId: string;
+  };
+}
+
+export interface CreateAccountSharingEvent extends BaseSyncEvent {
+  type: "createAccountSharing";
+  payload: {
+    id: string;
+    sharingId: string;
+    role: "primary" | "secondary";
+    account: string;
+    user: string;
+  };
+}
+
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
@@ -363,6 +384,8 @@ export type SyncEvent =
   | CreateAccountEvent
   | UpdateAccountEvent
   | DeleteAccountEvent
+  | ShareAccountEvent
+  | CreateAccountSharingEvent
   | CreateAssetEvent
   | UpdateAssetEvent
   | DeleteAssetEvent

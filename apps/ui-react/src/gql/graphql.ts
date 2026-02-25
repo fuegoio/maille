@@ -23,9 +23,16 @@ export type Account = {
   id: Scalars['String']['output'];
   movements: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  sharing: Array<AccountSharing>;
   startingBalance: Maybe<Scalars['Float']['output']>;
   startingCashBalance: Maybe<Scalars['Float']['output']>;
   type: Scalars['String']['output'];
+};
+
+export type AccountSharing = {
+  id: Scalars['String']['output'];
+  role: Scalars['String']['output'];
+  sharedWith: Maybe<Scalars['String']['output']>;
 };
 
 export type Activity = {

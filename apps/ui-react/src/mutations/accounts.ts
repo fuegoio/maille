@@ -2,6 +2,7 @@ import type { Account } from "@maille/core/accounts";
 import type {
   CreateAccountEvent,
   DeleteAccountEvent,
+  ShareAccountEvent,
   UpdateAccountEvent,
 } from "@maille/core/sync";
 
@@ -75,6 +76,19 @@ export const deleteAccountMutation = graphql(/* GraphQL */ `
   }
 `);
 
+export const shareAccountMutation = graphql(/* GraphQL */ `
+  mutation ShareAccount($accountId: String!, $contactId: String!) {
+    shareAccount(accountId: $accountId, contactId: $contactId) {
+      id
+      sharing {
+        id
+        role
+        sharedWith
+      }
+    }
+  }
+`);
+
 export type DeleteAccountMutation = MutationType<
   "deleteAccount",
   typeof deleteAccountMutation,
@@ -82,7 +96,18 @@ export type DeleteAccountMutation = MutationType<
   [DeleteAccountEvent]
 >;
 
+export type ShareAccountMutation = MutationType<
+  "shareAccount",
+  typeof shareAccountMutation,
+  {
+    accountId: string;
+    contactId: string;
+  },
+  [ShareAccountEvent]
+>;
+
 export type AccountMutation =
   | CreateAccountMutation
   | UpdateAccountMutation
-  | DeleteAccountMutation;
+  | DeleteAccountMutation
+  | ShareAccountMutation;

@@ -17,6 +17,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
+import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
@@ -160,6 +161,11 @@ function AccountPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex-1" />
+          <ShareAccountDialog accountId={account.id}>
+            <Button variant="ghost" size="icon">
+              <Users />
+            </Button>
+          </ShareAccountDialog>
           <AccountSettingsDialog account={account}>
             <Button variant="ghost" size="icon">
               <Settings />

@@ -3,9 +3,16 @@ type Account {
   id: String!
   movements: Boolean!
   name: String!
+  sharing: [AccountSharing!]!
   startingBalance: Float
   startingCashBalance: Float
   type: String!
+}
+
+type AccountSharing {
+  id: String!
+  role: String!
+  sharedWith: String
 }
 
 type Activity {
@@ -14,27 +21,21 @@ type Activity {
   date: Date!
   description: String
   id: String!
-  liabilities: [ActivityLiability!]!
   movements: [ActivityMovement!]!
   name: String!
   number: Int!
   project: String
+  sharing: [ActivitySharing!]!
   status: String!
   subcategory: String
   transactions: [Transaction!]!
   type: String!
-  users: [String!]!
 }
 
 type ActivityCategory {
   id: String!
   name: String!
   type: String!
-}
-
-type ActivityLiability {
-  amount: Float!
-  user: String!
 }
 
 type ActivityMovement {
@@ -47,6 +48,17 @@ input ActivityMovementInput {
   amount: Float!
   id: String!
   movement: String!
+}
+
+type ActivitySharing {
+  accounts: [ActivitySharingAccount!]!
+  liability: Float!
+  user: String!
+}
+
+type ActivitySharingAccount {
+  account: String!
+  amount: Float!
 }
 
 type ActivitySubCategory {
@@ -166,6 +178,7 @@ type Mutation {
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
+  shareAccount(accountId: String!, contactId: String!): Account!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String, users: [String!]): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!

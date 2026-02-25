@@ -4,20 +4,19 @@ import { ActivityCategorySchema, ActivitySchema, ActivitySubCategorySchema } fro
 import {
   accounts,
   activities,
-  activitiesSharing,
   activityCategories,
   activitySubcategories,
-  counterparties,
   movements,
   movementsActivities,
   transactions,
 } from "@/tables";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
-  getActivityLiabilities,
+  getActivitySharingsReconciliation,
   getActivityStatus,
   getActivityTransactionsReconciliationSum,
 } from "@maille/core/activities";
+import { getActivitySharings } from "@/services/sharing";
 
 export const registerActivitiesQueries = () => {
   builder.queryField("activities", (t) =>
@@ -28,11 +27,6 @@ export const registerActivitiesQueries = () => {
           .select()
           .from(accounts)
           .where(eq(accounts.user, ctx.user.id));
-
-        const counterpartiesData = await db
-          .select()
-          .from(counterparties)
-          .where(eq(counterparties.user, ctx.user.id));
 
         const activitiesData = await db
           .select()
@@ -55,22 +49,8 @@ export const registerActivitiesQueries = () => {
             .from(movementsActivities)
             .where(eq(movementsActivities.activity, activity.id));
 
-          const activitySharingId = (
-            await db
-              .select()
-              .from(activitiesSharing)
-              .where(eq(activitiesSharing.activity, activity.id))
-          )[0]?.sharingId;
-          const activitySharings = activitySharingId
-            ? await db
-                .select()
-                .from(activitiesSharing)
-                .where(eq(activitiesSharing.sharingId, activitySharingId))
-            : [];
-
           return {
             ...activity,
-            users: activitySharings.map((au) => au.user),
             transactions: activityTransactions,
             movements: activityMovements,
             amount: getActivityTransactionsReconciliationSum(
@@ -94,9 +74,8 @@ export const registerActivitiesQueries = () => {
                 };
               },
             ),
-            liabilities: getActivityLiabilities(
-              activityTransactions,
-              counterpartiesData,
+            sharing: getActivitySharingsReconciliation(
+              await getActivitySharings(activity.id),
               ctx.user.id,
             ),
           };

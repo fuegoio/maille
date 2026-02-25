@@ -1,4 +1,5 @@
 import { AccountType, type Account } from "@maille/core/accounts";
+import type { ShareAccountEvent, CreateAccountSharingEvent } from "@maille/core/sync";
 import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -38,6 +39,11 @@ interface AccountsState {
       startingBalance?: number | null;
       startingCashBalance?: number | null;
       movements?: boolean;
+      sharing?: {
+        id: string;
+        role: "primary" | "secondary";
+        sharedWith?: string;
+      }[];
     },
   ) => void;
   deleteAccount: (accountId: string) => void;
@@ -110,6 +116,31 @@ export const useAccounts = create<AccountsState>()(
           });
         } else if (event.type === "deleteAccount") {
           get().deleteAccount(event.payload.id);
+        } else if (event.type === "shareAccount") {
+          // Update the original account with sharing info
+          get().updateAccount(event.payload.originalAccountId, {
+            sharing: [
+              {
+                id: event.payload.sharingId,
+                role: "primary",
+                sharedWith: event.payload.contactId,
+              },
+            ],
+          });
+        } else if (event.type === "createAccountSharing") {
+          // Handle account sharing creation
+          if (event.payload.role === "primary") {
+            // This is the original account owner's sharing record
+            get().updateAccount(event.payload.account, {
+              sharing: [
+                {
+                  id: event.payload.sharingId,
+                  role: event.payload.role,
+                  sharedWith: event.payload.user,
+                },
+              ],
+            });
+          }
         }
       },
 

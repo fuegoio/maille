@@ -5,7 +5,7 @@ import type {
   ActivityMovement,
   ActivityCategory,
   ActivitySubCategory,
-  ActivityLiability,
+  ActivitySharing,
 } from "@maille/core/activities";
 
 export const ActivitySchema = builder.objectRef<Activity>("Activity");
@@ -15,10 +15,6 @@ ActivitySchema.implement({
     id: t.field({
       type: "String",
       resolve: (parent) => parent.id,
-    }),
-    users: t.field({
-      type: ["String"],
-      resolve: (parent) => parent.users,
     }),
     number: t.exposeInt("number"),
     name: t.exposeString("name"),
@@ -55,9 +51,9 @@ ActivitySchema.implement({
       type: [ActivityMovementSchema],
       resolve: (parent) => parent.movements,
     }),
-    liabilities: t.field({
-      type: [ActivityLiabilitySchema],
-      resolve: (parent) => parent.liabilities,
+    sharing: t.field({
+      type: [ActivitySharingSchema],
+      resolve: (parent) => parent.sharing,
     }),
   }),
 });
@@ -78,13 +74,32 @@ ActivityMovementSchema.implement({
   }),
 });
 
-export const ActivityLiabilitySchema = builder.objectRef<ActivityLiability>("ActivityLiability");
+export const ActivitySharingSchema = builder.objectRef<ActivitySharing>("ActivitySharing");
 
-ActivityLiabilitySchema.implement({
+ActivitySharingSchema.implement({
   fields: (t) => ({
     user: t.field({
       type: "String",
       resolve: (parent) => parent.user,
+    }),
+    liability: t.exposeFloat("liability"),
+    accounts: t.field({
+      type: [ActivitySharingAccountSchema],
+      resolve: (parent) => parent.accounts,
+    }),
+  }),
+});
+
+export const ActivitySharingAccountSchema = builder.objectRef<{
+  account: string;
+  amount: number;
+}>("ActivitySharingAccount");
+
+ActivitySharingAccountSchema.implement({
+  fields: (t) => ({
+    account: t.field({
+      type: "String",
+      resolve: (parent) => parent.account,
     }),
     amount: t.exposeFloat("amount"),
   }),
