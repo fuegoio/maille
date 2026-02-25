@@ -1,5 +1,6 @@
 import type { Account, AccountType } from "#accounts/index.ts";
 import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
+import type { ContactUser } from "#contacts/index.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -314,7 +315,7 @@ export interface CreateContactEvent extends BaseSyncEvent {
   type: "createContact";
   payload: {
     id: string;
-    contact: string;
+    contact: ContactUser;
   };
 }
 

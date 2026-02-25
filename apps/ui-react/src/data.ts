@@ -110,6 +110,17 @@ const userDataQuery = graphql(/* GraphQL */ `
       description
       contact
     }
+    
+    contacts {
+      id
+      contact {
+        id
+        name
+        email
+        image
+      }
+      createdAt
+    }
   }
 `);
 
@@ -182,6 +193,14 @@ export const fetchUserData = async () => {
   userData.counterparties.forEach((counterparty) => {
     useCounterparties.getState().addCounterparty({
       ...counterparty,
+    });
+  });
+
+  // Populate contacts
+  userData.contacts.forEach((contact) => {
+    useContacts.getState().addContact({
+      ...contact,
+      createdAt: new Date(contact.createdAt),
     });
   });
 

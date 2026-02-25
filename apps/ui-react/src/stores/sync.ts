@@ -13,6 +13,7 @@ import { useAccounts } from "./accounts";
 import { useActivities } from "./activities";
 import { useAssets } from "./assets";
 import { useAuth } from "./auth";
+import { useContacts } from "./contacts";
 import { useCounterparties } from "./counterparties";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
@@ -72,6 +73,7 @@ export const useSync = create<SyncState>()(
             useProjects.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
+            useContacts.getState().handleEvent(event);
           });
 
         void get().dequeueMutations();
@@ -118,6 +120,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useContacts.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
 
           set({
             mutationsInProcessing: false,
@@ -152,6 +158,7 @@ export const useSync = create<SyncState>()(
           useAccounts.getState().handleMutationError(mutation);
           useAssets.getState().handleMutationError(mutation);
           useCounterparties.getState().handleMutationError(mutation);
+          useContacts.getState().handleMutationError(mutation);
           await get().dequeueMutations();
         }
       },
@@ -189,6 +196,7 @@ export const useSync = create<SyncState>()(
             useAccounts.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
+            useContacts.getState().handleEvent(event);
           });
       },
 
@@ -243,6 +251,7 @@ export const useSync = create<SyncState>()(
           useAccounts.getState().handleEvent(event);
           useAssets.getState().handleEvent(event);
           useCounterparties.getState().handleEvent(event);
+          useContacts.getState().handleEvent(event);
         }
 
         console.log("Finished subscription");

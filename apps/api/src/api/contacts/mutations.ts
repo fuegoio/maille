@@ -18,7 +18,7 @@ export const registerContactsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const user = (
-          await db.select().from(userTable).where(eq(userTable.id, args.contact)).limit(1)
+          await db.select().from(userTable).where(eq(userTable.email, args.contact)).limit(1)
         )[0];
         if (!user) {
           throw new GraphQLError("User not found");
@@ -30,12 +30,12 @@ export const registerContactsMutations = () => {
             {
               id: args.id,
               user: ctx.user.id,
-              contact: args.contact,
+              contact: user.id,
               createdAt: new Date(),
             },
             {
               id: crypto.randomUUID(),
-              user: args.contact,
+              user: user.id,
               contact: ctx.user.id,
               createdAt: new Date(),
             },
@@ -50,7 +50,12 @@ export const registerContactsMutations = () => {
           type: "createContact",
           payload: {
             id: args.id,
-            contact: args.contact,
+            contact: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              image: user.image || "",
+            },
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -66,11 +71,16 @@ export const registerContactsMutations = () => {
           type: "createContact",
           payload: {
             id: contactReverse.id,
-            contact: ctx.user.id,
+            contact: {
+              id: ctx.user.id,
+              name: ctx.user.name,
+              email: ctx.user.email,
+              image: ctx.user.image || "",
+            },
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
-          user: args.contact,
+          user: user.id,
         });
 
         return {
