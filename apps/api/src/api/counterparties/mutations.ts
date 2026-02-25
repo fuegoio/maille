@@ -31,6 +31,7 @@ export const registerCounterpartiesMutations = () => {
           throw new GraphQLError("Account not found");
         }
 
+        // TODO: check contact
         const counterpartyResults = await db
           .insert(counterparties)
           .values({
@@ -99,6 +100,7 @@ export const registerCounterpartiesMutations = () => {
           updates.description = args.description;
         }
         if (args.contact !== undefined) {
+          // TODO: check contact
           updates.contact = args.contact;
         }
 

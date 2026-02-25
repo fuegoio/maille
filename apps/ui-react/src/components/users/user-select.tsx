@@ -36,11 +36,11 @@ export function UserSelect({
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Contacts</SelectLabel>
-          {contacts.map((user) => (
-            <SelectItem key={user.id} value={user.id}>
+          {contacts.map((contact) => (
+            <SelectItem key={contact.contact.id} value={contact.contact.id}>
               <div className="flex items-center gap-2">
-                <UserAvatar user={user.contact} className="size-6" />
-                <span>{user.contact.name}</span>
+                <UserAvatar user={contact.contact} className="size-6" />
+                <span>{contact.contact.name}</span>
               </div>
             </SelectItem>
           ))}
