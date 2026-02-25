@@ -13,8 +13,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { searchCompare } from "@/lib/strings";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { searchCompare } from "@/lib/strings";
 import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useMovements } from "@/stores/movements";
@@ -38,7 +38,7 @@ export function LinkMovementButton({
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);
-
+  const currencyFormatter = useCurrencyFormatter();
 
   const filteredMovements = React.useMemo(() => {
     const transactionsSumByAccount = getActivityTransactionsSumByAccount(
@@ -114,7 +114,7 @@ export function LinkMovementButton({
     if (filteredMovements.length === 0) {
       setFilterAmount(false);
     }
-  }, []);
+  }, [filteredMovements]);
 
   return (
     <>
@@ -191,7 +191,7 @@ export function LinkMovementButton({
                 </div>
                 <div className="flex-1" />
                 <div className="w-20 text-right whitespace-nowrap text-white">
-                  {useCurrencyFormatter().format(movement.amount)}
+                  {currencyFormatter.format(movement.amount)}
                 </div>
               </div>
             ))}

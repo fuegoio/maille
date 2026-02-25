@@ -126,7 +126,12 @@ function SubcategoryPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{subcategory.name}</BreadcrumbPage>
+                  <BreadcrumbPage>
+                    {subcategory.emoji && (
+                      <span className="mr-2">{subcategory.emoji}</span>
+                    )}
+                    {subcategory.name}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

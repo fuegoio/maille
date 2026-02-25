@@ -10,9 +10,9 @@ import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   deleteMovementMutation,
   updateMovementMutation,
@@ -39,6 +39,7 @@ import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 
 export function Movement() {
   const router = useRouter();
+  const currencyFormatter = useCurrencyFormatter();
   const movementId = useMovements((state) => state.focusedMovement);
   const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
 
@@ -267,7 +268,7 @@ export function Movement() {
                   </div>
                   <div className="flex-1" />
                   <div className="w-20 text-right font-mono whitespace-nowrap">
-                    {useCurrencyFormatter().format(movementActivity.amount)}
+                    {currencyFormatter.format(movementActivity.amount)}
                   </div>
                 </div>
               ))

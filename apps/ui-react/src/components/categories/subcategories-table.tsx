@@ -39,7 +39,7 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
 
   return (
     <div className="flex flex-col">
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
+      <div className="flex h-8 shrink-0 items-center gap-2 border-b bg-muted/70 pr-6 pl-14">
         <div className="text-sm font-medium">Subcategories</div>
         <div className="flex-1" />
         <div className="pl-4 text-right text-sm text-muted-foreground">

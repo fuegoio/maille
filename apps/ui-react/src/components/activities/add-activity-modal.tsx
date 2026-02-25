@@ -31,9 +31,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
 import {
@@ -94,6 +94,7 @@ export function AddActivityModal({
   const mutate = useSync((state) => state.mutate);
   const activities = useActivities((state) => state.activities);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
+  const currencyFormatter = useCurrencyFormatter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -154,29 +155,6 @@ export function AddActivityModal({
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
 
-  // Add transaction when form becomes valid and has no transactions
-  React.useEffect(() => {
-    if (type && transactions.length === 0) {
-      const { fromAccount, toAccount } = guessBestTransaction();
-      let amount = initialAmount || 0;
-
-      if (movement) {
-        amount = Math.abs(movement.amount);
-      } else if (movements && movements.length > 0) {
-        const firstMovement = movements[0];
-        amount = Math.abs(firstMovement.amount);
-      }
-
-      setValue("transactions", [
-        {
-          fromAccount: fromAccount || "",
-          toAccount: toAccount || "",
-          amount,
-        },
-      ]);
-    }
-  }, [type, transactions.length, movements, movement, setValue]);
-
   // Guess best transaction accounts based on type
   const guessBestTransaction = (): {
     fromAccount: string | undefined;
@@ -185,6 +163,7 @@ export function AddActivityModal({
     let fromAccount: string | undefined;
     let toAccount: string | undefined;
 
+    const type = watch("type");
     if (type === ActivityType.EXPENSE) {
       fromAccount = accounts.find(
         (a) => a.type === AccountType.BANK_ACCOUNT,
@@ -455,9 +434,13 @@ export function AddActivityModal({
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value as ActivityType);
-                      setValue("category", undefined); // Reset category when type changes
+                      setValue("category", ""); // Reset category when type changes
+                      setValue("subcategory", "");
+                      if (transactions.length === 0) {
+                        addTransaction();
+                      }
                     }}
-                    value={field.value}
+                    value={field.value || ""}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Activity type" />
@@ -487,7 +470,7 @@ export function AddActivityModal({
                 render={({ field }) => (
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
                     disabled={!type || filteredCategories.length === 0}
                   >
                     <SelectTrigger>
@@ -496,6 +479,9 @@ export function AddActivityModal({
                     <SelectContent>
                       {filteredCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
+                          {cat.emoji && (
+                            <span className="mr-0.5">{cat.emoji}</span>
+                          )}
                           {cat.name}
                         </SelectItem>
                       ))}
@@ -510,7 +496,7 @@ export function AddActivityModal({
                 render={({ field }) => (
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
                     disabled={!category || filteredSubcategories.length === 0}
                   >
                     <SelectTrigger>
@@ -519,6 +505,9 @@ export function AddActivityModal({
                     <SelectContent>
                       {filteredSubcategories.map((subcat) => (
                         <SelectItem key={subcat.id} value={subcat.id}>
+                          {subcat.emoji && (
+                            <span className="mr-0.5">{subcat.emoji}</span>
+                          )}
                           {subcat.name}
                         </SelectItem>
                       ))}
@@ -534,7 +523,7 @@ export function AddActivityModal({
                 render={({ field }) => (
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value}
+                    value={field.value || ""}
                     disabled
                   >
                     <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
@@ -558,7 +547,7 @@ export function AddActivityModal({
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
                 <span className="mr-2.75 font-mono text-sm text-muted-foreground">
-                  {useCurrencyFormatter().format(transactionsSum)}
+                  {currencyFormatter.format(transactionsSum)}
                 </span>
                 {!movements && (
                   <Button

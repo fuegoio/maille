@@ -8,8 +8,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import {
   ACTIVITY_TYPES_COLOR,
@@ -188,7 +188,7 @@ export function MonthActivitiesSummary({
               <div className="flex items-center">
                 <div
                   className={cn(
-                    `mr-3 size-3 shrink-0 rounded-full`,
+                    `mr-2 size-3 shrink-0 rounded-full`,
                     ACTIVITY_TYPES_COLOR[activityType.type],
                   )}
                 />

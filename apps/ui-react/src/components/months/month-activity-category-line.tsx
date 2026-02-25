@@ -6,8 +6,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
 interface MonthActivityCategoryLineProps {
@@ -22,6 +22,7 @@ export function MonthActivityCategoryLine({
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
+  const currencyFormatter = useCurrencyFormatter();
 
   const viewFilters = {
     activityType: null,
@@ -108,16 +109,12 @@ export function MonthActivityCategoryLine({
         )}
         onClick={selectCategoryToFilterActivities}
       >
-        <div
-          className={cn("flex items-center text-xs font-medium", {
-            "pl-6": categorySubcategories.length === 0,
-          })}
-        >
+        <div className={cn("group flex items-center text-xs font-medium")}>
           {categorySubcategories.length > 0 && (
             <Button
               variant="ghost"
               size="icon"
-              className="mr-2 h-4 w-4"
+              className="mr-1 hidden h-4 w-4 group-hover:flex"
               onClick={(e) => {
                 e.stopPropagation();
                 setExpanded(!expanded);
@@ -130,6 +127,14 @@ export function MonthActivityCategoryLine({
               )}
             </Button>
           )}
+          <span
+            className={cn(
+              "mr-2",
+              categorySubcategories.length > 0 ? "group-hover:hidden" : "",
+            )}
+          >
+            {category.emoji}
+          </span>
           {category.name}
         </div>
 
@@ -143,7 +148,7 @@ export function MonthActivityCategoryLine({
           </div>
 
           <div className="font-mono text-sm whitespace-nowrap text-white">
-            {useCurrencyFormatter().format(monthActivityCategoryValue)}
+            {currencyFormatter.format(monthActivityCategoryValue)}
           </div>
         </div>
       </div>
@@ -180,7 +185,7 @@ export function MonthActivityCategoryLine({
                 </div>
 
                 <div className="font-mono text-xs whitespace-nowrap">
-                  {useCurrencyFormatter().format(
+                  {currencyFormatter.format(
                     subcategoriesValues[subcategory.id],
                   )}
                 </div>
