@@ -10,6 +10,7 @@ import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
 import { useSync } from "@/stores/sync";
 
+import { AccountLabel } from "../accounts/account-label";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -97,13 +98,63 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
     return userAmounts;
   };
 
-  const currentAmounts = computeCurrentAmounts();
+  // Compute current account amounts from transactions
+  const computeCurrentAccountAmounts = () => {
+    const userAccountAmounts: Record<string, Record<string, number>> = {};
 
-  // Check if all users are reconciled
+    // Process transactions
+    for (const transaction of activity.transactions) {
+      // Check if transaction involves accounts with counterparties linked to users
+      const fromCounterparty = transaction.fromCounterparty
+        ? counterparties.find((c) => c.id === transaction.fromCounterparty)
+        : null;
+      const toCounterparty = transaction.toCounterparty
+        ? counterparties.find((c) => c.id === transaction.toCounterparty)
+        : null;
+
+      // If from transaction has a counterparty linked to a user, record the account amount
+      if (fromCounterparty?.contact && transaction.fromAccount) {
+        if (!userAccountAmounts[fromCounterparty.contact]) {
+          userAccountAmounts[fromCounterparty.contact] = {};
+        }
+        userAccountAmounts[fromCounterparty.contact][transaction.fromAccount] =
+          (userAccountAmounts[fromCounterparty.contact][
+            transaction.fromAccount
+          ] || 0) - transaction.amount;
+      }
+
+      // If to transaction has a counterparty linked to a user, record the account amount
+      if (toCounterparty?.contact && transaction.toAccount) {
+        if (!userAccountAmounts[toCounterparty.contact]) {
+          userAccountAmounts[toCounterparty.contact] = {};
+        }
+        userAccountAmounts[toCounterparty.contact][transaction.toAccount] =
+          (userAccountAmounts[toCounterparty.contact][transaction.toAccount] ||
+            0) + transaction.amount;
+      }
+    }
+
+    return userAccountAmounts;
+  };
+
+  const currentAmounts = computeCurrentAmounts();
+  const currentAccountAmounts = computeCurrentAccountAmounts();
+
+  // Check if all users are reconciled (both liability and accounts)
   const isReconciled =
     activity.sharing?.every((sharing) => {
       const currentAmount = currentAmounts[sharing.user] || 0;
-      return Math.abs(currentAmount - sharing.liability) < 0.01;
+      const liabilityReconciled =
+        Math.abs(currentAmount - sharing.liability) < 0.01;
+
+      // Check if all accounts are reconciled
+      const accountsReconciled = sharing.accounts.every((accountSharing) => {
+        const currentAccountAmount =
+          currentAccountAmounts[sharing.user]?.[accountSharing.account] || 0;
+        return Math.abs(currentAccountAmount - accountSharing.amount) < 0.01;
+      });
+
+      return liabilityReconciled && accountsReconciled;
     }) || false;
 
   return (
@@ -162,23 +213,63 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
           )?.contact;
           if (!user) return null;
           return (
-            <div key={sharing.user} className="flex items-center py-2">
-              <div className="mr-3 flex items-center">
-                <UserAvatar user={user} className="mr-2 h-6 w-6" />
-                <span className="text-sm">
-                  {user?.name || `User ${sharing.user.slice(0, 6)}...`}
-                </span>
+            <div key={sharing.user} className="py-2">
+              <div className="flex items-center">
+                <div className="mr-3 flex items-center">
+                  <UserAvatar user={user} className="mr-2 h-6 w-6" />
+                  <span className="text-sm">
+                    {user?.name || `User ${sharing.user.slice(0, 6)}...`}
+                  </span>
+                </div>
+                <div className="flex-1" />
+                <div
+                  className={cn(
+                    "pr-2 font-mono text-sm whitespace-nowrap",
+                    userAmountReconciled
+                      ? "text-indigo-400"
+                      : "text-orange-300",
+                  )}
+                >
+                  {currencyFormatter.format(currentAmount)}/
+                  {currencyFormatter.format(sharing.liability)}
+                </div>
               </div>
-              <div className="flex-1" />
-              <div
-                className={cn(
-                  "pr-2 font-mono text-sm whitespace-nowrap",
-                  userAmountReconciled ? "text-indigo-400" : "text-orange-300",
-                )}
-              >
-                {currencyFormatter.format(currentAmount)}/
-                {currencyFormatter.format(sharing.liability)}
-              </div>
+
+              {/* Account sharing details */}
+              {sharing.accounts.length > 0 && (
+                <div className="mt-1 ml-8 space-y-1">
+                  {sharing.accounts.map((accountSharing) => {
+                    const currentAccountAmount =
+                      currentAccountAmounts[sharing.user]?.[
+                        accountSharing.account
+                      ] || 0;
+                    const accountReconciled =
+                      Math.abs(currentAccountAmount - accountSharing.amount) <
+                      0.01;
+
+                    return (
+                      <div
+                        key={accountSharing.account}
+                        className="flex items-center"
+                      >
+                        <AccountLabel accountId={accountSharing.account} />
+                        <div className="flex-1" />
+                        <div
+                          className={cn(
+                            "font-mono text-xs whitespace-nowrap",
+                            accountReconciled
+                              ? "text-indigo-400"
+                              : "text-orange-300",
+                          )}
+                        >
+                          {currencyFormatter.format(currentAccountAmount)}/
+                          {currencyFormatter.format(accountSharing.amount)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
