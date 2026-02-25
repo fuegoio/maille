@@ -7,6 +7,7 @@ import {
   timestamp,
   boolean,
   pgEnum,
+  real,
 } from "drizzle-orm/pg-core";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
@@ -175,7 +176,7 @@ export const transactions = pgTable("transactions", {
   activity: text("activity")
     .notNull()
     .references(() => activities.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(),
+  amount: real("amount").notNull(),
   fromAccount: text("from_account")
     .notNull()
     .references(() => accounts.id, { onDelete: "cascade" }),
@@ -201,8 +202,8 @@ export const accounts = pgTable("accounts", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   type: accountTypeEnum("type").notNull(),
-  startingBalance: integer("starting_balance").notNull().default(0),
-  startingCashBalance: integer("starting_cash_balance").notNull().default(0),
+  startingBalance: real("starting_balance").notNull().default(0),
+  startingCashBalance: real("starting_cash_balance").notNull().default(0),
   default: boolean("default").notNull().default(false),
   movements: boolean("movements").notNull().default(false),
 });
@@ -217,6 +218,7 @@ export const accountsSharing = pgTable("accounts_sharing", {
   user: text("user")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  proportion: real("proportion").notNull(),
 });
 
 export const assets = pgTable("assets", {
@@ -238,7 +240,7 @@ export const movements = pgTable("movements", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   date: timestamp("date", { mode: "date" }).notNull(),
-  amount: integer("amount").notNull(),
+  amount: real("amount").notNull(),
   account: text("account")
     .notNull()
     .references(() => accounts.id, { onDelete: "cascade" }),
@@ -253,7 +255,7 @@ export const movementsActivities = pgTable("movements_activities", {
   movement: text("movement")
     .notNull()
     .references(() => movements.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(),
+  amount: real("amount").notNull(),
 });
 
 export const counterparties = pgTable("counterparties", {

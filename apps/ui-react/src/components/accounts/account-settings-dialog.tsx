@@ -27,9 +27,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { updateAccountMutation } from "@/mutations/accounts";
-import { useSync } from "@/stores/sync";
 import { useAuth } from "@/stores/auth";
-import { ShareAccountDialog } from "./share-account-dialog";
+import { useSync } from "@/stores/sync";
 
 const accountSettingsSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -145,7 +144,7 @@ export function AccountSettingsDialog({
                 />
                 <FieldDescription>
                   The initial balance of this account in{" "}
-                  {format(user?.startingDate, "MMMM yyyy")}.
+                  {format(user!.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -191,7 +190,7 @@ export function AccountSettingsDialog({
                 />
                 <FieldDescription>
                   The initial cash balance for this account in{" "}
-                  {format(user?.startingDate, "MMMM yyyy")}.
+                  {format(user!.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -203,14 +202,9 @@ export function AccountSettingsDialog({
                 Cancel
               </Button>
             </DialogClose>
-            <ShareAccountDialog accountId={account.id}>
-              <Button type="button" variant="outline" disabled={isSubmitting}>
-                Share Account
-              </Button>
-            </ShareAccountDialog>
             <DialogClose asChild>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Changes"}
+                {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
             </DialogClose>
           </DialogFooter>

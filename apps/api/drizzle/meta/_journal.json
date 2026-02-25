@@ -15,6 +15,14 @@
       "when": 1772038231524,
       "tag": "0001_outgoing_lord_tyger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772055856444,
+      "tag": "0002_nostalgic_wallow",
+      "breakpoints": true
     }
   ]
 }
+

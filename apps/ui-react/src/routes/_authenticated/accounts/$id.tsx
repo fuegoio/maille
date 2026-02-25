@@ -17,13 +17,13 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
-import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-counterparty-modal";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { Counterparty } from "@/components/accounts/counterparties/counterparty";
+import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -161,9 +161,13 @@ function AccountPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex-1" />
-          <ShareAccountDialog accountId={account.id}>
-            <Button variant="ghost" size="icon">
+          <ShareAccountDialog account={account}>
+            <Button
+              variant={account.sharing.length > 0 ? "default" : "ghost"}
+              size={account.sharing.length > 0 ? "default" : "icon"}
+            >
               <Users />
+              {account.sharing.length > 0 && "Shared"}
             </Button>
           </ShareAccountDialog>
           <AccountSettingsDialog account={account}>

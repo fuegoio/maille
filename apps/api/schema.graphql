@@ -10,7 +10,7 @@ type Account {
 }
 
 type AccountSharing {
-  id: String!
+  proportion: Float!
   role: String!
   sharedWith: String
 }

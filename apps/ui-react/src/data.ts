@@ -73,6 +73,11 @@ const userDataQuery = graphql(/* GraphQL */ `
       startingBalance
       startingCashBalance
       movements
+      sharing {
+        role
+        sharedWith
+        proportion
+      }
     }
 
     movements {

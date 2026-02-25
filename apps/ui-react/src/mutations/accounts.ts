@@ -87,9 +87,9 @@ export const shareAccountMutation = graphql(/* GraphQL */ `
     shareAccount(id: $id, userId: $userId) {
       id
       sharing {
-        id
         role
         sharedWith
+        proportion
       }
     }
   }

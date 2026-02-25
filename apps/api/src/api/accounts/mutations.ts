@@ -260,6 +260,7 @@ export const registerAccountsMutations = () => {
           role: "primary",
           account: originalAccount.id,
           user: ctx.user.id,
+          proportion: 0.5,
         });
 
         // Secondary sharing record (contact user)
@@ -269,6 +270,7 @@ export const registerAccountsMutations = () => {
           role: "secondary",
           account: sharedAccount.id,
           user: contactUser.id,
+          proportion: 0.5,
         });
 
         // 6. Add events
@@ -278,9 +280,9 @@ export const registerAccountsMutations = () => {
             id: originalAccount.id,
             sharing: [
               {
-                id: sharingId,
                 role: "primary",
                 sharedWith: contactUser.id,
+                proportion: 0.5,
               },
             ],
           },
@@ -295,9 +297,9 @@ export const registerAccountsMutations = () => {
             ...sharedAccount,
             sharing: [
               {
-                id: sharingId,
                 role: "secondary",
                 sharedWith: ctx.user.id,
+                proportion: 0.5,
               },
             ],
           },

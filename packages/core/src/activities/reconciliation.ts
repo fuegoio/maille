@@ -10,11 +10,17 @@ import {
 import { AccountType, type Account, type Counterparty } from "../accounts/index";
 import type { Movement, MovementWithLink } from "../movements/types";
 
+type SimpleAccount = {
+  id: string;
+  type: AccountType;
+  movements: boolean;
+};
+
 export const getActivityStatus = (
   activityDate: Date,
   transactions: Transaction[],
   movements: ActivityMovement[],
-  accounts: Account[],
+  accounts: SimpleAccount[],
   getMovementById: (id: string) => Movement | undefined,
 ): ActivityStatus => {
   if (activityDate > new Date()) {
@@ -31,7 +37,7 @@ export const getActivityStatus = (
 export const getActivityTransactionsReconciliationSum = (
   activityType: ActivityType,
   transactions: Transaction[],
-  accounts: Account[],
+  accounts: SimpleAccount[],
 ): number => {
   return _.round(
     transactions.reduce((s, transaction) => {
@@ -120,7 +126,7 @@ export const getActivityMovementsByAccount = (
 
 export const getActivityTransactionsSumByAccount = (
   transactions: Transaction[],
-  accounts: Account[],
+  accounts: SimpleAccount[],
 ) => {
   return transactions.reduce(
     (transactionsSumByAccount, transaction) => {
@@ -167,7 +173,7 @@ export const getActivityTransactionsSumByAccount = (
 export const getActivityMovementsReconciliatedByAccount = (
   transactions: Transaction[],
   movements: ActivityMovement[],
-  accounts: Account[],
+  accounts: SimpleAccount[],
   getMovementById: (id: string) => Movement | undefined,
 ) => {
   const transactionsSumByAccount = getActivityTransactionsSumByAccount(transactions, accounts);
@@ -225,7 +231,7 @@ export const getActivityMovementsReconciliatedByAccount = (
 export const getActivityMovementsReconciliated = (
   transactions: Transaction[],
   movements: ActivityMovement[],
-  accounts: Account[],
+  accounts: SimpleAccount[],
   getMovementById: (id: string) => Movement | undefined,
 ): boolean => {
   const movementsReconciliatedByAccount = getActivityMovementsReconciliatedByAccount(

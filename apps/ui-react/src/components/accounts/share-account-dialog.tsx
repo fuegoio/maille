@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { Account } from "@maille/core/accounts";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -8,6 +9,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -20,9 +22,21 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { shareAccountMutation } from "@/mutations/accounts";
+import { useAuth } from "@/stores/auth";
 import { useContacts } from "@/stores/contacts";
 import { useSync } from "@/stores/sync";
 
+import { Badge } from "../ui/badge";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemMedia,
+  ItemTitle,
+} from "../ui/item";
+import { Separator } from "../ui/separator";
+import { UserAvatar } from "../users/user-avatar";
 import { UserSelect } from "../users/user-select";
 
 const shareAccountSchema = z.object({
@@ -32,14 +46,15 @@ const shareAccountSchema = z.object({
 type ShareAccountFormValues = z.infer<typeof shareAccountSchema>;
 
 export function ShareAccountDialog({
-  accountId,
+  account,
   children,
 }: {
-  accountId: string;
+  account: Account;
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
   const contacts = useContacts((state) => state.contacts);
+  const user = useAuth((state) => state.user!);
   const [open, setOpen] = useState(false);
 
   const {
@@ -60,18 +75,18 @@ export function ShareAccountDialog({
         name: "shareAccount",
         mutation: shareAccountMutation,
         variables: {
-          id: accountId,
+          id: account.id,
           userId: data.contactId,
         },
         rollbackData: {
-          accountId: accountId,
+          accountId: account.id,
           contactId: data.contactId,
         },
         events: [
           {
             type: "updateAccount",
             payload: {
-              id: accountId,
+              id: account.id,
               sharing: [
                 {
                   id: crypto.randomUUID(),
@@ -92,17 +107,29 @@ export function ShareAccountDialog({
     }
   };
 
+  const getUser = (userId: string) => {
+    if (userId === user.id) return user;
+    return contacts.find((u) => u.contact.id === userId)?.contact;
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Share Account</DialogTitle>
+          <DialogTitle>Share account</DialogTitle>
+          <DialogDescription>
+            Sharing an account makes you able to share movements and
+            transactions.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex items-end gap-2"
+        >
           <Field>
-            <FieldLabel>Contact</FieldLabel>
+            <FieldLabel htmlFor="contactId">Share</FieldLabel>
             <FieldContent>
               <Controller
                 name="contactId"
@@ -111,28 +138,51 @@ export function ShareAccountDialog({
                   <UserSelect
                     value={field.value}
                     onValueChange={field.onChange}
-                    placeholder="Select a user to share this account with"
+                    placeholder="Select a user..."
                   />
                 )}
               />
               <FieldError errors={[errors.contactId]} />
             </FieldContent>
           </Field>
-
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              type="submit"
-              disabled={isSubmitting || contacts.length === 0}
-            >
-              {isSubmitting ? "Sharing..." : "Share account"}
-            </Button>
-          </DialogFooter>
+          <Button
+            type="submit"
+            disabled={isSubmitting || contacts.length === 0}
+          >
+            {isSubmitting ? "Sharing..." : "Share"}
+          </Button>
         </form>
+
+        <Separator />
+
+        <div>
+          {account.sharing.map((sharing) => {
+            const sharingUser = getUser(sharing.sharedWith);
+            if (!sharingUser) return null;
+            return (
+              <Item className="px-0 py-1" key={sharing.sharedWith}>
+                <ItemMedia>
+                  <UserAvatar user={sharingUser} />
+                </ItemMedia>
+                <ItemContent className="gap-0">
+                  <ItemTitle>{sharingUser.name}</ItemTitle>
+                  <ItemDescription>{sharingUser.email}</ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  {sharingUser.id === user.id && <Badge>You</Badge>}
+                </ItemActions>
+              </Item>
+            );
+          })}
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline">
+              Done
+            </Button>
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

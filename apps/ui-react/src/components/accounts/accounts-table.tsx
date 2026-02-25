@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import {
   useAccounts,
   ACCOUNT_TYPES_COLOR,
@@ -113,15 +113,20 @@ export function AccountsTable() {
             >
               <div className="text-sm font-medium">{account.name}</div>
               {account.default && (
-                <div className="mx-2 text-sm text-muted-foreground">
+                <Badge variant="outline" className="ml-4">
                   Default
-                </div>
+                </Badge>
               )}
-              <Badge className="ml-4" variant="outline">
-                {getTransactionsLinkedToAccount(account.id)} transactions
-              </Badge>
+              {account.sharing.length > 0 && (
+                <Badge variant="default" className="ml-4">
+                  Shared
+                </Badge>
+              )}
 
               <div className="flex-1" />
+              <div className="mr-4 text-sm text-muted-foreground">
+                {getTransactionsLinkedToAccount(account.id)} transactions
+              </div>
 
               <div className="text-right font-mono text-sm">
                 {currencyFormatter.format(getAccountTotal(account.id))}

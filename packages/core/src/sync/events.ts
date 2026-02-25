@@ -1,4 +1,4 @@
-import type { Account, AccountType } from "#accounts/index.ts";
+import type { Account, AccountSharing, AccountType } from "#accounts/index.ts";
 import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
 import type { ContactUser } from "#contacts/index.ts";
 
@@ -227,11 +227,7 @@ export interface CreateAccountEvent extends BaseSyncEvent {
     startingBalance: number | null;
     startingCashBalance: number | null;
     movements: boolean;
-    sharing?: {
-      id: string;
-      role: "primary" | "secondary";
-      sharedWith?: string;
-    }[];
+    sharing?: AccountSharing[];
   };
 }
 
@@ -243,11 +239,7 @@ export interface UpdateAccountEvent extends BaseSyncEvent {
     startingBalance?: number | null;
     startingCashBalance?: number | null;
     movements?: boolean;
-    sharing?: {
-      id: string;
-      role: "primary" | "secondary";
-      sharedWith?: string;
-    }[];
+    sharing?: AccountSharing[];
   };
 }
 

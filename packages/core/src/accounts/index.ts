@@ -27,6 +27,12 @@ export const isAccountType = (value: string): value is AccountType => {
   return Object.values(AccountType).includes(value as AccountType);
 };
 
+export type AccountSharing = {
+  role: "primary" | "secondary";
+  sharedWith: string;
+  proportion: number;
+};
+
 export type Account = {
   id: string;
   name: string;
@@ -35,9 +41,5 @@ export type Account = {
   startingBalance: number | null;
   startingCashBalance: number | null;
   movements: boolean;
-  sharing?: {
-    id: string;
-    role: "primary" | "secondary";
-    sharedWith?: string;
-  }[];
+  sharing: AccountSharing[];
 };

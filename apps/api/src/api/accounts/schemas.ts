@@ -1,24 +1,10 @@
-import type { Account } from "@maille/core/accounts";
+import type { Account, AccountSharing } from "@maille/core/accounts";
 import { builder } from "../builder";
 import { db } from "@/database";
 import { accountsSharing } from "@/tables";
 import { eq } from "drizzle-orm";
 
-export const AccountSchema = builder.objectRef<Account>("Account");
-
-export const AccountSharingSchema = builder.objectRef<{
-  id: string;
-  role: "primary" | "secondary";
-  sharedWith?: string;
-}>("AccountSharing");
-
-AccountSharingSchema.implement({
-  fields: (t) => ({
-    id: t.exposeString("id"),
-    role: t.exposeString("role"),
-    sharedWith: t.exposeString("sharedWith", { nullable: true }),
-  }),
-});
+export const AccountSchema = builder.objectRef<Omit<Account, "sharing">>("Account");
 
 AccountSchema.implement({
   fields: (t) => ({
@@ -37,18 +23,31 @@ AccountSchema.implement({
     sharing: t.field({
       type: [AccountSharingSchema],
       resolve: async (parent) => {
-        const sharingRecords = await db
-          .select()
-          .from(accountsSharing)
-          .where(eq(accountsSharing.account, parent.id));
+        const sharingId = (
+          await db.select().from(accountsSharing).where(eq(accountsSharing.account, parent.id))
+        )[0]?.sharingId;
+
+        const sharingRecords = sharingId
+          ? await db.select().from(accountsSharing).where(eq(accountsSharing.sharingId, sharingId))
+          : [];
 
         return sharingRecords.map((record) => ({
-          id: record.sharingId,
           role: record.role,
           sharedWith: record.user,
+          proportion: record.proportion,
         }));
       },
     }),
+  }),
+});
+
+export const AccountSharingSchema = builder.objectRef<AccountSharing>("AccountSharing");
+
+AccountSharingSchema.implement({
+  fields: (t) => ({
+    role: t.exposeString("role"),
+    sharedWith: t.exposeString("sharedWith", { nullable: true }),
+    proportion: t.exposeFloat("proportion"),
   }),
 });
 
