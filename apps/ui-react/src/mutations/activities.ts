@@ -232,11 +232,13 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String!
     $type: String!
+    $emoji: String
   ) {
     createActivityCategory(
       id: $id
       name: $name
       type: $type
+      emoji: $emoji
     ) {
       id
     }
@@ -244,8 +246,8 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateActivityCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivityCategory($id: String!, $name: String!) {
-    updateActivityCategory(id: $id, name: $name) {
+  mutation UpdateActivityCategory($id: String!, $name: String!, $emoji: String) {
+    updateActivityCategory(id: $id, name: $name, emoji: $emoji) {
       id
     }
   }
@@ -264,11 +266,13 @@ export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
     $id: String!
     $name: String!
     $category: String!
+    $emoji: String
   ) {
     createActivitySubCategory(
       id: $id
       name: $name
       category: $category
+      emoji: $emoji
     ) {
       id
     }
@@ -276,8 +280,8 @@ export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateActivitySubCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivitySubCategory($id: String!, $name: String!) {
-    updateActivitySubCategory(id: $id, name: $name) {
+  mutation UpdateActivitySubCategory($id: String!, $name: String!, $emoji: String) {
+    updateActivitySubCategory(id: $id, name: $name, emoji: $emoji) {
       id
     }
   }
@@ -304,6 +308,7 @@ export type UpdateActivityCategoryMutation = MutationType<
   {
     id: string;
     name: string;
+    emoji?: string | null;
   },
   [UpdateActivityCategoryEvent]
 >;
@@ -332,6 +337,7 @@ export type UpdateActivitySubCategoryMutation = MutationType<
   {
     id: string;
     name: string;
+    emoji?: string | null;
   },
   [UpdateActivitySubCategoryEvent]
 >;

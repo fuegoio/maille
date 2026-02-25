@@ -145,6 +145,7 @@ export interface CreateActivityCategoryEvent extends BaseSyncEvent {
     id: string;
     name: string;
     type: ActivityType;
+    emoji: string | null;
   };
 }
 
@@ -153,6 +154,7 @@ export interface UpdateActivityCategoryEvent extends BaseSyncEvent {
   payload: {
     id: string;
     name: string;
+    emoji?: string | null;
   };
 }
 
@@ -169,6 +171,7 @@ export interface CreateActivitySubCategoryEvent extends BaseSyncEvent {
     id: string;
     name: string;
     category: string;
+    emoji: string | null;
   };
 }
 
@@ -177,6 +180,7 @@ export interface UpdateActivitySubCategoryEvent extends BaseSyncEvent {
   payload: {
     id: string;
     name: string;
+    emoji?: string | null;
   };
 }
 

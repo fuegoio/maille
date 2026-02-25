@@ -20,12 +20,14 @@ export type ActivityCategory = {
   id: string;
   name: string;
   type: ActivityType;
+  emoji: string | null;
 };
 
 export type ActivitySubCategory = {
   id: string;
   name: string;
   category: string;
+  emoji: string | null;
 };
 
 export type ActivityStatus = "scheduled" | "incomplete" | "completed";

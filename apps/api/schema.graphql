@@ -159,8 +159,8 @@ type Mutation {
   addTransaction(activityId: String!, amount: Float!, fromAccount: String!, id: String!, toAccount: String!): Transaction!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!): Account!
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!): Activity!
-  createActivityCategory(id: String!, name: String!, type: String!): ActivityCategory!
-  createActivitySubCategory(category: String!, id: String!, name: String!): ActivitySubCategory!
+  createActivityCategory(emoji: String, id: String!, name: String!, type: String!): ActivityCategory!
+  createActivitySubCategory(category: String!, emoji: String, id: String!, name: String!): ActivitySubCategory!
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, name: String!): Counterparty!
@@ -182,8 +182,8 @@ type Mutation {
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
-  updateActivityCategory(id: String!, name: String!): ActivityCategory!
-  updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!
+  updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
+  updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateCounterparty(contact: String, description: String, id: String!, name: String): Counterparty!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!

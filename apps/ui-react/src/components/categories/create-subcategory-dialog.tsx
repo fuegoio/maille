@@ -20,12 +20,14 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { createActivitySubCategoryMutation } from "@/mutations/activities";
 import { useSync } from "@/stores/sync";
 
 
 const createSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
+  emoji: z.string().nullable().optional(),
 });
 
 type CreateSubcategoryFormValues = z.infer<typeof createSubcategorySchema>;
@@ -49,6 +51,7 @@ export function CreateSubcategoryDialog({
     resolver: zodResolver(createSubcategorySchema),
     defaultValues: {
       name: "",
+      emoji: null,
     },
   });
 
@@ -58,6 +61,7 @@ export function CreateSubcategoryDialog({
         id: crypto.randomUUID(),
         name: data.name,
         category: categoryId,
+        emoji: data.emoji,
       };
 
       mutate({
@@ -108,6 +112,22 @@ export function CreateSubcategoryDialog({
                 )}
               />
               <FieldError errors={[errors.name]} />
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel>Emoji</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="emoji"
+                control={control}
+                render={({ field }) => (
+                  <EmojiPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </FieldContent>
           </Field>
 

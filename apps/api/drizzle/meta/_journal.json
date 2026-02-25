@@ -8,6 +8,13 @@
       "when": 1771970389574,
       "tag": "0000_fresh_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772038231524,
+      "tag": "0001_outgoing_lord_tyger",
+      "breakpoints": true
     }
   ]
 }

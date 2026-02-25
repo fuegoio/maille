@@ -144,6 +144,7 @@ export const activityCategories = pgTable("activity_categories", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   type: activityTypeEnum("type").notNull(),
+  emoji: text("emoji"),
 });
 
 export const activitySubcategories = pgTable("activity_subcategories", {
@@ -155,6 +156,7 @@ export const activitySubcategories = pgTable("activity_subcategories", {
   category: text("category")
     .notNull()
     .references(() => activityCategories.id, { onDelete: "cascade" }),
+  emoji: text("emoji"),
 });
 
 export const projects = pgTable("projects", {

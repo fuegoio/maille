@@ -55,12 +55,14 @@ const userDataQuery = graphql(/* GraphQL */ `
       id
       name
       type
+      emoji
     }
 
     activitySubcategories {
       id
       name
       category
+      emoji
     }
 
     accounts {

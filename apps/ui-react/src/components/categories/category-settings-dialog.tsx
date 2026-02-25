@@ -21,6 +21,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   updateActivityCategoryMutation,
   deleteActivityCategoryMutation,
@@ -43,6 +44,7 @@ import {
 const updateCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.enum(ActivityType),
+  emoji: z.string().nullable().optional(),
 });
 
 type UpdateCategoryFormValues = z.infer<typeof updateCategorySchema>;
@@ -68,6 +70,7 @@ export function CategorySettingsDialog({
     defaultValues: {
       name: category.name,
       type: category.type,
+      emoji: category.emoji,
     },
   });
 
@@ -78,10 +81,12 @@ export function CategorySettingsDialog({
       variables: {
         id: category.id,
         name: data.name,
+        emoji: data.emoji,
       },
       rollbackData: {
         id: category.id,
         name: category.name,
+        emoji: category.emoji,
       },
       events: [
         {
@@ -89,6 +94,7 @@ export function CategorySettingsDialog({
           payload: {
             id: category.id,
             name: data.name,
+            emoji: data.emoji,
           },
         },
       ],
@@ -162,6 +168,22 @@ export function CategorySettingsDialog({
                 )}
               />
               <FieldError errors={[errors.name]} />
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel>Emoji</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="emoji"
+                control={control}
+                render={({ field }) => (
+                  <EmojiPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </FieldContent>
           </Field>
 

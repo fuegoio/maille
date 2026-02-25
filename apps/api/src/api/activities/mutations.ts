@@ -887,6 +887,7 @@ export const registerActivitiesMutations = () => {
         }),
         name: t.arg.string(),
         type: t.arg.string(),
+        emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activityTypeSchema = z.enum(ActivityType);
@@ -897,6 +898,7 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
           name: args.name,
           type: parsedType,
+          emoji: args.emoji ?? null,
         };
         await db.insert(activityCategories).values(category);
 
@@ -922,6 +924,7 @@ export const registerActivitiesMutations = () => {
           required: true,
         }),
         name: t.arg.string(),
+        emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const category = (
@@ -935,11 +938,18 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity category not found");
         }
 
+        const updates: Partial<typeof category> = {
+          name: args.name,
+        };
+        
+        // Optional fields
+        if (args.emoji !== undefined) {
+          updates.emoji = args.emoji;
+        }
+
         const updatedCategories = await db
           .update(activityCategories)
-          .set({
-            name: args.name,
-          })
+          .set(updates)
           .where(eq(activityCategories.id, args.id))
           .returning();
         const updatedCategory = updatedCategories[0];
@@ -953,6 +963,7 @@ export const registerActivitiesMutations = () => {
           payload: {
             id: args.id,
             name: args.name,
+            ...(args.emoji !== undefined && { emoji: args.emoji }),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -1013,6 +1024,7 @@ export const registerActivitiesMutations = () => {
         category: t.arg({
           type: "String",
         }),
+        emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const subcategory = {
@@ -1020,6 +1032,7 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
           name: args.name,
           category: args.category,
+          emoji: args.emoji ?? null,
         };
         await db.insert(activitySubcategories).values(subcategory);
 
@@ -1045,6 +1058,7 @@ export const registerActivitiesMutations = () => {
           required: true,
         }),
         name: t.arg.string(),
+        emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const subcategory = (
@@ -1058,11 +1072,18 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity subcategory not found");
         }
 
+        const updates: Partial<typeof subcategory> = {
+          name: args.name,
+        };
+        
+        // Optional fields
+        if (args.emoji !== undefined) {
+          updates.emoji = args.emoji;
+        }
+
         const updatedSubCategories = await db
           .update(activitySubcategories)
-          .set({
-            name: args.name,
-          })
+          .set(updates)
           .where(eq(activitySubcategories.id, args.id))
           .returning();
         const updatedSubCategory = updatedSubCategories[0];
@@ -1076,6 +1097,7 @@ export const registerActivitiesMutations = () => {
           payload: {
             id: args.id,
             name: args.name,
+            ...(args.emoji !== undefined && { emoji: args.emoji }),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,

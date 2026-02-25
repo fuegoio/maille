@@ -16,7 +16,6 @@ import { persist } from "zustand/middleware";
 import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
-import { useAuth } from "./auth";
 import { useMovements } from "./movements";
 import { storage } from "./storage";
 
@@ -84,16 +83,13 @@ interface ActivitiesState {
   deleteActivity: (activityId: string) => void;
   restoreActivity: (activity: Activity) => void;
 
-  addActivityCategory: (params: {
-    id?: string;
-    name: string;
-    type: ActivityType;
-  }) => ActivityCategory;
+  addActivityCategory: (activityCategory: ActivityCategory) => ActivityCategory;
   updateActivityCategory: (
     categoryId: string,
     update: {
       name?: string;
       type?: ActivityType;
+      emoji?: string | null;
     },
   ) => void;
   deleteActivityCategory: (categoryId: string) => void;
@@ -103,16 +99,15 @@ interface ActivitiesState {
     activitiesSubcategories: Record<string, string>;
   }) => void;
 
-  addActivitySubcategory: (params: {
-    id?: string;
-    name: string;
-    category: string;
-  }) => ActivitySubCategory;
+  addActivitySubcategory: (
+    activitySubcategory: ActivitySubCategory,
+  ) => ActivitySubCategory;
   updateActivitySubcategory: (
     subcategoryId: string,
     update: {
       name?: string;
       category?: string;
+      emoji?: string | null;
     },
   ) => void;
   deleteActivitySubcategory: (subcategoryId: string) => void;
@@ -406,26 +401,12 @@ export const useActivities = create<ActivitiesState>()(
         }));
       },
 
-      addActivityCategory: ({
-        id,
-        name,
-        type,
-      }: {
-        id?: string;
-        name: string;
-        type: ActivityType;
-      }): ActivityCategory => {
-        const newCategory = {
-          id: id ?? crypto.randomUUID(),
-          name,
-          type,
-        };
-
+      addActivityCategory: (activityCategory): ActivityCategory => {
         set((state) => ({
-          activityCategories: [...state.activityCategories, newCategory],
+          activityCategories: [...state.activityCategories, activityCategory],
         }));
 
-        return newCategory;
+        return activityCategory;
       },
 
       updateActivityCategory: (
@@ -433,6 +414,7 @@ export const useActivities = create<ActivitiesState>()(
         update: {
           name?: string;
           type?: ActivityType;
+          emoji?: string | null;
         },
       ) => {
         set((state) => ({
@@ -442,6 +424,8 @@ export const useActivities = create<ActivitiesState>()(
                 ...category,
                 name: update.name !== undefined ? update.name : category.name,
                 type: update.type !== undefined ? update.type : category.type,
+                emoji:
+                  update.emoji !== undefined ? update.emoji : category.emoji,
               };
             }
             return category;
@@ -473,21 +457,15 @@ export const useActivities = create<ActivitiesState>()(
         }));
       },
 
-      addActivitySubcategory: ({ id, name, category }): ActivitySubCategory => {
-        const newSubcategory = {
-          id: id ?? crypto.randomUUID(),
-          name,
-          category,
-        };
-
+      addActivitySubcategory: (activitySubcategory): ActivitySubCategory => {
         set((state) => ({
           activitySubcategories: [
             ...state.activitySubcategories,
-            newSubcategory,
+            activitySubcategory,
           ],
         }));
 
-        return newSubcategory;
+        return activitySubcategory;
       },
 
       updateActivitySubcategory: (
@@ -495,6 +473,7 @@ export const useActivities = create<ActivitiesState>()(
         update: {
           name?: string;
           category?: string;
+          emoji?: string | null;
         },
       ) => {
         set((state) => ({
@@ -509,6 +488,10 @@ export const useActivities = create<ActivitiesState>()(
                     update.category !== undefined
                       ? update.category
                       : subcategory.category,
+                  emoji:
+                    update.emoji !== undefined
+                      ? update.emoji
+                      : subcategory.emoji,
                 };
               }
               return subcategory;

@@ -242,10 +242,14 @@ export const getActivitySharingsReconciliation = (
     user: string;
     transactions: Transaction[];
     counterparties: Counterparty[];
-    accountsSharing: string[];
+    accountsSharing: {
+      account: string;
+      accountSharingTo: string;
+    }[];
   }[],
   user: string,
 ): ActivitySharing[] => {
+  console.log(activitySharings[0]?.accountsSharing);
   return activitySharings.map((activitySharing) => {
     const liabilitySum = activitySharing.transactions.reduce((s, transaction) => {
       let amount = 0;
@@ -270,42 +274,42 @@ export const getActivitySharingsReconciliation = (
     }, 0);
 
     const accountsSharingReconciliation = activitySharing.transactions.reduce(
-      (accounts, transaction) => {
-        if (transaction.fromAccount) {
-          const fromAccountSharing = activitySharing.accountsSharing.find(
-            (as) => as === transaction.fromAccount,
+      (accountsReconciliation, transaction) => {
+        const fromAccountSharing = activitySharing.accountsSharing.find(
+          (as) => as.accountSharingTo === transaction.fromAccount,
+        );
+        if (fromAccountSharing) {
+          const account = accountsReconciliation.find(
+            (a) => a.account === fromAccountSharing.account,
           );
-          if (fromAccountSharing) {
-            const account = accounts.find((a) => a.account === transaction.fromAccount);
-            if (account) {
-              account.amount += transaction.amount * -1;
-            } else {
-              accounts.push({
-                account: transaction.fromAccount,
-                amount: transaction.amount * -1,
-              });
-            }
+          if (account) {
+            account.amount += transaction.amount * -1;
+          } else {
+            accountsReconciliation.push({
+              account: fromAccountSharing.account,
+              amount: transaction.amount * -1,
+            });
           }
         }
 
-        if (transaction.toAccount) {
-          const toAccountSharing = activitySharing.accountsSharing.find(
-            (as) => as === transaction.toAccount,
+        const toAccountSharing = activitySharing.accountsSharing.find(
+          (as) => as.accountSharingTo === transaction.toAccount,
+        );
+        if (toAccountSharing) {
+          const account = accountsReconciliation.find(
+            (a) => a.account === toAccountSharing.account,
           );
-          if (toAccountSharing) {
-            const account = accounts.find((a) => a.account === transaction.toAccount);
-            if (account) {
-              account.amount += transaction.amount;
-            } else {
-              accounts.push({
-                account: transaction.toAccount,
-                amount: transaction.amount,
-              });
-            }
+          if (account) {
+            account.amount += transaction.amount;
+          } else {
+            accountsReconciliation.push({
+              account: toAccountSharing.account,
+              amount: transaction.amount,
+            });
           }
         }
 
-        return accounts;
+        return accountsReconciliation;
       },
       [] as { account: string; amount: number }[],
     );

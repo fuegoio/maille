@@ -55,7 +55,10 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
           params={{ id: categoryId, subcategoryId: subcategory.id }}
           className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
         >
-          <div className="text-sm font-medium">{subcategory.name}</div>
+          <div className="flex items-center gap-2">
+            {subcategory.emoji && <span className="text-xl">{subcategory.emoji}</span>}
+            <div className="text-sm font-medium">{subcategory.name}</div>
+          </div>
 
           <Badge className="ml-4" variant="outline">
             {getNumberOfActivities(subcategory.id)} activities

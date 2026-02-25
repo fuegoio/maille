@@ -60,14 +60,14 @@ CREATE TABLE "activity_categories" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user" text NOT NULL,
 	"name" text NOT NULL,
-	"type" "activity_type" NOT NULL
+	"type" "activity_type" NOT NULL,
 );
 --> statement-breakpoint
 CREATE TABLE "activity_subcategories" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user" text NOT NULL,
 	"name" text NOT NULL,
-	"category" text NOT NULL
+	"category" text NOT NULL,
 );
 --> statement-breakpoint
 CREATE TABLE "assets" (

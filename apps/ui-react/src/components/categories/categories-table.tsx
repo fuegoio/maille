@@ -97,7 +97,10 @@ export function CategoriesTable() {
                 });
               }}
             >
-              <div className="text-sm font-medium">{category.name}</div>
+              <div className="flex items-center gap-2">
+                {category.emoji && <span className="text-xl">{category.emoji}</span>}
+                <div className="text-sm font-medium">{category.name}</div>
+              </div>
 
               <Badge className="ml-4" variant="outline">
                 {getNumberOfActivities(category.id)} activities

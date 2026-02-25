@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -29,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-
 import { createActivityCategoryMutation } from "@/mutations/activities";
 import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
@@ -37,6 +37,7 @@ import { useSync } from "@/stores/sync";
 const createCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
   type: z.enum(ActivityType),
+  emoji: z.string().nullable().optional(),
 });
 
 type CreateCategoryFormValues = z.infer<typeof createCategorySchema>;
@@ -59,6 +60,7 @@ export function CreateCategoryDialog({
     defaultValues: {
       name: "",
       type: ActivityType.EXPENSE,
+      emoji: null,
     },
   });
 
@@ -68,6 +70,7 @@ export function CreateCategoryDialog({
         id: crypto.randomUUID(),
         name: data.name,
         type: data.type,
+        emoji: data.emoji || null,
       };
 
       mutate({
@@ -156,6 +159,22 @@ export function CreateCategoryDialog({
             </FieldContent>
           </Field>
 
+          <Field>
+            <FieldLabel>Emoji</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="emoji"
+                control={control}
+                render={({ field }) => (
+                  <EmojiPicker
+                    value={field.value || null}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            </FieldContent>
+          </Field>
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
@@ -171,4 +190,3 @@ export function CreateCategoryDialog({
     </Dialog>
   );
 }
-

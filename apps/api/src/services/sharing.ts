@@ -8,7 +8,10 @@ type ActivitySharing = {
   user: string;
   transactions: Transaction[];
   counterparties: Counterparty[];
-  accountsSharing: string[];
+  accountsSharing: {
+    account: string;
+    accountSharingTo: string;
+  }[];
 };
 
 export const getActivitySharings = async (
@@ -48,16 +51,14 @@ export const getActivitySharings = async (
 
 export const getAccountsSharing = async (userId: string, sharingTo: string) => {
   const sharingIds = db
-    .select({ sharingId: accountsSharing.sharingId })
+    .select({ sharingId: accountsSharing.sharingId, account: accountsSharing.account })
     .from(accountsSharing)
     .where(eq(accountsSharing.user, userId))
     .as("sharingIds");
 
-  return (
-    await db
-      .select({ account: accountsSharing.account })
-      .from(accountsSharing)
-      .innerJoin(sharingIds, eq(accountsSharing.sharingId, sharingIds.sharingId))
-      .where(eq(accountsSharing.user, sharingTo))
-  ).map((a) => a.account);
+  return await db
+    .select({ accountSharingTo: accountsSharing.account, account: sharingIds.account })
+    .from(accountsSharing)
+    .innerJoin(sharingIds, eq(accountsSharing.sharingId, sharingIds.sharingId))
+    .where(eq(accountsSharing.user, sharingTo));
 };

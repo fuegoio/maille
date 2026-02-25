@@ -21,6 +21,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   updateActivitySubCategoryMutation,
   deleteActivitySubCategoryMutation,
@@ -42,6 +43,7 @@ import {
 
 const updateSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
+  emoji: z.string().nullable().optional(),
 });
 
 type UpdateSubcategoryFormValues = z.infer<typeof updateSubcategorySchema>;
@@ -67,6 +69,7 @@ export function SubcategorySettingsDialog({
     resolver: zodResolver(updateSubcategorySchema),
     defaultValues: {
       name: subcategory.name,
+      emoji: subcategory.emoji,
     },
   });
 
@@ -77,10 +80,12 @@ export function SubcategorySettingsDialog({
       variables: {
         id: subcategory.id,
         name: data.name,
+        emoji: data.emoji,
       },
       rollbackData: {
         ...subcategory,
         name: subcategory.name,
+        emoji: subcategory.emoji,
       },
       events: [
         {
@@ -88,6 +93,7 @@ export function SubcategorySettingsDialog({
           payload: {
             id: subcategory.id,
             name: data.name,
+            emoji: data.emoji,
           },
         },
       ],
@@ -148,6 +154,22 @@ export function SubcategorySettingsDialog({
                 )}
               />
               <FieldError errors={[errors.name]} />
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel>Emoji</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="emoji"
+                control={control}
+                render={({ field }) => (
+                  <EmojiPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </FieldContent>
           </Field>
 
