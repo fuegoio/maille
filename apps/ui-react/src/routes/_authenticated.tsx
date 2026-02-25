@@ -45,7 +45,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
-  const { session, user } = Route.useRouteContext();
+  const { session: initialSession, user: initialUser } =
+    Route.useRouteContext();
   const navigate = Route.useNavigate();
 
   const setUser = useAuth((state) => state.setUser);
@@ -66,8 +67,8 @@ function AuthenticatedLayout() {
     },
     refetchInterval: SESSION_REFRESH_INTERVAL,
     initialData: {
-      session,
-      user,
+      session: initialSession,
+      user: initialUser,
     },
   });
 

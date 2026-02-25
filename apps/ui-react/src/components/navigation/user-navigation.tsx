@@ -22,6 +22,7 @@ import useIsOnline from "@/lib/online";
 import { useSync } from "@/stores/sync";
 
 import { Contacts } from "../contacts/contacts";
+import { SettingsDialog } from "../settings-dialog";
 import { Badge } from "../ui/badge";
 
 import { ThemeSwitcher } from "./theme-switcher";
@@ -99,6 +100,7 @@ export function UserNavigation({ user }: { user: User }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <Contacts />
+            <SettingsDialog />
             <DropdownMenuSeparator />
             <ThemeSwitcher />
             <DropdownMenuItem className="gap-2 px-3" onClick={logout}>

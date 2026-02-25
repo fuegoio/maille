@@ -1,12 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Settings } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -24,19 +22,32 @@ import {
 import { authClient } from "@/lib/auth";
 import { useAuth } from "@/stores/auth";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { DropdownMenuItem } from "./ui/dropdown-menu";
+
 const formSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
   startingDate: z.date(),
 });
 
-export function OnboardingDialog() {
+export function SettingsDialog() {
+  const [open, setOpen] = useState(false);
+  const user = useAuth((state) => state.user);
   const updateUser = useAuth((state) => state.updateUser);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      currency: "EUR",
-      startingDate: new Date(),
+      currency: user?.currency || "EUR",
+      startingDate: user?.startingDate || new Date(),
     },
   });
 
@@ -59,22 +70,25 @@ export function OnboardingDialog() {
       console.error("Failed to upate user:", error);
     } finally {
       setLoading(false);
+      setOpen(false);
     }
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-muted">
-      <Logo className="size-12 text-muted" />
-      <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">
-            Setup your account
-          </h1>
-          <div className="mt-2 text-sm text-muted-foreground">
-            Set up your financial settings to get started.
-          </div>
-        </div>
-
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <DropdownMenuItem
+          className="gap-2 px-3"
+          onSelect={(e) => e.preventDefault()}
+        >
+          <Settings />
+          Settings
+        </DropdownMenuItem>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Settings</DialogTitle>
+        </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <FieldGroup>
             <Controller
@@ -134,19 +148,20 @@ export function OnboardingDialog() {
             />
           </FieldGroup>
 
-          <Button type="submit" className="w-full" disabled={loading} size="lg">
-            {loading ? (
-              <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
-            ) : (
-              "Continue"
-            )}
-          </Button>
-
-          <div className="text-center text-sm text-muted-foreground">
-            You can always change these settings later.
-          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
