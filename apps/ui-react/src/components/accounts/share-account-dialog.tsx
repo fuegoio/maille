@@ -65,18 +65,25 @@ export function ShareAccountDialog({
         name: "shareAccount",
         mutation: shareAccountMutation,
         variables: {
+          id: accountId,
+          userId: data.contactId,
+        },
+        rollbackData: {
           accountId: accountId,
           contactId: data.contactId,
         },
-        rollbackData: undefined,
         events: [
           {
-            type: "shareAccount",
+            type: "updateAccount",
             payload: {
-              originalAccountId: accountId,
-              sharedAccountId: crypto.randomUUID(),
-              contactId: data.contactId,
-              sharingId: crypto.randomUUID(),
+              id: accountId,
+              sharing: [
+                {
+                  id: crypto.randomUUID(),
+                  role: "primary",
+                  sharedWith: data.contactId,
+                },
+              ],
             },
           },
         ],
@@ -100,7 +107,7 @@ export function ShareAccountDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Field>
-            <FieldLabel>Select Contact</FieldLabel>
+            <FieldLabel>Select contact</FieldLabel>
             <FieldContent>
               <Controller
                 name="contactId"
@@ -140,8 +147,11 @@ export function ShareAccountDialog({
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting || contacts.length === 0}>
-              {isSubmitting ? "Sharing..." : "Share Account"}
+            <Button
+              type="submit"
+              disabled={isSubmitting || contacts.length === 0}
+            >
+              {isSubmitting ? "Sharing..." : "Share account"}
             </Button>
           </DialogFooter>
         </form>
@@ -149,3 +159,4 @@ export function ShareAccountDialog({
     </Dialog>
   );
 }
+

@@ -200,10 +200,10 @@ export const registerAccountsMutations = () => {
     t.field({
       type: AccountSchema,
       args: {
-        accountId: t.arg({
+        id: t.arg({
           type: "String",
         }),
-        contactId: t.arg({
+        userId: t.arg({
           type: "String",
         }),
       },
@@ -213,7 +213,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(eq(accounts.id, args.accountId), eq(accounts.user, ctx.user.id)))
+            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!originalAccount) {
           throw new GraphQLError("Account not found or doesn't belong to you");
@@ -224,7 +224,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(contacts)
-            .where(and(eq(contacts.id, args.contactId), eq(contacts.user, ctx.user.id)))
+            .where(and(eq(contacts.contact, args.userId), eq(contacts.user, ctx.user.id)))
         )[0];
         if (!contact) {
           throw new GraphQLError("Contact not found or doesn't belong to you");
@@ -245,7 +245,7 @@ export const registerAccountsMutations = () => {
             .insert(accounts)
             .values({
               id: sharedAccountId,
-              name: `${originalAccount.name} (Shared)`,
+              name: originalAccount.name,
               startingBalance: originalAccount.startingBalance,
               startingCashBalance: originalAccount.startingCashBalance,
               movements: originalAccount.movements,
@@ -283,12 +283,16 @@ export const registerAccountsMutations = () => {
 
         // 6. Add events
         await addEvent({
-          type: "shareAccount",
+          type: "updateAccount",
           payload: {
-            originalAccountId: originalAccount.id,
-            sharedAccountId: sharedAccount.id,
-            contactId: args.contactId,
-            sharingId: sharingId,
+            id: originalAccount.id,
+            sharing: [
+              {
+                id: sharingId,
+                role: "primary",
+                sharedWith: contactUser.id,
+              },
+            ],
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -296,31 +300,20 @@ export const registerAccountsMutations = () => {
         });
 
         await addEvent({
-          type: "createAccountSharing",
+          type: "createAccount",
           payload: {
-            id: randomUUID(),
-            sharingId: sharingId,
-            role: "primary",
-            account: originalAccount.id,
-            user: ctx.user.id,
+            ...sharedAccount,
+            sharing: [
+              {
+                id: sharingId,
+                role: "secondary",
+                sharedWith: ctx.user.id,
+              },
+            ],
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-
-        await addEvent({
-          type: "createAccountSharing",
-          payload: {
-            id: randomUUID(),
-            sharingId: sharingId,
-            role: "secondary",
-            account: sharedAccount.id,
-            user: contactUser.id,
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
+          user: contactUser.id,
         });
 
         // 7. Return the original account with updated sharing info
@@ -329,7 +322,7 @@ export const registerAccountsMutations = () => {
           sharing: [
             {
               id: sharingId,
-              role: "primary",
+              role: "primary" as const,
               sharedWith: contactUser.id,
             },
           ],

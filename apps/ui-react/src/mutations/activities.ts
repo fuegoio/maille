@@ -15,6 +15,7 @@ import type {
   DeleteTransactionEvent,
   UpdateActivityCategoryEvent,
   UpdateActivityEvent,
+  UpdateActivitySharing,
   UpdateActivitySubCategoryEvent,
   UpdateTransactionEvent,
 } from "@maille/core/sync";
@@ -64,7 +65,6 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
     $project: String
     $subcategory: String
     $type: String
-    $users: [String!]
   ) {
     updateActivity(
       id: $id
@@ -75,7 +75,6 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
       project: $project
       subcategory: $subcategory
       type: $type
-      users: $users
     ) {
       id
     }
@@ -118,6 +117,32 @@ export type DeleteActivityMutation = MutationType<
   typeof deleteActivityMutation,
   Activity,
   [DeleteActivityEvent]
+>;
+
+export const shareActivityMutation = graphql(/* GraphQL */ `
+  mutation ShareActivity(
+    $id: String!
+    $userId: String!
+  ) {
+    shareActivity(
+      id: $id
+      userId: $userId
+    ) {
+      user
+      liability
+      accounts {
+        account
+        amount
+      }
+    }
+  }
+`);
+
+export type ShareActivityMutation = MutationType<
+  "shareActivity",
+  typeof shareActivityMutation,
+  undefined,
+  [UpdateActivitySharing]
 >;
 
 export const addTransactionMutation = graphql(/* GraphQL */ `
@@ -322,6 +347,7 @@ export type ActivityMutation =
   | CreateActivityMutation
   | UpdateActivityMutation
   | DeleteActivityMutation
+  | ShareActivityMutation
   | AddTransactionMutation
   | UpdateTransactionMutation
   | DeleteTransactionMutation

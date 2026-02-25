@@ -1,5 +1,4 @@
 import { AccountType, type Account } from "@maille/core/accounts";
-import type { ShareAccountEvent, CreateAccountSharingEvent } from "@maille/core/sync";
 import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -108,7 +107,6 @@ export const useAccounts = create<AccountsState>()(
           get().addAccount({
             ...event.payload,
             default: false,
-            user: event.user,
           });
         } else if (event.type === "updateAccount") {
           get().updateAccount(event.payload.id, {
@@ -116,31 +114,6 @@ export const useAccounts = create<AccountsState>()(
           });
         } else if (event.type === "deleteAccount") {
           get().deleteAccount(event.payload.id);
-        } else if (event.type === "shareAccount") {
-          // Update the original account with sharing info
-          get().updateAccount(event.payload.originalAccountId, {
-            sharing: [
-              {
-                id: event.payload.sharingId,
-                role: "primary",
-                sharedWith: event.payload.contactId,
-              },
-            ],
-          });
-        } else if (event.type === "createAccountSharing") {
-          // Handle account sharing creation
-          if (event.payload.role === "primary") {
-            // This is the original account owner's sharing record
-            get().updateAccount(event.payload.account, {
-              sharing: [
-                {
-                  id: event.payload.sharingId,
-                  role: event.payload.role,
-                  sharedWith: event.payload.user,
-                },
-              ],
-            });
-          }
         }
       },
 

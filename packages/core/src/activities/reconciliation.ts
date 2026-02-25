@@ -5,7 +5,7 @@ import {
   type ActivityStatus,
   type ActivityMovement,
   type Transaction,
-  type ActivityLiability,
+  type ActivitySharing,
 } from "./types";
 import { AccountType, type Account, type Counterparty } from "../accounts/index";
 import type { Movement, MovementWithLink } from "../movements/types";
@@ -245,7 +245,7 @@ export const getActivitySharingsReconciliation = (
     accountsSharing: { account: string; user: string }[];
   }[],
   user: string,
-) => {
+): ActivitySharing[] => {
   return activitySharings.map((activitySharing) => {
     const liabilitySum = activitySharing.transactions.reduce((s, transaction) => {
       let amount = 0;

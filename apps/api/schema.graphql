@@ -178,9 +178,10 @@ type Mutation {
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
-  shareAccount(accountId: String!, contactId: String!): Account!
+  shareAccount(id: String!, userId: String!): Account!
+  shareActivity(id: String!, userId: String!): [ActivitySharing!]!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
-  updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String, users: [String!]): Activity!
+  updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!

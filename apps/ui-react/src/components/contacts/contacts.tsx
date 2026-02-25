@@ -151,6 +151,12 @@ export function Contacts() {
                 </ItemContent>
               </Item>
             ))}
+
+            {contacts.length === 0 && (
+              <div className="px-1 py-2 text-sm text-muted-foreground">
+                No contact yet.
+              </div>
+            )}
           </div>
           <DialogFooter>
             <DialogClose asChild>

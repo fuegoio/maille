@@ -16,7 +16,6 @@ const userDataQuery = graphql(/* GraphQL */ `
   query UserData {
     activities {
       id
-      users
       number
       name
       description
@@ -42,9 +41,13 @@ const userDataQuery = graphql(/* GraphQL */ `
       }
       amount
       status
-      liabilities { 
+      sharing { 
         user
-        amount
+        liability
+        accounts {
+          account
+          amount
+        }
       }
     }
 

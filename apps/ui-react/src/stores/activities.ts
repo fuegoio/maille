@@ -4,15 +4,14 @@ import {
   getActivityTransactionsReconciliationSum,
   type Activity,
   type ActivityCategory,
-  type ActivityLiability,
   type ActivityMovement,
+  type ActivitySharing,
   type ActivitySubCategory,
   type Transaction,
 } from "@maille/core/activities";
 import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
 
 import type { Mutation } from "@/mutations";
 
@@ -79,7 +78,7 @@ interface ActivitiesState {
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
-      liabilities?: ActivityLiability[];
+      sharing?: ActivitySharing[];
     },
   ) => void;
   deleteActivity: (activityId: string) => void;
@@ -550,12 +549,11 @@ export const useActivities = create<ActivitiesState>()(
           get().addActivity({
             ...event.payload,
             date: new Date(event.payload.date),
-            users: event.payload.users ? event.payload.users : [user!.id],
             transactions: event.payload.transactions.map((t) => ({
               ...t,
               user: user!.id,
             })),
-            liabilities: event.payload.liabilities ?? [],
+            sharing: event.payload.sharing ?? [],
             movements: event.payload.movement ? [event.payload.movement] : [],
           });
         } else if (event.type === "updateActivity") {
@@ -604,9 +602,9 @@ export const useActivities = create<ActivitiesState>()(
             event.payload.activity,
             event.payload.id,
           );
-        } else if (event.type === "updateActivityLiabilities") {
+        } else if (event.type === "updateActivitySharing") {
           get().updateActivity(event.payload.activityId, {
-            liabilities: event.payload.liabilities,
+            sharing: event.payload.sharing,
           });
         }
       },
@@ -626,6 +624,10 @@ export const useActivities = create<ActivitiesState>()(
               return activity;
             }),
           }));
+        } else if (mutation.name === "shareActivity") {
+          get().updateActivity(mutation.variables.id, {
+            sharing: mutation.result.shareActivity,
+          });
         }
       },
 
@@ -640,6 +642,16 @@ export const useActivities = create<ActivitiesState>()(
           });
         } else if (mutation.name === "deleteActivity") {
           get().restoreActivity(mutation.rollbackData);
+        } else if (mutation.name === "shareActivity") {
+          const activitySharing = get().getActivityById(
+            mutation.variables.id,
+          )?.sharing;
+          if (!activitySharing) return;
+          get().updateActivity(mutation.variables.id, {
+            sharing: activitySharing.filter(
+              (s) => s.user !== mutation.variables.userId,
+            ),
+          });
         } else if (mutation.name === "createActivityCategory") {
           get().deleteActivityCategory(mutation.variables.id);
         } else if (mutation.name === "updateActivityCategory") {

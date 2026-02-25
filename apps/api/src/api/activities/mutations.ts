@@ -9,6 +9,7 @@ import { builder } from "../builder";
 import {
   ActivityCategorySchema,
   ActivitySchema,
+  ActivitySharingSchema,
   ActivitySubCategorySchema,
   DeleteActivityResponseSchema,
   DeleteTransactionResponseSchema,
@@ -20,7 +21,7 @@ import {
   activitiesSharing,
   activityCategories,
   activitySubcategories,
-  counterparties,
+  contacts,
   movements,
   movementsActivities,
   transactions,
@@ -227,10 +228,6 @@ export const registerActivitiesMutations = () => {
         id: t.arg({
           type: "String",
         }),
-        users: t.arg({
-          type: ["String"],
-          required: false,
-        }),
         name: t.arg({
           type: "String",
           required: false,
@@ -313,98 +310,11 @@ export const registerActivitiesMutations = () => {
           }
         }
 
-        // Counterparties
-        const counterpartiesData = await db
-          .select()
-          .from(counterparties)
-          .where(eq(counterparties.user, ctx.user.id));
-
-        // Transactions
-        const transactionsData = await db
-          .select()
-          .from(transactions)
-          .where(eq(transactions.activity, args.id));
-
-        // Sharing
-        const activitySharing = (
-          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
-        )[0];
-        let sharingId = activitySharing?.sharingId;
-        const activityUsers = sharingId
-          ? await db
-              .select()
-              .from(activitiesSharing)
-              .where(eq(activitiesSharing.sharingId, sharingId))
-          : [];
-        if (args.users) {
-          const usersToAdd = args.users.filter(
-            (user) => !activityUsers.some((u) => u.user === user),
-          );
-
-          if (usersToAdd.length > 0) {
-            if (!sharingId) {
-              sharingId = crypto.randomUUID();
-              await db.insert(activitiesSharing).values({
-                id: crypto.randomUUID(),
-                sharingId,
-                user: ctx.user.id,
-                activity: args.id,
-                role: "primary",
-              });
-            }
-
-            await Promise.all(
-              usersToAdd.map(async (user) => {
-                const newActivity = (
-                  await db
-                    .insert(activities)
-                    .values({
-                      id: crypto.randomUUID(),
-                      number: 0,
-                      user,
-                      name: activity.name,
-                      description: activity.description,
-                      date: activity.date,
-                      type: activity.type,
-                    })
-                    .returning()
-                )[0];
-                if (!newActivity) {
-                  throw new GraphQLError("Failed to share activity");
-                }
-
-                await db.insert(activitiesSharing).values({
-                  id: crypto.randomUUID(),
-                  sharingId: sharingId!,
-                  user,
-                  activity: newActivity.id,
-                  role: "secondary",
-                });
-
-                await addEvent({
-                  type: "createActivity",
-                  payload: {
-                    ...newActivity,
-                    users: activityUsers.map((a) => a.user).concat(usersToAdd),
-                    date: newActivity.date.toISOString(),
-                    transactions: [],
-                    liabilities: [],
-                  },
-                  createdAt: new Date(),
-                  clientId: ctx.session.id,
-                  user,
-                });
-              }),
-            );
-          }
-        }
-
         void addEvent({
           type: "updateActivity",
           payload: {
             id: args.id,
             ...activityUpdates,
-            users: args.users ?? undefined,
             date: activityUpdates.date?.toISOString(),
           },
           createdAt: new Date(),
@@ -413,6 +323,10 @@ export const registerActivitiesMutations = () => {
         });
 
         const accountsQuery = await db.select().from(accounts);
+        const transactionsData = await db
+          .select()
+          .from(transactions)
+          .where(eq(transactions.activity, args.id));
         const movementsData = await db
           .select()
           .from(movementsActivities)
@@ -425,7 +339,6 @@ export const registerActivitiesMutations = () => {
 
         return {
           ...activity,
-          users: args.users ?? activityUsers.map((u) => u.user),
           date: activity.date,
           transactions: transactionsData,
           movements: movementsData,
@@ -502,6 +415,119 @@ export const registerActivitiesMutations = () => {
           id: args.id,
           success: true,
         };
+      },
+    }),
+  );
+
+  builder.mutationField("shareActivity", (t) =>
+    t.field({
+      type: [ActivitySharingSchema],
+      args: {
+        id: t.arg({
+          type: "String",
+        }),
+        userId: t.arg({
+          type: "String",
+        }),
+      },
+      resolve: async (root, args, ctx) => {
+        const activity = (
+          await db
+            .select()
+            .from(activities)
+            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
+            .limit(1)
+        )[0];
+        if (!activity) {
+          throw new GraphQLError("Activity not found");
+        }
+
+        const contact = (
+          await db
+            .select()
+            .from(contacts)
+            .where(and(eq(contacts.contact, args.userId), eq(contacts.user, ctx.user.id)))
+        )[0];
+        if (!contact) {
+          throw new GraphQLError("Contact not found or doesn't belong to you");
+        }
+
+        const activitySharing = (
+          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+        )[0];
+        let sharingId = activitySharing?.sharingId;
+
+        if (!sharingId) {
+          sharingId = crypto.randomUUID();
+          await db.insert(activitiesSharing).values({
+            id: crypto.randomUUID(),
+            sharingId,
+            user: ctx.user.id,
+            activity: args.id,
+            role: "primary",
+          });
+        }
+
+        const newActivity = (
+          await db
+            .insert(activities)
+            .values({
+              id: crypto.randomUUID(),
+              number: 0,
+              user: args.userId,
+              name: activity.name,
+              description: activity.description,
+              date: activity.date,
+              type: activity.type,
+            })
+            .returning()
+        )[0];
+        if (!newActivity) {
+          throw new GraphQLError("Failed to share activity");
+        }
+
+        await db.insert(activitiesSharing).values({
+          id: crypto.randomUUID(),
+          sharingId: sharingId!,
+          user: args.userId,
+          activity: newActivity.id,
+          role: "secondary",
+        });
+
+        const sharingForMe = getActivitySharingsReconciliation(
+          await getActivitySharings(args.id),
+          ctx.user.id,
+        );
+        const sharingForContact = getActivitySharingsReconciliation(
+          await getActivitySharings(args.id),
+          args.userId,
+        );
+
+        void addEvent({
+          type: "createActivity",
+          payload: {
+            ...newActivity,
+            date: newActivity.date.toISOString(),
+            transactions: [],
+            sharing: sharingForContact,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: args.userId,
+        });
+
+        void addEvent({
+          type: "updateActivitySharing",
+          payload: {
+            activityId: args.id,
+            sharing: sharingForMe,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        return sharingForMe;
       },
     }),
   );
@@ -688,16 +714,6 @@ export const registerActivitiesMutations = () => {
           updatedTransaction.fromCounterparty !== undefined ||
           updatedTransaction.toCounterparty !== undefined
         ) {
-          const transactionsData = await db
-            .select()
-            .from(transactions)
-            .where(eq(transactions.activity, args.activityId));
-
-          const counterpartiesData = await db
-            .select()
-            .from(counterparties)
-            .where(eq(counterparties.user, ctx.user.id));
-
           const activitySharing = (
             await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
           )[0];
@@ -709,18 +725,23 @@ export const registerActivitiesMutations = () => {
                 .where(eq(activitiesSharing.sharingId, sharingId))
             : [];
 
-          activityUsers.forEach((activityUser) => {
-            void addEvent({
-              type: "updateActivityLiabilities",
-              payload: {
-                activityId: transaction.activity,
-                liabilities: [],
-              },
-              createdAt: new Date(),
-              clientId: ctx.session.id,
-              user: activityUser.user,
-            });
-          });
+          await Promise.all(
+            activityUsers.map(async (activityUser) => {
+              await addEvent({
+                type: "updateActivitySharing",
+                payload: {
+                  activityId: transaction.activity,
+                  sharing: getActivitySharingsReconciliation(
+                    await getActivitySharings(transaction.activity),
+                    activityUser.user,
+                  ),
+                },
+                createdAt: new Date(),
+                clientId: ctx.session.id,
+                user: activityUser.user,
+              });
+            }),
+          );
         }
 
         return updatedTransaction;
@@ -779,16 +800,6 @@ export const registerActivitiesMutations = () => {
 
         // Update liabilities if counterparties are defined
         if (transaction.fromCounterparty || transaction.toCounterparty) {
-          const transactionsData = await db
-            .select()
-            .from(transactions)
-            .where(eq(transactions.activity, args.activityId));
-
-          const counterpartiesData = await db
-            .select()
-            .from(counterparties)
-            .where(eq(counterparties.user, ctx.user.id));
-
           const activitySharing = (
             await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
           )[0];
@@ -800,18 +811,23 @@ export const registerActivitiesMutations = () => {
                 .where(eq(activitiesSharing.sharingId, sharingId))
             : [];
 
-          activityUsers.forEach((activityUser) => {
-            void addEvent({
-              type: "updateActivityLiabilities",
-              payload: {
-                activityId: transaction.activity,
-                liabilities: [],
-              },
-              createdAt: new Date(),
-              clientId: ctx.session.id,
-              user: activityUser.user,
-            });
-          });
+          await Promise.all(
+            activityUsers.map(async (activityUser) => {
+              await addEvent({
+                type: "updateActivitySharing",
+                payload: {
+                  activityId: transaction.activity,
+                  sharing: getActivitySharingsReconciliation(
+                    await getActivitySharings(transaction.activity),
+                    activityUser.user,
+                  ),
+                },
+                createdAt: new Date(),
+                clientId: ctx.session.id,
+                user: activityUser.user,
+              });
+            }),
+          );
         }
 
         return { id: args.id, success: true };

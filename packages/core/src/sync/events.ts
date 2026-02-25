@@ -1,5 +1,5 @@
 import type { Account, AccountType } from "#accounts/index.ts";
-import type { ActivityLiability, ActivityType, Transaction } from "#activities/types.ts";
+import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -25,8 +25,7 @@ export interface CreateActivityEvent extends BaseSyncEvent {
       amount: number;
       movement: string;
     };
-    liabilities?: ActivityLiability[];
-    users?: string[];
+    sharing?: ActivitySharing[];
   };
 }
 
@@ -75,11 +74,11 @@ export interface DeleteTransactionEvent extends BaseSyncEvent {
   };
 }
 
-export interface UpdateActivityLiabilities extends BaseSyncEvent {
-  type: "updateActivityLiabilities";
+export interface UpdateActivitySharing extends BaseSyncEvent {
+  type: "updateActivitySharing";
   payload: {
     activityId: string;
-    liabilities: ActivityLiability[];
+    sharing: ActivitySharing[];
   };
 }
 
@@ -223,6 +222,11 @@ export interface CreateAccountEvent extends BaseSyncEvent {
     startingBalance: number | null;
     startingCashBalance: number | null;
     movements: boolean;
+    sharing?: {
+      id: string;
+      role: "primary" | "secondary";
+      sharedWith?: string;
+    }[];
   };
 }
 
@@ -234,6 +238,11 @@ export interface UpdateAccountEvent extends BaseSyncEvent {
     startingBalance?: number | null;
     startingCashBalance?: number | null;
     movements?: boolean;
+    sharing?: {
+      id: string;
+      role: "primary" | "secondary";
+      sharedWith?: string;
+    }[];
   };
 }
 
@@ -316,27 +325,6 @@ export interface DeleteContactEvent extends BaseSyncEvent {
   };
 }
 
-export interface ShareAccountEvent extends BaseSyncEvent {
-  type: "shareAccount";
-  payload: {
-    originalAccountId: string;
-    sharedAccountId: string;
-    contactId: string;
-    sharingId: string;
-  };
-}
-
-export interface CreateAccountSharingEvent extends BaseSyncEvent {
-  type: "createAccountSharing";
-  payload: {
-    id: string;
-    sharingId: string;
-    role: "primary" | "secondary";
-    account: string;
-    user: string;
-  };
-}
-
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
@@ -365,7 +353,7 @@ export type SyncEvent =
   | AddTransactionEvent
   | UpdateTransactionEvent
   | DeleteTransactionEvent
-  | UpdateActivityLiabilities
+  | UpdateActivitySharing
   | CreateMovementEvent
   | UpdateMovementEvent
   | DeleteMovementEvent
@@ -384,8 +372,6 @@ export type SyncEvent =
   | CreateAccountEvent
   | UpdateAccountEvent
   | DeleteAccountEvent
-  | ShareAccountEvent
-  | CreateAccountSharingEvent
   | CreateAssetEvent
   | UpdateAssetEvent
   | DeleteAssetEvent

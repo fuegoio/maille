@@ -17,9 +17,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   updateActivityMutation,
   deleteActivityMutation,
@@ -37,15 +37,13 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-import { UserMultiSelect } from "../users/user-multi-select";
 
-import { ActivityLiabilities } from "./activity-liabilities";
 import { ActivityMovements } from "./activity-movements";
+import { ActivitySharing } from "./activity-sharing";
 import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
 
@@ -336,20 +334,13 @@ export function Activity() {
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="users">Users</FieldLabel>
-                  <UserMultiSelect
-                    value={activity.users}
-                    onChange={(value) => updateActivity({ users: value })}
-                  />
-                </Field>
               </FieldGroup>
             </FieldSet>
           </div>
 
           <ActivityTransactions activity={activity} />
           <ActivityMovements activity={activity} />
-          <ActivityLiabilities activity={activity} />
+          <ActivitySharing activity={activity} />
         </div>
       </div>
 
