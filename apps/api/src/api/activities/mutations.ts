@@ -32,6 +32,7 @@ import { getActivitySharings } from "@/services/sharing";
 import { and, eq, max, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
+import { logger } from "@/logger";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -754,35 +755,35 @@ export const registerActivitiesMutations = () => {
         });
 
         // Update liabilities if counterparties are defined
-        if (
-          updatedTransaction.fromCounterparty !== undefined ||
-          updatedTransaction.toCounterparty !== undefined
-        ) {
-          const activitySharing = (
-            await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
-          )[0];
-          let sharingId = activitySharing?.sharingId;
-          const activityUsers = sharingId
+        if (updatedTransaction.fromCounterparty || updatedTransaction.toCounterparty) {
+          const sharingId = (
+            await db
+              .select()
+              .from(activitiesSharing)
+              .where(eq(activitiesSharing.activity, transaction.activity))
+          )[0]?.sharingId;
+          const activitySharings = sharingId
             ? await db
                 .select()
                 .from(activitiesSharing)
                 .where(eq(activitiesSharing.sharingId, sharingId))
             : [];
 
+          logger.info({ updatedTransaction, activitySharings }, "Updating activity sharing");
           await Promise.all(
-            activityUsers.map(async (activityUser) => {
+            activitySharings.map(async (activitySharing) => {
               await addEvent({
                 type: "updateActivitySharing",
                 payload: {
-                  activityId: transaction.activity,
+                  activityId: activitySharing.activity,
                   sharing: getActivitySharingsReconciliation(
-                    await getActivitySharings(transaction.activity),
-                    activityUser.user,
+                    await getActivitySharings(activitySharing.activity),
+                    activitySharing.user,
                   ),
                 },
                 createdAt: new Date(),
                 clientId: ctx.session.id,
-                user: activityUser.user,
+                user: activitySharing.user,
               });
             }),
           );
@@ -844,11 +845,13 @@ export const registerActivitiesMutations = () => {
 
         // Update liabilities if counterparties are defined
         if (transaction.fromCounterparty || transaction.toCounterparty) {
-          const activitySharing = (
-            await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
-          )[0];
-          let sharingId = activitySharing?.sharingId;
-          const activityUsers = sharingId
+          const sharingId = (
+            await db
+              .select()
+              .from(activitiesSharing)
+              .where(eq(activitiesSharing.activity, transaction.activity))
+          )[0]?.sharingId;
+          const activitySharings = sharingId
             ? await db
                 .select()
                 .from(activitiesSharing)
@@ -856,19 +859,19 @@ export const registerActivitiesMutations = () => {
             : [];
 
           await Promise.all(
-            activityUsers.map(async (activityUser) => {
+            activitySharings.map(async (activitySharing) => {
               await addEvent({
                 type: "updateActivitySharing",
                 payload: {
-                  activityId: transaction.activity,
+                  activityId: activitySharing.activity,
                   sharing: getActivitySharingsReconciliation(
-                    await getActivitySharings(transaction.activity),
-                    activityUser.user,
+                    await getActivitySharings(activitySharing.activity),
+                    activitySharing.user,
                   ),
                 },
                 createdAt: new Date(),
                 clientId: ctx.session.id,
-                user: activityUser.user,
+                user: activitySharing.user,
               });
             }),
           );

@@ -27,8 +27,6 @@ export const getActivitySharings = async (activityId: string): Promise<ActivityS
         )
     : [];
 
-  console.log(activitySharings);
-
   return await Promise.all(
     activitySharings.map(async (sharing) => ({
       user: sharing.user,
