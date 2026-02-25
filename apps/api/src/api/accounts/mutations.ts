@@ -173,9 +173,6 @@ export const registerAccountsMutations = () => {
           throw new GraphQLError("Account not found");
         }
 
-        await db.delete(transactions).where(eq(transactions.toAccount, args.id));
-        await db.delete(transactions).where(eq(transactions.fromAccount, args.id));
-        await db.delete(movements).where(eq(movements.account, args.id));
         await db.delete(accounts).where(eq(accounts.id, args.id));
 
         await addEvent({

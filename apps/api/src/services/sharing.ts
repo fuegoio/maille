@@ -2,7 +2,7 @@ import { db } from "@/database";
 import { accountsSharing, activitiesSharing, counterparties, transactions } from "@/tables";
 import type { Counterparty } from "@maille/core/accounts";
 import type { Transaction } from "@maille/core/activities";
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 type ActivitySharing = {
   user: string;
@@ -26,6 +26,8 @@ export const getActivitySharings = async (activityId: string): Promise<ActivityS
           ),
         )
     : [];
+
+  console.log(activitySharings);
 
   return await Promise.all(
     activitySharings.map(async (sharing) => ({
@@ -53,5 +55,6 @@ export const getAccountsSharing = async (userId: string) => {
   return await db
     .select({ account: accountsSharing.account, user: accountsSharing.user })
     .from(accountsSharing)
-    .where(inArray(accountsSharing.sharingId, sharingIds.sharingId));
+    .innerJoin(sharingIds, eq(accountsSharing.sharingId, sharingIds.sharingId))
+    .where(ne(accountsSharing.user, userId));
 };

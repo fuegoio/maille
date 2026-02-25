@@ -171,7 +171,7 @@ export const useSync = create<SyncState>()(
           },
         );
         set({
-          lastEventTimestamp: Date.now() / 1000,
+          lastEventTimestamp: Date.now(),
         });
 
         const clientId = useAuth.getState().session?.id;
@@ -234,7 +234,7 @@ export const useSync = create<SyncState>()(
             clientId: string;
           };
           set({
-            lastEventTimestamp: eventData.createdAt,
+            lastEventTimestamp: eventData.createdAt * 1000,
           });
           if (eventData.clientId === clientId) continue;
 

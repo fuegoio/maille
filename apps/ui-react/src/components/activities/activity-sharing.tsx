@@ -152,7 +152,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
       </div>
 
       <div className="my-2">
-        {activity.sharing?.map((sharing) => {
+        {activity.sharing.map((sharing) => {
           const currentAmount = currentAmounts[sharing.user] || 0;
           const userAmountReconciled =
             Math.abs(currentAmount - sharing.liability) < 0.01;

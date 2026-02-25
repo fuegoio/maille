@@ -29,7 +29,7 @@ import {
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
 import { getActivitySharings } from "@/services/sharing";
-import { and, eq, max } from "drizzle-orm";
+import { and, eq, max, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 
@@ -395,6 +395,41 @@ export const registerActivitiesMutations = () => {
           };
         }
 
+        // Update activities sharing
+        const sharingId = (
+          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+        )[0]?.sharingId;
+        const activitySharings = sharingId
+          ? await db
+              .select()
+              .from(activitiesSharing)
+              .where(
+                and(
+                  ne(activitiesSharing.user, ctx.user.id),
+                  eq(activitiesSharing.sharingId, sharingId),
+                ),
+              )
+          : [];
+        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, args.id));
+        activitySharings.forEach(async (as) => {
+          const sharing = getActivitySharingsReconciliation(
+            await getActivitySharings(as.activity),
+            as.user,
+          );
+          await addEvent({
+            type: "updateActivitySharing",
+            payload: {
+              activityId: as.activity,
+              sharing: sharing,
+            },
+            createdAt: new Date(),
+            clientId: ctx.session.id,
+            user: as.user,
+          });
+        });
+
+        await db.delete(activities).where(eq(activities.id, args.id));
+
         void addEvent({
           type: "deleteActivity",
           payload: {
@@ -404,12 +439,6 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
-
-        // Delete activity
-        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, args.id));
-        await db.delete(transactions).where(eq(transactions.activity, args.id));
-        await db.delete(movementsActivities).where(eq(movementsActivities.activity, args.id));
-        await db.delete(activities).where(eq(activities.id, args.id));
 
         return {
           id: args.id,
@@ -468,6 +497,21 @@ export const registerActivitiesMutations = () => {
           });
         }
 
+        const existingSharing = (
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(
+              and(
+                eq(activitiesSharing.sharingId, sharingId),
+                eq(activitiesSharing.user, args.userId),
+              ),
+            )
+        )[0];
+        if (existingSharing) {
+          throw new GraphQLError("Activity already shared with this user");
+        }
+
         const newActivity = (
           await db
             .insert(activities)
@@ -499,7 +543,7 @@ export const registerActivitiesMutations = () => {
           ctx.user.id,
         );
         const sharingForContact = getActivitySharingsReconciliation(
-          await getActivitySharings(args.id),
+          await getActivitySharings(newActivity.id),
           args.userId,
         );
 
@@ -942,13 +986,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity category not found");
         }
 
-        await db
-          .update(activities)
-          .set({
-            category: null,
-            subcategory: null,
-          })
-          .where(eq(activities.category, args.id));
         await db.delete(activityCategories).where(eq(activityCategories.id, args.id));
 
         await addEvent({
@@ -1072,12 +1109,6 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Activity subcategory not found");
         }
 
-        await db
-          .update(activities)
-          .set({
-            subcategory: null,
-          })
-          .where(eq(activities.subcategory, args.id));
         await db.delete(activitySubcategories).where(eq(activitySubcategories.id, args.id));
 
         await addEvent({

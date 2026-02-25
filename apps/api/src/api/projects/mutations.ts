@@ -148,7 +148,6 @@ export const registerProjectsMutations = () => {
           throw new GraphQLError("Project not found");
         }
 
-        await db.update(activities).set({ project: null }).where(eq(activities.project, args.id));
         await db.delete(projects).where(eq(projects.id, args.id));
 
         await addEvent({

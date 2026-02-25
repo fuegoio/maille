@@ -174,7 +174,6 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Movement not found");
         }
 
-        await db.delete(movementsActivities).where(eq(movementsActivities.movement, args.id));
         await db.delete(movements).where(eq(movements.id, args.id));
 
         await addEvent({

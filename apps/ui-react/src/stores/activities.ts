@@ -545,14 +545,9 @@ export const useActivities = create<ActivitiesState>()(
 
       handleEvent: (event: SyncEvent) => {
         if (event.type === "createActivity") {
-          const user = useAuth.getState().user;
           get().addActivity({
             ...event.payload,
             date: new Date(event.payload.date),
-            transactions: event.payload.transactions.map((t) => ({
-              ...t,
-              user: user!.id,
-            })),
             sharing: event.payload.sharing ?? [],
             movements: event.payload.movement ? [event.payload.movement] : [],
           });
