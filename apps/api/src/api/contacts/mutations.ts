@@ -17,17 +17,31 @@ export const registerContactsMutations = () => {
         contact: t.arg.string(),
       },
       resolve: async (root, args, ctx) => {
+        const user = (
+          await db.select().from(userTable).where(eq(userTable.id, args.contact)).limit(1)
+        )[0];
+        if (!user) {
+          throw new GraphQLError("User not found");
+        }
+
         const contactResults = await db
           .insert(contacts)
-          .values({
-            id: args.id,
-            user: ctx.user.id,
-            contact: args.contact,
-            createdAt: new Date(),
-          })
+          .values([
+            {
+              id: args.id,
+              user: ctx.user.id,
+              contact: args.contact,
+              createdAt: new Date(),
+            },
+            {
+              id: crypto.randomUUID(),
+              user: args.contact,
+              contact: ctx.user.id,
+              createdAt: new Date(),
+            },
+          ])
           .returning();
         const contact = contactResults[0];
-
         if (!contact) {
           throw new GraphQLError("Failed to create contact");
         }
@@ -43,20 +57,22 @@ export const registerContactsMutations = () => {
           user: ctx.user.id,
         });
 
-        // Fetch the user data for the contact
-        const userData = await db
-          .select()
-          .from(userTable)
-          .where(eq(userTable.id, contact.contact))
-          .limit(1);
-
-        const user = userData[0];
-
-        if (!user) {
-          throw new Error(`User not found for contact ID: ${contact.contact}`);
+        const contactReverse = contactResults[1];
+        if (!contactReverse) {
+          throw new GraphQLError("Failed to create contact");
         }
 
-        // Return the full Contact object with user data
+        await addEvent({
+          type: "createContact",
+          payload: {
+            id: contactReverse.id,
+            contact: ctx.user.id,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: args.contact,
+        });
+
         return {
           id: contact.id,
           contact: {
@@ -89,9 +105,7 @@ export const registerContactsMutations = () => {
         if (!contact) {
           throw new GraphQLError("Contact not found");
         }
-
         await db.delete(contacts).where(eq(contacts.id, args.id));
-
         await addEvent({
           type: "deleteContact",
           payload: {
@@ -100,6 +114,26 @@ export const registerContactsMutations = () => {
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
+        });
+
+        const contactReverse = (
+          await db
+            .select()
+            .from(contacts)
+            .where(and(eq(contacts.contact, ctx.user.id), eq(contacts.user, contact.contact)))
+        )[0];
+        if (!contactReverse) {
+          throw new GraphQLError("Contact not found");
+        }
+        await db.delete(contacts).where(eq(contacts.id, contactReverse.id));
+        await addEvent({
+          type: "deleteContact",
+          payload: {
+            id: contactReverse.id,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: contact.contact,
         });
 
         return true;
