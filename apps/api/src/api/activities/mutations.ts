@@ -388,7 +388,7 @@ export const registerActivitiesMutations = () => {
                     users: activityUsers.map((a) => a.user).concat(usersToAdd),
                     date: newActivity.date.toISOString(),
                     transactions: [],
-                    liabilities: getActivityLiabilities(transactionsData, counterpartiesData, user),
+                    liabilities: [],
                   },
                   createdAt: new Date(),
                   clientId: ctx.session.id,
@@ -714,11 +714,7 @@ export const registerActivitiesMutations = () => {
               type: "updateActivityLiabilities",
               payload: {
                 activityId: transaction.activity,
-                liabilities: getActivityLiabilities(
-                  transactionsData,
-                  counterpartiesData,
-                  activityUser.user,
-                ),
+                liabilities: [],
               },
               createdAt: new Date(),
               clientId: ctx.session.id,
@@ -809,11 +805,7 @@ export const registerActivitiesMutations = () => {
               type: "updateActivityLiabilities",
               payload: {
                 activityId: transaction.activity,
-                liabilities: getActivityLiabilities(
-                  transactionsData,
-                  counterpartiesData,
-                  activityUser.user,
-                ),
+                liabilities: [],
               },
               createdAt: new Date(),
               clientId: ctx.session.id,
