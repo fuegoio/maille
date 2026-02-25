@@ -19,16 +19,11 @@ import {
   FieldError,
   FieldLabel,
 } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { shareAccountMutation } from "@/mutations/accounts";
 import { useContacts } from "@/stores/contacts";
 import { useSync } from "@/stores/sync";
+
+import { UserSelect } from "../users/user-select";
 
 const shareAccountSchema = z.object({
   contactId: z.string().min(1, "Contact is required"),
@@ -107,34 +102,17 @@ export function ShareAccountDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Field>
-            <FieldLabel>Select contact</FieldLabel>
+            <FieldLabel>Contact</FieldLabel>
             <FieldContent>
               <Controller
                 name="contactId"
                 control={control}
                 render={({ field }) => (
-                  <Select
+                  <UserSelect
+                    value={field.value}
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a contact to share with" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {contacts.map((contact) => (
-                        <SelectItem key={contact.id} value={contact.id}>
-                          <div className="flex items-center gap-2">
-                            <div className="text-sm font-medium">
-                              {contact.contact.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {contact.contact.email}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select a user to share this account with"
+                  />
                 )}
               />
               <FieldError errors={[errors.contactId]} />
@@ -159,4 +137,3 @@ export function ShareAccountDialog({
     </Dialog>
   );
 }
-

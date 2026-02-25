@@ -2,14 +2,7 @@ import { AccountType } from "@maille/core/accounts";
 import { builder } from "../builder";
 import { AccountSchema, DeleteAccountResponseSchema } from "./schemas";
 import { db } from "@/database";
-import {
-  accounts,
-  movements,
-  transactions,
-  accountsSharing,
-  user as userTable,
-  contacts,
-} from "@/tables";
+import { accounts, accountsSharing, user as userTable, contacts } from "@/tables";
 import { addEvent } from "../events";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";

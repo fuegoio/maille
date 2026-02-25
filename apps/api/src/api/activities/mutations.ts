@@ -214,7 +214,7 @@ export const registerActivitiesMutations = () => {
             },
           ),
           sharing: getActivitySharingsReconciliation(
-            await getActivitySharings(args.id),
+            await getActivitySharings(args.id, ctx.user.id),
             ctx.user.id,
           ),
         };
@@ -365,7 +365,7 @@ export const registerActivitiesMutations = () => {
             },
           ),
           sharing: getActivitySharingsReconciliation(
-            await getActivitySharings(args.id),
+            await getActivitySharings(args.id, ctx.user.id),
             ctx.user.id,
           ),
         };
@@ -414,7 +414,7 @@ export const registerActivitiesMutations = () => {
         await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, args.id));
         activitySharings.forEach(async (as) => {
           const sharing = getActivitySharingsReconciliation(
-            await getActivitySharings(as.activity),
+            await getActivitySharings(as.activity, as.user),
             as.user,
           );
           await addEvent({
@@ -540,11 +540,11 @@ export const registerActivitiesMutations = () => {
         });
 
         const sharingForMe = getActivitySharingsReconciliation(
-          await getActivitySharings(args.id),
+          await getActivitySharings(args.id, ctx.user.id),
           ctx.user.id,
         );
         const sharingForContact = getActivitySharingsReconciliation(
-          await getActivitySharings(newActivity.id),
+          await getActivitySharings(newActivity.id, args.userId),
           args.userId,
         );
 
@@ -754,40 +754,38 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
         });
 
-        // Update liabilities if counterparties are defined
-        if (updatedTransaction.fromCounterparty || updatedTransaction.toCounterparty) {
-          const sharingId = (
-            await db
+        // Update sharing
+        const sharingId = (
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(eq(activitiesSharing.activity, transaction.activity))
+        )[0]?.sharingId;
+        const activitySharings = sharingId
+          ? await db
               .select()
               .from(activitiesSharing)
-              .where(eq(activitiesSharing.activity, transaction.activity))
-          )[0]?.sharingId;
-          const activitySharings = sharingId
-            ? await db
-                .select()
-                .from(activitiesSharing)
-                .where(eq(activitiesSharing.sharingId, sharingId))
-            : [];
+              .where(eq(activitiesSharing.sharingId, sharingId))
+          : [];
 
-          logger.info({ updatedTransaction, activitySharings }, "Updating activity sharing");
-          await Promise.all(
-            activitySharings.map(async (activitySharing) => {
-              await addEvent({
-                type: "updateActivitySharing",
-                payload: {
-                  activityId: activitySharing.activity,
-                  sharing: getActivitySharingsReconciliation(
-                    await getActivitySharings(activitySharing.activity),
-                    activitySharing.user,
-                  ),
-                },
-                createdAt: new Date(),
-                clientId: ctx.session.id,
-                user: activitySharing.user,
-              });
-            }),
-          );
-        }
+        logger.info({ updatedTransaction, activitySharings }, "Updating activity sharing");
+        await Promise.all(
+          activitySharings.map(async (activitySharing) => {
+            await addEvent({
+              type: "updateActivitySharing",
+              payload: {
+                activityId: activitySharing.activity,
+                sharing: getActivitySharingsReconciliation(
+                  await getActivitySharings(activitySharing.activity, activitySharing.user),
+                  activitySharing.user,
+                ),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activitySharing.user,
+            });
+          }),
+        );
 
         return updatedTransaction;
       },
@@ -843,39 +841,37 @@ export const registerActivitiesMutations = () => {
           user: ctx.user.id,
         });
 
-        // Update liabilities if counterparties are defined
-        if (transaction.fromCounterparty || transaction.toCounterparty) {
-          const sharingId = (
-            await db
+        // Update sharing
+        const sharingId = (
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(eq(activitiesSharing.activity, transaction.activity))
+        )[0]?.sharingId;
+        const activitySharings = sharingId
+          ? await db
               .select()
               .from(activitiesSharing)
-              .where(eq(activitiesSharing.activity, transaction.activity))
-          )[0]?.sharingId;
-          const activitySharings = sharingId
-            ? await db
-                .select()
-                .from(activitiesSharing)
-                .where(eq(activitiesSharing.sharingId, sharingId))
-            : [];
+              .where(eq(activitiesSharing.sharingId, sharingId))
+          : [];
 
-          await Promise.all(
-            activitySharings.map(async (activitySharing) => {
-              await addEvent({
-                type: "updateActivitySharing",
-                payload: {
-                  activityId: activitySharing.activity,
-                  sharing: getActivitySharingsReconciliation(
-                    await getActivitySharings(activitySharing.activity),
-                    activitySharing.user,
-                  ),
-                },
-                createdAt: new Date(),
-                clientId: ctx.session.id,
-                user: activitySharing.user,
-              });
-            }),
-          );
-        }
+        await Promise.all(
+          activitySharings.map(async (activitySharing) => {
+            await addEvent({
+              type: "updateActivitySharing",
+              payload: {
+                activityId: activitySharing.activity,
+                sharing: getActivitySharingsReconciliation(
+                  await getActivitySharings(activitySharing.activity, activitySharing.user),
+                  activitySharing.user,
+                ),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activitySharing.user,
+            });
+          }),
+        );
 
         return { id: args.id, success: true };
       },

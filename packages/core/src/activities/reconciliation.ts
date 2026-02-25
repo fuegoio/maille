@@ -242,7 +242,7 @@ export const getActivitySharingsReconciliation = (
     user: string;
     transactions: Transaction[];
     counterparties: Counterparty[];
-    accountsSharing: { account: string; user: string }[];
+    accountsSharing: string[];
   }[],
   user: string,
 ): ActivitySharing[] => {
@@ -273,7 +273,7 @@ export const getActivitySharingsReconciliation = (
       (accounts, transaction) => {
         if (transaction.fromAccount) {
           const fromAccountSharing = activitySharing.accountsSharing.find(
-            (as) => as.account === transaction.fromAccount,
+            (as) => as === transaction.fromAccount,
           );
           if (fromAccountSharing) {
             const account = accounts.find((a) => a.account === transaction.fromAccount);
@@ -290,7 +290,7 @@ export const getActivitySharingsReconciliation = (
 
         if (transaction.toAccount) {
           const toAccountSharing = activitySharing.accountsSharing.find(
-            (as) => as.account === transaction.toAccount,
+            (as) => as === transaction.toAccount,
           );
           if (toAccountSharing) {
             const account = accounts.find((a) => a.account === transaction.toAccount);

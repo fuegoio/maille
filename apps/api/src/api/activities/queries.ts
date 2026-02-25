@@ -75,7 +75,7 @@ export const registerActivitiesQueries = () => {
               },
             ),
             sharing: getActivitySharingsReconciliation(
-              await getActivitySharings(activity.id),
+              await getActivitySharings(activity.id, ctx.user.id),
               ctx.user.id,
             ),
           };
