@@ -24,6 +24,7 @@ import {
 } from "../ui/dialog";
 import { Field, FieldGroup } from "../ui/field";
 import { Label } from "../ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { UserSelect } from "../users/user-select";
 
 interface ActivitySharingProps {
@@ -98,47 +99,19 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
     return userAmounts;
   };
 
-  // Compute current account amounts from transactions
-  const computeCurrentAccountAmounts = () => {
-    const userAccountAmounts: Record<string, Record<string, number>> = {};
-
-    // Process transactions
-    for (const transaction of activity.transactions) {
-      // Check if transaction involves accounts with counterparties linked to users
-      const fromCounterparty = transaction.fromCounterparty
-        ? counterparties.find((c) => c.id === transaction.fromCounterparty)
-        : null;
-      const toCounterparty = transaction.toCounterparty
-        ? counterparties.find((c) => c.id === transaction.toCounterparty)
-        : null;
-
-      // If from transaction has a counterparty linked to a user, record the account amount
-      if (fromCounterparty?.contact && transaction.fromAccount) {
-        if (!userAccountAmounts[fromCounterparty.contact]) {
-          userAccountAmounts[fromCounterparty.contact] = {};
-        }
-        userAccountAmounts[fromCounterparty.contact][transaction.fromAccount] =
-          (userAccountAmounts[fromCounterparty.contact][
-            transaction.fromAccount
-          ] || 0) - transaction.amount;
-      }
-
-      // If to transaction has a counterparty linked to a user, record the account amount
-      if (toCounterparty?.contact && transaction.toAccount) {
-        if (!userAccountAmounts[toCounterparty.contact]) {
-          userAccountAmounts[toCounterparty.contact] = {};
-        }
-        userAccountAmounts[toCounterparty.contact][transaction.toAccount] =
-          (userAccountAmounts[toCounterparty.contact][transaction.toAccount] ||
-            0) + transaction.amount;
-      }
-    }
-
-    return userAccountAmounts;
-  };
-
   const currentAmounts = computeCurrentAmounts();
-  const currentAccountAmounts = computeCurrentAccountAmounts();
+
+  const getCurrentAccountAmount = (account: string) => {
+    return activity.transactions.reduce((acc, transaction) => {
+      if (transaction.fromAccount === account) {
+        acc -= transaction.amount;
+      }
+      if (transaction.toAccount === account) {
+        acc += transaction.amount;
+      }
+      return acc;
+    }, 0);
+  };
 
   // Check if all users are reconciled (both liability and accounts)
   const isReconciled =
@@ -149,8 +122,9 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
 
       // Check if all accounts are reconciled
       const accountsReconciled = sharing.accounts.every((accountSharing) => {
-        const currentAccountAmount =
-          currentAccountAmounts[sharing.user]?.[accountSharing.account] || 0;
+        const currentAccountAmount = getCurrentAccountAmount(
+          accountSharing.account,
+        );
         return Math.abs(currentAccountAmount - accountSharing.amount) < 0.01;
       });
 
@@ -217,32 +191,38 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
               <div className="flex items-center">
                 <div className="mr-3 flex items-center">
                   <UserAvatar user={user} className="mr-2 h-6 w-6" />
-                  <span className="text-sm">
-                    {user?.name || `User ${sharing.user.slice(0, 6)}...`}
-                  </span>
+                  <span className="text-sm">{user.name}</span>
                 </div>
                 <div className="flex-1" />
-                <div
-                  className={cn(
-                    "pr-2 font-mono text-sm whitespace-nowrap",
-                    userAmountReconciled
-                      ? "text-indigo-400"
-                      : "text-orange-300",
-                  )}
-                >
-                  {currencyFormatter.format(currentAmount)}/
-                  {currencyFormatter.format(sharing.liability)}
-                </div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "px-2 font-mono text-sm whitespace-nowrap",
+                        userAmountReconciled
+                          ? "text-indigo-400"
+                          : "text-orange-300",
+                      )}
+                    >
+                      {currencyFormatter.format(currentAmount)}/
+                      {currencyFormatter.format(sharing.liability)}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This amount is determined by the transactions going to and
+                    from {user.name} liabilities.
+                  </TooltipContent>
+                </Tooltip>
               </div>
 
               {/* Account sharing details */}
               {sharing.accounts.length > 0 && (
-                <div className="mt-1 ml-8 space-y-1">
+                <div className="ml-8 space-y-1 border-t pl-2">
                   {sharing.accounts.map((accountSharing) => {
-                    const currentAccountAmount =
-                      currentAccountAmounts[sharing.user]?.[
-                        accountSharing.account
-                      ] || 0;
+                    const currentAccountAmount = getCurrentAccountAmount(
+                      accountSharing.account,
+                    );
                     const accountReconciled =
                       Math.abs(currentAccountAmount - accountSharing.amount) <
                       0.01;
@@ -254,17 +234,27 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
                       >
                         <AccountLabel accountId={accountSharing.account} />
                         <div className="flex-1" />
-                        <div
-                          className={cn(
-                            "font-mono text-xs whitespace-nowrap",
-                            accountReconciled
-                              ? "text-indigo-400"
-                              : "text-orange-300",
-                          )}
-                        >
-                          {currencyFormatter.format(currentAccountAmount)}/
-                          {currencyFormatter.format(accountSharing.amount)}
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button
+                              variant="ghost"
+                              className={cn(
+                                "px-2 font-mono text-xs whitespace-nowrap",
+                                accountReconciled
+                                  ? "text-indigo-400"
+                                  : "text-orange-300",
+                              )}
+                            >
+                              {currencyFormatter.format(currentAccountAmount)}/
+                              {currencyFormatter.format(accountSharing.amount)}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            This amount is determined by the transactions going
+                            to and from this account which is shared with{" "}
+                            {user.name}.
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     );
                   })}
