@@ -6,7 +6,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 
 interface MonthActivityCategoryLineProps {
@@ -142,7 +143,7 @@ export function MonthActivityCategoryLine({
           </div>
 
           <div className="font-mono text-sm whitespace-nowrap text-white">
-            {getCurrencyFormatter().format(monthActivityCategoryValue)}
+            {useCurrencyFormatter().format(monthActivityCategoryValue)}
           </div>
         </div>
       </div>
@@ -179,7 +180,7 @@ export function MonthActivityCategoryLine({
                 </div>
 
                 <div className="font-mono text-xs whitespace-nowrap">
-                  {getCurrencyFormatter().format(
+                  {useCurrencyFormatter().format(
                     subcategoriesValues[subcategory.id],
                   )}
                 </div>

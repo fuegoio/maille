@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Project } from "@maille/core/projects";
-import { randomstring } from "@/lib/utils";
+
 import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
 import type { ActivityType } from "@maille/core/activities";
@@ -73,7 +73,7 @@ export const useProjects = create<ProjectsState>()(
         endDate: Date | null;
       }): Project => {
         const newProject = {
-          id: id ?? randomstring(),
+          id: id ?? crypto.randomUUID(),
           name,
           emoji,
           startDate,

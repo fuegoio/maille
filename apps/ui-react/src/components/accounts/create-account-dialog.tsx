@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn, randomstring } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { createAccountMutation } from "@/mutations/accounts";
 import { ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 import { useSync } from "@/stores/sync";
@@ -80,7 +80,7 @@ export function CreateAccountDialog({
   const onSubmit = async (data: CreateAccountFormValues) => {
     try {
       const account = {
-        id: randomstring(),
+        id: crypto.randomUUID(),
         name: data.name,
         type: data.type,
       };

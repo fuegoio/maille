@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export default function useIsOnline() {
+export function useIsOnline() {
   const [isOnline, setIsOnline] = useState(window.navigator.onLine ?? true);
 
   useEffect(() => {

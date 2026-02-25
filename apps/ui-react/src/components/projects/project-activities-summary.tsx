@@ -3,7 +3,7 @@ import { useProjects } from "@/stores/projects";
 import { useActivities } from "@/stores/activities";
 import { ActivityType } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ProjectActivityCategoryLine } from "./project-activity-category-line";
 
 // Color mapping for activity types
@@ -81,7 +81,7 @@ export function ProjectActivitiesSummary({ projectActivities }: ProjectActivitie
 
               <div className={`$ text-right font-mono text-sm font-medium whitespace-nowrap
                   ${activitiesTotal[activityType] !== undefined ? "text-white" : "text-primary-600"}
-                `}>{getCurrencyFormatter().format(activitiesTotal[activityType] ?? 0)}</div>
+                `}>{useCurrencyFormatter().format(activitiesTotal[activityType] ?? 0)}</div>
             </div>
           </div>
 

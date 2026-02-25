@@ -1,7 +1,8 @@
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
@@ -34,7 +35,7 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   const activities = useActivities((state) => state.activities);
   const contacts = useContacts((state) => state.contacts);
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const accountCounterparties = useMemo(() => {
     return counterparties.filter(

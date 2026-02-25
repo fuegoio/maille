@@ -20,7 +20,8 @@ import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
 import type { Counterparty } from "@/gql/graphql";
-import { getCurrencyFormatter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   deleteCounterpartyMutation,
   updateCounterpartyMutation,
@@ -140,7 +141,7 @@ export function Counterparty() {
 
   if (!counterparty) return null;
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   return (
     <SidebarInset className="max-w-lg">

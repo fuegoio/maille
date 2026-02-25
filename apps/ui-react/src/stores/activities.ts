@@ -13,7 +13,7 @@ import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { randomstring } from "@/lib/utils";
+
 import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
@@ -417,7 +417,7 @@ export const useActivities = create<ActivitiesState>()(
         type: ActivityType;
       }): ActivityCategory => {
         const newCategory = {
-          id: id ?? randomstring(),
+          id: id ?? crypto.randomUUID(),
           name,
           type,
         };
@@ -476,7 +476,7 @@ export const useActivities = create<ActivitiesState>()(
 
       addActivitySubcategory: ({ id, name, category }): ActivitySubCategory => {
         const newSubcategory = {
-          id: id ?? randomstring(),
+          id: id ?? crypto.randomUUID(),
           name,
           category,
         };

@@ -4,7 +4,7 @@ import { CircleCheck, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 
 interface MovementLineProps {
@@ -22,7 +22,7 @@ export function MovementLine({
   onClick,
   onCheckedChange,
 }: MovementLineProps) {
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   return (
     <div

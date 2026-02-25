@@ -472,7 +472,6 @@ export type Transaction = {
   toAccount: Scalars['String']['output'];
   toAsset: Maybe<Scalars['String']['output']>;
   toCounterparty: Maybe<Scalars['String']['output']>;
-  user: Scalars['String']['output'];
 };
 
 export type TransactionInput = {

@@ -18,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getGraphQLDate } from "@/lib/date";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   updateActivityMutation,
   deleteActivityMutation,
@@ -72,7 +73,7 @@ export function Activity() {
     return subcategories.filter((sc) => sc.category === activity.category);
   }, [activity?.category, subcategories]);
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const close = () => {
     setFocusedActivity(null);

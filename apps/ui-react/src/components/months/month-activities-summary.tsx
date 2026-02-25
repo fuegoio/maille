@@ -8,7 +8,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
 import {
   ACTIVITY_TYPES_COLOR,
@@ -79,7 +80,7 @@ export function MonthActivitiesSummary({
       .reduce((total, a) => total + a.amount, 0);
   };
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const getCategoryTotalForMonth = (date: Date, category: string) => {
     const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);

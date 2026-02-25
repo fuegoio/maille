@@ -55,23 +55,22 @@ export const registerActivitiesQueries = () => {
             .from(movementsActivities)
             .where(eq(movementsActivities.activity, activity.id));
 
-          const activitySharing = (
+          const activitySharingId = (
             await db
               .select()
               .from(activitiesSharing)
               .where(eq(activitiesSharing.activity, activity.id))
-          )[0];
-          let sharingId = activitySharing?.sharingId;
-          const activityUsers = sharingId
+          )[0]?.sharingId;
+          const activitySharings = activitySharingId
             ? await db
                 .select()
                 .from(activitiesSharing)
-                .where(eq(activitiesSharing.sharingId, sharingId))
+                .where(eq(activitiesSharing.sharingId, activitySharingId))
             : [];
 
           return {
             ...activity,
-            users: activityUsers.map((au) => au.user),
+            users: activitySharings.map((au) => au.user),
             transactions: activityTransactions,
             movements: activityMovements,
             amount: getActivityTransactionsReconciliationSum(

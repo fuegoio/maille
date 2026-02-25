@@ -3,7 +3,7 @@ import { useProjects } from "@/stores/projects";
 import { useActivities } from "@/stores/activities";
 import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface ProjectActivityCategoryLineProps {
@@ -104,7 +104,7 @@ export function ProjectActivityCategoryLine({
             `}>{viewFilters.category === category.id ? "Clear filter" : "Filter"}</div>
 
           <div className="font-mono text-sm whitespace-nowrap text-white">
-            {getCurrencyFormatter().format(categoryValue)}
+            {useCurrencyFormatter().format(categoryValue)}
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@ export function ProjectActivityCategoryLine({
                   `}>{viewFilters.subcategory === subcategory.id ? "Clear filter" : "Filter"}</div>
 
                 <div className="font-mono text-sm whitespace-nowrap text-white">
-                  {getCurrencyFormatter().format(subcategoriesValues[subcategory.id])}
+                  {useCurrencyFormatter().format(subcategoriesValues[subcategory.id])}
                 </div>
               </div>
             </div>

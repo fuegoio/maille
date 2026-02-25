@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 
 import { Badge } from "../ui/badge";
@@ -11,7 +11,7 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
     (state) => state.activitySubcategories,
   );
   const activities = useActivities((state) => state.activities);
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const getNumberOfActivities = (subcategoryId: string) => {
     return activities.filter((a) => a.subcategory === subcategoryId).length;

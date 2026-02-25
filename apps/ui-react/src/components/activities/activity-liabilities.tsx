@@ -3,7 +3,7 @@ import { CircleCheck, TriangleAlert } from "lucide-react";
 
 import { UserAvatar } from "@/components/users/user-avatar";
 import { cn } from "@/lib/utils";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
 
@@ -12,7 +12,7 @@ interface ActivityLiabilitiesProps {
 }
 
 export function ActivityLiabilities({ activity }: ActivityLiabilitiesProps) {
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
   const counterparties = useCounterparties((state) => state.counterparties);
   const contacts = useContacts((state) => state.contacts);
 

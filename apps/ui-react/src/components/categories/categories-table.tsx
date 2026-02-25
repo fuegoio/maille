@@ -3,7 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   useActivities,
   ACTIVITY_TYPES_COLOR,
@@ -16,7 +17,7 @@ export function CategoriesTable() {
   const activityCategories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);
   const navigate = useNavigate();
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const [groupsFolded, setGroupsFolded] = useState<ActivityType[]>([]);
 

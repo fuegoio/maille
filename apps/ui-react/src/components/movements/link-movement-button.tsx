@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { searchCompare } from "@/lib/strings";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useMovements } from "@/stores/movements";
@@ -191,7 +191,7 @@ export function LinkMovementButton({
                 </div>
                 <div className="flex-1" />
                 <div className="w-20 text-right whitespace-nowrap text-white">
-                  {getCurrencyFormatter().format(movement.amount)}
+                  {useCurrencyFormatter().format(movement.amount)}
                 </div>
               </div>
             ))}

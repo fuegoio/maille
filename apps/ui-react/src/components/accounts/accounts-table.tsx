@@ -3,7 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   useAccounts,
   ACCOUNT_TYPES_COLOR,
@@ -33,7 +34,7 @@ export function AccountsTable() {
       .length;
   };
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const getAccountTotal = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);

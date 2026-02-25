@@ -6,7 +6,8 @@ import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchCompare } from "@/lib/strings";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
@@ -35,7 +36,7 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const activityView = useViews((state) => state.getActivityView(viewId));
   const focusedActivity = useActivities((state) => state.focusedActivity);

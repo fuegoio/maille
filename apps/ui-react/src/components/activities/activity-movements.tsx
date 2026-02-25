@@ -17,7 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   updateMovementActivityMutation,
   deleteMovementActivityMutation,
@@ -32,7 +33,7 @@ interface ActivityMovementsProps {
 
 export function ActivityMovements({ activity }: ActivityMovementsProps) {
   const mutate = useSync((state) => state.mutate);
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
   const accounts = useAccounts((state) => state.accounts);
 
   const movementsReconciliatedByAccount =

@@ -19,7 +19,8 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { getCurrencyFormatter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
@@ -132,7 +133,7 @@ export function Asset() {
 
   if (!asset) return null;
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   return (
     <SidebarInset className="max-w-lg">

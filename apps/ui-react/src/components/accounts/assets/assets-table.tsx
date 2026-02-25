@@ -1,7 +1,8 @@
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
 
@@ -27,7 +28,7 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
   const focusedAsset = useAssets((state) => state.focusedAsset);
   const setFocusedAsset = useAssets((state) => state.setFocusedAsset);
   const activities = useActivities((state) => state.activities);
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const accountAssets = useMemo(() => {
     return assets.filter((asset) => asset.account === accountId);

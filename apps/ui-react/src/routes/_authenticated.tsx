@@ -6,7 +6,7 @@ import { AppSidebar } from "@/components/navigation/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { fetchUserData } from "@/data";
 import { authClient } from "@/lib/auth";
-import useIsOnline from "@/lib/online";
+import { useIsOnline } from "@/hooks/use-is-online";
 import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 

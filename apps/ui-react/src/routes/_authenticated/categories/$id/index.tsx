@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
@@ -56,7 +56,7 @@ function CategoryPage() {
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const viewActivities = activities.filter((a) => {
     return a.category === category.id;

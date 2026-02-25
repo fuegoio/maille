@@ -4,7 +4,8 @@ import { format } from "date-fns";
 import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
@@ -30,7 +31,7 @@ export function ActivityLine({
   accountFilter = null,
   hideProject = false,
 }: ActivityLineProps) {
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
   const showTransactions = useActivities((state) => state.showTransactions);
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);

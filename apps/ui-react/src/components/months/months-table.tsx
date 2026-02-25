@@ -4,7 +4,8 @@ import { format } from "date-fns";
 import { Calendar, CalendarClock } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn, getCurrencyFormatter } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -13,7 +14,7 @@ export function MonthsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const today = new Date();
 

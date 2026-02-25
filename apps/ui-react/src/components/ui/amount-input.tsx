@@ -12,7 +12,7 @@ import { evaluate } from "mathjs";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 import { Button } from "./button";
 import { Popover, PopoverTrigger, PopoverContent } from "./popover";
@@ -198,7 +198,7 @@ export function AmountInput({
     [handleCalculatorKey],
   );
 
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const handleOpenChange = (open: boolean) => {
     if (open && externalValue !== null) {

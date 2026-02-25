@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useViews } from "@/stores/views";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { MovementFilter } from "./movement-filter";
 import { FilterMovementsButton } from "./filter-movements-button";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ interface MovementsFiltersProps {
 
 export function MovementsFilters({ viewId, movements }: MovementsFiltersProps) {
   const movementView = useViews((state) => state.getMovementView(viewId));
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const movementsTotal = React.useMemo(() => {
     return movements.reduce((total, movement) => total + movement.amount, 0);

@@ -11,7 +11,8 @@ import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getGraphQLDate } from "@/lib/date";
-import { getCurrencyFormatter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   deleteMovementMutation,
   updateMovementMutation,
@@ -266,7 +267,7 @@ export function Movement() {
                   </div>
                   <div className="flex-1" />
                   <div className="w-20 text-right font-mono whitespace-nowrap">
-                    {getCurrencyFormatter().format(movementActivity.amount)}
+                    {useCurrencyFormatter().format(movementActivity.amount)}
                   </div>
                 </div>
               ))

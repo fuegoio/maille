@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { randomstring } from "@/lib/utils";
+
 import { createActivityCategoryMutation } from "@/mutations/activities";
 import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
@@ -65,7 +65,7 @@ export function CreateCategoryDialog({
   const onSubmit = async (data: CreateCategoryFormValues) => {
     try {
       const category = {
-        id: randomstring(),
+        id: crypto.randomUUID(),
         name: data.name,
         type: data.type,
       };

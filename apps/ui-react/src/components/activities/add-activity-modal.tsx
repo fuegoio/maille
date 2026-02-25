@@ -32,7 +32,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getGraphQLDate } from "@/lib/date";
-import { cn, getCurrencyFormatter, randomstring } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
 import {
@@ -265,7 +266,7 @@ export function AddActivityModal({
   // Create a single activity
   const createActivity = (data: FormValues) => {
     const newActivity = {
-      id: randomstring(),
+      id: crypto.randomUUID(),
       number: activities.length + 1,
       name: data.name,
       description: data.description || null,
@@ -275,14 +276,14 @@ export function AddActivityModal({
       subcategory: data.subcategory || null,
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
-        id: randomstring(),
+        id: crypto.randomUUID(),
         fromAccount: t.fromAccount,
         toAccount: t.toAccount,
         amount: t.amount,
       })),
       movement: movement
         ? {
-            id: randomstring(),
+            id: crypto.randomUUID(),
             movement: movement.id,
             amount: movement.amount,
           }
@@ -317,7 +318,7 @@ export function AddActivityModal({
       const { fromAccount, toAccount } = guessBestTransaction();
 
       const newActivity = {
-        id: randomstring(),
+        id: crypto.randomUUID(),
         number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
@@ -328,7 +329,7 @@ export function AddActivityModal({
         project: data.project || null,
         transactions: [
           {
-            id: randomstring(),
+            id: crypto.randomUUID(),
             fromAccount: fromAccount!,
             toAccount: toAccount!,
             amount: Math.abs(movement.amount),
@@ -336,7 +337,7 @@ export function AddActivityModal({
         ],
         movements: [
           {
-            id: randomstring(),
+            id: crypto.randomUUID(),
             movement: movement.id,
             amount: movement.amount,
           },
@@ -557,7 +558,7 @@ export function AddActivityModal({
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
                 <span className="mr-2.75 font-mono text-sm text-muted-foreground">
-                  {getCurrencyFormatter().format(transactionsSum)}
+                  {useCurrencyFormatter().format(transactionsSum)}
                 </span>
                 {!movements && (
                   <Button

@@ -18,6 +18,4 @@ export function getCurrencyFormatter() {
  * Generate a random string for use as IDs
  * Uses crypto.randomUUID() which generates a v4 UUID
  */
-export function randomstring(): string {
-  return crypto.randomUUID();
-}
+

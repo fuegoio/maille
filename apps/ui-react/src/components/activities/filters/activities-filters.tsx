@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useViews } from "@/stores/views";
 import { ActivityType, type Activity } from "@maille/core/activities";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ActivityFilter } from "./activity-filter";
 import { FilterActivitiesButton } from "./filter-activities-button";
 import { ExportActivitiesButton } from "../export-activities-button";
@@ -23,7 +23,7 @@ interface ActivitiesFiltersProps {
 
 export function ActivitiesFilters({ viewId, activities }: ActivitiesFiltersProps) {
   const activityView = useViews((state) => state.getActivityView(viewId));
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const activitiesTotal = React.useMemo(() => {
     const totals: Partial<Record<ActivityType, number>> = {};

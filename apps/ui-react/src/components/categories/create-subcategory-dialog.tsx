@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { createActivitySubCategoryMutation } from "@/mutations/activities";
 import { useSync } from "@/stores/sync";
-import { randomstring } from "@/lib/utils";
+
 
 const createSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -55,7 +55,7 @@ export function CreateSubcategoryDialog({
   const onSubmit = async (data: CreateSubcategoryFormValues) => {
     try {
       const subcategory = {
-        id: randomstring(),
+        id: crypto.randomUUID(),
         name: data.name,
         category: categoryId,
       };

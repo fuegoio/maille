@@ -1,6 +1,6 @@
 import { type Activity } from "@maille/core/activities";
 
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 import { AddTransactionButton } from "./add-transaction-button";
 import { Transaction } from "./transaction";
@@ -10,7 +10,7 @@ interface ActivityTransactionsProps {
 }
 
 export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const transactionsSum = activity.transactions.reduce(
     (sum, t) => sum + t.amount,

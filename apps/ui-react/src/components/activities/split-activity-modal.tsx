@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { getCurrencyFormatter } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { Plus, Trash2 } from "lucide-react";
 
 interface SplitActivityModalProps {
@@ -20,7 +20,7 @@ interface SplitActivityModalProps {
 
 export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActivityModalProps) {
   const activity = useActivities((state) => state.getActivityById(activityId as string));
-  const currencyFormatter = getCurrencyFormatter();
+  const currencyFormatter = useCurrencyFormatter();
 
   const [splitAmounts, setSplitAmounts] = React.useState<number[]>([activity?.amount || 0]);
   const [splitNames, setSplitNames] = React.useState<string[]>([activity?.name || ""]);
