@@ -7,8 +7,8 @@
     "db:generate": "bunx drizzle-kit generate --dialect postgresql --schema ./src/tables.ts",
     "start": "bun run index.ts | pino-pretty",
     "typecheck": "tsc",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },

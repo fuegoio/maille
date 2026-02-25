@@ -195,7 +195,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
                 </div>
                 <div className="flex-1" />
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       className={cn(
@@ -235,7 +235,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
                         <AccountLabel accountId={accountSharing.account} />
                         <div className="flex-1" />
                         <Tooltip>
-                          <TooltipTrigger>
+                          <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               className={cn(

@@ -56,7 +56,9 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
           className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
         >
           <div className="flex items-center gap-2">
-            {subcategory.emoji && <span className="text-xl">{subcategory.emoji}</span>}
+            {subcategory.emoji && (
+              <span className="text-sm">{subcategory.emoji}</span>
+            )}
             <div className="text-sm font-medium">{subcategory.name}</div>
           </div>
 

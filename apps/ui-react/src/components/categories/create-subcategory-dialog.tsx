@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -20,10 +21,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { createActivitySubCategoryMutation } from "@/mutations/activities";
 import { useSync } from "@/stores/sync";
-
 
 const createSubcategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -61,7 +60,7 @@ export function CreateSubcategoryDialog({
         id: crypto.randomUUID(),
         name: data.name,
         category: categoryId,
-        emoji: data.emoji,
+        emoji: data.emoji || null,
       };
 
       mutate({
@@ -96,40 +95,36 @@ export function CreateSubcategoryDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Field>
-            <FieldLabel>Name</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="name"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder="Subcategory name"
-                    className={errors.name ? "border-destructive" : ""}
-                    autoFocus
-                  />
-                )}
-              />
-              <FieldError errors={[errors.name]} />
-            </FieldContent>
-          </Field>
-
-          <Field>
-            <FieldLabel>Emoji</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="emoji"
-                control={control}
-                render={({ field }) => (
-                  <EmojiPicker
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-            </FieldContent>
-          </Field>
+          <div className="flex items-end gap-2">
+            <Controller
+              name="emoji"
+              control={control}
+              render={({ field }) => (
+                <EmojiPicker
+                  value={field.value || null}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+            <Field>
+              <FieldLabel>Name</FieldLabel>
+              <FieldContent>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      placeholder="Subcategory name"
+                      className={errors.name ? "border-destructive" : ""}
+                      autoFocus
+                    />
+                  )}
+                />
+                <FieldError errors={[errors.name]} />
+              </FieldContent>
+            </Field>
+          </div>
 
           <DialogFooter>
             <DialogClose asChild>
@@ -146,3 +141,4 @@ export function CreateSubcategoryDialog({
     </Dialog>
   );
 }
+

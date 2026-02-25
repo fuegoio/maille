@@ -105,24 +105,36 @@ export function CreateCategoryDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Field>
-            <FieldLabel>Name</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="name"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder="Category name"
-                    className={errors.name ? "border-destructive" : ""}
-                    autoFocus
-                  />
-                )}
-              />
-              <FieldError errors={[errors.name]} />
-            </FieldContent>
-          </Field>
+          <div className="flex items-end gap-2">
+            <Controller
+              name="emoji"
+              control={control}
+              render={({ field }) => (
+                <EmojiPicker
+                  value={field.value || null}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+            <Field>
+              <FieldLabel>Name</FieldLabel>
+              <FieldContent>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      placeholder="Category name"
+                      className={errors.name ? "border-destructive" : ""}
+                      autoFocus
+                    />
+                  )}
+                />
+                <FieldError errors={[errors.name]} />
+              </FieldContent>
+            </Field>
+          </div>
 
           <Field>
             <FieldLabel>Activity Type</FieldLabel>
@@ -154,22 +166,6 @@ export function CreateCategoryDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-              />
-            </FieldContent>
-          </Field>
-
-          <Field>
-            <FieldLabel>Emoji</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="emoji"
-                control={control}
-                render={({ field }) => (
-                  <EmojiPicker
-                    value={field.value || null}
-                    onChange={field.onChange}
-                  />
                 )}
               />
             </FieldContent>

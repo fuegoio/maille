@@ -155,6 +155,9 @@ ActivityCategorySchema.implement({
     }),
     name: t.exposeString("name"),
     type: t.exposeString("type"),
+    emoji: t.exposeString("emoji", {
+      nullable: true,
+    }),
   }),
 });
 
@@ -171,6 +174,9 @@ ActivitySubCategorySchema.implement({
     category: t.field({
       type: "String",
       resolve: (parent) => parent.category,
+    }),
+    emoji: t.exposeString("emoji", {
+      nullable: true,
     }),
   }),
 });

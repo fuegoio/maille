@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
-import { activities, projects } from "@/tables";
+import { projects } from "@/tables";
 import { addEvent } from "../events";
 import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";

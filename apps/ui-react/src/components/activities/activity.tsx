@@ -308,6 +308,9 @@ export function Activity() {
                     <SelectContent>
                       {filteredCategories.map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>
+                          {cat.emoji && (
+                            <span className="mr-0.5">{cat.emoji}</span>
+                          )}
                           {cat.name}
                         </SelectItem>
                       ))}
@@ -328,6 +331,9 @@ export function Activity() {
                     <SelectContent>
                       {filteredSubcategories.map((subcat) => (
                         <SelectItem key={subcat.id} value={subcat.id}>
+                          {subcat.emoji && (
+                            <span className="mr-0.5">{subcat.emoji}</span>
+                          )}
                           {subcat.name}
                         </SelectItem>
                       ))}

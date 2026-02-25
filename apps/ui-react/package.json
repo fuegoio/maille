@@ -8,8 +8,8 @@
     "build": "vite build",
     "typecheck": "tsc -b",
     "graphql:generate": "graphql-codegen --config codegen.ts",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },

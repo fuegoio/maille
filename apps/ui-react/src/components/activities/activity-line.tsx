@@ -4,8 +4,8 @@ import { format } from "date-fns";
 import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
@@ -62,12 +62,31 @@ export function ActivityLine({
 
   const getCategoryName = () => {
     if (activity.category === null) return null;
-    return categories.find((c) => c.id === activity.category)?.name;
+    const category = categories.find((c) => c.id === activity.category);
+    if (!category) return null;
+
+    return (
+      <>
+        {category.emoji && <span className="mr-0.5">{category.emoji}</span>}
+        {category.name}
+      </>
+    );
   };
 
   const getSubcategoryName = () => {
     if (activity.subcategory === null) return null;
-    return subcategories.find((c) => c.id === activity.subcategory)?.name;
+    const subcategory = subcategories.find(
+      (c) => c.id === activity.subcategory,
+    );
+    if (!subcategory) return null;
+    return (
+      <>
+        {subcategory.emoji && (
+          <span className="mr-0.5">{subcategory.emoji}</span>
+        )}
+        {subcategory.name}
+      </>
+    );
   };
 
   return (

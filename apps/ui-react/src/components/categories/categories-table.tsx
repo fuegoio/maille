@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import {
   useActivities,
   ACTIVITY_TYPES_COLOR,
@@ -98,7 +98,9 @@ export function CategoriesTable() {
               }}
             >
               <div className="flex items-center gap-2">
-                {category.emoji && <span className="text-xl">{category.emoji}</span>}
+                {category.emoji && (
+                  <span className="mr-2 text-sm">{category.emoji}</span>
+                )}
                 <div className="text-sm font-medium">{category.name}</div>
               </div>
 
@@ -116,4 +118,3 @@ export function CategoriesTable() {
     </div>
   ));
 }
-

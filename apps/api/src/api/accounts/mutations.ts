@@ -306,17 +306,7 @@ export const registerAccountsMutations = () => {
           user: contactUser.id,
         });
 
-        // 7. Return the original account with updated sharing info
-        return {
-          ...originalAccount,
-          sharing: [
-            {
-              id: sharingId,
-              role: "primary" as const,
-              sharedWith: contactUser.id,
-            },
-          ],
-        };
+        return originalAccount;
       },
     }),
   );

@@ -36,7 +36,7 @@ AccountSchema.implement({
     movements: t.exposeBoolean("movements"),
     sharing: t.field({
       type: [AccountSharingSchema],
-      resolve: async (parent, args, ctx) => {
+      resolve: async (parent) => {
         const sharingRecords = await db
           .select()
           .from(accountsSharing)
