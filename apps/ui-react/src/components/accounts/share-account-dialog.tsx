@@ -98,10 +98,7 @@ export function ShareAccountDialog({
           },
         ],
       });
-
-      // Reset form and close dialog on success
       reset();
-      setOpen(false);
     } catch (error) {
       console.error("Failed to share account:", error);
     }

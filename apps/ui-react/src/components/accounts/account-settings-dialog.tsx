@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccountType } from "@maille/core/accounts";
+import { type Account } from "@maille/core/accounts";
+import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -26,9 +27,24 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { updateAccountMutation } from "@/mutations/accounts";
+import {
+  deleteAccountMutation,
+  updateAccountMutation,
+} from "@/mutations/accounts";
 import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 const accountSettingsSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -43,18 +59,12 @@ export function AccountSettingsDialog({
   account,
   children,
 }: {
-  account: {
-    id: string;
-    name: string;
-    type: AccountType;
-    startingBalance: number | null;
-    startingCashBalance: number | null;
-    movements: boolean;
-  };
+  account: Account;
   children?: React.ReactNode;
 }) {
   const mutate = useSync((state) => state.mutate);
   const user = useAuth((state) => state.user);
+  const navigate = useNavigate();
 
   const {
     control,
@@ -72,30 +82,48 @@ export function AccountSettingsDialog({
   });
 
   const onSubmit = async (data: AccountSettingsFormValues) => {
-    try {
-      mutate({
-        name: "updateAccount",
-        mutation: updateAccountMutation,
-        variables: {
-          id: account.id,
-          ...data,
-        },
-        rollbackData: {
-          ...account,
-        },
-        events: [
-          {
-            type: "updateAccount",
-            payload: {
-              id: account.id,
-              ...data,
-            },
+    mutate({
+      name: "updateAccount",
+      mutation: updateAccountMutation,
+      variables: {
+        id: account.id,
+        ...data,
+      },
+      rollbackData: {
+        ...account,
+      },
+      events: [
+        {
+          type: "updateAccount",
+          payload: {
+            id: account.id,
+            ...data,
           },
-        ],
-      });
-    } catch (error) {
-      console.error("Failed to update account:", error);
-    }
+        },
+      ],
+    });
+  };
+
+  const handleDelete = async () => {
+    mutate({
+      name: "deleteAccount",
+      mutation: deleteAccountMutation,
+      variables: {
+        id: account.id,
+      },
+      rollbackData: {
+        ...account,
+      },
+      events: [
+        {
+          type: "deleteAccount",
+          payload: {
+            id: account.id,
+          },
+        },
+      ],
+    });
+    await navigate({ to: "/accounts" });
   };
 
   const movementsEnabled = watch("movements");
@@ -197,6 +225,35 @@ export function AccountSettingsDialog({
           </FieldGroup>
 
           <DialogFooter>
+            {!account.default && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="destructive">
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete account</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this account? This action
+                      cannot be undone and will remove all transactions from or
+                      to this account.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      variant="destructive"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <div className="flex-1" />
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancel

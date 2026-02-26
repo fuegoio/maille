@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ActivitySubCategory } from "@maille/core/activities";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
@@ -14,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -21,7 +23,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   updateActivitySubCategoryMutation,
   deleteActivitySubCategoryMutation,
@@ -57,6 +58,7 @@ export function SubcategorySettingsDialog({
 }) {
   const mutate = useSync((state) => state.mutate);
   const activities = useActivities((state) => state.activities);
+  const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
 
@@ -126,7 +128,10 @@ export function SubcategorySettingsDialog({
       ],
     });
 
-    setOpen(false);
+    await navigate({
+      to: "/categories/$id",
+      params: { id: subcategory.category },
+    });
   };
 
   return (
@@ -164,10 +169,7 @@ export function SubcategorySettingsDialog({
                 name="emoji"
                 control={control}
                 render={({ field }) => (
-                  <EmojiPicker
-                    value={field.value}
-                    onChange={field.onChange}
-                  />
+                  <EmojiPicker value={field.value} onChange={field.onChange} />
                 )}
               />
             </FieldContent>

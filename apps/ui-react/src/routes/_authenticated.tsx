@@ -3,10 +3,11 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { AppSidebar } from "@/components/navigation/sidebar";
+import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { fetchUserData } from "@/data";
-import { authClient } from "@/lib/auth";
 import { useIsOnline } from "@/hooks/use-is-online";
+import { authClient } from "@/lib/auth";
 import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 
@@ -14,6 +15,26 @@ const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60;
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
+  errorComponent: () => {
+    const navigate = Route.useNavigate();
+
+    const reload = async () => {
+      localStorage.clear();
+      await navigate({ to: "/", reloadDocument: true });
+    };
+
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center">
+        <p className="text-4xl font-bold text-foreground">Error</p>
+        <p className="mt-2 text-muted-foreground">
+          An error occurred while loading the page.
+        </p>
+        <Button className="mt-8" variant="secondary" onClick={reload}>
+          Reload
+        </Button>
+      </div>
+    );
+  },
   beforeLoad: async ({ location }) => {
     let session = useAuth.getState().session;
     let user = useAuth.getState().user;
@@ -61,7 +82,7 @@ function AuthenticatedLayout() {
         setUser(res.data.user, res.data.session);
       } else {
         localStorage.clear();
-        await navigate({ to: "/login" });
+        await navigate({ to: "/login", reloadDocument: true });
       }
       return res.data;
     },
@@ -90,7 +111,7 @@ function AuthenticatedLayout() {
 
   useEffect(() => {
     void subscribe();
-  }, []);
+  }, [subscribe]);
 
   return (
     <SidebarProvider>

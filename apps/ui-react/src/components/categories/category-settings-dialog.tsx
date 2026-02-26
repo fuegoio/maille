@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActivityType, type ActivityCategory } from "@maille/core/activities";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -14,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -21,7 +23,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   updateActivityCategoryMutation,
   deleteActivityCategoryMutation,
@@ -58,6 +59,7 @@ export function CategorySettingsDialog({
 }) {
   const mutate = useSync((state) => state.mutate);
   const activities = useActivities((state) => state.activities);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const {
@@ -140,7 +142,7 @@ export function CategorySettingsDialog({
       ],
     });
 
-    setOpen(false);
+    await navigate({ to: "/categories" });
   };
 
   return (
@@ -179,7 +181,7 @@ export function CategorySettingsDialog({
                 control={control}
                 render={({ field }) => (
                   <EmojiPicker
-                    value={field.value}
+                    value={field.value || null}
                     onChange={field.onChange}
                   />
                 )}
@@ -191,7 +193,7 @@ export function CategorySettingsDialog({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button type="button" variant="destructive">
-                  Delete category
+                  Delete
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
