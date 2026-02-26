@@ -10,11 +10,14 @@ import { useEffect, useState } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
 import { MonthActivitiesSummary } from "@/components/months/month-activities-summary";
 import { MonthSummary } from "@/components/months/month-summary";
+import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { Movement } from "@/components/movements/movement";
 import { MovementsTable } from "@/components/movements/movements-table";
+import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -122,6 +125,7 @@ function MonthPage() {
             </Breadcrumb>
             <div className="flex-1" />
 
+            <SearchBar />
             {!summaryOpen && (
               <Button
                 variant="default"
@@ -155,6 +159,17 @@ function MonthPage() {
                   Movements
                 </TabsTrigger>
               </TabsList>
+              <div className="flex-1" />
+              {selectedTab === "activities" && (
+                <FilterActivitiesButton
+                  viewId={`month-${month}-${year}-activities`}
+                />
+              )}
+              {selectedTab === "movements" && (
+                <FilterMovementsButton
+                  viewId={`month-${month}-${year}-movements`}
+                />
+              )}
             </header>
 
             <TabsContent value="activities" className="flex h-full">

@@ -4,6 +4,7 @@ import { eachDayOfInterval, startOfDay } from "date-fns";
 import {
   ArrowDown,
   ArrowRight,
+  ArrowRightLeft,
   ArrowUp,
   BookMarked,
   House,
@@ -27,6 +28,12 @@ import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
+import { AddMovementButton } from "@/components/movements/add-movement-button";
+import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
+import { Movement } from "@/components/movements/movement";
+import { MovementsTable } from "@/components/movements/movements-table";
+import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -48,6 +55,7 @@ import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
+import { useMovements } from "@/stores/movements";
 
 export const Route = createFileRoute("/_authenticated/accounts/$id")({
   component: AccountPage,
@@ -75,6 +83,7 @@ function AccountPage() {
   const [selectedTab, setSelectedTab] = useState("summary");
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
+  const movements = useMovements((state) => state.movements);
 
   const currencyFormatter = useCurrencyFormatter();
 
@@ -83,6 +92,8 @@ function AccountPage() {
       (t) => t.fromAccount === account.id || t.toAccount === account.id,
     );
   });
+
+  const viewMovements = movements.filter((m) => m.account === account.id);
 
   const getAccountTotal = ({
     date,
@@ -161,6 +172,7 @@ function AccountPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex-1" />
+          <SearchBar />
           <ShareAccountDialog account={account}>
             <Button
               variant={account.sharing.length > 0 ? "default" : "ghost"}
@@ -192,6 +204,10 @@ function AccountPage() {
                 <BookMarked />
                 Activities
               </TabsTrigger>
+              <TabsTrigger value="movements">
+                <ArrowRightLeft />
+                Movements
+              </TabsTrigger>
               {account.type === AccountType.ASSETS && (
                 <TabsTrigger value="assets">
                   <House />
@@ -206,7 +222,21 @@ function AccountPage() {
               )}
             </TabsList>
             <div className="flex-1" />
-            {selectedTab === "activities" && <AddActivityButton size="sm" />}
+
+            {selectedTab === "activities" && (
+              <>
+                <FilterActivitiesButton viewId={`account-${account.id}`} />
+                <AddActivityButton size="sm" />
+              </>
+            )}
+            {selectedTab === "movements" && (
+              <>
+                <FilterMovementsButton
+                  viewId={`account-${account.id}-movements`}
+                />
+                <AddMovementButton size="sm" />
+              </>
+            )}
             {selectedTab === "assets" && (
               <AddAssetModal accountId={accountId}>
                 <Button size="sm">
@@ -324,6 +354,15 @@ function AccountPage() {
             />
           </TabsContent>
 
+          <TabsContent value="movements" className="flex h-full">
+            <MovementsTable
+              viewId={`account-${account.id}-movements`}
+              movements={viewMovements}
+              grouping="period"
+              accountFilter={account.id}
+            />
+          </TabsContent>
+
           {account.type === AccountType.ASSETS && (
             <TabsContent value="assets" className="flex h-full">
               <AssetsTable accountId={account.id} />
@@ -339,6 +378,7 @@ function AccountPage() {
       </SidebarInset>
 
       {selectedTab === "activities" && <Activity />}
+      {selectedTab === "movements" && <Movement />}
       {selectedTab === "assets" && <Asset />}
       {selectedTab === "counterparties" && <Counterparty />}
     </>

@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeft,
   Banknote,
   BookMarked,
   Calendar,
@@ -62,7 +63,7 @@ const data = {
     {
       title: "Movements",
       url: "/movements",
-      icon: Banknote,
+      icon: ArrowRightLeft,
       items: [
         {
           title: "To link",

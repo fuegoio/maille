@@ -89,7 +89,12 @@ function MovementsPage() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <FilterMovementsButton
+            viewId={movementsView.id}
+            className="ml-2 text-muted-foreground"
+          />
           <div className="flex-1" />
+          <SearchBar />
           <ImportMovementsButton />
           <AddMovementButton />
           <div className="h-full w-px bg-border" />
@@ -103,14 +108,6 @@ function MovementsPage() {
               <p>Export movements</p>
             </TooltipContent>
           </Tooltip>
-        </header>
-
-        <header className="flex h-11 shrink-0 items-center gap-2 border-b px-2 sm:pl-11.25">
-          {movementsView.filters.length === 0 && (
-            <FilterMovementsButton viewId={movementsView.id} />
-          )}
-          <div className="flex-1" />
-          <SearchBar />
         </header>
 
         <MovementsTable

@@ -17,12 +17,8 @@ export function SearchBar() {
 
   const handleBlur = () => {
     if (search === "") {
-      clear();
+      clearSearch();
     }
-  };
-
-  const clear = () => {
-    clearSearch();
   };
 
   // Handle Ctrl+F keyboard shortcut
@@ -42,9 +38,9 @@ export function SearchBar() {
 
   React.useEffect(() => {
     return () => {
-      clear();
+      clearSearch();
     };
-  }, []);
+  }, [clearSearch]);
 
   return (
     <InputGroup className="max-w-xs">
@@ -57,13 +53,14 @@ export function SearchBar() {
         onBlur={handleBlur}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
-            clear();
+            clearSearch();
+            e.stopPropagation();
           }
         }}
         placeholder="Search..."
         className="flex-1"
       />
-      <InputGroupAddon onClick={clear}>
+      <InputGroupAddon>
         <Search className="h-4 w-4 text-muted-foreground" />
       </InputGroupAddon>
     </InputGroup>

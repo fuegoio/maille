@@ -1,12 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval } from "date-fns";
 import { BookMarked, LayoutDashboard, Settings } from "lucide-react";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { SubcategorySettingsDialog } from "@/components/categories/subcategory-settings-dialog";
+import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -54,6 +58,7 @@ function SubcategoryPage() {
     throw notFound();
   }
 
+  const [selectedTab, setSelectedTab] = useState("summary");
   const user = useAuth((state) => state.user!);
 
   const activities = useActivities((state) => state.activities);
@@ -101,41 +106,55 @@ function SubcategoryPage() {
   return (
     <>
       <SidebarInset>
-        <Tabs defaultValue="summary" className="h-full">
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/categories">Categories</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to={`/categories/$id`} params={{ id: categoryId }}>
-                      {category ? (
-                        <CategoryLabel categoryId={category.id} />
-                      ) : (
-                        "Category"
-                      )}
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {subcategory.emoji && (
-                      <span className="mr-2">{subcategory.emoji}</span>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/categories">Categories</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/categories/$id`} params={{ id: categoryId }}>
+                    {category ? (
+                      <CategoryLabel categoryId={category.id} />
+                    ) : (
+                      "Category"
                     )}
-                    {subcategory.name}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {subcategory.emoji && (
+                    <span className="mr-2">{subcategory.emoji}</span>
+                  )}
+                  {subcategory.name}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
+          <div className="flex-1" />
+          <SearchBar />
+          <SubcategorySettingsDialog subcategory={subcategory}>
+            <Button variant="ghost" size="icon">
+              <Settings />
+            </Button>
+          </SubcategorySettingsDialog>
+        </header>
+
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="h-full"
+        >
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
             <TabsList className="ml-5">
               <TabsTrigger value="summary">
                 <LayoutDashboard />
@@ -147,11 +166,12 @@ function SubcategoryPage() {
               </TabsTrigger>
             </TabsList>
             <div className="flex-1" />
-            <SubcategorySettingsDialog subcategory={subcategory}>
-              <Button variant="ghost" size="icon">
-                <Settings />
-              </Button>
-            </SubcategorySettingsDialog>
+            {selectedTab === "activities" && (
+              <>
+                <FilterActivitiesButton viewId={`subcategory-${subcategory.id}`} />
+                <AddActivityButton size="sm" />
+              </>
+            )}
           </header>
 
           <TabsContent value="summary">

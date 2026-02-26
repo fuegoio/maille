@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
 import {
   ActivityFilterFields,
   OperatorsWithoutValue,
   type ActivityFilter,
 } from "@maille/core/activities";
 import { X } from "lucide-react";
+import { useEffect, useRef } from "react";
+
 import { ActivityFilterOperatorMenu } from "./activity-filter-operator-menu";
 import { ActivityFilterValueMenu } from "./activity-filter-value-menu";
 
@@ -14,7 +15,11 @@ interface ActivityFilterProps {
   onDelete: () => void;
 }
 
-export function ActivityFilter({ modelValue, onUpdateModelValue, onDelete }: ActivityFilterProps) {
+export function ActivityFilter({
+  modelValue,
+  onUpdateModelValue,
+  onDelete,
+}: ActivityFilterProps) {
   const operatorMenuRef = useRef<{ click: () => void }>(null);
   const valueMenuRef = useRef<{ click: () => void }>(null);
 
@@ -36,7 +41,7 @@ export function ActivityFilter({ modelValue, onUpdateModelValue, onDelete }: Act
         }
       }, 0);
     }
-  }, [modelValue.operator]);
+  }, [modelValue.operator, modelValue.value]);
 
   const handleCloseOperator = () => {
     if (modelValue.operator === undefined) {
@@ -53,7 +58,9 @@ export function ActivityFilter({ modelValue, onUpdateModelValue, onDelete }: Act
     }
   };
 
-  const activityFilterField = ActivityFilterFields.find((aff) => aff.value === modelValue.field);
+  const activityFilterField = ActivityFilterFields.find(
+    (aff) => aff.value === modelValue.field,
+  );
 
   if (!activityFilterField) return null;
 
@@ -64,7 +71,10 @@ export function ActivityFilter({ modelValue, onUpdateModelValue, onDelete }: Act
   return (
     <div className="bg-primary-800 flex h-7 w-fit max-w-full items-center overflow-hidden rounded border">
       <div className="flex h-7 items-center border-r px-2 text-sm font-medium text-white">
-        <i className={`mdi mt-0.5 ${activityFilterField.icon}`} aria-hidden="true" />
+        <i
+          className={`mdi mt-0.5 ${activityFilterField.icon}`}
+          aria-hidden="true"
+        />
         <span className="mr-1 ml-2">{activityFilterField.text}</span>
       </div>
 

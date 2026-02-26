@@ -47,7 +47,7 @@ export function FilterActivitiesButton({
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className={className} size="sm">
           <ListFilter />
-          Filter
+          <span className="font-normal">Filter</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48">

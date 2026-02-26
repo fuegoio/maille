@@ -2,14 +2,18 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval } from "date-fns";
 import { BookMarked, LayoutDashboard, Settings, Tag } from "lucide-react";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { CategorySettingsDialog } from "@/components/categories/category-settings-dialog";
 import { CreateSubcategoryDialog } from "@/components/categories/create-subcategory-dialog";
 import { SubcategoriesTable } from "@/components/categories/subcategories-table";
+import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -53,6 +57,7 @@ function CategoryPage() {
     throw notFound();
   }
 
+  const [selectedTab, setSelectedTab] = useState("summary");
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
 
@@ -116,11 +121,7 @@ function CategoryPage() {
           </Breadcrumb>
 
           <div className="flex-1" />
-          <CreateSubcategoryDialog categoryId={category.id}>
-            <Button variant="ghost" size="icon">
-              <Plus />
-            </Button>
-          </CreateSubcategoryDialog>
+          <SearchBar />
           <CategorySettingsDialog category={category}>
             <Button variant="ghost" size="icon">
               <Settings />
@@ -128,7 +129,11 @@ function CategoryPage() {
           </CategorySettingsDialog>
         </header>
 
-        <Tabs defaultValue="summary" className="h-full">
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="h-full"
+        >
           <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
             <TabsList className="ml-5">
               <TabsTrigger value="summary">
@@ -144,6 +149,21 @@ function CategoryPage() {
                 Activities
               </TabsTrigger>
             </TabsList>
+            <div className="flex-1" />
+            {selectedTab === "subcategories" && (
+              <CreateSubcategoryDialog categoryId={category.id}>
+                <Button variant="default" size="sm">
+                  <Plus />
+                  Add subcategory
+                </Button>
+              </CreateSubcategoryDialog>
+            )}
+            {selectedTab === "activities" && (
+              <>
+                <FilterActivitiesButton viewId={`category-${category.id}`} />
+                <AddActivityButton size="sm" />
+              </>
+            )}
           </header>
 
           <TabsContent value="summary">

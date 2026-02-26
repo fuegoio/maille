@@ -80,7 +80,12 @@ function ActivitiesPage() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+          <FilterActivitiesButton
+            viewId={activityView.id}
+            className="ml-2 text-muted-foreground"
+          />
           <div className="flex-1" />
+          <SearchBar />
           <AddActivityButton />
           <Button
             className="hidden gap-1 sm:flex"
@@ -94,14 +99,6 @@ function ActivitiesPage() {
             viewId={activityView.id}
             activities={viewActivities}
           />
-        </header>
-
-        <header className="flex h-11 shrink-0 items-center gap-2 border-b px-2 sm:pl-11.25">
-          {activityView.filters.length === 0 && (
-            <FilterActivitiesButton viewId={activityView.id} />
-          )}
-          <div className="flex-1" />
-          <SearchBar />
         </header>
 
         <ActivitiesTable
