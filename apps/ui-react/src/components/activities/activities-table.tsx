@@ -5,9 +5,9 @@ import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
@@ -47,6 +47,12 @@ export function ActivitiesTable({
     [],
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    return () => {
+      setFocusedActivity(null);
+    };
+  }, [setFocusedActivity]);
 
   const activitiesFiltered = React.useMemo(() => {
     return activities

@@ -7,7 +7,6 @@ import * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
@@ -30,11 +29,9 @@ export function MovementsTable({
   accountFilter = null,
 }: MovementsTableProps) {
   const focusedMovement = useMovements((state) => state.focusedMovement);
-  const focusedActivity = useActivities((state) => state.focusedActivity);
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
   const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
-  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
     [],
   );
@@ -43,21 +40,9 @@ export function MovementsTable({
   // Cleanup on unmount
   React.useEffect(() => {
     return () => {
-      if (focusedMovement) {
-        setFocusedMovement(null);
-      }
-      if (focusedActivity) {
-        setFocusedActivity(null);
-      }
+      setFocusedMovement(null);
     };
-  }, []);
-
-  // Reset focused activity when focused movement changes
-  React.useEffect(() => {
-    if (focusedMovement) {
-      setFocusedActivity(null);
-    }
-  }, [focusedMovement]);
+  }, [setFocusedMovement]);
 
   const movementsFiltered = React.useMemo(() => {
     return movements
