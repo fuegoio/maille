@@ -89,9 +89,14 @@ export function ShareAccountDialog({
               id: account.id,
               sharing: [
                 {
-                  id: crypto.randomUUID(),
                   role: "primary",
+                  sharedWith: user.id,
+                  proportion: 0.5,
+                },
+                {
+                  role: "secondary",
                   sharedWith: data.contactId,
+                  proportion: 0.5,
                 },
               ],
             },

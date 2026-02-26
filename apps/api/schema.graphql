@@ -12,7 +12,7 @@ type Account {
 type AccountSharing {
   proportion: Float!
   role: String!
-  sharedWith: String
+  sharedWith: String!
 }
 
 type Activity {

@@ -46,7 +46,7 @@ export const AccountSharingSchema = builder.objectRef<AccountSharing>("AccountSh
 AccountSharingSchema.implement({
   fields: (t) => ({
     role: t.exposeString("role"),
-    sharedWith: t.exposeString("sharedWith", { nullable: true }),
+    sharedWith: t.exposeString("sharedWith"),
     proportion: t.exposeFloat("proportion"),
   }),
 });

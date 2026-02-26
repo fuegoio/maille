@@ -32,7 +32,7 @@ export type Account = {
 export type AccountSharing = {
   proportion: Scalars['Float']['output'];
   role: Scalars['String']['output'];
-  sharedWith: Maybe<Scalars['String']['output']>;
+  sharedWith: Scalars['String']['output'];
 };
 
 export type Activity = {
@@ -523,7 +523,7 @@ export type CreateContactMutation = { createContact: { id: string, createdAt: st
 export type UserDataQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserDataQuery = { activities: Array<{ id: string, number: number, name: string, description: string | null, date: string, type: string, category: string | null, subcategory: string | null, project: string | null, amount: number, status: string, transactions: Array<{ id: string, amount: number, fromAccount: string, fromAsset: string | null, fromCounterparty: string | null, toAccount: string, toAsset: string | null, toCounterparty: string | null }>, movements: Array<{ id: string, movement: string, amount: number }>, sharing: Array<{ user: string, liability: number, accounts: Array<{ account: string, amount: number }> }> }>, activityCategories: Array<{ id: string, name: string, type: string, emoji: string | null }>, activitySubcategories: Array<{ id: string, name: string, category: string, emoji: string | null }>, accounts: Array<{ id: string, name: string, type: string, default: boolean, startingBalance: number | null, startingCashBalance: number | null, movements: boolean, sharing: Array<{ role: string, sharedWith: string | null, proportion: number }> }>, movements: Array<{ id: string, date: string, amount: number, account: string, name: string, status: string, activities: Array<{ id: string, activity: string, amount: number }> }>, projects: Array<{ id: string, name: string, emoji: string | null, startDate: string | null, endDate: string | null }>, assets: Array<{ id: string, account: string, name: string, description: string | null, location: string | null }>, counterparties: Array<{ id: string, account: string, name: string, description: string | null, contact: string | null }>, contacts: Array<{ id: string, createdAt: string, contact: { id: string, name: string, email: string, image: string } }> };
+export type UserDataQuery = { activities: Array<{ id: string, number: number, name: string, description: string | null, date: string, type: string, category: string | null, subcategory: string | null, project: string | null, amount: number, status: string, transactions: Array<{ id: string, amount: number, fromAccount: string, fromAsset: string | null, fromCounterparty: string | null, toAccount: string, toAsset: string | null, toCounterparty: string | null }>, movements: Array<{ id: string, movement: string, amount: number }>, sharing: Array<{ user: string, liability: number, accounts: Array<{ account: string, amount: number }> }> }>, activityCategories: Array<{ id: string, name: string, type: string, emoji: string | null }>, activitySubcategories: Array<{ id: string, name: string, category: string, emoji: string | null }>, accounts: Array<{ id: string, name: string, type: string, default: boolean, startingBalance: number | null, startingCashBalance: number | null, movements: boolean, sharing: Array<{ role: string, sharedWith: string, proportion: number }> }>, movements: Array<{ id: string, date: string, amount: number, account: string, name: string, status: string, activities: Array<{ id: string, activity: string, amount: number }> }>, projects: Array<{ id: string, name: string, emoji: string | null, startDate: string | null, endDate: string | null }>, assets: Array<{ id: string, account: string, name: string, description: string | null, location: string | null }>, counterparties: Array<{ id: string, account: string, name: string, description: string | null, contact: string | null }>, contacts: Array<{ id: string, createdAt: string, contact: { id: string, name: string, email: string, image: string } }> };
 
 export type CreateAccountMutationVariables = Exact<{
   id: Scalars['String']['input'];
@@ -561,7 +561,7 @@ export type ShareAccountMutationVariables = Exact<{
 }>;
 
 
-export type ShareAccountMutation = { shareAccount: { id: string, sharing: Array<{ role: string, sharedWith: string | null, proportion: number }> } };
+export type ShareAccountMutation = { shareAccount: { id: string, sharing: Array<{ role: string, sharedWith: string, proportion: number }> } };
 
 export type CreateActivityMutationVariables = Exact<{
   category?: InputMaybe<Scalars['String']['input']>;

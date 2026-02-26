@@ -1,10 +1,17 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { BookMarked, ArrowRightLeft } from "lucide-react";
-import { useState } from "react";
+import {
+  BookMarked,
+  ArrowRightLeft,
+  ChevronLeft,
+  SquareChartGantt,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
 import { MonthActivitiesSummary } from "@/components/months/month-activities-summary";
+import { MonthSummary } from "@/components/months/month-summary";
 import { Movement } from "@/components/movements/movement";
 import { MovementsTable } from "@/components/movements/movements-table";
 import {
@@ -15,6 +22,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivities } from "@/stores/activities";
@@ -56,7 +64,17 @@ function MonthPage() {
   const [selectedTab, setSelectedTab] = useState("activities");
 
   const activities = useActivities((state) => state.activities);
+  const focusedActivity = useActivities((state) => state.focusedActivity);
   const movements = useMovements((state) => state.movements);
+  const focusedMovement = useMovements((state) => state.focusedMovement);
+
+  const [summaryOpen, setSummaryOpen] = useState(true);
+
+  useEffect(() => {
+    if (focusedActivity || focusedMovement) {
+      setSummaryOpen(false);
+    }
+  }, [focusedActivity, focusedMovement, setSummaryOpen]);
 
   // Filter activities for this month
   const monthActivities = activities.filter((activity) => {
@@ -102,6 +120,16 @@ function MonthPage() {
               </BreadcrumbList>
             </Breadcrumb>
             <div className="flex-1" />
+
+            {!summaryOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSummaryOpen(true)}
+              >
+                <SquareChartGantt className="size-4" />
+              </Button>
+            )}
           </header>
 
           <Tabs
@@ -138,7 +166,37 @@ function MonthPage() {
           </Tabs>
         </div>
 
-        <MonthActivitiesSummary monthDate={monthDate} />
+        {summaryOpen && (
+          <div className="h-full w-full max-w-md overflow-y-auto border-l">
+            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSummaryOpen(false)}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <div className="text-sm font-medium">Summary</div>
+            </div>
+
+            <MonthSummary monthDate={monthDate} />
+
+            <Tabs className="h-full" defaultValue="activities">
+              <TabsList className="h-12! w-full border-b bg-muted/50 px-4 py-2">
+                <TabsTrigger value="activities">Activities</TabsTrigger>
+                <TabsTrigger value="accounts">Accounts</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="activities">
+                <MonthActivitiesSummary monthDate={monthDate} />
+              </TabsContent>
+
+              <TabsContent value="accounts">
+                <MonthAccountsSummary monthDate={monthDate} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </SidebarInset>
 
       {selectedTab === "activities" && <Activity />}

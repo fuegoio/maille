@@ -37,8 +37,8 @@ import {
 import { cn } from "@/lib/utils";
 import { createAccountMutation } from "@/mutations/accounts";
 import { ACCOUNT_TYPES_COLOR, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
-import { useSync } from "@/stores/sync";
 import { useAuth } from "@/stores/auth";
+import { useSync } from "@/stores/sync";
 
 const createAccountSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -204,7 +204,7 @@ export function CreateAccountDialog({
                 />
                 <FieldDescription>
                   The initial balance of this account in{" "}
-                  {format(user?.startingDate, "MMMM yyyy")}.
+                  {format(user!.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -250,7 +250,7 @@ export function CreateAccountDialog({
                 />
                 <FieldDescription>
                   The initial cash balance for this account in{" "}
-                  {format(user?.startingDate, "MMMM yyyy")}.
+                  {format(user!.startingDate, "MMMM yyyy")}.
                 </FieldDescription>
               </FieldContent>
             </Field>

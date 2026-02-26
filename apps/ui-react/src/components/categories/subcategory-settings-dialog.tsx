@@ -71,7 +71,7 @@ export function SubcategorySettingsDialog({
     resolver: zodResolver(updateSubcategorySchema),
     defaultValues: {
       name: subcategory.name,
-      emoji: subcategory.emoji,
+      emoji: subcategory.emoji || null,
     },
   });
 
@@ -169,7 +169,10 @@ export function SubcategorySettingsDialog({
                 name="emoji"
                 control={control}
                 render={({ field }) => (
-                  <EmojiPicker value={field.value} onChange={field.onChange} />
+                  <EmojiPicker
+                    value={field.value || null}
+                    onChange={field.onChange}
+                  />
                 )}
               />
             </FieldContent>

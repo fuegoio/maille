@@ -145,6 +145,10 @@ export const fetchUserData = async () => {
     useAccounts.getState().addAccount({
       ...account,
       type: account.type as AccountType,
+      sharing: account.sharing.map((sharing) => ({
+        ...sharing,
+        role: sharing.role as "primary" | "secondary",
+      })),
     });
   });
 

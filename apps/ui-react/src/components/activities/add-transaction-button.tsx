@@ -22,7 +22,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { addTransactionMutation } from "@/mutations/activities";
-import { useAuth } from "@/stores/auth";
 import { useSync } from "@/stores/sync";
 
 // Form schema using zod
@@ -45,7 +44,6 @@ export function AddTransactionButton({
 }: AddTransactionButtonProps) {
   const mutate = useSync((state) => state.mutate);
   const [showDialog, setShowDialog] = useState(false);
-  const user = useAuth((state) => state.user);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -76,7 +74,6 @@ export function AddTransactionButton({
             activityId: activity.id,
             id: transactionId,
             ...data,
-            user: user!.id,
           },
         },
       ],

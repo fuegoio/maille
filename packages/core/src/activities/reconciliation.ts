@@ -7,7 +7,7 @@ import {
   type Transaction,
   type ActivitySharing,
 } from "./types";
-import { AccountType, type Account, type Counterparty } from "../accounts/index";
+import { AccountType, type Counterparty } from "../accounts/index";
 import type { Movement, MovementWithLink } from "../movements/types";
 
 type SimpleAccount = {

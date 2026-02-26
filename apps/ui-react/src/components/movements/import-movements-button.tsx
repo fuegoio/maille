@@ -75,7 +75,7 @@ export function ImportMovementsButton({
     },
   });
 
-  const { control, handleSubmit, reset, setValue } = form;
+  const { control, handleSubmit, reset } = form;
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
