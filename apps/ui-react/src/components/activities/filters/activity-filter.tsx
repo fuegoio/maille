@@ -6,6 +6,9 @@ import {
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+
 import { ActivityFilterOperatorMenu } from "./activity-filter-operator-menu";
 import { ActivityFilterValueMenu } from "./activity-filter-value-menu";
 
@@ -43,12 +46,6 @@ export function ActivityFilter({
     }
   }, [modelValue.operator, modelValue.value]);
 
-  const handleCloseOperator = () => {
-    if (modelValue.operator === undefined) {
-      onDelete();
-    }
-  };
-
   const handleCloseValue = () => {
     if (
       modelValue.value === undefined ||
@@ -69,23 +66,18 @@ export function ActivityFilter({
     !OperatorsWithoutValue.includes(modelValue.operator as any);
 
   return (
-    <div className="bg-primary-800 flex h-7 w-fit max-w-full items-center overflow-hidden rounded border">
-      <div className="flex h-7 items-center border-r px-2 text-sm font-medium text-white">
-        <i
-          className={`mdi mt-0.5 ${activityFilterField.icon}`}
-          aria-hidden="true"
-        />
-        <span className="mr-1 ml-2">{activityFilterField.text}</span>
+    <div className="flex h-6 w-fit max-w-full items-center overflow-hidden rounded border border-input">
+      <div className="flex h-7 items-center border-r border-input bg-input/30 px-2 text-xs">
+        {activityFilterField.text}
       </div>
 
       <ActivityFilterOperatorMenu
         ref={operatorMenuRef}
         modelValue={modelValue.operator}
         field={modelValue.field}
-        onUpdateModelValue={(operator: any) => {
+        onUpdateModelValue={(operator) => {
           onUpdateModelValue({ ...modelValue, operator });
         }}
-        onClose={handleCloseOperator}
       />
 
       {showValueMenu && (
@@ -93,20 +85,21 @@ export function ActivityFilter({
           ref={valueMenuRef}
           modelValue={modelValue.value}
           field={modelValue.field}
-          onUpdateModelValue={(value: any) => {
+          onUpdateModelValue={(value) => {
             onUpdateModelValue({ ...modelValue, value });
           }}
-          onClose={handleCloseValue}
         />
       )}
 
-      <button
-        className="text-md hover:bg-primary-700 flex h-7 w-7 shrink-0 items-center justify-center transition-colors hover:text-white"
+      <Button
         onClick={onDelete}
         aria-label="Delete filter"
+        variant="ghost"
+        size="icon"
+        className="size-6 rounded-none border-r-0 border-l-0 bg-input/30 hover:bg-input/50"
       >
-        <X className="mt-0.5 size-4" />
-      </button>
+        <X className="size-3.5" />
+      </Button>
     </div>
   );
 }

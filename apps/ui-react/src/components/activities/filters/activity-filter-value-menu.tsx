@@ -3,7 +3,6 @@ import {
   ActivityType,
 } from "@maille/core/activities";
 import type { ActivityFilter } from "@maille/core/activities";
-import { ChevronDown } from "lucide-react";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
@@ -20,19 +19,17 @@ interface ActivityFilterValueMenuProps {
   modelValue: ActivityFilter["value"] | undefined;
   field: ActivityFilter["field"];
   onUpdateModelValue: (value: ActivityFilter["value"]) => void;
-  onClose: () => void;
 }
 
 export const ActivityFilterValueMenu = forwardRef<
   { click: () => void },
   ActivityFilterValueMenuProps
->(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
+>(({ modelValue, field, onUpdateModelValue }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLButtonElement>(null);
   const [textValue, setTextValue] = useState<string | undefined>(
     modelValue as string | undefined,
   );
-  const [open, setOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
     click: () => {
@@ -44,6 +41,9 @@ export const ActivityFilterValueMenu = forwardRef<
     },
   }));
 
+  const inputClassName =
+    "rounded-none border text-xs! focus-visible:border-input focus-visible:ring-0";
+
   if (field === "date") {
     return (
       <Select
@@ -51,29 +51,13 @@ export const ActivityFilterValueMenu = forwardRef<
         onValueChange={(value) => {
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
-        onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) {
-            onClose();
-          }
-        }}
       >
-        <SelectTrigger
-          ref={selectRef}
-          className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] items-center border-r px-2 text-sm transition-colors hover:text-white ${
-            open ? "bg-primary-700 text-white" : ""
-          }`}
-        >
+        <SelectTrigger ref={selectRef} className={inputClassName} noChevron>
           <SelectValue placeholder="Date value" />
-          <ChevronDown className="ml-1 size-4" />
         </SelectTrigger>
-        <SelectContent className="bg-primary-800 border-primary-600">
+        <SelectContent>
           {ActivityFilterDateValues.map((value) => (
-            <SelectItem
-              key={value}
-              value={value}
-              className="text-primary-100 hover:bg-primary-700"
-            >
+            <SelectItem key={value} value={value}>
               {value}
             </SelectItem>
           ))}
@@ -86,12 +70,11 @@ export const ActivityFilterValueMenu = forwardRef<
         ref={inputRef}
         type="number"
         value={modelValue as number | undefined}
+        className={inputClassName}
         onChange={(e) => {
           const value = e.target.value;
           onUpdateModelValue(value === "" ? undefined : parseFloat(value));
         }}
-        onBlur={() => onClose()}
-        className="hover:bg-primary-700 text-primary-100 h-7 border-r border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "name" || field === "description") {
@@ -100,6 +83,7 @@ export const ActivityFilterValueMenu = forwardRef<
         ref={inputRef}
         value={textValue}
         onChange={(e) => setTextValue(e.target.value)}
+        className={inputClassName}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             onUpdateModelValue(textValue);
@@ -107,9 +91,7 @@ export const ActivityFilterValueMenu = forwardRef<
         }}
         onBlur={() => {
           onUpdateModelValue(textValue);
-          onClose();
         }}
-        className="hover:bg-primary-700 text-primary-100 h-7 min-w-0 border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "type") {
@@ -119,29 +101,13 @@ export const ActivityFilterValueMenu = forwardRef<
         onValueChange={(value) => {
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
-        onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) {
-            onClose();
-          }
-        }}
       >
-        <SelectTrigger
-          ref={selectRef}
-          className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] items-center border-r px-2 text-sm transition-colors hover:text-white ${
-            open ? "bg-primary-700 text-white" : ""
-          }`}
-        >
+        <SelectTrigger ref={selectRef} className={inputClassName} noChevron>
           <SelectValue placeholder="Type value" />
-          <ChevronDown className="ml-1 size-4" />
         </SelectTrigger>
-        <SelectContent className="bg-primary-800 border-primary-600">
+        <SelectContent>
           {Object.values(ActivityType).map((value) => (
-            <SelectItem
-              key={value}
-              value={value}
-              className="text-primary-100 hover:bg-primary-700"
-            >
+            <SelectItem key={value} value={value}>
               {value}
             </SelectItem>
           ))}
@@ -155,9 +121,6 @@ export const ActivityFilterValueMenu = forwardRef<
         onChange={(value) => {
           onUpdateModelValue(value);
         }}
-        multiple
-        borderless
-        className="hover:bg-primary-700 border-r"
       />
     );
   }

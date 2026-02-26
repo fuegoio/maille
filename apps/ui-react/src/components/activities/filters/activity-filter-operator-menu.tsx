@@ -1,5 +1,3 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
 import {
   ActivityFilterAmountOperators,
   ActivityFilterCategoryOperators,
@@ -8,6 +6,8 @@ import {
   ActivityFilterNameDescriptionOperators,
 } from "@maille/core/activities";
 import type { ActivityFilter } from "@maille/core/activities";
+import { forwardRef, useImperativeHandle, useRef } from "react";
+
 import {
   Select,
   SelectContent,
@@ -20,15 +20,13 @@ interface ActivityFilterOperatorMenuProps {
   modelValue: ActivityFilter["operator"] | undefined;
   field: ActivityFilter["field"];
   onUpdateModelValue: (value: ActivityFilter["operator"]) => void;
-  onClose: () => void;
 }
 
 export const ActivityFilterOperatorMenu = forwardRef<
   { click: () => void },
   ActivityFilterOperatorMenuProps
->(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
+>(({ modelValue, field, onUpdateModelValue }, ref) => {
   const selectRef = useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
     click: () => {
@@ -41,10 +39,17 @@ export const ActivityFilterOperatorMenu = forwardRef<
     else if (field === "name" || field === "description")
       return ActivityFilterNameDescriptionOperators;
     else if (field === "amount") return ActivityFilterAmountOperators;
-    else if (field === "type" || field === "from_account" || field === "to_account")
+    else if (
+      field === "type" ||
+      field === "from_account" ||
+      field === "to_account"
+    )
       return ActivityFilterMultipleOperators;
     else if (field === "category" || field === "subcategory")
-      return [...ActivityFilterMultipleOperators, ...ActivityFilterCategoryOperators];
+      return [
+        ...ActivityFilterMultipleOperators,
+        ...ActivityFilterCategoryOperators,
+      ];
     return [];
   };
 
@@ -56,29 +61,17 @@ export const ActivityFilterOperatorMenu = forwardRef<
       onValueChange={(value) => {
         onUpdateModelValue(value as ActivityFilter["operator"]);
       }}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen);
-        if (!isOpen) {
-          onClose();
-        }
-      }}
     >
       <SelectTrigger
         ref={selectRef}
-        className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] shrink-0 items-center border-r px-2 text-sm transition-colors hover:text-white ${
-          open ? "bg-primary-700 text-white" : ""
-        }`}
+        className="h-6 border-none px-2 text-xs focus-visible:ring-0"
+        noChevron
       >
         <SelectValue placeholder="Operator" />
-        <ChevronDown className="ml-1 size-4" />
       </SelectTrigger>
-      <SelectContent className="bg-primary-800 border-primary-600">
+      <SelectContent>
         {operators.map((operator) => (
-          <SelectItem
-            key={operator}
-            value={operator}
-            className="text-primary-100 hover:bg-primary-700"
-          >
+          <SelectItem key={operator} value={operator}>
             {operator}
           </SelectItem>
         ))}

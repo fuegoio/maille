@@ -21,6 +21,7 @@ export function ActivitiesFilters({
   activities,
 }: ActivitiesFiltersProps) {
   const activityView = useViews((state) => state.getActivityView(viewId));
+  const setActivityView = useViews((state) => state.setActivityView);
   const currencyFormatter = useCurrencyFormatter();
 
   const activitiesTotal = React.useMemo(() => {
@@ -38,23 +39,34 @@ export function ActivitiesFilters({
   }, [activities]);
 
   const clearFilters = () => {
-    activityView.filters = [];
+    setActivityView(viewId, {
+      ...activityView,
+      filters: [],
+    });
   };
 
   if (activityView.filters.length === 0) return null;
 
   return (
-    <header className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/50 px-2 sm:pl-11.25">
+    <header className="flex h-9 shrink-0 items-center gap-2 border-b bg-muted/50 px-2 sm:pl-11.25">
       <div className="flex flex-wrap items-center gap-2">
         {activityView.filters.map((filter, index) => (
           <ActivityFilter
             key={index}
             modelValue={filter}
             onUpdateModelValue={(newFilter) => {
-              activityView.filters[index] = newFilter;
+              setActivityView(viewId, {
+                ...activityView,
+                filters: activityView.filters.map((f, i) =>
+                  i === index ? newFilter : f,
+                ),
+              });
             }}
             onDelete={() => {
-              activityView.filters.splice(index, 1);
+              setActivityView(viewId, {
+                ...activityView,
+                filters: activityView.filters.filter((_, i) => i !== index),
+              });
             }}
           />
         ))}
@@ -65,40 +77,38 @@ export function ActivitiesFilters({
       <div className="mt-2 flex flex-1 items-end sm:mt-0 sm:ml-2 sm:items-center">
         <div className="hidden flex-1 sm:block" />
 
-        <div className="mr-4 flex flex-col pr-2 sm:flex-row sm:border-r">
+        <Button
+          variant="ghost"
+          onClick={clearFilters}
+          size="sm"
+          className="mr-2"
+        >
+          Clear
+        </Button>
+        <div className="flex flex-col pr-2 sm:flex-row">
           {[
             ActivityType.INVESTMENT,
             ActivityType.REVENUE,
             ActivityType.EXPENSE,
           ].map((activityType) => {
-            const typeKey =
-              activityType.toLowerCase() as keyof typeof activitiesTotal;
             return (
-              activitiesTotal[typeKey] && (
+              activitiesTotal[activityType] && (
                 <div
                   key={activityType}
-                  className="my-1 flex items-center px-2 text-right font-mono text-sm"
+                  className="my-1 flex items-center px-2 text-right font-mono text-xs"
                 >
                   <div
                     className={cn(
-                      `mr-3 h-[9px] w-[9px] shrink-0 rounded-xs`,
+                      `mr-2 size-2 shrink-0 rounded-full`,
                       ACTIVITY_TYPES_COLOR[activityType],
                     )}
                   />
-                  {currencyFormatter.format(activitiesTotal[typeKey]!)}
+                  {currencyFormatter.format(activitiesTotal[activityType])}
                 </div>
               )
             );
           })}
         </div>
-        <Button
-          variant="outline"
-          className="flex items-center gap-1"
-          onClick={clearFilters}
-        >
-          <span>Clear</span>
-          <X className="h-4 w-4" />
-        </Button>
       </div>
     </header>
   );
