@@ -31,20 +31,7 @@ interface AccountsState {
   accounts: Account[];
   getAccountById: (accountId: string) => Account | undefined;
   addAccount: (account: Account) => Account;
-  updateAccount: (
-    accountId: string,
-    update: {
-      name?: string;
-      startingBalance?: number | null;
-      startingCashBalance?: number | null;
-      movements?: boolean;
-      sharing?: {
-        id: string;
-        role: "primary" | "secondary";
-        sharedWith?: string;
-      }[];
-    },
-  ) => void;
+  updateAccount: (accountId: string, update: Partial<Account>) => void;
   deleteAccount: (accountId: string) => void;
   restoreAccount: (account: Account) => void;
   handleEvent: (event: SyncEvent) => void;
@@ -88,7 +75,7 @@ export const useAccounts = create<AccountsState>()(
         }));
       },
 
-      deleteAccount: (accountId: string) => {
+      deleteAccount: (accountId) => {
         set((state) => ({
           accounts: state.accounts.filter(
             (account) => account.id !== accountId,
@@ -96,7 +83,7 @@ export const useAccounts = create<AccountsState>()(
         }));
       },
 
-      restoreAccount: (account: Account) => {
+      restoreAccount: (account) => {
         set((state) => ({
           accounts: [...state.accounts, account],
         }));
@@ -107,6 +94,7 @@ export const useAccounts = create<AccountsState>()(
           get().addAccount({
             ...event.payload,
             default: false,
+            sharing: event.payload.sharing || [],
           });
         } else if (event.type === "updateAccount") {
           get().updateAccount(event.payload.id, {
