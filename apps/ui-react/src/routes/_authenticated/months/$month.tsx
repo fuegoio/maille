@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   ChevronLeft,
   SquareChartGantt,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -123,11 +124,17 @@ function MonthPage() {
 
             {!summaryOpen && (
               <Button
-                variant="ghost"
-                size="icon"
+                variant="default"
                 onClick={() => setSummaryOpen(true)}
+                size={focusedActivity || focusedMovement ? "icon" : "default"}
               >
-                <SquareChartGantt className="size-4" />
+                <SquareChartGantt />
+                {!(focusedActivity || focusedMovement) && (
+                  <>
+                    Summary
+                    <ChevronRight />
+                  </>
+                )}
               </Button>
             )}
           </header>
@@ -167,7 +174,7 @@ function MonthPage() {
         </div>
 
         {summaryOpen && (
-          <div className="h-full w-full max-w-md overflow-y-auto border-l">
+          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
             <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
               <Button
                 variant="ghost"
