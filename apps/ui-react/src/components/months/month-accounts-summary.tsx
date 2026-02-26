@@ -1,7 +1,13 @@
 import { AccountType } from "@maille/core/accounts";
 import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
+import Color from "colorjs.io";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import {
@@ -78,6 +84,24 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
     return { start: startBalance, end: endBalance };
   };
 
+  const getProgressBarColor = (index: number, accountType: AccountType) => {
+    const baseColors = {
+      [AccountType.BANK_ACCOUNT]: "#818cf8",
+      [AccountType.INVESTMENT_ACCOUNT]: "#fb923c",
+      [AccountType.CASH]: "#a1a1aa",
+      [AccountType.LIABILITIES]: "#38bdf8",
+      [AccountType.EXPENSE]: "#fca5a5",
+      [AccountType.REVENUE]: "#4ade80",
+      [AccountType.ASSETS]: "#a78bfa",
+    };
+
+    const color = new Color(baseColors[accountType]);
+    color.lch.l =
+      70 +
+      (index / accounts.filter((a) => a.type === accountType).length) * -30;
+    return color;
+  };
+
   const accountTypes = useMemo(
     () => [
       AccountType.BANK_ACCOUNT,
@@ -126,6 +150,45 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
                 </div>
               </div>
             </div>
+
+            {variation.end !== 0 && accountsOfType.length > 0 && (
+              <div className="mt-1 mb-2 px-2">
+                <div className="flex h-2 w-full items-center overflow-hidden rounded-md bg-muted transition-all hover:h-4">
+                  {accountsOfType.map((account, index) => {
+                    const accountBalance = getAccountBalanceAtDate(
+                      account.id,
+                      new Date(
+                        monthDate.getFullYear(),
+                        monthDate.getMonth() + 1,
+                        0,
+                      ),
+                    );
+                    const percentage =
+                      (accountBalance / variation.end) * 100;
+
+                    const color = getProgressBarColor(index, accountType);
+
+                    return (
+                      <Tooltip key={account.id}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="h-full transition-all hover:opacity-50"
+                            style={{
+                              background: color.toString(),
+                              width: `${percentage}%`,
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {account.name} ({Math.round(percentage * 100) / 100}
+                          %)
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {accountsOfType.length > 0 && (
               <div className="mt-2 space-y-1 pb-2">
