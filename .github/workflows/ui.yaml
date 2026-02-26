@@ -56,3 +56,14 @@ jobs:
           subject-name: ghcr.io/${{ github.repository }}/ui
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: Deploy in production
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.CENTAURUS_IP }}
+          username: ${{ secrets.CENTAURUS_USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd maille/
+            docker compose pull maille-ui; docker compose up -d maille-ui;
