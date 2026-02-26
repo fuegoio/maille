@@ -47,7 +47,6 @@ export function Movement() {
     setFocusedMovement(null);
   };
 
-  const [showMovement, setShowMovement] = React.useState(true);
   const mutate = useSync((state) => state.mutate);
 
   const movement = useMovements((state) =>
@@ -65,20 +64,6 @@ export function Movement() {
       }))
       .filter((ma) => ma.activity !== undefined);
   }, [movement, activities]);
-
-  // Animation logic
-  React.useEffect(() => {
-    if (movementId) {
-      if (showMovement) return;
-
-      setShowMovement(true);
-    } else {
-      // Exit animation
-      setTimeout(() => {
-        setShowMovement(false);
-      }, 100);
-    }
-  }, [movementId]);
 
   const deleteMovement = () => {
     if (!movement) return;
@@ -101,10 +86,10 @@ export function Movement() {
     });
   };
 
-  const focusActivity = async (activityNumber: number) => {
+  const focusActivity = async (activityId: string) => {
     await router.navigate({
       to: "/activities/{-$id}",
-      params: { id: activityNumber.toString() },
+      params: { id: activityId },
     });
   };
 
@@ -146,7 +131,7 @@ export function Movement() {
     onClose();
   });
 
-  if (!movement || !showMovement) return null;
+  if (!movement) return null;
 
   return (
     <SidebarInset className="xl:max-w-lg">
@@ -252,9 +237,7 @@ export function Movement() {
                     "flex h-10 cursor-pointer items-center justify-center px-4 text-sm hover:bg-muted",
                     index !== movementActivities.length - 1 && "border-b",
                   )}
-                  onClick={() =>
-                    focusActivity(movementActivity.activity!.number)
-                  }
+                  onClick={() => focusActivity(movementActivity.activity!.id)}
                 >
                   <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
                     {format(movementActivity.activity!.date, "dd/MM/yyyy")}

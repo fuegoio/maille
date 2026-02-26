@@ -23,20 +23,6 @@ import { useViews } from "@/stores/views";
 
 export const Route = createFileRoute("/_authenticated/activities/{-$id}")({
   component: ActivitiesPage,
-  loader: async ({ params }) => {
-    const setFocusedActivity = useActivities.getState().setFocusedActivity;
-    if (params.id && params.id !== "to-reconciliate" && params.id !== "") {
-      const activities = useActivities.getState().activities;
-      const activity = activities.find(
-        (a) => a.number.toString() === params.id,
-      );
-      if (activity) {
-        setFocusedActivity(activity.id);
-      }
-    } else {
-      setFocusedActivity(null);
-    }
-  },
 });
 
 function ActivitiesPage() {
@@ -121,6 +107,9 @@ function ActivitiesPage() {
         <ActivitiesTable
           viewId={activityView.id}
           activities={viewActivities}
+          defaultActivityFocused={
+            params.id !== "to-reconciliate" ? params.id : undefined
+          }
           grouping="period"
         />
       </SidebarInset>

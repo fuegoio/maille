@@ -159,7 +159,7 @@ export function Activity() {
           <Button variant="ghost" size="icon" onClick={close}>
             <ChevronRight />
           </Button>
-          <div className="text-sm font-medium">Activity #{activity.number}</div>
+          <div className="text-sm font-medium">Activity</div>
 
           <div className="flex-1" />
 

@@ -260,9 +260,6 @@ export function Counterparty() {
                     index !== counterpartyActivities.length - 1 && "border-b",
                   )}
                 >
-                  <div className="hidden w-8 shrink-0 text-muted-foreground sm:block">
-                    #{activity.number}
-                  </div>
                   <div className="ml-2 hidden w-20 shrink-0 text-muted-foreground sm:block">
                     {activity.date.toLocaleDateString("fr-FR")}
                   </div>

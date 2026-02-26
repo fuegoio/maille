@@ -19,8 +19,8 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
@@ -247,9 +247,6 @@ export function Asset() {
                     index !== assetActivities.length - 1 && "border-b",
                   )}
                 >
-                  <div className="hidden w-8 shrink-0 text-muted-foreground sm:block">
-                    #{activity.number}
-                  </div>
                   <div className="ml-2 hidden w-20 shrink-0 text-muted-foreground sm:block">
                     {activity.date.toLocaleDateString("fr-FR")}
                   </div>

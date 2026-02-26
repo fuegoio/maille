@@ -24,6 +24,7 @@ interface ActivitiesTableProps {
   subcategoryFilter?: string | null;
   activityTypeFilter?: ActivityType | null;
   hideProject?: boolean;
+  defaultActivityFocused?: string;
 }
 
 export function ActivitiesTable({
@@ -35,6 +36,7 @@ export function ActivitiesTable({
   subcategoryFilter = null,
   activityTypeFilter = null,
   hideProject = false,
+  defaultActivityFocused,
 }: ActivitiesTableProps) {
   const currencyFormatter = useCurrencyFormatter();
 
@@ -49,10 +51,16 @@ export function ActivitiesTable({
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   React.useEffect(() => {
+    if (defaultActivityFocused) {
+      setFocusedActivity(defaultActivityFocused);
+    }
+
     return () => {
-      setFocusedActivity(null);
+      if (!defaultActivityFocused) {
+        setFocusedActivity(null);
+      }
     };
-  }, [setFocusedActivity]);
+  }, [setFocusedActivity, defaultActivityFocused]);
 
   const activitiesFiltered = React.useMemo(() => {
     return activities

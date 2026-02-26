@@ -140,7 +140,7 @@ export function LinkMovementButton({
           <DialogHeader>
             <div className="mb-2 flex">
               <div className="bg-primary-400 flex h-6 items-center rounded px-2.5 text-xs font-medium text-white">
-                #{activity.number} - {activity.name}
+                {activity.name}
               </div>
             </div>
 
