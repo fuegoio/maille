@@ -256,6 +256,18 @@ export function ActivitiesTable({
     }
   });
 
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedActivities.length > 0) {
+        setSelectedActivities([]);
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ActivitiesFilters

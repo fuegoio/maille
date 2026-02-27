@@ -176,11 +176,17 @@ export function MovementsTable({
     setFocusedMovement(movementsSorted[nextIndex].id);
   });
 
-  useHotkey("Escape", () => {
-    if (selectedMovements.length > 0) {
-      setSelectedMovements([]);
-    }
-  });
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedMovements.length > 0) {
+        setSelectedMovements([]);
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
 
   useHotkey(
     "Mod+A",

@@ -127,9 +127,15 @@ export function Movement() {
   };
 
   // Hotkeys
-  useHotkey("Escape", () => {
-    onClose();
-  });
+  useHotkey(
+    "Escape",
+    () => {
+      onClose();
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
 
   if (!movement) return null;
 
