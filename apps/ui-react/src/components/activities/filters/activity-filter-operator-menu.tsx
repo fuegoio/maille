@@ -6,7 +6,6 @@ import {
   ActivityFilterNameDescriptionOperators,
 } from "@maille/core/activities";
 import type { ActivityFilter } from "@maille/core/activities";
-import { forwardRef, useImperativeHandle, useRef } from "react";
 
 import {
   Select,
@@ -17,23 +16,18 @@ import {
 } from "@/components/ui/select";
 
 interface ActivityFilterOperatorMenuProps {
+  open?: boolean;
   modelValue: ActivityFilter["operator"] | undefined;
   field: ActivityFilter["field"];
   onUpdateModelValue: (value: ActivityFilter["operator"]) => void;
 }
 
-export const ActivityFilterOperatorMenu = forwardRef<
-  { click: () => void },
-  ActivityFilterOperatorMenuProps
->(({ modelValue, field, onUpdateModelValue }, ref) => {
-  const selectRef = useRef<HTMLButtonElement>(null);
-
-  useImperativeHandle(ref, () => ({
-    click: () => {
-      selectRef.current?.click();
-    },
-  }));
-
+export const ActivityFilterOperatorMenu = ({
+  open,
+  modelValue,
+  field,
+  onUpdateModelValue,
+}: ActivityFilterOperatorMenuProps) => {
   const getOperators = (): readonly string[] => {
     if (field === "date") return ActivityFilterDateOperators;
     else if (field === "name" || field === "description")
@@ -57,16 +51,13 @@ export const ActivityFilterOperatorMenu = forwardRef<
 
   return (
     <Select
+      open={open}
       value={modelValue}
       onValueChange={(value) => {
         onUpdateModelValue(value as ActivityFilter["operator"]);
       }}
     >
-      <SelectTrigger
-        ref={selectRef}
-        className="h-6 border-none px-2 text-xs focus-visible:ring-0"
-        noChevron
-      >
+      <SelectTrigger noChevron>
         <SelectValue placeholder="Operator" />
       </SelectTrigger>
       <SelectContent position="popper" align="start">
@@ -78,6 +69,6 @@ export const ActivityFilterOperatorMenu = forwardRef<
       </SelectContent>
     </Select>
   );
-});
+};
 
 ActivityFilterOperatorMenu.displayName = "ActivityFilterOperatorMenu";

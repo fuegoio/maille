@@ -3,9 +3,8 @@ import {
   ActivityType,
 } from "@maille/core/activities";
 import type { ActivityFilter } from "@maille/core/activities";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { useState } from "react";
 
-import { AccountSelect } from "@/components/accounts/account-select";
 import { Input } from "@/components/ui/input";
 import {
   MultiSelect,
@@ -35,29 +34,18 @@ interface ActivityFilterValueMenuProps {
   onUpdateModelValue: (value: ActivityFilter["value"]) => void;
 }
 
-export const ActivityFilterValueMenu = forwardRef<
-  { click: () => void },
-  ActivityFilterValueMenuProps
->(({ modelValue, field, onUpdateModelValue }, ref) => {
+export const ActivityFilterValueMenu = ({
+  modelValue,
+  field,
+  onUpdateModelValue,
+}: ActivityFilterValueMenuProps) => {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const selectRef = useRef<HTMLButtonElement>(null);
   const [textValue, setTextValue] = useState<string | undefined>(
     modelValue as string | undefined,
   );
-
-  useImperativeHandle(ref, () => ({
-    click: () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      } else if (selectRef.current) {
-        selectRef.current.click();
-      }
-    },
-  }));
 
   const inputClassName =
     "rounded-none border text-xs! focus-visible:border-input focus-visible:ring-0";
@@ -70,7 +58,7 @@ export const ActivityFilterValueMenu = forwardRef<
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <SelectTrigger ref={selectRef} className={inputClassName} noChevron>
+        <SelectTrigger className={inputClassName}>
           <SelectValue placeholder="Date value" />
         </SelectTrigger>
         <SelectContent>
@@ -85,7 +73,6 @@ export const ActivityFilterValueMenu = forwardRef<
   } else if (field === "amount") {
     return (
       <Input
-        ref={inputRef}
         type="number"
         value={(modelValue as string | undefined) || ""}
         className={inputClassName}
@@ -98,7 +85,6 @@ export const ActivityFilterValueMenu = forwardRef<
   } else if (field === "name" || field === "description") {
     return (
       <Input
-        ref={inputRef}
         value={textValue}
         onChange={(e) => setTextValue(e.target.value)}
         className={inputClassName}
@@ -120,7 +106,7 @@ export const ActivityFilterValueMenu = forwardRef<
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+        <MultiSelectTrigger className={inputClassName}>
           <MultiSelectValue
             placeholder="Select a type"
             renderValue={(value) => {
@@ -180,7 +166,7 @@ export const ActivityFilterValueMenu = forwardRef<
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+        <MultiSelectTrigger className={inputClassName}>
           <MultiSelectValue
             placeholder="Select a category"
             renderValue={(value) => {
@@ -232,7 +218,7 @@ export const ActivityFilterValueMenu = forwardRef<
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+        <MultiSelectTrigger className={inputClassName}>
           <MultiSelectValue
             placeholder="Select a subcategory"
             renderValue={(value) => {
@@ -288,7 +274,7 @@ export const ActivityFilterValueMenu = forwardRef<
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+        <MultiSelectTrigger className={inputClassName}>
           <MultiSelectValue
             placeholder="Select an account"
             renderValue={(value) => {
@@ -349,6 +335,6 @@ export const ActivityFilterValueMenu = forwardRef<
   }
 
   return null;
-});
+};
 
 ActivityFilterValueMenu.displayName = "ActivityFilterValueMenu";

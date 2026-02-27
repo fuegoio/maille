@@ -4,7 +4,6 @@ import {
   type ActivityFilter,
 } from "@maille/core/activities";
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -23,33 +22,9 @@ export function ActivityFilter({
   onUpdateModelValue,
   onDelete,
 }: ActivityFilterProps) {
-  const operatorMenuRef = useRef<{ click: () => void }>(null);
-  const valueMenuRef = useRef<{ click: () => void }>(null);
-
-  useEffect(() => {
-    if (modelValue.operator === undefined) {
-      operatorMenuRef.current?.click();
-    } else if (modelValue.value === undefined) {
-      if (valueMenuRef.current) {
-        valueMenuRef.current.click();
-      }
-    }
-  }, [modelValue]);
-
-  useEffect(() => {
-    if (modelValue.operator !== undefined && modelValue.value === undefined) {
-      setTimeout(() => {
-        if (valueMenuRef.current) {
-          valueMenuRef.current.click();
-        }
-      }, 0);
-    }
-  }, [modelValue.operator, modelValue.value]);
-
   const activityFilterField = ActivityFilterFields.find(
     (aff) => aff.value === modelValue.field,
   );
-
   if (!activityFilterField) return null;
 
   const showValueMenu =
@@ -66,7 +41,6 @@ export function ActivityFilter({
       </div>
 
       <ActivityFilterOperatorMenu
-        ref={operatorMenuRef}
         modelValue={modelValue.operator}
         field={modelValue.field}
         onUpdateModelValue={(operator) => {
@@ -76,7 +50,6 @@ export function ActivityFilter({
 
       {showValueMenu && (
         <ActivityFilterValueMenu
-          ref={valueMenuRef}
           modelValue={modelValue.value}
           field={modelValue.field}
           onUpdateModelValue={(value) => {
