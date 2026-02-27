@@ -196,7 +196,7 @@ export function ImportMovementsButton({
               <UploadDropZone onFile={handleInputFile} />
             </div>
           ) : (
-            <form onSubmit={handleSubmit(processFile)}>
+            <form onSubmit={handleSubmit(processFile)} className="min-w-0">
               <FieldGroup>
                 <Controller
                   name="account"
@@ -307,7 +307,7 @@ export function ImportMovementsButton({
 
               <Separator className="mt-4" />
               <div className="mt-4 mb-2 px-0 text-sm">CSV data</div>
-              <div className="max-h-44 w-full overflow-auto px-0 py-4">
+              <div className="max-h-44 w-full max-w-full overflow-auto px-0 py-4">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>

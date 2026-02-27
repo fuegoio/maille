@@ -12,6 +12,7 @@ import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
+import { ActivitiesCommandPalette } from "./activities-command-palette";
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
 
@@ -274,6 +275,8 @@ export function ActivitiesTable({
         viewId={activityView.id}
         activities={activitiesFiltered}
       />
+
+      <ActivitiesCommandPalette selectedActivities={selectedActivities} />
 
       <div className="flex h-full flex-1 overflow-x-hidden">
         <div className="flex w-full flex-col overflow-x-hidden sm:min-w-[575px]">
