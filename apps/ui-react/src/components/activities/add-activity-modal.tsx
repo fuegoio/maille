@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
-import type { Movement } from "@maille/core/movements";
-import { Plus, Trash2 } from "lucide-react";
+import type { Activity, Movement, Transaction } from "@maille/core/activities";
+import { Plus } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -43,9 +43,9 @@ import {
 } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
-import { AccountSelect } from "../accounts/account-select";
-import { AmountInput } from "../ui/amount-input";
 import { DatePicker } from "../ui/date-picker";
+
+import { Transaction as TransactionComponent } from "./transaction";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -59,7 +59,11 @@ const formSchema = z.object({
   transactions: z.array(
     z.object({
       fromAccount: z.string().min(1, "From account is required"),
+      fromAsset: z.string().nullable(),
+      fromCounterparty: z.string().nullable(),
       toAccount: z.string().min(1, "To account is required"),
+      toAsset: z.string().nullable(),
+      toCounterparty: z.string().nullable(),
       amount: z.number().min(0.01, "Amount must be greater than 0"),
     }),
   ),
@@ -155,6 +159,26 @@ export function AddActivityModal({
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
 
+  // Handle transaction updates for the form
+  const handleTransactionUpdate = (
+    transactionIndex: number,
+    updateData: Partial<Transaction>,
+  ) => {
+    const updatedTransactions = [...transactions];
+    updatedTransactions[transactionIndex] = {
+      ...updatedTransactions[transactionIndex],
+      ...updateData,
+    };
+    setValue("transactions", updatedTransactions);
+  };
+
+  // Handle transaction deletion for the form
+  const handleTransactionDelete = (transactionIndex: number) => {
+    const updatedTransactions = [...transactions];
+    updatedTransactions.splice(transactionIndex, 1);
+    setValue("transactions", updatedTransactions);
+  };
+
   // Guess best transaction accounts based on type
   const guessBestTransaction = (): {
     fromAccount: string | undefined;
@@ -218,17 +242,14 @@ export function AddActivityModal({
       ...transactions,
       {
         fromAccount: fromAccount || "",
+        fromAsset: null,
+        fromCounterparty: null,
         toAccount: toAccount || "",
+        toAsset: null,
+        toCounterparty: null,
         amount,
       },
     ]);
-  };
-
-  // Remove a transaction
-  const removeTransaction = (index: number) => {
-    const newTransactions = [...transactions];
-    newTransactions.splice(index, 1);
-    setValue("transactions", newTransactions);
   };
 
   // Handle form submission
@@ -361,7 +382,7 @@ export function AddActivityModal({
         </DialogHeader>
 
         {/* Main content */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 space-y-4">
           <FieldGroup>
             {/* Date picker */}
             {!movements && (
@@ -563,56 +584,16 @@ export function AddActivityModal({
               </div>
             </div>
 
-            {transactions.map((_transaction, index) => (
-              <div key={index} className="my-3 flex items-center gap-2">
-                {/* From Account */}
-                <Controller
-                  name={`transactions.${index}.fromAccount` as const}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <AccountSelect {...field} placeholder="From account" />
-                    </Field>
-                  )}
-                />
-
-                <span className="text-primary-400 text-sm">to</span>
-
-                {/* To Account */}
-                <Controller
-                  name={`transactions.${index}.toAccount` as const}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} className="flex-1">
-                      <AccountSelect {...field} placeholder="To account" />
-                    </Field>
-                  )}
-                />
-
-                {/* Amount */}
-                <Controller
-                  name={`transactions.${index}.amount` as const}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid} className="w-24">
-                      <AmountInput {...field} mode="cell" />
-                    </Field>
-                  )}
-                />
-
-                {/* Remove transaction button */}
-                {!movements && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary-400 hover:text-primary-100 h-6 w-6 p-0"
-                    onClick={() => removeTransaction(index)}
-                    type="button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+            {transactions.map((transaction, index) => (
+              <TransactionComponent
+                key={index}
+                transaction={transaction}
+                className={index !== transactions.length - 1 ? "border-b" : ""}
+                onUpdate={(updateData) =>
+                  handleTransactionUpdate(index, updateData)
+                }
+                onDelete={() => handleTransactionDelete(index)}
+              />
             ))}
           </div>
 

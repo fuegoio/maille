@@ -41,7 +41,11 @@ const TransactionInput = builder.inputType("TransactionInput", {
     }),
     amount: t.float(),
     fromAccount: t.field({ type: "String" }),
+    fromAsset: t.field({ type: "String", required: false }),
+    fromCounterparty: t.field({ type: "String", required: false }),
     toAccount: t.field({ type: "String" }),
+    toAsset: t.field({ type: "String", required: false }),
+    toCounterparty: t.field({ type: "String", required: false }),
   }),
 });
 
@@ -122,10 +126,7 @@ export const registerActivitiesMutations = () => {
             const transactionResults = await db
               .insert(transactions)
               .values({
-                id: transaction.id,
-                amount: transaction.amount,
-                fromAccount: transaction.fromAccount,
-                toAccount: transaction.toAccount,
+                ...transaction,
                 activity: args.id,
               })
               .returning();
@@ -591,7 +592,11 @@ export const registerActivitiesMutations = () => {
           type: "Float",
         }),
         fromAccount: t.arg({ type: "String" }),
+        fromAsset: t.arg({ type: "String", required: false }),
+        fromCounterparty: t.arg({ type: "String", required: false }),
         toAccount: t.arg({ type: "String" }),
+        toAsset: t.arg({ type: "String", required: false }),
+        toCounterparty: t.arg({ type: "String", required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -624,13 +629,12 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("To account not found");
         }
 
+        // TODO: missing validation for assets and counterparties
+
         const newTransactions = await db
           .insert(transactions)
           .values({
-            id: args.id,
-            amount: args.amount,
-            fromAccount: args.fromAccount,
-            toAccount: args.toAccount,
+            ...args,
             activity: args.activityId,
           })
           .returning();
@@ -650,6 +654,39 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+
+        // Update sharing
+        const sharingId = (
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(eq(activitiesSharing.activity, args.activityId))
+        )[0]?.sharingId;
+        const activitySharings = sharingId
+          ? await db
+              .select()
+              .from(activitiesSharing)
+              .where(eq(activitiesSharing.sharingId, sharingId))
+          : [];
+
+        logger.info({ newTransaction, activitySharings }, "Updating activity sharing");
+        await Promise.all(
+          activitySharings.map(async (activitySharing) => {
+            await addEvent({
+              type: "updateActivitySharing",
+              payload: {
+                activityId: activitySharing.activity,
+                sharing: getActivitySharingsReconciliation(
+                  await getActivitySharings(activitySharing.activity, activitySharing.user),
+                  activitySharing.user,
+                ),
+              },
+              createdAt: new Date(),
+              clientId: ctx.session.id,
+              user: activitySharing.user,
+            });
+          }),
+        );
 
         return newTransaction;
       },
@@ -941,7 +978,7 @@ export const registerActivitiesMutations = () => {
         const updates: Partial<typeof category> = {
           name: args.name,
         };
-        
+
         // Optional fields
         if (args.emoji !== undefined) {
           updates.emoji = args.emoji;
@@ -1075,7 +1112,7 @@ export const registerActivitiesMutations = () => {
         const updates: Partial<typeof subcategory> = {
           name: args.name,
         };
-        
+
         // Optional fields
         if (args.emoji !== undefined) {
           updates.emoji = args.emoji;

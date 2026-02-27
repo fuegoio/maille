@@ -158,7 +158,7 @@ type MovementActivity {
 }
 
 type Mutation {
-  addTransaction(activityId: String!, amount: Float!, fromAccount: String!, id: String!, toAccount: String!): Transaction!
+  addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromAsset: String, fromCounterparty: String, id: String!, toAccount: String!, toAsset: String, toCounterparty: String): Transaction!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!): Account!
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!): Activity!
   createActivityCategory(emoji: String, id: String!, name: String!, type: String!): ActivityCategory!
@@ -234,6 +234,10 @@ type Transaction {
 input TransactionInput {
   amount: Float!
   fromAccount: String!
+  fromAsset: String
+  fromCounterparty: String
   id: String!
   toAccount: String!
+  toAsset: String
+  toCounterparty: String
 }

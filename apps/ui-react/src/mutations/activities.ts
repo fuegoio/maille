@@ -151,14 +151,22 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
     $id: String!
     $amount: Float!
     $fromAccount: String!
+    $fromAsset: String
+    $fromCounterparty: String
     $toAccount: String!
+    $toAsset: String
+    $toCounterparty: String
   ) {
     addTransaction(
       activityId: $activityId
       id: $id
       amount: $amount
       fromAccount: $fromAccount
+      fromAsset: $fromAsset
+      fromCounterparty: $fromCounterparty
       toAccount: $toAccount
+      toAsset: $toAsset
+      toCounterparty: $toCounterparty
     ) {
       id
     }

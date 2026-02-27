@@ -1,5 +1,5 @@
 import { AccountType } from "@maille/core/accounts";
-import type { Activity, Transaction } from "@maille/core/activities";
+import type { Transaction } from "@maille/core/activities";
 import { CornerDownRight, Ellipsis, MoveRight, TrashIcon } from "lucide-react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
@@ -12,80 +12,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  updateTransactionMutation,
-  deleteTransactionMutation,
-} from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
-import { useSync } from "@/stores/sync";
 
 import { AssetSelect } from "../accounts/assets/assets-select";
 import { CounterpartiesSelect } from "../accounts/counterparties/counterparties-select";
 
 interface TransactionProps {
-  activity: Activity;
-  transaction: Transaction;
+  transaction: Omit<Transaction, "id">;
   className?: string;
+  onUpdate?: (updateData: Partial<Transaction>) => void;
+  onDelete?: () => void;
 }
 
 export function Transaction({
-  activity,
   transaction,
   className,
+  onUpdate,
+  onDelete,
 }: TransactionProps) {
-  const mutate = useSync((state) => state.mutate);
   const accounts = useAccounts((state) => state.accounts);
 
   const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
   const toAccount = accounts.find((a) => a.id === transaction.toAccount);
-
-  const handleTransactionUpdate = (
-    transaction: Transaction,
-    updateData: Partial<Transaction>,
-  ) => {
-    const oldTransaction = { ...transaction };
-    mutate({
-      name: "updateTransaction",
-      mutation: updateTransactionMutation,
-      variables: {
-        activityId: activity.id,
-        id: transaction.id,
-        ...updateData,
-      },
-      rollbackData: oldTransaction,
-      events: [
-        {
-          type: "updateTransaction",
-          payload: {
-            activityId: activity.id,
-            id: transaction.id,
-            ...updateData,
-          },
-        },
-      ],
-    });
-  };
-
-  const handleTransactionDelete = (transaction: Transaction) => {
-    mutate({
-      name: "deleteTransaction",
-      mutation: deleteTransactionMutation,
-      variables: {
-        activityId: activity.id,
-        id: transaction.id,
-      },
-      rollbackData: transaction,
-      events: [
-        {
-          type: "deleteTransaction",
-          payload: {
-            activityId: activity.id,
-            id: transaction.id,
-          },
-        },
-      ],
-    });
-  };
 
   return (
     <div className={cn("flex items-start py-2 text-sm", className)}>
@@ -93,7 +41,7 @@ export function Transaction({
         <AccountSelect
           value={transaction.fromAccount}
           onChange={(account) =>
-            handleTransactionUpdate(transaction, {
+            onUpdate?.({
               fromAccount: account,
               fromCounterparty: null,
               fromAsset: null,
@@ -107,7 +55,7 @@ export function Transaction({
               accountId={transaction.fromAccount}
               value={transaction.fromCounterparty || ""}
               onValueChange={(counterparty) =>
-                handleTransactionUpdate(transaction, {
+                onUpdate?.({
                   fromCounterparty: counterparty,
                 })
               }
@@ -121,7 +69,7 @@ export function Transaction({
               accountId={transaction.fromAccount}
               value={transaction.fromAsset || ""}
               onValueChange={(asset) =>
-                handleTransactionUpdate(transaction, {
+                onUpdate?.({
                   fromAsset: asset,
                 })
               }
@@ -136,7 +84,7 @@ export function Transaction({
         <AccountSelect
           value={transaction.toAccount}
           onChange={(account) =>
-            handleTransactionUpdate(transaction, {
+            onUpdate?.({
               toAccount: account,
               toCounterparty: null,
               toAsset: null,
@@ -150,7 +98,7 @@ export function Transaction({
               accountId={transaction.toAccount}
               value={transaction.toCounterparty || ""}
               onValueChange={(counterparty) =>
-                handleTransactionUpdate(transaction, {
+                onUpdate?.({
                   toCounterparty: counterparty,
                 })
               }
@@ -164,7 +112,7 @@ export function Transaction({
               accountId={transaction.toAccount}
               value={transaction.toAsset || ""}
               onValueChange={(asset) =>
-                handleTransactionUpdate(transaction, {
+                onUpdate?.({
                   toAsset: asset,
                 })
               }
@@ -178,25 +126,22 @@ export function Transaction({
       <AmountInput
         value={transaction.amount}
         onChange={(amount) => {
-          handleTransactionUpdate(transaction, {
+          onUpdate?.({
             amount,
           });
         }}
         mode="cell"
-        className="mr-1.5 w-24"
+        className="mr-2 w-24"
       />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon-xs" className="my-1">
             <Ellipsis />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => handleTransactionDelete(transaction)}
-          >
+          <DropdownMenuItem variant="destructive" onClick={() => onDelete?.()}>
             <TrashIcon />
             Delete
           </DropdownMenuItem>
