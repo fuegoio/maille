@@ -8,12 +8,21 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { AccountSelect } from "@/components/accounts/account-select";
 import { Input } from "@/components/ui/input";
 import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
 
 interface ActivityFilterValueMenuProps {
   modelValue: ActivityFilter["value"] | undefined;
@@ -69,7 +78,7 @@ export const ActivityFilterValueMenu = forwardRef<
       <Input
         ref={inputRef}
         type="number"
-        value={modelValue as number | undefined}
+        value={(modelValue as string | undefined) || ""}
         className={inputClassName}
         onChange={(e) => {
           const value = e.target.value;
@@ -96,23 +105,63 @@ export const ActivityFilterValueMenu = forwardRef<
     );
   } else if (field === "type") {
     return (
-      <Select
-        value={modelValue as string | undefined}
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
         onValueChange={(value) => {
           onUpdateModelValue(value as ActivityFilter["value"]);
         }}
       >
-        <SelectTrigger ref={selectRef} className={inputClassName} noChevron>
-          <SelectValue placeholder="Type value" />
-        </SelectTrigger>
-        <SelectContent>
+        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select a type"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const activityType = value[0] as ActivityType;
+                return (
+                  <>
+                    <div
+                      className={cn(
+                        "h-3 w-3 shrink-0 rounded-full",
+                        ACTIVITY_TYPES_COLOR[activityType],
+                      )}
+                    />
+                    <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {value.map((activityType, index) => (
+                      <div
+                        key={activityType}
+                        className={cn(
+                          "h-3 w-3 shrink-0 rounded-full",
+                          ACTIVITY_TYPES_COLOR[activityType as ActivityType],
+                          index > 0 && "-ml-2",
+                        )}
+                      />
+                    ))}
+                    <span>{value.length} types</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent>
           {Object.values(ActivityType).map((value) => (
-            <SelectItem key={value} value={value}>
-              {value}
-            </SelectItem>
+            <MultiSelectItem key={value} value={value}>
+              <div
+                className={cn(
+                  "h-3 w-3 shrink-0 rounded-full",
+                  ACTIVITY_TYPES_COLOR[value],
+                )}
+              />
+              <span>{ACTIVITY_TYPES_NAME[value]}</span>
+            </MultiSelectItem>
           ))}
-        </SelectContent>
-      </Select>
+        </MultiSelectContent>
+      </MultiSelect>
     );
   } else if (field === "from_account" || field === "to_account") {
     return (

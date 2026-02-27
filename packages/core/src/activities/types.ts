@@ -121,24 +121,21 @@ export const ActivityFilterCategoryOperators = ["is defined", "is not defined"] 
 export const ActivityFilterFields: {
   value: ActivityFilter["field"];
   text: string;
-  icon: string;
 }[] = [
-  { value: "name", text: "Name", icon: "mdi-alphabetical" },
-  { value: "description", text: "Description", icon: "mdi-alphabetical" },
-  { value: "date", text: "Date", icon: "mdi-calendar" },
-  { value: "amount", text: "Amount", icon: "mdi-currency-eur" },
-  { value: "type", text: "Type", icon: "mdi-plus-minus" },
-  { value: "category", text: "Category", icon: "mdi-tag" },
-  { value: "subcategory", text: "Subcategory", icon: "mdi-tag-outline" },
+  { value: "name", text: "Name" },
+  { value: "description", text: "Description" },
+  { value: "date", text: "Date" },
+  { value: "amount", text: "Amount" },
+  { value: "type", text: "Type" },
+  { value: "category", text: "Category" },
+  { value: "subcategory", text: "Subcategory" },
   {
     value: "from_account",
     text: "Source account",
-    icon: "mdi-bank-transfer-out",
   },
   {
     value: "to_account",
     text: "Destination account",
-    icon: "mdi-bank-transfer-in",
   },
 ];
 

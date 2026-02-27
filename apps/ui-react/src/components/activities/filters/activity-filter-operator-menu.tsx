@@ -69,7 +69,7 @@ export const ActivityFilterOperatorMenu = forwardRef<
       >
         <SelectValue placeholder="Operator" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper" align="start">
         {operators.map((operator) => (
           <SelectItem key={operator} value={operator}>
             {operator}

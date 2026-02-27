@@ -7,10 +7,10 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 
 import { ActivityFilterOperatorMenu } from "./activity-filter-operator-menu";
 import { ActivityFilterValueMenu } from "./activity-filter-value-menu";
+import { ActivityFilterIcons } from "./activity-filters-icons";
 
 interface ActivityFilterProps {
   modelValue: ActivityFilter;
@@ -46,15 +46,6 @@ export function ActivityFilter({
     }
   }, [modelValue.operator, modelValue.value]);
 
-  const handleCloseValue = () => {
-    if (
-      modelValue.value === undefined ||
-      (Array.isArray(modelValue.value) && modelValue.value.length === 0)
-    ) {
-      onDelete();
-    }
-  };
-
   const activityFilterField = ActivityFilterFields.find(
     (aff) => aff.value === modelValue.field,
   );
@@ -65,9 +56,12 @@ export function ActivityFilter({
     modelValue.operator !== undefined &&
     !OperatorsWithoutValue.includes(modelValue.operator as any);
 
+  const Icon = ActivityFilterIcons[activityFilterField.value];
+
   return (
     <div className="flex h-6 w-fit max-w-full items-center overflow-hidden rounded border border-input">
       <div className="flex h-7 items-center border-r border-input bg-input/30 px-2 text-xs">
+        <Icon className="mr-1 size-3" />
         {activityFilterField.text}
       </div>
 
@@ -76,7 +70,7 @@ export function ActivityFilter({
         modelValue={modelValue.operator}
         field={modelValue.field}
         onUpdateModelValue={(operator) => {
-          onUpdateModelValue({ ...modelValue, operator });
+          onUpdateModelValue({ ...modelValue, operator } as ActivityFilter);
         }}
       />
 
@@ -86,7 +80,7 @@ export function ActivityFilter({
           modelValue={modelValue.value}
           field={modelValue.field}
           onUpdateModelValue={(value) => {
-            onUpdateModelValue({ ...modelValue, value });
+            onUpdateModelValue({ ...modelValue, value } as ActivityFilter);
           }}
         />
       )}

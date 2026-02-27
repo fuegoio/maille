@@ -71,7 +71,7 @@ export function ActivitiesFilters({
           />
         ))}
 
-        <FilterActivitiesButton viewId={viewId} />
+        <FilterActivitiesButton viewId={viewId} variant="mini" />
       </div>
 
       <div className="mt-2 flex flex-1 items-end sm:mt-0 sm:ml-2 sm:items-center">
@@ -95,11 +95,11 @@ export function ActivitiesFilters({
               activitiesTotal[activityType] && (
                 <div
                   key={activityType}
-                  className="my-1 flex items-center px-2 text-right font-mono text-xs"
+                  className="my-1 flex items-center px-2 text-right font-mono text-sm"
                 >
                   <div
                     className={cn(
-                      `mr-2 size-2 shrink-0 rounded-full`,
+                      `mr-3 size-2.5 shrink-0 rounded-full`,
                       ACTIVITY_TYPES_COLOR[activityType],
                     )}
                   />
