@@ -145,9 +145,15 @@ export function Activity() {
   };
 
   // Hotkey to close with Escape
-  useHotkey("Escape", () => {
-    close();
-  });
+  useHotkey(
+    "Escape",
+    () => {
+      close();
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
 
   if (!activity) return null;
 
