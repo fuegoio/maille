@@ -53,14 +53,18 @@ export const verifyMovementFilter = (filter: MovementFilter, movement: Movement)
     else throw Error("operator not valid");
   } else if (filter.field === "account") {
     if (filter.operator === "is any of") {
+      if (filter.value.length === 0) return true;
       return filter.value.includes(movement.account);
     } else if (filter.operator === "is not") {
+      if (filter.value.length === 0) return true;
       return !filter.value.includes(movement.account);
     } else throw Error("operator not valid");
   } else if (filter.field === "status") {
     if (filter.operator === "is any of") {
+      if (filter.value.length === 0) return true;
       return filter.value.includes(movement.status);
     } else if (filter.operator === "is not") {
+      if (filter.value.length === 0) return true;
       return !filter.value.includes(movement.status);
     } else throw Error("operator not valid");
   } else {

@@ -22,7 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
+import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
+import {
+  ACTIVITY_TYPES_COLOR,
+  ACTIVITY_TYPES_NAME,
+  useActivities,
+} from "@/stores/activities";
 
 interface ActivityFilterValueMenuProps {
   modelValue: ActivityFilter["value"] | undefined;
@@ -34,6 +39,10 @@ export const ActivityFilterValueMenu = forwardRef<
   { click: () => void },
   ActivityFilterValueMenuProps
 >(({ modelValue, field, onUpdateModelValue }, ref) => {
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
+  const accounts = useAccounts((state) => state.accounts);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLButtonElement>(null);
   const [textValue, setTextValue] = useState<string | undefined>(
@@ -148,7 +157,7 @@ export const ActivityFilterValueMenu = forwardRef<
             }}
           />
         </MultiSelectTrigger>
-        <MultiSelectContent>
+        <MultiSelectContent className="w-fit">
           {Object.values(ActivityType).map((value) => (
             <MultiSelectItem key={value} value={value}>
               <div
@@ -163,14 +172,179 @@ export const ActivityFilterValueMenu = forwardRef<
         </MultiSelectContent>
       </MultiSelect>
     );
+  } else if (field === "category") {
+    return (
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
+        onValueChange={(value) => {
+          onUpdateModelValue(value as ActivityFilter["value"]);
+        }}
+      >
+        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select a category"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const categoryId = value[0];
+                const category = categories.find((c) => c.id === categoryId);
+                if (!category) return;
+                return (
+                  <>
+                    {category.emoji && (
+                      <span className="mr-0.5">{category.emoji}</span>
+                    )}
+                    {category.name}
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {value.map((categoryId) => {
+                      const category = categories.find(
+                        (c) => c.id === categoryId,
+                      );
+                      if (!category || !category.emoji) return;
+
+                      return <span key={categoryId}>{category.emoji}</span>;
+                    })}
+                    <span>{value.length} categories</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent className="w-fit">
+          {categories.map((cat) => (
+            <MultiSelectItem key={cat.id} value={cat.id}>
+              {cat.emoji && <span className="mr-0.5">{cat.emoji}</span>}
+              {cat.name}
+            </MultiSelectItem>
+          ))}
+        </MultiSelectContent>
+      </MultiSelect>
+    );
+  } else if (field === "subcategory") {
+    return (
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
+        onValueChange={(value) => {
+          onUpdateModelValue(value as ActivityFilter["value"]);
+        }}
+      >
+        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select a subcategory"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const subcategoryId = value[0];
+                const subcategory = subcategories.find(
+                  (c) => c.id === subcategoryId,
+                );
+                if (!subcategory) return;
+                return (
+                  <>
+                    {subcategory.emoji && (
+                      <span className="mr-0.5">{subcategory.emoji}</span>
+                    )}
+                    {subcategory.name}
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {value.map((subcategoryId) => {
+                      const subcategory = subcategories.find(
+                        (c) => c.id === subcategoryId,
+                      );
+                      if (!subcategory || !subcategory.emoji) return;
+
+                      return (
+                        <span key={subcategoryId}>{subcategory.emoji}</span>
+                      );
+                    })}
+                    <span>{value.length} subcategories</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent className="w-fit">
+          {subcategories.map((subcat) => (
+            <MultiSelectItem key={subcat.id} value={subcat.id}>
+              {subcat.emoji && <span className="mr-0.5">{subcat.emoji}</span>}
+              {subcat.name}
+            </MultiSelectItem>
+          ))}
+        </MultiSelectContent>
+      </MultiSelect>
+    );
   } else if (field === "from_account" || field === "to_account") {
     return (
-      <AccountSelect
-        value={modelValue && Array.isArray(modelValue) ? modelValue : []}
-        onChange={(value) => {
-          onUpdateModelValue(value);
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
+        onValueChange={(value) => {
+          onUpdateModelValue(value as ActivityFilter["value"]);
         }}
-      />
+      >
+        <MultiSelectTrigger ref={selectRef} className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select an account"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const accountId = value[0];
+                const account = accounts.find((a) => a.id === accountId);
+                if (!account) return;
+                return (
+                  <>
+                    <div
+                      className={cn(
+                        "h-3 w-3 shrink-0 rounded-full",
+                        ACCOUNT_TYPES_COLOR[account.type],
+                      )}
+                    />
+                    <span>{account.name}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {value.map((accountId, index) => {
+                      const account = accounts.find((a) => a.id === accountId);
+                      if (!account) return;
+                      return (
+                        <div
+                          key={accountId}
+                          className={cn(
+                            "h-3 w-3 shrink-0 rounded-full",
+                            ACCOUNT_TYPES_COLOR[account.type],
+                            index > 0 && "-ml-2",
+                          )}
+                        />
+                      );
+                    })}
+                    <span>{value.length} accounts</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent className="w-fit">
+          {accounts.map((account) => (
+            <MultiSelectItem key={account.id} value={account.id}>
+              <div
+                className={cn(
+                  "h-3 w-3 shrink-0 rounded-full",
+                  ACCOUNT_TYPES_COLOR[account.type],
+                )}
+              />
+              <span>{account.name}</span>
+            </MultiSelectItem>
+          ))}
+        </MultiSelectContent>
+      </MultiSelect>
     );
   }
 

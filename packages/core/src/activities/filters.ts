@@ -52,16 +52,20 @@ export const verifyActivityFilter = (filter: ActivityFilter, activity: Activity)
       return !value?.toLowerCase().includes(filter.value.toLowerCase());
     else throw Error("operator not valid");
   } else if (filter.field === "type") {
-    if (filter.operator === "is any of") return filter.value.includes(activity.type);
-    else if (filter.operator === "is not") return !filter.value.includes(activity.type);
+    if (filter.operator === "is any of")
+      return filter.value.length > 0 ? filter.value.includes(activity.type) : true;
+    else if (filter.operator === "is not")
+      return filter.value.length > 0 ? !filter.value.includes(activity.type) : true;
     else throw Error("operator not valid");
   } else if (filter.field === "category" || filter.field === "subcategory") {
     const value = activity[filter.field];
     if (filter.operator === "is any of") {
       if (value === null) return false;
+      if (filter.value.length === 0) return true;
       return filter.value.includes(value);
     } else if (filter.operator === "is not") {
       if (value === null) return false;
+      if (filter.value.length === 0) return true;
       return !filter.value.includes(value);
     } else if (filter.operator === "is defined") {
       return value !== null;
@@ -70,20 +74,24 @@ export const verifyActivityFilter = (filter: ActivityFilter, activity: Activity)
     } else throw Error("operator not valid");
   } else if (filter.field === "from_account") {
     if (filter.operator === "is any of") {
+      if (filter.value.length === 0) return true;
       return activity.transactions.some(
         (t) => t.fromAccount !== null && filter.value.includes(t.fromAccount),
       );
     } else if (filter.operator === "is not") {
+      if (filter.value.length === 0) return true;
       return activity.transactions.every(
         (t) => t.fromAccount === null || !filter.value.includes(t.fromAccount),
       );
     } else throw Error("operator not valid");
   } else if (filter.field === "to_account") {
     if (filter.operator === "is any of") {
+      if (filter.value.length === 0) return true;
       return activity.transactions.some(
         (t) => t.toAccount !== null && filter.value.includes(t.toAccount),
       );
     } else if (filter.operator === "is not") {
+      if (filter.value.length === 0) return true;
       return activity.transactions.every(
         (t) => t.toAccount === null || !filter.value.includes(t.toAccount),
       );
