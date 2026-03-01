@@ -150,13 +150,12 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
   const addTransaction = () => {
     const { fromAccount, toAccount } = guessBestTransaction();
-    if (!fromAccount || !toAccount) return;
 
     const transactionId = crypto.randomUUID();
     const transaction = {
       id: transactionId,
-      fromAccount,
-      toAccount,
+      fromAccount: fromAccount || "",
+      toAccount: toAccount || "",
       amount: 0,
     };
 
