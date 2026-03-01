@@ -1,3 +1,4 @@
+import type { ActivityType } from "@maille/core/activities";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   BookMarked,
@@ -31,6 +32,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
+import type { ActivitiesFilters } from "@/types/activities";
 
 export const Route = createFileRoute("/_authenticated/months/$month")({
   component: MonthPage,
@@ -71,6 +73,10 @@ function MonthPage() {
   const focusedActivity = useActivities((state) => state.focusedActivity);
   const movements = useMovements((state) => state.movements);
   const focusedMovement = useMovements((state) => state.focusedMovement);
+
+  const [activitiesFilters, setActivitiesFilters] = useState<ActivitiesFilters>(
+    {},
+  );
 
   const [summaryOpen, setSummaryOpen] = useState(true);
 
@@ -176,6 +182,9 @@ function MonthPage() {
               <ActivitiesTable
                 viewId={`month-${month}-${year}-activities`}
                 activities={monthActivities}
+                activityTypeFilter={activitiesFilters.activityType}
+                categoryFilter={activitiesFilters.category}
+                subcategoryFilter={activitiesFilters.subcategory}
               />
             </TabsContent>
 
@@ -210,7 +219,11 @@ function MonthPage() {
               </TabsList>
 
               <TabsContent value="activities">
-                <MonthActivitiesSummary monthDate={monthDate} />
+                <MonthActivitiesSummary
+                  activitiesFilters={activitiesFilters}
+                  onActivitiesFiltersChange={setActivitiesFilters}
+                  monthDate={monthDate}
+                />
               </TabsContent>
 
               <TabsContent value="accounts">

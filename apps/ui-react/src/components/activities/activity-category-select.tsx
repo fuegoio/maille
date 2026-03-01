@@ -1,5 +1,5 @@
 import { ActivityType } from "@maille/core/activities";
-import { Plus, PlusCircle, Search, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import * as React from "react";
 
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";

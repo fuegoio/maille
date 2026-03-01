@@ -39,13 +39,12 @@ export const OperatorsWithoutValue = MovementFilterStatusOperators;
 export const MovementFilterFields: {
   value: MovementFilter["field"];
   text: string;
-  icon: string;
 }[] = [
-  { value: "name", text: "Name", icon: "mdi-alphabetical" },
-  { value: "date", text: "Date", icon: "mdi-calendar" },
-  { value: "amount", text: "Amount", icon: "mdi-currency-eur" },
-  { value: "account", text: "Account", icon: "mdi-bank" },
-  { value: "status", text: "Status", icon: "mdi-check-circle" },
+  { value: "name", text: "Name" },
+  { value: "date", text: "Date" },
+  { value: "amount", text: "Amount" },
+  { value: "account", text: "Account" },
+  { value: "status", text: "Status" },
 ];
 
 type MovementFilterName = {

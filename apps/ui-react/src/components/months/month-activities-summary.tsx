@@ -13,24 +13,23 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
+import type { ActivitiesFilters } from "@/types/activities";
 
 import { MonthActivityCategoryLine } from "./month-activity-category-line";
 
 interface MonthActivitiesSummaryProps {
   monthDate: Date;
+  activitiesFilters: ActivitiesFilters;
+  onActivitiesFiltersChange(filters: ActivitiesFilters): void;
 }
 
 export function MonthActivitiesSummary({
   monthDate,
+  activitiesFilters,
+  onActivitiesFiltersChange,
 }: MonthActivitiesSummaryProps) {
   const categories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);
-
-  const viewFilters = {
-    activityType: null,
-    category: null,
-    subcategory: null,
-  };
 
   const getCategories = (activityType: ActivityType) => {
     return categories
@@ -102,11 +101,24 @@ export function MonthActivitiesSummary({
       {activityTypes.map((activityType) => (
         <div key={activityType.type} className="w-full border-b px-3 py-4">
           <div
-            className={`group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors ${
-              viewFilters.activityType === activityType.type
-                ? "bg-primary-800"
-                : "hover:bg-primary-800"
-            }`}
+            className={cn(
+              "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
+              {
+                "bg-muted":
+                  activitiesFilters.activityType === activityType.type,
+                "hover:bg-muted/50":
+                  activitiesFilters.activityType !== activityType.type,
+              },
+            )}
+            onClick={() => {
+              onActivitiesFiltersChange({
+                ...activitiesFilters,
+                activityType:
+                  activitiesFilters.activityType === activityType.type
+                    ? undefined
+                    : activityType.type,
+              });
+            }}
           >
             <div className="flex items-center">
               <div
@@ -123,12 +135,12 @@ export function MonthActivitiesSummary({
             <div className="flex items-center">
               <div
                 className={`text-primary-200 mr-4 text-sm ${
-                  viewFilters.activityType === activityType.type
+                  activitiesFilters.activityType === activityType.type
                     ? ""
                     : "hidden group-hover:block"
                 }`}
               >
-                {viewFilters.activityType === activityType.type
+                {activitiesFilters.activityType === activityType.type
                   ? "Clear filter"
                   : "Filter"}
               </div>
@@ -181,6 +193,8 @@ export function MonthActivitiesSummary({
               key={category.id}
               monthDate={monthDate}
               category={category}
+              activitiesFilters={activitiesFilters}
+              onActivitiesFiltersChange={onActivitiesFiltersChange}
             />
           ))}
         </div>

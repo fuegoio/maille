@@ -9,26 +9,25 @@ import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
+import type { ActivitiesFilters } from "@/types/activities";
 
 interface MonthActivityCategoryLineProps {
   monthDate: Date;
   category: ActivityCategory;
+  activitiesFilters: ActivitiesFilters;
+  onActivitiesFiltersChange(filters: ActivitiesFilters): void;
 }
 
 export function MonthActivityCategoryLine({
   monthDate,
   category,
+  activitiesFilters,
+  onActivitiesFiltersChange,
 }: MonthActivityCategoryLineProps) {
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
   const currencyFormatter = useCurrencyFormatter();
-
-  const viewFilters = {
-    activityType: null,
-    category: null,
-    subcategory: null,
-  };
 
   const monthActivityCategoryValue = useMemo<number>(() => {
     const startOfMonth = new Date(
@@ -76,25 +75,25 @@ export function MonthActivityCategoryLine({
   }, [activities, monthDate, category.id, categorySubcategories]);
 
   const selectCategoryToFilterActivities = () => {
-    viewFilters.subcategory = null;
-    viewFilters.activityType = null;
-    if (viewFilters.category !== category.id) {
-      viewFilters.category = category.id;
-    } else {
-      viewFilters.category = null;
-    }
+    onActivitiesFiltersChange({
+      activityType: undefined,
+      category:
+        activitiesFilters.category !== category.id ? category.id : undefined,
+      subcategory: undefined,
+    });
   };
 
   const selectSubcategoryToFilterActivities = (
     subcategory: ActivitySubCategory,
   ) => {
-    viewFilters.category = null;
-    viewFilters.activityType = null;
-    if (viewFilters.subcategory !== subcategory.id) {
-      viewFilters.subcategory = subcategory.id;
-    } else {
-      viewFilters.subcategory = null;
-    }
+    onActivitiesFiltersChange({
+      activityType: undefined,
+      category: undefined,
+      subcategory:
+        activitiesFilters.subcategory !== subcategory.id
+          ? subcategory.id
+          : undefined,
+    });
   };
 
   return (
@@ -103,8 +102,8 @@ export function MonthActivityCategoryLine({
         className={cn(
           "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
           {
-            "bg-muted": viewFilters.category === category.id,
-            "hover:bg-muted/50": viewFilters.category !== category.id,
+            "bg-muted": activitiesFilters.category === category.id,
+            "hover:bg-muted/50": activitiesFilters.category !== category.id,
           },
         )}
         onClick={selectCategoryToFilterActivities}
@@ -141,10 +140,13 @@ export function MonthActivityCategoryLine({
         <div className="flex items-center">
           <div
             className={cn("mr-4 text-sm text-muted-foreground", {
-              "hidden group-hover:block": viewFilters.category !== category.id,
+              "hidden group-hover:block":
+                activitiesFilters.category !== category.id,
             })}
           >
-            {viewFilters.category === category.id ? "Clear filter" : "Filter"}
+            {activitiesFilters.category === category.id
+              ? "Clear filter"
+              : "Filter"}
           </div>
 
           <div className="font-mono text-sm whitespace-nowrap text-white">
@@ -161,9 +163,9 @@ export function MonthActivityCategoryLine({
               className={cn(
                 "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
                 {
-                  "bg-muted": viewFilters.subcategory === subcategory.id,
+                  "bg-muted": activitiesFilters.subcategory === subcategory.id,
                   "hover:bg-muted/50":
-                    viewFilters.subcategory !== subcategory.id,
+                    activitiesFilters.subcategory !== subcategory.id,
                 },
               )}
               onClick={() => selectSubcategoryToFilterActivities(subcategory)}
@@ -176,10 +178,10 @@ export function MonthActivityCategoryLine({
                 <div
                   className={cn("mr-4 text-sm text-muted-foreground", {
                     "hidden group-hover:block":
-                      viewFilters.subcategory !== subcategory.id,
+                      activitiesFilters.subcategory !== subcategory.id,
                   })}
                 >
-                  {viewFilters.subcategory === subcategory.id
+                  {activitiesFilters.subcategory === subcategory.id
                     ? "Clear filter"
                     : "Filter"}
                 </div>

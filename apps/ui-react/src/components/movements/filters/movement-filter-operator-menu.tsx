@@ -1,12 +1,11 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import type { MovementFilter } from "@maille/core/movements";
 import {
   ActivityFilterAmountOperators,
   ActivityFilterDateOperators,
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
 } from "@maille/core/activities";
-import type { MovementFilter } from "@maille/core/movements";
+
 import {
   Select,
   SelectContent,
@@ -16,30 +15,24 @@ import {
 } from "@/components/ui/select";
 
 interface MovementFilterOperatorMenuProps {
+  open?: boolean;
   modelValue: MovementFilter["operator"] | undefined;
   field: MovementFilter["field"];
   onUpdateModelValue: (value: MovementFilter["operator"]) => void;
-  onClose: () => void;
 }
 
-export const MovementFilterOperatorMenu = forwardRef<
-  { click: () => void },
-  MovementFilterOperatorMenuProps
->(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
-  const selectRef = useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = useState(false);
-
-  useImperativeHandle(ref, () => ({
-    click: () => {
-      selectRef.current?.click();
-    },
-  }));
-
+export const MovementFilterOperatorMenu = ({
+  open,
+  modelValue,
+  field,
+  onUpdateModelValue,
+}: MovementFilterOperatorMenuProps) => {
   const getOperators = (): readonly string[] => {
     if (field === "date") return ActivityFilterDateOperators;
     else if (field === "name") return ActivityFilterNameDescriptionOperators;
     else if (field === "amount") return ActivityFilterAmountOperators;
-    else if (field === "account" || field === "status") return ActivityFilterMultipleOperators;
+    else if (field === "account" || field === "status")
+      return ActivityFilterMultipleOperators;
     return [];
   };
 
@@ -47,39 +40,24 @@ export const MovementFilterOperatorMenu = forwardRef<
 
   return (
     <Select
+      open={open}
       value={modelValue}
       onValueChange={(value) => {
         onUpdateModelValue(value as MovementFilter["operator"]);
       }}
-      onOpenChange={(isOpen) => {
-        setOpen(isOpen);
-        if (!isOpen) {
-          onClose();
-        }
-      }}
     >
-      <SelectTrigger
-        ref={selectRef}
-        className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] shrink-0 items-center border-r px-2 text-sm transition-colors hover:text-white ${
-          open ? "bg-primary-700 text-white" : ""
-        }`}
-      >
+      <SelectTrigger noChevron>
         <SelectValue placeholder="Operator" />
-        <ChevronDown className="ml-1 size-4" />
       </SelectTrigger>
-      <SelectContent className="bg-primary-800 border-primary-600">
+      <SelectContent position="popper" align="start">
         {operators.map((operator) => (
-          <SelectItem
-            key={operator}
-            value={operator}
-            className="text-primary-100 hover:bg-primary-700"
-          >
+          <SelectItem key={operator} value={operator}>
             {operator}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
-});
+};
 
 MovementFilterOperatorMenu.displayName = "MovementFilterOperatorMenu";

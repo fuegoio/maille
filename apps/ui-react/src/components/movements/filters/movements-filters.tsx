@@ -1,70 +1,70 @@
-import * as React from "react";
+import { type Movement } from "@maille/core/movements";
+
+import { Button } from "@/components/ui/button";
 import { useViews } from "@/stores/views";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+
 import { MovementFilter } from "./movement-filter";
 import { FilterMovementsButton } from "./filter-movements-button";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 
 interface MovementsFiltersProps {
   viewId: string;
-  movements: any[]; // Replace with proper Movement type
+  movements: Movement[];
 }
 
-export function MovementsFilters({ viewId, movements }: MovementsFiltersProps) {
+export function MovementsFilters({
+  viewId,
+}: MovementsFiltersProps) {
   const movementView = useViews((state) => state.getMovementView(viewId));
-  const currencyFormatter = useCurrencyFormatter();
-
-  const movementsTotal = React.useMemo(() => {
-    return movements.reduce((total, movement) => total + movement.amount, 0);
-  }, [movements]);
+  const setMovementView = useViews((state) => state.setMovementView);
 
   const clearFilters = () => {
-    movementView.filters = [];
+    setMovementView(viewId, {
+      ...movementView,
+      filters: [],
+    });
   };
 
   if (movementView.filters.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2 border-b py-2 pr-4 pl-4 sm:min-w-[575px] sm:pl-6 md:flex-row md:items-start">
+    <header className="flex h-9 shrink-0 items-center gap-2 border-b bg-muted/50 px-2 sm:pl-11.25">
       <div className="flex flex-wrap items-center gap-2">
         {movementView.filters.map((filter, index) => (
           <MovementFilter
             key={index}
             modelValue={filter}
             onUpdateModelValue={(newFilter) => {
-              movementView.filters[index] = newFilter;
+              setMovementView(viewId, {
+                ...movementView,
+                filters: movementView.filters.map((f, i) =>
+                  i === index ? newFilter : f,
+                ),
+              });
             }}
             onDelete={() => {
-              movementView.filters.splice(index, 1);
+              setMovementView(viewId, {
+                ...movementView,
+                filters: movementView.filters.filter((_, i) => i !== index),
+              });
             }}
           />
         ))}
 
-        <FilterMovementsButton viewId={viewId} />
+        <FilterMovementsButton viewId={viewId} variant="mini" />
       </div>
 
       <div className="mt-2 flex flex-1 items-end sm:mt-0 sm:ml-2 sm:items-center">
         <div className="hidden flex-1 sm:block" />
 
-        <div className="mr-4 flex flex-col pr-2 sm:flex-row sm:border-r">
-          <div className="my-1 flex items-center px-2 text-right font-mono text-sm">
-            {currencyFormatter.format(movementsTotal)}
-          </div>
-        </div>
-
-        <div className="flex-1 sm:hidden" />
-
         <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1"
+          variant="ghost"
           onClick={clearFilters}
+          size="sm"
+          className="mr-2"
         >
-          <span>Clear</span>
-          <X className="h-4 w-4" />
+          Clear
         </Button>
       </div>
-    </div>
+    </header>
   );
 }

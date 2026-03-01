@@ -45,9 +45,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface AddMovementButtonProps {
   className?: string;
+  size?: "sm" | "default";
 }
 
-export function AddMovementButton({ className }: AddMovementButtonProps) {
+export function AddMovementButton({ className, size }: AddMovementButtonProps) {
   const mutate = useSync((state) => state.mutate);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
@@ -113,7 +114,7 @@ export function AddMovementButton({ className }: AddMovementButtonProps) {
           <Button
             type="button"
             variant="outline"
-            size="icon"
+            size={size === "sm" ? "icon-sm" : "icon"}
             className={className}
             onClick={openDialog}
           >

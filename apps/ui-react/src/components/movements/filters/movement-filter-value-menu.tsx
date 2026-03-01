@@ -1,10 +1,17 @@
-import { ActivityFilterDateValues } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
-import { ChevronDown } from "lucide-react";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import {
+  ActivityFilterDateValues,
+} from "@maille/core/activities";
+import { useState } from "react";
 
-import { AccountSelect } from "@/components/accounts/account-select";
 import { Input } from "@/components/ui/input";
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -12,34 +19,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 
 interface MovementFilterValueMenuProps {
   modelValue: MovementFilter["value"] | undefined;
   field: MovementFilter["field"];
   onUpdateModelValue: (value: MovementFilter["value"]) => void;
-  onClose: () => void;
 }
 
-export const MovementFilterValueMenu = forwardRef<
-  { click: () => void },
-  MovementFilterValueMenuProps
->(({ modelValue, field, onUpdateModelValue, onClose }, ref) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const selectRef = useRef<HTMLButtonElement>(null);
+export const MovementFilterValueMenu = ({
+  modelValue,
+  field,
+  onUpdateModelValue,
+}: MovementFilterValueMenuProps) => {
+  const accounts = useAccounts((state) => state.accounts);
+
   const [textValue, setTextValue] = useState<string | undefined>(
     modelValue as string | undefined,
   );
-  const [open, setOpen] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    click: () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      } else if (selectRef.current) {
-        selectRef.current.click();
-      }
-    },
-  }));
+  const inputClassName =
+    "rounded-none border text-xs! focus-visible:border-input focus-visible:ring-0";
 
   if (field === "date") {
     return (
@@ -48,29 +49,13 @@ export const MovementFilterValueMenu = forwardRef<
         onValueChange={(value) => {
           onUpdateModelValue(value as MovementFilter["value"]);
         }}
-        onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) {
-            onClose();
-          }
-        }}
       >
-        <SelectTrigger
-          ref={selectRef}
-          className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] items-center border-r px-2 text-sm transition-colors hover:text-white ${
-            open ? "bg-primary-700 text-white" : ""
-          }`}
-        >
+        <SelectTrigger className={inputClassName}>
           <SelectValue placeholder="Date value" />
-          <ChevronDown className="ml-1 size-4" />
         </SelectTrigger>
-        <SelectContent className="bg-primary-800 border-primary-600">
+        <SelectContent>
           {ActivityFilterDateValues.map((value) => (
-            <SelectItem
-              key={value}
-              value={value}
-              className="text-primary-100 hover:bg-primary-700"
-            >
+            <SelectItem key={value} value={value}>
               {value}
             </SelectItem>
           ))}
@@ -80,23 +65,21 @@ export const MovementFilterValueMenu = forwardRef<
   } else if (field === "amount") {
     return (
       <Input
-        ref={inputRef}
         type="number"
-        value={modelValue as number | undefined}
+        value={(modelValue as string | undefined) || ""}
+        className={inputClassName}
         onChange={(e) => {
           const value = e.target.value;
           onUpdateModelValue(value === "" ? undefined : parseFloat(value));
         }}
-        onBlur={() => onClose()}
-        className="hover:bg-primary-700 text-primary-100 h-7 border-r border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "name") {
     return (
       <Input
-        ref={inputRef}
         value={textValue}
         onChange={(e) => setTextValue(e.target.value)}
+        className={inputClassName}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             onUpdateModelValue(textValue);
@@ -104,62 +87,117 @@ export const MovementFilterValueMenu = forwardRef<
         }}
         onBlur={() => {
           onUpdateModelValue(textValue);
-          onClose();
         }}
-        className="hover:bg-primary-700 text-primary-100 h-7 min-w-0 border-none bg-transparent px-2 text-sm hover:text-white focus:ring-0"
       />
     );
   } else if (field === "account") {
     return (
-      <AccountSelect
-        value={modelValue && Array.isArray(modelValue) ? modelValue : []}
-        onChange={(value) => {
-          onUpdateModelValue(value);
-        }}
-        multiple
-        borderless
-        className="hover:bg-primary-700 border-r"
-      />
-    );
-  } else if (field === "status") {
-    return (
-      <Select
-        value={modelValue as string | undefined}
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
         onValueChange={(value) => {
           onUpdateModelValue(value as MovementFilter["value"]);
         }}
-        onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) {
-            onClose();
-          }
+      >
+        <MultiSelectTrigger className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select an account"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const accountId = value[0];
+                const account = accounts.find((a) => a.id === accountId);
+                if (!account) return;
+                return (
+                  <>
+                    <div
+                      className={cn(
+                        "h-3 w-3 shrink-0 rounded-full",
+                        ACCOUNT_TYPES_COLOR[account.type],
+                      )}
+                    />
+                    <span>{account.name}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    {value.map((accountId, index) => {
+                      const account = accounts.find((a) => a.id === accountId);
+                      if (!account) return;
+                      return (
+                        <div
+                          key={accountId}
+                          className={cn(
+                            "h-3 w-3 shrink-0 rounded-full",
+                            ACCOUNT_TYPES_COLOR[account.type],
+                            index > 0 && "-ml-2",
+                          )}
+                        />
+                      );
+                    })}
+                    <span>{value.length} accounts</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent className="w-fit">
+          {accounts.map((account) => (
+            <MultiSelectItem key={account.id} value={account.id}>
+              <div
+                className={cn(
+                  "h-3 w-3 shrink-0 rounded-full",
+                  ACCOUNT_TYPES_COLOR[account.type],
+                )}
+              />
+              <span>{account.name}</span>
+            </MultiSelectItem>
+          ))}
+        </MultiSelectContent>
+      </MultiSelect>
+    );
+  } else if (field === "status") {
+    const statusValues = ["completed", "incomplete"];
+    return (
+      <MultiSelect
+        value={(modelValue as string[] | undefined) || []}
+        onValueChange={(value) => {
+          onUpdateModelValue(value as MovementFilter["value"]);
         }}
       >
-        <SelectTrigger
-          ref={selectRef}
-          className={`text-primary-100 hover:bg-primary-700 flex h-7 min-w-[24px] items-center border-r px-2 text-sm transition-colors hover:text-white ${
-            open ? "bg-primary-700 text-white" : ""
-          }`}
-        >
-          <SelectValue placeholder="Status value" />
-          <ChevronDown className="ml-1 size-4" />
-        </SelectTrigger>
-        <SelectContent className="bg-primary-800 border-primary-600">
-          {["incomplete", "completed"].map((value) => (
-            <SelectItem
-              key={value}
-              value={value}
-              className="text-primary-100 hover:bg-primary-700"
-            >
-              {value}
-            </SelectItem>
+        <MultiSelectTrigger className={inputClassName}>
+          <MultiSelectValue
+            placeholder="Select a status"
+            renderValue={(value) => {
+              if (value.length === 1) {
+                const status = value[0];
+                return (
+                  <>
+                    <span>{status}</span>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <span>{value.length} statuses</span>
+                  </>
+                );
+              }
+            }}
+          />
+        </MultiSelectTrigger>
+        <MultiSelectContent className="w-fit">
+          {statusValues.map((value) => (
+            <MultiSelectItem key={value} value={value}>
+              <span>{value}</span>
+            </MultiSelectItem>
           ))}
-        </SelectContent>
-      </Select>
+        </MultiSelectContent>
+      </MultiSelect>
     );
   }
 
   return null;
-});
+};
 
 MovementFilterValueMenu.displayName = "MovementFilterValueMenu";

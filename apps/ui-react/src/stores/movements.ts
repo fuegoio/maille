@@ -7,6 +7,8 @@ import type { Mutation } from "@/mutations";
 
 import { storage } from "./storage";
 
+
+
 interface MovementsState {
   movements: Movement[];
   focusedMovement: string | null;
