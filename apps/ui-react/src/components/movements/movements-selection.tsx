@@ -1,21 +1,29 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-interface MovementsActionsProps {
+interface MovementsSelectionProps {
   selectedMovements: string[];
   onClearSelection: () => void;
 }
 
-export function MovementsActions({
+export function MovementsSelection({
   selectedMovements,
   onClearSelection,
-}: MovementsActionsProps) {
+}: MovementsSelectionProps) {
+  const [paletteOpened, setPaletteOpened] = useState(false);
   const show = selectedMovements.length > 0;
 
-  if (!show) return null;
+  useHotkey("Mod+K", (event) => {
+    if (!selectedMovements.length) return null;
+    event.preventDefault();
+    setPaletteOpened(true);
+  });
 
+  if (!show) return null;
   return (
     <AnimatePresence>
       {show && (
@@ -45,10 +53,12 @@ export function MovementsActions({
             <Button
               variant="default"
               size="sm"
-              className="flex items-center gap-1.5"
-              onClick={() => console.log("Create activities")}
+              onClick={() => setPaletteOpened(true)}
             >
-              <span className="text-xs font-medium">Create activities</span>
+              Actions
+              <div className="rounded bg-muted/20 px-1.5 py-0.5 text-xs tracking-widest">
+                ⌘K
+              </div>
             </Button>
           </div>
         </motion.div>

@@ -13,7 +13,7 @@ import { useViews } from "@/stores/views";
 
 import { MovementsFilters } from "./filters/movements-filters";
 import { MovementLine } from "./movement-line";
-import { MovementsActions } from "./movements-actions";
+import { MovementsSelection } from "./movements-selection";
 
 interface MovementsTableProps {
   movements: Movement[];
@@ -264,7 +264,7 @@ export function MovementsTable({
         )}
       </div>
 
-      <MovementsActions
+      <MovementsSelection
         selectedMovements={selectedMovements}
         onClearSelection={() => setSelectedMovements([])}
       />
