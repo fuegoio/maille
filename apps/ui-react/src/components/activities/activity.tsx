@@ -42,6 +42,8 @@ import {
 } from "../ui/select";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 
+import { ActivityCategorySelect } from "./activity-category-select";
+
 import { ActivityMovements } from "./activity-movements";
 import { ActivitySharing } from "./activity-sharing";
 import { ActivityTransactions } from "./activity-transactions";
@@ -302,26 +304,15 @@ export function Activity() {
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="category">Category</FieldLabel>
-                  <Select
-                    value={activity.category || ""}
+                  <ActivityCategorySelect
+                    value={activity.category || null}
                     onValueChange={(value) =>
                       updateActivity({ category: value, subcategory: null })
                     }
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredCategories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.emoji && (
-                            <span className="mr-0.5">{cat.emoji}</span>
-                          )}
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    type={activity.type}
+                    categories={filteredCategories}
+                    placeholder="Category"
+                  />
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>

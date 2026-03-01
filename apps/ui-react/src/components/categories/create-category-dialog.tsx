@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActivityType } from "@maille/core/activities";
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
 
@@ -42,11 +42,23 @@ const createCategorySchema = z.object({
 
 type CreateCategoryFormValues = z.infer<typeof createCategorySchema>;
 
+interface CreateCategoryDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children?: ReactNode;
+  initialName?: string;
+  initialType?: ActivityType;
+  onCategoryCreated?: (categoryId: string) => void;
+}
+
 export function CreateCategoryDialog({
+  open: externalOpen,
+  onOpenChange,
   children,
-}: {
-  children?: React.ReactNode;
-}) {
+  initialName = "",
+  initialType = ActivityType.EXPENSE,
+  onCategoryCreated,
+}: CreateCategoryDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
 
@@ -54,15 +66,22 @@ export function CreateCategoryDialog({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateCategoryFormValues>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
-      name: "",
-      type: ActivityType.EXPENSE,
+      name: initialName,
+      type: initialType,
       emoji: null,
     },
   });
+
+  // Update form values when props change
+  useEffect(() => {
+    setValue("name", initialName);
+    setValue("type", initialType);
+  }, [initialName, initialType, setValue]);
 
   const onSubmit = async (data: CreateCategoryFormValues) => {
     try {
@@ -88,16 +107,32 @@ export function CreateCategoryDialog({
         ],
       });
 
+      // Call callback with the new category ID
+      if (onCategoryCreated) {
+        onCategoryCreated(category.id);
+      }
+
       // Reset form and close dialog on success
       reset();
       setOpen(false);
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error("Failed to create category:", error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={externalOpen !== undefined ? externalOpen : open}
+      onOpenChange={(open) => {
+        setOpen(open);
+        if (onOpenChange) {
+          onOpenChange(open);
+        }
+      }}
+    >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>

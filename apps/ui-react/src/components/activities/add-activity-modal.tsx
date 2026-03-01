@@ -47,6 +47,7 @@ import { DatePicker } from "../ui/date-picker";
 
 import { Transaction as TransactionComponent } from "./transaction";
 import { TransactionDropdown } from "./transaction-dropdown";
+import { ActivityCategorySelect } from "./activity-category-select";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -510,25 +511,14 @@ export function AddActivityModal({
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select
+                  <ActivityCategorySelect
+                    value={field.value || null}
                     onValueChange={field.onChange}
-                    value={field.value || ""}
+                    type={type}
+                    categories={filteredCategories}
                     disabled={!type || filteredCategories.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredCategories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.emoji && (
-                            <span className="mr-0.5">{cat.emoji}</span>
-                          )}
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Category"
+                  />
                 )}
               />
 
