@@ -36,7 +36,7 @@ import { DatePicker } from "../ui/date-picker";
 // Form schema using zod
 const formSchema = z.object({
   date: z.date(),
-  amount: z.number().min(0.01, "Amount must be greater than 0"),
+  amount: z.number(),
   account: z.string().min(1, "Account is required"),
   name: z.string().min(1, "Name is required"),
 });
