@@ -70,6 +70,7 @@ export function ActivitiesSelection({
             open={paletteOpened}
             onOpenChange={setPaletteOpened}
             selectedActivities={selectedActivities}
+            onClearSelection={onClearSelection}
           />
         </>
       )}

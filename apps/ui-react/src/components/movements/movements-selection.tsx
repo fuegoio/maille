@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
+import { MovementsCommandPalette } from "./movements-command-palette";
+
 interface MovementsSelectionProps {
   selectedMovements: string[];
   onClearSelection: () => void;
@@ -61,6 +63,13 @@ export function MovementsSelection({
               </div>
             </Button>
           </div>
+
+          <MovementsCommandPalette
+            selectedMovements={selectedMovements}
+            open={paletteOpened}
+            onOpenChange={setPaletteOpened}
+            onClearSelection={onClearSelection}
+          />
         </motion.div>
       )}
     </AnimatePresence>

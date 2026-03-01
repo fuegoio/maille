@@ -1,12 +1,5 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
-import {
-  ArrowRightLeft,
-  Tag,
-  TentTree,
-  TextCursor,
-  TextSelect,
-  Trash2,
-} from "lucide-react";
+import type { Movement } from "@maille/core/movements";
+import { Calendar, DollarSign, Tag, TextCursor, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -20,31 +13,28 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { getGraphQLDate } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import {
-  deleteActivityMutation,
-  updateActivityMutation,
-} from "@/mutations/activities";
-import {
-  ACTIVITY_TYPES_COLOR,
-  ACTIVITY_TYPES_NAME,
-  useActivities,
-} from "@/stores/activities";
-import { useProjects } from "@/stores/projects";
+  deleteMovementMutation,
+  updateMovementMutation,
+} from "@/mutations/movements";
+import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
+import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 
-interface ActivitiesCommandPaletteProps {
-  selectedActivities: string[];
+interface MovementsCommandPaletteProps {
+  selectedMovements: string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClearSelection?: () => void;
 }
 
-export function ActivitiesCommandPalette({
-  selectedActivities,
+export function MovementsCommandPalette({
+  selectedMovements,
   open,
   onOpenChange,
   onClearSelection,
-}: ActivitiesCommandPaletteProps) {
+}: MovementsCommandPaletteProps) {
   const [search, setSearch] = React.useState("");
   const [step, setStep] = React.useState<"action" | "value" | "input">(
     "action",
@@ -55,71 +45,54 @@ export function ActivitiesCommandPalette({
   const [inputValue, setInputValue] = React.useState("");
 
   const mutate = useSync((state) => state.mutate);
-  const activities = useActivities((state) => state.activities);
-  const categories = useActivities((state) => state.activityCategories);
-  const subcategories = useActivities((state) => state.activitySubcategories);
-  const projects = useProjects((state) => state.projects);
+  const movements = useMovements((state) => state.movements);
+  const accounts = useAccounts((state) => state.accounts);
 
-  const selectedActivityIds = React.useMemo(() => {
-    return selectedActivities.length > 0
-      ? selectedActivities
-      : useActivities.getState().focusedActivity
-        ? [useActivities.getState().focusedActivity]
+  const selectedMovementIds = React.useMemo(() => {
+    return selectedMovements.length > 0
+      ? selectedMovements
+      : useMovements.getState().focusedMovement
+        ? [useMovements.getState().focusedMovement]
         : [];
-  }, [selectedActivities]);
+  }, [selectedMovements]);
 
-  const selectedActivitiesData = React.useMemo(() => {
-    return selectedActivityIds
-      .map((id) => activities.find((a) => a.id === id))
-      .filter(Boolean) as Activity[];
-  }, [selectedActivityIds, activities]);
+  const selectedMovementsData = React.useMemo(() => {
+    return selectedMovementIds
+      .map((id) => movements.find((m) => m.id === id))
+      .filter(Boolean) as Movement[];
+  }, [selectedMovementIds, movements]);
 
-  const filteredCategories = React.useMemo(() => {
-    if (selectedActivitiesData.length === 0) return categories;
-    const firstActivity = selectedActivitiesData[0];
-    return categories.filter((c) => c.type === firstActivity.type);
-  }, [selectedActivitiesData, categories]);
-
-  const filteredSubcategories = React.useMemo(() => {
-    if (selectedActivitiesData.length === 0) return [];
-    const firstActivity = selectedActivitiesData[0];
-    return subcategories.filter((sc) => sc.category === firstActivity.category);
-  }, [selectedActivitiesData, subcategories]);
-
-  const updateActivities = React.useCallback(
+  const updateMovements = React.useCallback(
     (update: {
       name?: string;
-      description?: string | null;
       date?: Date;
-      type?: ActivityType;
-      category?: string | null;
-      subcategory?: string | null;
-      project?: string | null;
+      amount?: number;
+      account?: string | null;
     }) => {
-      selectedActivityIds.forEach((activityId) => {
-        const activity = activities.find((a) => a.id === activityId);
-        if (!activity) return;
+      selectedMovementIds.forEach((movementId) => {
+        const movement = movements.find((m) => m.id === movementId);
+        if (!movement) return;
 
-        // Create a copy of the current activity for rollback
-        const oldActivity = { ...activity };
+        // Create a copy of the current movement for rollback
+        const oldMovement = { ...movement };
 
         mutate({
-          name: "updateActivity",
-          mutation: updateActivityMutation,
+          name: "updateMovement",
+          mutation: updateMovementMutation,
           variables: {
-            id: activity.id,
+            id: movement.id,
             ...update,
             date: update.date ? getGraphQLDate(update.date) : undefined,
           },
           rollbackData: {
-            ...oldActivity,
-            date: getGraphQLDate(oldActivity.date),
+            ...oldMovement,
+            date: getGraphQLDate(oldMovement.date),
           },
           events: [
             {
-              type: "updateActivity",
+              type: "updateMovement",
               payload: {
-                id: activity.id,
+                id: movement.id,
                 ...update,
                 date: update.date ? getGraphQLDate(update.date) : undefined,
               },
@@ -128,34 +101,34 @@ export function ActivitiesCommandPalette({
         });
       });
     },
-    [selectedActivityIds, activities, mutate],
+    [selectedMovementIds, movements, mutate],
   );
 
-  const deleteActivities = React.useCallback(() => {
-    selectedActivityIds.forEach((activityId) => {
-      const activity = activities.find((a) => a.id === activityId);
-      if (!activity) return;
-      // Create a copy of the activity for rollback
-      const activityToDelete = { ...activity };
+  const deleteMovements = React.useCallback(() => {
+    selectedMovementIds.forEach((movementId) => {
+      const movement = movements.find((m) => m.id === movementId);
+      if (!movement) return;
+      // Create a copy of the movement for rollback
+      const movementToDelete = { ...movement };
 
       mutate({
-        name: "deleteActivity",
-        mutation: deleteActivityMutation,
+        name: "deleteMovement",
+        mutation: deleteMovementMutation,
         variables: {
-          id: activity.id,
+          id: movement.id,
         },
-        rollbackData: activityToDelete,
+        rollbackData: movementToDelete,
         events: [
           {
-            type: "deleteActivity",
+            type: "deleteMovement",
             payload: {
-              id: activity.id,
+              id: movement.id,
             },
           },
         ],
       });
     });
-  }, [selectedActivityIds, activities, mutate]);
+  }, [selectedMovementIds, movements, mutate]);
 
   // Action definitions
   const actionDefinitions = React.useMemo(() => {
@@ -166,129 +139,75 @@ export function ActivitiesCommandPalette({
         icon: <TextCursor />,
         type: "input" as const,
         placeholder: "Enter new name...",
-        defaultValue: selectedActivitiesData[0]?.name || "",
+        defaultValue: selectedMovementsData[0]?.name || "",
         shortcut: "N",
         action: (value: string) => {
           if (value.trim()) {
-            updateActivities({ name: value });
+            updateMovements({ name: value });
           }
         },
       },
       {
-        value: "description",
-        label: "Set new description",
-        icon: <TextSelect />,
+        value: "date",
+        label: "Change date",
+        icon: <Calendar />,
         type: "input" as const,
-        placeholder: "Enter new description...",
-        defaultValue: selectedActivitiesData[0]?.description || "",
+        placeholder: "Enter new date (YYYY-MM-DD)...",
+        defaultValue: selectedMovementsData[0]?.date
+          ? getGraphQLDate(selectedMovementsData[0].date)
+          : "",
         shortcut: "D",
         action: (value: string) => {
-          updateActivities({ description: value || null });
+          try {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              updateMovements({ date: date });
+            }
+          } catch {
+            // Invalid date format, do nothing
+          }
         },
       },
       {
-        value: "type",
-        label: "Change activity type",
-        icon: <ArrowRightLeft />,
-        type: "select" as const,
-        shortcut: "T",
-        getValues: () => {
-          return Object.values(ActivityType).map((activityType) => ({
-            value: `type-${activityType}`,
-            label: ACTIVITY_TYPES_NAME[activityType],
-            icon: (
-              <div
-                className={`h-4 w-4 rounded-full ${ACTIVITY_TYPES_COLOR[activityType]}`}
-              />
-            ),
-            action: () => {
-              updateActivities({
-                type: activityType,
-                category: null,
-                subcategory: null,
-              });
-            },
-          }));
+        value: "amount",
+        label: "Change amount",
+        icon: <DollarSign />,
+        type: "input" as const,
+        placeholder: "Enter new amount...",
+        defaultValue: selectedMovementsData[0]?.amount?.toString() || "",
+        shortcut: "A",
+        action: (value: string) => {
+          const amount = parseFloat(value);
+          if (!isNaN(amount)) {
+            updateMovements({ amount: amount });
+          }
         },
       },
       {
-        value: "category",
-        label: "Change category",
+        value: "account",
+        label: "Change account",
         icon: <Tag />,
         type: "select" as const,
-        shortcut: "Y",
+        shortcut: "C",
         getValues: () => {
           return [
-            ...filteredCategories.map((category) => ({
-              value: `category-${category.id}`,
-              label: category.name,
-              icon: category.emoji ? <span>{category.emoji}</span> : null,
-              action: () => {
-                updateActivities({ category: category.id, subcategory: null });
-              },
-            })),
-            {
-              value: "category-none",
-              label: "No Category",
-              icon: null,
-              action: () => {
-                updateActivities({ category: null, subcategory: null });
-              },
-            },
-          ];
-        },
-      },
-      {
-        value: "subcategory",
-        label: "Change subcategory",
-        icon: <Tag />,
-        type: "select" as const,
-        shortcut: "S",
-        getValues: () => {
-          return [
-            ...filteredSubcategories.map((subcategory) => ({
-              value: `subcategory-${subcategory.id}`,
-              label: subcategory.name,
-              icon: subcategory.emoji ? <span>{subcategory.emoji}</span> : null,
-              action: () => {
-                updateActivities({ subcategory: subcategory.id });
-              },
-            })),
-            {
-              value: "subcategory-none",
-              label: "No Subcategory",
-              icon: null,
-              action: () => {
-                updateActivities({ subcategory: null });
-              },
-            },
-          ];
-        },
-      },
-      {
-        value: "project",
-        label: "Add to project",
-        icon: <TentTree />,
-        type: "select" as const,
-        shortcut: "P",
-        getValues: () => {
-          return [
-            ...projects.map((project) => ({
-              value: `project-${project.id}`,
-              label: project.name,
-              icon: project.emoji ? <span>{project.emoji}</span> : null,
-              action: () => {
-                updateActivities({ project: project.id });
-              },
-            })),
-            {
-              value: "project-none",
-              label: "No Project",
-              icon: null,
-              action: () => {
-                updateActivities({ project: null });
-              },
-            },
+            ...accounts
+              .filter((a) => a.movements)
+              .map((account) => ({
+                value: `account-${account.id}`,
+                label: account.name,
+                icon: (
+                  <div
+                    className={cn(
+                      "size-3 shrink-0 rounded-xl",
+                      ACCOUNT_TYPES_COLOR[account.type],
+                    )}
+                  />
+                ),
+                action: () => {
+                  updateMovements({ account: account.id });
+                },
+              })),
           ];
         },
       },
@@ -299,19 +218,17 @@ export function ActivitiesCommandPalette({
         type: null,
         shortcut: "Del",
         action: () => {
-          deleteActivities();
+          deleteMovements();
           onClearSelection?.();
         },
       },
     ];
     return actions;
   }, [
-    selectedActivitiesData,
-    filteredCategories,
-    filteredSubcategories,
-    projects,
-    updateActivities,
-    deleteActivities,
+    selectedMovementsData,
+    accounts,
+    updateMovements,
+    deleteMovements,
     onClearSelection,
   ]);
 
@@ -412,7 +329,7 @@ export function ActivitiesCommandPalette({
             <>
               <CommandEmpty>No actions found.</CommandEmpty>
               <CommandGroup
-                heading={`${selectedActivitiesData.length} activit${selectedActivitiesData.length > 1 ? "ies" : "y"} selected`}
+                heading={`${selectedMovementsData.length} movement${selectedMovementsData.length > 1 ? "s" : ""} selected`}
               >
                 {filteredActions.map((action) => (
                   <CommandItem
