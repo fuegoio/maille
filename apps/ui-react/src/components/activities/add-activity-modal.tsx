@@ -257,9 +257,7 @@ export function AddActivityModal({
       project: data.project || null,
       transactions: data.transactions.map((t) => ({
         id: crypto.randomUUID(),
-        fromAccount: t.fromAccount,
-        toAccount: t.toAccount,
-        amount: t.amount,
+        ...t,
       })),
       movement: movement
         ? {

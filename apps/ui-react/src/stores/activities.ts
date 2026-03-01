@@ -64,7 +64,10 @@ interface ActivitiesState {
     movementId: string,
     update: Omit<Partial<ActivityMovement>, "id">,
   ) => void;
-  deleteActivityMovement: (activityId: string, movementId: string) => void;
+  deleteActivityMovement: (
+    activityId: string,
+    activityMovementId: string,
+  ) => void;
 
   addActivity: (activity: Omit<Activity, "amount" | "status">) => Activity;
   updateActivity: (
@@ -283,12 +286,12 @@ export const useActivities = create<ActivitiesState>()(
           }),
         }));
       },
-      deleteActivityMovement: (activityId, movementId) => {
+      deleteActivityMovement: (activityId, activityMovementId) => {
         set((state) => ({
           activities: state.activities.map((activity) => {
             if (activity.id === activityId) {
               const newMovements = activity.movements.filter(
-                (m) => m.id !== movementId,
+                (m) => m.id !== activityMovementId,
               );
               return {
                 ...activity,
@@ -583,6 +586,14 @@ export const useActivities = create<ActivitiesState>()(
         } else if (event.type === "updateActivitySharing") {
           get().updateActivity(event.payload.activityId, {
             sharing: event.payload.sharing,
+          });
+        } else if (event.type === "deleteMovement") {
+          get().activities.forEach((activity) => {
+            activity.movements.forEach((am) => {
+              if (am.movement === event.payload.id) {
+                get().deleteActivityMovement(activity.id, am.id);
+              }
+            });
           });
         }
       },

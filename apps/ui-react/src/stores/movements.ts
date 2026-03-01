@@ -226,6 +226,14 @@ export const useMovements = create<MovementsState>()(
             amount: event.payload.movement.amount,
             activity: event.payload.id,
           });
+        } else if (event.type === "deleteActivity") {
+          get().movements.forEach((movement) => {
+            movement.activities.forEach((ma) => {
+              if (ma.activity === event.payload.id) {
+                get().deleteMovementActivity(movement.id, ma.id);
+              }
+            });
+          });
         }
       },
 
