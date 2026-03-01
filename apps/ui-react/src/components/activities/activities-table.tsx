@@ -12,7 +12,7 @@ import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
-import { ActivitiesCommandPalette } from "./activities-command-palette";
+import { ActivitiesSelection } from "./activities-selection";
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
 
@@ -269,14 +269,23 @@ export function ActivitiesTable({
     },
   );
 
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      setSelectedActivities(activitiesFiltered.map((a) => a.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ActivitiesFilters
         viewId={activityView.id}
         activities={activitiesFiltered}
       />
-
-      <ActivitiesCommandPalette selectedActivities={selectedActivities} />
 
       <div className="flex h-full flex-1 overflow-x-hidden">
         <div className="flex w-full flex-col overflow-x-hidden sm:min-w-[575px]">
@@ -389,6 +398,11 @@ export function ActivitiesTable({
           )}
         </div>
       </div>
+
+      <ActivitiesSelection
+        selectedActivities={selectedActivities}
+        onClearSelection={() => setSelectedActivities([])}
+      />
     </div>
   );
 }

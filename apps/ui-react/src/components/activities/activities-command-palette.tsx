@@ -1,18 +1,29 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
-import { useHotkey } from "@tanstack/react-hotkeys";
+import {
+  ArrowRightLeft,
+  Tag,
+  TentTree,
+  TextCursor,
+  TextSelect,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 
 import {
   Command,
   CommandDialog,
   CommandEmpty,
+  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
+  CommandShortcut,
 } from "@/components/ui/command";
 import { getGraphQLDate } from "@/lib/date";
-import { updateActivityMutation } from "@/mutations/activities";
+import {
+  deleteActivityMutation,
+  updateActivityMutation,
+} from "@/mutations/activities";
 import {
   ACTIVITY_TYPES_COLOR,
   ACTIVITY_TYPES_NAME,
@@ -23,12 +34,15 @@ import { useSync } from "@/stores/sync";
 
 interface ActivitiesCommandPaletteProps {
   selectedActivities: string[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function ActivitiesCommandPalette({
   selectedActivities,
+  open,
+  onOpenChange,
 }: ActivitiesCommandPaletteProps) {
-  const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [step, setStep] = React.useState<"action" | "value" | "input">(
     "action",
@@ -115,16 +129,43 @@ export function ActivitiesCommandPalette({
     [selectedActivityIds, activities, mutate],
   );
 
+  const deleteActivities = React.useCallback(() => {
+    selectedActivityIds.forEach((activityId) => {
+      const activity = activities.find((a) => a.id === activityId);
+      if (!activity) return;
+      // Create a copy of the activity for rollback
+      const activityToDelete = { ...activity };
+
+      mutate({
+        name: "deleteActivity",
+        mutation: deleteActivityMutation,
+        variables: {
+          id: activity.id,
+        },
+        rollbackData: activityToDelete,
+        events: [
+          {
+            type: "deleteActivity",
+            payload: {
+              id: activity.id,
+            },
+          },
+        ],
+      });
+    });
+  }, [selectedActivityIds, activities, mutate]);
+
   // Action definitions
   const actionDefinitions = React.useMemo(() => {
     const actions = [
       {
         value: "name",
-        label: "Change Name",
-        icon: null,
+        label: "Set new name",
+        icon: <TextCursor />,
         type: "input" as const,
         placeholder: "Enter new name...",
         defaultValue: selectedActivitiesData[0]?.name || "",
+        shortcut: "N",
         action: (value: string) => {
           if (value.trim()) {
             updateActivities({ name: value });
@@ -133,20 +174,22 @@ export function ActivitiesCommandPalette({
       },
       {
         value: "description",
-        label: "Change Description",
-        icon: null,
+        label: "Set new description",
+        icon: <TextSelect />,
         type: "input" as const,
         placeholder: "Enter new description...",
         defaultValue: selectedActivitiesData[0]?.description || "",
+        shortcut: "D",
         action: (value: string) => {
           updateActivities({ description: value || null });
         },
       },
       {
         value: "type",
-        label: "Change Activity Type",
-        icon: null,
+        label: "Change activity type",
+        icon: <ArrowRightLeft />,
         type: "select" as const,
+        shortcut: "T",
         getValues: () => {
           return Object.values(ActivityType).map((activityType) => ({
             value: `type-${activityType}`,
@@ -168,9 +211,10 @@ export function ActivitiesCommandPalette({
       },
       {
         value: "category",
-        label: "Change Category",
-        icon: null,
+        label: "Change category",
+        icon: <Tag />,
         type: "select" as const,
+        shortcut: "Y",
         getValues: () => {
           return [
             ...filteredCategories.map((category) => ({
@@ -194,9 +238,10 @@ export function ActivitiesCommandPalette({
       },
       {
         value: "subcategory",
-        label: "Change Subcategory",
-        icon: null,
+        label: "Change subcategory",
+        icon: <Tag />,
         type: "select" as const,
+        shortcut: "S",
         getValues: () => {
           return [
             ...filteredSubcategories.map((subcategory) => ({
@@ -220,9 +265,10 @@ export function ActivitiesCommandPalette({
       },
       {
         value: "project",
-        label: "Change Project",
-        icon: null,
+        label: "Add to project",
+        icon: <TentTree />,
         type: "select" as const,
+        shortcut: "P",
         getValues: () => {
           return [
             ...projects.map((project) => ({
@@ -244,20 +290,33 @@ export function ActivitiesCommandPalette({
           ];
         },
       },
+      {
+        value: "delete",
+        label: "Delete",
+        icon: <Trash2 />,
+        type: null,
+        shortcut: "Del",
+        action: () => {
+          deleteActivities();
+        },
+      },
     ];
-
-    return actions.filter((action) => {
-      if (!search) return true;
-      return action.label.toLowerCase().includes(search.toLowerCase());
-    });
+    return actions;
   }, [
     selectedActivitiesData,
     filteredCategories,
     filteredSubcategories,
     projects,
     updateActivities,
-    search,
+    deleteActivities,
   ]);
+
+  const filteredActions = React.useMemo(() => {
+    if (!search) return actionDefinitions;
+    return actionDefinitions.filter((action) =>
+      action.label.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [search, actionDefinitions]);
 
   // Get values for the selected action
   const actionValues = React.useMemo(() => {
@@ -274,28 +333,6 @@ export function ActivitiesCommandPalette({
     );
   }, [search, actionValues]);
 
-  // Hotkey for opening command palette
-  useHotkey("Mod+K", (event) => {
-    event.preventDefault();
-    setOpen(true);
-    setStep("action");
-    setSelectedAction(null);
-    setSearch("");
-    setInputValue("");
-  });
-
-  const handleBack = () => {
-    if (step === "input") {
-      setStep("action");
-      setSelectedAction(null);
-      setInputValue("");
-    } else if (step === "value") {
-      setStep("action");
-      setSelectedAction(null);
-      setSearch("");
-    }
-  };
-
   const handleActionSelect = (actionValue: string) => {
     const action = actionDefinitions.find((a) => a.value === actionValue);
     if (action) {
@@ -303,9 +340,15 @@ export function ActivitiesCommandPalette({
         setSelectedAction(actionValue);
         setStep("input");
         setInputValue(action.defaultValue || "");
-      } else {
+      } else if (action.type === "select") {
         setSelectedAction(actionValue);
         setStep("value");
+        setSearch("");
+      } else if (!action.type) {
+        action.action();
+        onOpenChange(false);
+        setStep("action");
+        setSelectedAction(null);
         setSearch("");
       }
     }
@@ -316,7 +359,7 @@ export function ActivitiesCommandPalette({
       const action = actionDefinitions.find((a) => a.value === selectedAction);
       if (action && action.type === "input") {
         action.action(inputValue);
-        setOpen(false);
+        onOpenChange(false);
         setStep("action");
         setSelectedAction(null);
         setInputValue("");
@@ -326,14 +369,10 @@ export function ActivitiesCommandPalette({
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <Command>
-        <div className="p-2 text-xs text-muted-foreground">
-          {selectedActivitiesData.length} activity
-          {selectedActivitiesData.length > 1 ? "ies" : ""} selected
-        </div>
+    <CommandDialog open={open} onOpenChange={onOpenChange}>
+      <Command shouldFilter={false}>
         {step === "input" ? (
-          <div className="flex items-center border-b px-3">
+          <div className="flex items-center">
             <CommandInput
               placeholder={
                 actionDefinitions.find((a) => a.value === selectedAction)
@@ -347,85 +386,71 @@ export function ActivitiesCommandPalette({
                 }
               }}
             />
-            <button
-              className="ml-2 text-sm text-muted-foreground hover:text-foreground"
-              onClick={handleInputSubmit}
-            >
-              Submit
-            </button>
+            <CommandShortcut className="mr-2 text-sm">Enter</CommandShortcut>
           </div>
         ) : (
-          <CommandInput
-            placeholder={
-              step === "action"
-                ? `Search actions...`
-                : `Search ${selectedAction}...`
-            }
-            value={search}
-            onValueChange={setSearch}
-          />
+          <>
+            <CommandInput
+              placeholder={
+                step === "action"
+                  ? `Type a command or search...`
+                  : `Search ${selectedAction}...`
+              }
+              value={search}
+              onValueChange={setSearch}
+            />
+            <div className="h-px w-full bg-border" />
+          </>
         )}
+
         <CommandList>
-          {step === "action" ? (
+          {step === "action" && (
             <>
               <CommandEmpty>No actions found.</CommandEmpty>
-              {actionDefinitions.map((action) => (
-                <CommandItem
-                  key={action.value}
-                  value={action.value}
-                  onSelect={() => handleActionSelect(action.value)}
-                >
-                  {action.icon && <span className="mr-2">{action.icon}</span>}
-                  {action.label}
-                </CommandItem>
-              ))}
-            </>
-          ) : step === "value" ? (
-            <>
-              <CommandItem
-                key="back"
-                value="back"
-                onSelect={handleBack}
-                className="text-muted-foreground"
+              <CommandGroup
+                heading={`${selectedActivitiesData.length} activit${selectedActivitiesData.length > 1 ? "ies" : "y"} selected`}
               >
-                ← Back to actions
-              </CommandItem>
-              <CommandSeparator />
+                {filteredActions.map((action) => (
+                  <CommandItem
+                    key={action.value}
+                    value={action.value}
+                    onSelect={() => handleActionSelect(action.value)}
+                  >
+                    {action.icon}
+                    {action.label}
+                    <CommandShortcut>{action.shortcut}</CommandShortcut>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
+
+          {step === "value" && (
+            <>
               <CommandEmpty>No values found.</CommandEmpty>
-              {filteredValues.map((value) => (
-                <CommandItem
-                  key={value.value}
-                  value={value.value}
-                  onSelect={() => {
-                    value.action();
-                    setOpen(false);
-                    setStep("action");
-                    setSelectedAction(null);
-                    setSearch("");
-                  }}
-                >
-                  {value.icon && <span className="mr-2">{value.icon}</span>}
-                  {value.label}
-                </CommandItem>
-              ))}
-            </>
-          ) : (
-            <>
-              <CommandItem
-                key="back"
-                value="back"
-                onSelect={handleBack}
-                className="text-muted-foreground"
-              >
-                ← Back to actions
-              </CommandItem>
-              <CommandSeparator />
-              <div className="p-2 text-sm">
-                {
+              <CommandGroup
+                heading={
                   actionDefinitions.find((a) => a.value === selectedAction)
-                    ?.placeholder
+                    ?.label
                 }
-              </div>
+              >
+                {filteredValues.map((value) => (
+                  <CommandItem
+                    key={value.value}
+                    value={value.value}
+                    onSelect={() => {
+                      value.action();
+                      onOpenChange(false);
+                      setStep("action");
+                      setSelectedAction(null);
+                      setSearch("");
+                    }}
+                  >
+                    {value.icon}
+                    {value.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
             </>
           )}
         </CommandList>
