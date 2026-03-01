@@ -66,21 +66,19 @@ describe("date filters on activity", () => {
     ] as DateTestCase[]
   ).forEach((testCase) => {
     const activity: Activity = {
-      id: 0,
-      activity: {
-        id: 0,
-        user: "user",
-        number: 1,
-        name: "test activity",
-        description: "test",
-        date: dayjs(testCase.activityDate),
-        type: ActivityType.EXPENSE,
-        category: 0,
-        subcategory: 0,
-        project: null,
-      },
+      id: "0",
+      number: 1,
+      name: "test activity",
+      description: "test",
+      date: new Date(testCase.activityDate),
+      type: ActivityType.EXPENSE,
+      category: null,
+      subcategory: null,
+      project: null,
       amount: 10,
       transactions: [],
+      movements: [],
+      sharing: [],
       status: "completed",
     };
 
