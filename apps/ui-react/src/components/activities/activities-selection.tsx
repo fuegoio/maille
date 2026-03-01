@@ -58,7 +58,10 @@ export function ActivitiesSelection({
                 size="sm"
                 onClick={() => setPaletteOpened(true)}
               >
-                ⌘ Actions
+                Actions
+                <div className="rounded bg-muted/20 px-1.5 py-0.5 text-xs tracking-widest">
+                  ⌘K
+                </div>
               </Button>
             </div>
           </motion.div>
