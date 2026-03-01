@@ -1,7 +1,6 @@
 import { type Transaction } from "@maille/core/activities";
 import {
   Trash2,
-  Layers,
   LayersPlus,
   CornerRightDown,
   ListPlus,

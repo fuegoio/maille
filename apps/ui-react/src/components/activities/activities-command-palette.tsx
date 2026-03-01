@@ -71,8 +71,6 @@ export function ActivitiesCommandPalette({
     return subcategories.filter((sc) => sc.category === firstActivity.category);
   }, [selectedActivitiesData, subcategories]);
 
-  const currencyFormatter = useCurrencyFormatter();
-
   const updateActivities = React.useCallback(
     (update: {
       name?: string;
@@ -278,7 +276,7 @@ export function ActivitiesCommandPalette({
   }, [search, actionValues]);
 
   // Hotkey for opening command palette
-  useHotkey("Mod+P", (event) => {
+  useHotkey("Mod+K", (event) => {
     event.preventDefault();
     setOpen(true);
     setStep("action");
@@ -436,4 +434,3 @@ export function ActivitiesCommandPalette({
     </CommandDialog>
   );
 }
-
