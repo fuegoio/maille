@@ -109,8 +109,6 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
       AccountType.CASH,
       AccountType.LIABILITIES,
       AccountType.ASSETS,
-      AccountType.EXPENSE,
-      AccountType.REVENUE,
     ],
     [],
   );
