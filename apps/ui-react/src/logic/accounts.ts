@@ -49,29 +49,6 @@ export function getBalanceForMonth({
   activities: Activity[];
   accounts: Account[];
 }): number {
-  // Calculate the balance for the previous month
-  const previousMonth = new Date(
-    monthDate.getFullYear(),
-    monthDate.getMonth() - 1,
-    1,
-  );
-  const previousBalance =
-    previousMonth >= new Date(startingDate)
-      ? getBalanceForMonth({
-          monthDate: previousMonth,
-          startingDate,
-          activities,
-          accounts,
-        })
-      : accounts
-          .filter(
-            (a) => ![AccountType.REVENUE, AccountType.EXPENSE].includes(a.type),
-          )
-          .reduce(
-            (total, account) => total + (account.startingBalance ?? 0),
-            0,
-          );
-
   const revenue =
     getAccountsBalance({
       accountType: AccountType.REVENUE,
@@ -87,6 +64,28 @@ export function getBalanceForMonth({
     activities,
     accounts,
     startDate: startingDate,
+  });
+
+  if (monthDate.getMonth() === startingDate.getMonth()) {
+    const startingBalance = accounts
+      .filter(
+        (a) => ![AccountType.REVENUE, AccountType.EXPENSE].includes(a.type),
+      )
+      .reduce((total, account) => total + (account.startingBalance ?? 0), 0);
+    return startingBalance + revenue - expense;
+  }
+
+  // Calculate the balance for the previous month
+  const previousMonth = new Date(
+    monthDate.getFullYear(),
+    monthDate.getMonth() - 1,
+    1,
+  );
+  const previousBalance = getBalanceForMonth({
+    monthDate: previousMonth,
+    startingDate,
+    activities,
+    accounts,
   });
 
   // Compute the balance for the current month
