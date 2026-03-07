@@ -2,8 +2,9 @@ import { db } from "@/database";
 import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
 import { projects } from "@/tables";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 export const registerProjectsMutations = () => {
@@ -73,7 +74,7 @@ export const registerProjectsMutations = () => {
           await db
             .select()
             .from(projects)
-            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user.id)))
+            .where(and(like(projects.id, idPattern(args.id)), eq(projects.user, ctx.user.id)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
@@ -99,7 +100,7 @@ export const registerProjectsMutations = () => {
         const updatedProjects = await db
           .update(projects)
           .set(updates)
-          .where(eq(projects.id, args.id))
+          .where(eq(projects.id, project.id))
           .returning();
         const updatedProject = updatedProjects[0];
 
@@ -110,7 +111,7 @@ export const registerProjectsMutations = () => {
         await addEvent({
           type: "updateProject",
           payload: {
-            id: args.id,
+            id: project.id,
             ...updates,
             startDate: updates.startDate === null ? null : updates.startDate?.toISOString(),
             endDate: updates.endDate === null ? null : updates.endDate?.toISOString(),
@@ -142,18 +143,18 @@ export const registerProjectsMutations = () => {
           await db
             .select()
             .from(projects)
-            .where(and(eq(projects.id, args.id), eq(projects.user, ctx.user.id)))
+            .where(and(like(projects.id, idPattern(args.id)), eq(projects.user, ctx.user.id)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
         }
 
-        await db.delete(projects).where(eq(projects.id, args.id));
+        await db.delete(projects).where(eq(projects.id, project.id));
 
         await addEvent({
           type: "deleteProject",
           payload: {
-            id: args.id,
+            id: project.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
