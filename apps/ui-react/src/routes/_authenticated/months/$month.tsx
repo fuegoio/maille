@@ -154,7 +154,7 @@ function MonthPage() {
             className="h-full"
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-              <TabsList className="ml-5 shrink-0">
+              <TabsList className="ml-5">
                 <TabsTrigger value="activities">
                   <BookMarked />
                   Activities
@@ -212,7 +212,7 @@ function MonthPage() {
             <MonthSummary monthDate={monthDate} />
 
             <Tabs className="h-full" defaultValue="activities">
-              <TabsList className="h-12! w-full border-b bg-muted/50 px-4 py-2">
+              <TabsList className="h-12! w-full shrink-0 border-b bg-muted/50 px-4 py-2">
                 <TabsTrigger value="activities">Activities</TabsTrigger>
                 <TabsTrigger value="accounts">Accounts</TabsTrigger>
               </TabsList>
