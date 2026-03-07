@@ -1,4 +1,3 @@
-import type { ActivityType } from "@maille/core/activities";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   BookMarked,
@@ -155,7 +154,7 @@ function MonthPage() {
             className="h-full"
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-              <TabsList className="ml-5">
+              <TabsList className="ml-5 shrink-0">
                 <TabsTrigger value="activities">
                   <BookMarked />
                   Activities
