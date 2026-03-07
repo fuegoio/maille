@@ -63,10 +63,14 @@ export function getBalanceForMonth({
           activities,
           accounts,
         })
-      : accounts.reduce(
-          (total, account) => total + (account.startingBalance ?? 0),
-          0,
-        );
+      : accounts
+          .filter(
+            (a) => ![AccountType.REVENUE, AccountType.EXPENSE].includes(a.type),
+          )
+          .reduce(
+            (total, account) => total + (account.startingBalance ?? 0),
+            0,
+          );
 
   const revenue =
     getAccountsBalance({
