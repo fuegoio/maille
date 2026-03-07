@@ -16,7 +16,6 @@ ActivitySchema.implement({
       type: "String",
       resolve: (parent) => parent.id,
     }),
-    number: t.exposeInt("number"),
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
     date: t.field({

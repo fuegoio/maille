@@ -607,7 +607,6 @@ export const useActivities = create<ActivitiesState>()(
                 return {
                   ...activity,
                   id: mutation.result!.createActivity.id,
-                  number: mutation.result!.createActivity.number,
                 };
               }
               return activity;
