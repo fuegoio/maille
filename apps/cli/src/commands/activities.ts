@@ -8,7 +8,7 @@ import { randomUUID } from "node:crypto";
 const ACTIVITIES_QUERY = `
   query {
     activities {
-      id number name date type status amount description
+      id name date type status amount description
       category subcategory project
       transactions { id amount fromAccount toAccount }
     }
@@ -39,9 +39,9 @@ activitiesCommand
       if (opts.json) { console.log(JSON.stringify(data.activities, null, 2)); return; }
       if (!data.activities.length) { console.log(chalk.yellow("No activities found.")); return; }
       printTable(
-        ["#", "NAME", "DATE", "TYPE", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
+        ["ID", "NAME", "DATE", "TYPE", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
         data.activities.map((a) => [
-          String(a.number),
+          String(a.id).slice(0, 8),
           String(a.name),
           new Date(String(a.date)).toLocaleDateString(),
           String(a.type),
@@ -68,11 +68,10 @@ activitiesCommand
     try {
       const data = await gql<{ activities: Record<string, unknown>[] }>(ACTIVITIES_QUERY);
       spinner.stop();
-      const activity = data.activities.find((a) => a.id === id || String(a.number) === id);
+      const activity = data.activities.find((a) => a.id === id);
       if (!activity) { console.error(chalk.red(`Activity not found: ${id}`)); process.exit(1); }
       if (opts.json) { console.log(JSON.stringify(activity, null, 2)); return; }
       console.log(`${chalk.bold("ID:")}          ${activity.id}`);
-      console.log(`${chalk.bold("Number:")}      ${activity.number}`);
       console.log(`${chalk.bold("Name:")}        ${activity.name}`);
       console.log(`${chalk.bold("Date:")}        ${new Date(String(activity.date)).toLocaleDateString()}`);
       console.log(`${chalk.bold("Type:")}        ${activity.type}`);
@@ -120,10 +119,10 @@ activitiesCommand
     const spinner = ora("Creating activity...").start();
     try {
       const date = opts.date ? opts.date : new Date().toISOString().slice(0, 10);
-      const data = await gql<{ createActivity: { id: string; number: number; name: string } }>(
+      const data = await gql<{ createActivity: { id: string; name: string } }>(
         `mutation CreateActivity($id: String!, $name: String!, $date: Date!, $type: String!, $description: String, $category: String, $subcategory: String, $project: String) {
           createActivity(id: $id, name: $name, date: $date, type: $type, description: $description, category: $category, subcategory: $subcategory, project: $project) {
-            id number name
+            id name
           }
         }`,
         {
@@ -137,7 +136,7 @@ activitiesCommand
           project: opts.project ?? null,
         }
       );
-      spinner.succeed(`Activity created: ${chalk.cyan(`#${data.createActivity.number}`)} ${data.createActivity.name}`);
+      spinner.succeed(`Activity created: ${chalk.cyan(data.createActivity.id.slice(0, 8))} ${data.createActivity.name}`);
     } catch (err) {
       spinner.fail("Failed to create activity");
       console.error(chalk.red(err instanceof Error ? err.message : String(err)));
@@ -317,7 +316,7 @@ transactionsCommand
     try {
       const data = await gql<{ activities: Record<string, unknown>[] }>(ACTIVITIES_QUERY);
       spinner.stop();
-      const activity = data.activities.find((a) => a.id === activityId || String(a.number) === activityId);
+      const activity = data.activities.find((a) => a.id === activityId);
       if (!activity) { console.error(chalk.red(`Activity not found: ${activityId}`)); process.exit(1); }
       const txs = activity.transactions as Record<string, unknown>[];
       if (opts.json) { console.log(JSON.stringify(txs, null, 2)); return; }

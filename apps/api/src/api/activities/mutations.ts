@@ -33,7 +33,7 @@ import { db } from "@/database";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
 import { getActivitySharings } from "@/services/sharing";
-import { and, eq, like, max, ne } from "drizzle-orm";
+import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
@@ -106,13 +106,6 @@ export const registerActivitiesMutations = () => {
           .select()
           .from(accounts)
           .where(eq(accounts.user, ctx.user.id));
-        const maxNumberResult = await db
-          .select({ number: max(activities.number) })
-          .from(activities)
-          .where(eq(activities.user, ctx.user.id))
-          .then((result) => result[0]);
-
-        const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
         const category = args.category
           ? ((
@@ -156,7 +149,6 @@ export const registerActivitiesMutations = () => {
 
         await db.insert(activities).values({
           id: args.id,
-          number,
           user: ctx.user.id,
           name: args.name,
           description: args.description,
@@ -308,7 +300,6 @@ export const registerActivitiesMutations = () => {
           type: "createActivity",
           payload: {
             id: args.id,
-            number,
             name: args.name,
             description: args.description ?? null,
             date: args.date.toISOString(),
@@ -338,7 +329,6 @@ export const registerActivitiesMutations = () => {
 
         return {
           id: args.id,
-          number,
           users: [ctx.user.id],
           name: args.name,
           description: args.description ?? null,
@@ -717,7 +707,6 @@ export const registerActivitiesMutations = () => {
             .insert(activities)
             .values({
               id: crypto.randomUUID(),
-              number: 0,
               user: args.userId,
               name: activity.name,
               description: activity.description,

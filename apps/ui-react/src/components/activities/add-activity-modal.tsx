@@ -248,7 +248,6 @@ export function AddActivityModal({
   const createActivity = (data: FormValues) => {
     const newActivity = {
       id: crypto.randomUUID(),
-      number: activities.length + 1,
       name: data.name,
       description: data.description || null,
       date: getGraphQLDate(data.date),
@@ -298,7 +297,6 @@ export function AddActivityModal({
 
       const newActivity = {
         id: crypto.randomUUID(),
-        number: activities.length + 1,
         name: movement.name,
         description: data.description || null,
         date: getGraphQLDate(movement.date),

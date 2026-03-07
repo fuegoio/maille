@@ -39,9 +39,9 @@ export function ExportActivitiesButton({
 
   const exportActivities = () => {
     const csvFile = stringify([
-      ["number", "date", "name", "amount"],
+      ["id", "date", "name", "amount"],
       ...filteredActivities.map((a) => [
-        a.number,
+        a.id,
         getGraphQLDate(a.date),
         a.name,
         a.amount,

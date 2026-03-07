@@ -12,7 +12,6 @@ export interface CreateActivityEvent extends BaseSyncEvent {
   type: "createActivity";
   payload: {
     id: string;
-    number: number;
     name: string;
     description: string | null;
     date: string;
