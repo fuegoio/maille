@@ -2,7 +2,7 @@ import { db } from "@/database";
 import { builder } from "../builder";
 import { CounterpartySchema } from "./schemas";
 import { addEvent } from "../events";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { accounts, counterparties, transactions } from "@/tables";
 
@@ -24,7 +24,7 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(eq(accounts.id, args.account), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -53,7 +53,7 @@ export const registerCounterpartiesMutations = () => {
           type: "createCounterparty",
           payload: {
             id: args.id,
-            account: args.account,
+            account: account.id,
             name: args.name,
             description: args.description ?? null,
             contact: args.contact ?? null,
@@ -84,7 +84,7 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(eq(counterparties.id, args.id), eq(counterparties.user, ctx.user.id)))
+            .where(and(like(counterparties.id, `${args.id}%`), eq(counterparties.user, ctx.user.id)))
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
@@ -107,7 +107,7 @@ export const registerCounterpartiesMutations = () => {
         const updatedCounterparties = await db
           .update(counterparties)
           .set(updates)
-          .where(eq(counterparties.id, args.id))
+          .where(eq(counterparties.id, counterparty.id))
           .returning();
         const updatedCounterparty = updatedCounterparties[0];
 
@@ -118,7 +118,7 @@ export const registerCounterpartiesMutations = () => {
         await addEvent({
           type: "updateCounterparty",
           payload: {
-            id: args.id,
+            id: counterparty.id,
             ...updates,
           },
           createdAt: new Date(),
@@ -146,26 +146,26 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(eq(counterparties.id, args.id), eq(counterparties.user, ctx.user.id)))
+            .where(and(like(counterparties.id, `${args.id}%`), eq(counterparties.user, ctx.user.id)))
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
         }
 
-        await db.delete(counterparties).where(eq(counterparties.id, args.id));
+        await db.delete(counterparties).where(eq(counterparties.id, counterparty.id));
         await db
           .update(transactions)
           .set({ fromCounterparty: null })
-          .where(eq(transactions.fromCounterparty, args.id));
+          .where(eq(transactions.fromCounterparty, counterparty.id));
         await db
           .update(transactions)
           .set({ toCounterparty: null })
-          .where(eq(transactions.toCounterparty, args.id));
+          .where(eq(transactions.toCounterparty, counterparty.id));
 
         await addEvent({
           type: "deleteCounterparty",
           payload: {
-            id: args.id,
+            id: counterparty.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,

@@ -21,15 +21,18 @@ import {
   activitiesSharing,
   activityCategories,
   activitySubcategories,
+  assets,
   contacts,
+  counterparties,
   movements,
   movementsActivities,
+  projects,
   transactions,
 } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
 import { getActivitySharings } from "@/services/sharing";
-import { and, eq, max, ne } from "drizzle-orm";
+import { and, eq, like, max, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
@@ -107,6 +110,16 @@ export const registerActivitiesMutations = () => {
 
         const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
+        const category = args.category
+          ? (await db.select({ id: activityCategories.id }).from(activityCategories).where(like(activityCategories.id, `${args.category}%`)).limit(1))[0]?.id ?? null
+          : args.category;
+        const subcategory = args.subcategory
+          ? (await db.select({ id: activitySubcategories.id }).from(activitySubcategories).where(like(activitySubcategories.id, `${args.subcategory}%`)).limit(1))[0]?.id ?? null
+          : args.subcategory;
+        const project = args.project
+          ? (await db.select({ id: projects.id }).from(projects).where(like(projects.id, `${args.project}%`)).limit(1))[0]?.id ?? null
+          : args.project;
+
         await db.insert(activities).values({
           id: args.id,
           number,
@@ -115,18 +128,39 @@ export const registerActivitiesMutations = () => {
           description: args.description,
           date: new Date(args.date),
           type: activityType,
-          category: args.category,
-          subcategory: args.subcategory,
-          project: args.project,
+          category,
+          subcategory,
+          project,
         });
 
         // Transactions
         const transactionPromises =
           args.transactions?.map(async (transaction) => {
+            const fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${transaction.fromAccount}%`)).limit(1))[0]?.id ?? transaction.fromAccount;
+            const toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${transaction.toAccount}%`)).limit(1))[0]?.id ?? transaction.toAccount;
+            const fromAsset = transaction.fromAsset
+              ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${transaction.fromAsset}%`)).limit(1))[0]?.id
+              : transaction.fromAsset;
+            const toAsset = transaction.toAsset
+              ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${transaction.toAsset}%`)).limit(1))[0]?.id
+              : transaction.toAsset;
+            const fromCounterparty = transaction.fromCounterparty
+              ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${transaction.fromCounterparty}%`)).limit(1))[0]?.id
+              : transaction.fromCounterparty;
+            const toCounterparty = transaction.toCounterparty
+              ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${transaction.toCounterparty}%`)).limit(1))[0]?.id
+              : transaction.toCounterparty;
             const transactionResults = await db
               .insert(transactions)
               .values({
-                ...transaction,
+                id: transaction.id,
+                amount: transaction.amount,
+                fromAccount,
+                toAccount,
+                fromAsset,
+                toAsset,
+                fromCounterparty,
+                toCounterparty,
                 activity: args.id,
               })
               .returning();
@@ -144,11 +178,12 @@ export const registerActivitiesMutations = () => {
         // Movements
         let newMovements: ActivityMovement[] = [];
         if (args.movement) {
+          const resolvedMovement = (await db.select({ id: movements.id }).from(movements).where(like(movements.id, `${args.movement.movement}%`)).limit(1))[0]?.id ?? args.movement.movement;
           const movementActivity = {
             id: args.movement.id,
             user: ctx.user.id,
             activity: args.id,
-            movement: args.movement.movement,
+            movement: resolvedMovement,
             amount: args.movement.amount,
           };
           await db.insert(movementsActivities).values(movementActivity);
@@ -164,11 +199,13 @@ export const registerActivitiesMutations = () => {
             description: args.description ?? null,
             date: args.date.toISOString(),
             type: activityType,
-            category: args.category ?? null,
-            subcategory: args.subcategory ?? null,
-            project: args.project ?? null,
+            category: category ?? null,
+            subcategory: subcategory ?? null,
+            project: project ?? null,
             transactions: newTransactions,
-            movement: args.movement ? { ...args.movement } : undefined,
+            movement: args.movement && newMovements[0]
+              ? { id: args.movement.id, amount: args.movement.amount, movement: newMovements[0].movement }
+              : undefined,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -188,9 +225,9 @@ export const registerActivitiesMutations = () => {
           description: args.description ?? null,
           date: args.date,
           type: activityType,
-          category: args.category ?? null,
-          subcategory: args.subcategory ?? null,
-          project: args.project ?? null,
+          category: category ?? null,
+          subcategory: subcategory ?? null,
+          project: project ?? null,
           transactions: newTransactions,
           movements: newMovements,
           amount: getActivityTransactionsReconciliationSum(
@@ -264,7 +301,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.id}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -290,21 +327,27 @@ export const registerActivitiesMutations = () => {
 
         // Optional fields
         if (args.category !== undefined) {
-          activityUpdates.category = args.category;
+          activityUpdates.category = args.category
+            ? (await db.select({ id: activityCategories.id }).from(activityCategories).where(like(activityCategories.id, `${args.category}%`)).limit(1))[0]?.id ?? null
+            : args.category;
           activityUpdates.subcategory = null;
         }
         if (args.subcategory !== undefined) {
-          activityUpdates.subcategory = args.subcategory;
+          activityUpdates.subcategory = args.subcategory
+            ? (await db.select({ id: activitySubcategories.id }).from(activitySubcategories).where(like(activitySubcategories.id, `${args.subcategory}%`)).limit(1))[0]?.id ?? null
+            : args.subcategory;
         }
         if (args.project !== undefined) {
-          activityUpdates.project = args.project;
+          activityUpdates.project = args.project
+            ? (await db.select({ id: projects.id }).from(projects).where(like(projects.id, `${args.project}%`)).limit(1))[0]?.id ?? null
+            : args.project;
         }
 
         if (Object.keys(activityUpdates).length > 0) {
           const updatedActivities = await db
             .update(activities)
             .set(activityUpdates)
-            .where(eq(activities.id, args.id))
+            .where(eq(activities.id, activity.id))
             .returning();
           activity = updatedActivities[0];
           if (!activity) {
@@ -315,7 +358,7 @@ export const registerActivitiesMutations = () => {
         void addEvent({
           type: "updateActivity",
           payload: {
-            id: args.id,
+            id: activity.id,
             ...activityUpdates,
             date: activityUpdates.date?.toISOString(),
           },
@@ -328,11 +371,11 @@ export const registerActivitiesMutations = () => {
         const transactionsData = await db
           .select()
           .from(transactions)
-          .where(eq(transactions.activity, args.id));
+          .where(eq(transactions.activity, activity.id));
         const movementsData = await db
           .select()
           .from(movementsActivities)
-          .where(eq(movementsActivities.activity, args.id));
+          .where(eq(movementsActivities.activity, activity.id));
 
         const userMovements = await db
           .select()
@@ -366,7 +409,7 @@ export const registerActivitiesMutations = () => {
             },
           ),
           sharing: getActivitySharingsReconciliation(
-            await getActivitySharings(args.id, ctx.user.id),
+            await getActivitySharings(activity.id, ctx.user.id),
             ctx.user.id,
           ),
         };
@@ -387,7 +430,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.id}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -399,7 +442,7 @@ export const registerActivitiesMutations = () => {
 
         // Update activities sharing
         const sharingId = (
-          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, activity.id))
         )[0]?.sharingId;
         const activitySharings = sharingId
           ? await db
@@ -412,7 +455,7 @@ export const registerActivitiesMutations = () => {
                 ),
               )
           : [];
-        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, args.id));
+        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, activity.id));
         activitySharings.forEach(async (as) => {
           const sharing = getActivitySharingsReconciliation(
             await getActivitySharings(as.activity, as.user),
@@ -430,12 +473,12 @@ export const registerActivitiesMutations = () => {
           });
         });
 
-        await db.delete(activities).where(eq(activities.id, args.id));
+        await db.delete(activities).where(eq(activities.id, activity.id));
 
         void addEvent({
           type: "deleteActivity",
           payload: {
-            id: args.id,
+            id: activity.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -443,7 +486,7 @@ export const registerActivitiesMutations = () => {
         });
 
         return {
-          id: args.id,
+          id: activity.id,
           success: true,
         };
       },
@@ -466,7 +509,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.id), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.id}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -484,7 +527,7 @@ export const registerActivitiesMutations = () => {
         }
 
         const activitySharing = (
-          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, args.id))
+          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, activity.id))
         )[0];
         let sharingId = activitySharing?.sharingId;
 
@@ -494,7 +537,7 @@ export const registerActivitiesMutations = () => {
             id: crypto.randomUUID(),
             sharingId,
             user: ctx.user.id,
-            activity: args.id,
+            activity: activity.id,
             role: "primary",
           });
         }
@@ -541,7 +584,7 @@ export const registerActivitiesMutations = () => {
         });
 
         const sharingForMe = getActivitySharingsReconciliation(
-          await getActivitySharings(args.id, ctx.user.id),
+          await getActivitySharings(activity.id, ctx.user.id),
           ctx.user.id,
         );
         const sharingForContact = getActivitySharingsReconciliation(
@@ -565,7 +608,7 @@ export const registerActivitiesMutations = () => {
         void addEvent({
           type: "updateActivitySharing",
           payload: {
-            activityId: args.id,
+            activityId: activity.id,
             sharing: sharingForMe,
           },
           createdAt: new Date(),
@@ -603,39 +646,40 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.activityId}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
 
-        // Validate accounts
-        const fromAccount = await db
-          .select()
-          .from(accounts)
-          .where(eq(accounts.id, args.fromAccount))
-          .limit(1);
-        if (!fromAccount) {
-          throw new GraphQLError("From account not found");
-        }
-
-        const toAccount = await db
-          .select()
-          .from(accounts)
-          .where(eq(accounts.id, args.toAccount))
-          .limit(1);
-        if (!toAccount) {
-          throw new GraphQLError("To account not found");
-        }
-
-        // TODO: missing validation for assets and counterparties
+        const fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${args.fromAccount}%`)).limit(1))[0]?.id ?? args.fromAccount;
+        const toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${args.toAccount}%`)).limit(1))[0]?.id ?? args.toAccount;
+        const fromAsset = args.fromAsset
+          ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${args.fromAsset}%`)).limit(1))[0]?.id
+          : args.fromAsset;
+        const toAsset = args.toAsset
+          ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${args.toAsset}%`)).limit(1))[0]?.id
+          : args.toAsset;
+        const fromCounterparty = args.fromCounterparty
+          ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${args.fromCounterparty}%`)).limit(1))[0]?.id
+          : args.fromCounterparty;
+        const toCounterparty = args.toCounterparty
+          ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${args.toCounterparty}%`)).limit(1))[0]?.id
+          : args.toCounterparty;
 
         const newTransactions = await db
           .insert(transactions)
           .values({
-            ...args,
-            activity: args.activityId,
+            id: args.id,
+            amount: args.amount,
+            fromAccount,
+            toAccount,
+            fromAsset,
+            toAsset,
+            fromCounterparty,
+            toCounterparty,
+            activity: activity.id,
           })
           .returning();
         const newTransaction = newTransactions[0];
@@ -647,7 +691,7 @@ export const registerActivitiesMutations = () => {
         void addEvent({
           type: "addTransaction",
           payload: {
-            activityId: args.activityId,
+            activityId: activity.id,
             ...newTransaction,
           },
           createdAt: new Date(),
@@ -660,7 +704,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitiesSharing)
-            .where(eq(activitiesSharing.activity, args.activityId))
+            .where(eq(activitiesSharing.activity, activity.id))
         )[0]?.sharingId;
         const activitySharings = sharingId
           ? await db
@@ -739,7 +783,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.activityId}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -750,28 +794,40 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
+            .where(and(like(transactions.id, `${args.id}%`), eq(transactions.activity, activity.id)))
             .limit(1)
         )[0];
         if (!transaction) {
           throw new GraphQLError("Transaction not found");
         }
 
-        // TODO: missing validation for accounts, assets and counterparties
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
-        if (args.fromAccount) updatedFields.fromAccount = args.fromAccount;
-        if (args.fromAsset !== undefined) updatedFields.fromAsset = args.fromAsset;
+        if (args.fromAccount)
+          updatedFields.fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${args.fromAccount}%`)).limit(1))[0]?.id ?? args.fromAccount;
+        if (args.fromAsset !== undefined)
+          updatedFields.fromAsset = args.fromAsset
+            ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${args.fromAsset}%`)).limit(1))[0]?.id
+            : args.fromAsset;
         if (args.fromCounterparty !== undefined)
-          updatedFields.fromCounterparty = args.fromCounterparty;
-        if (args.toAccount) updatedFields.toAccount = args.toAccount;
-        if (args.toAsset !== undefined) updatedFields.toAsset = args.toAsset;
-        if (args.toCounterparty !== undefined) updatedFields.toCounterparty = args.toCounterparty;
+          updatedFields.fromCounterparty = args.fromCounterparty
+            ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${args.fromCounterparty}%`)).limit(1))[0]?.id
+            : args.fromCounterparty;
+        if (args.toAccount)
+          updatedFields.toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, `${args.toAccount}%`)).limit(1))[0]?.id ?? args.toAccount;
+        if (args.toAsset !== undefined)
+          updatedFields.toAsset = args.toAsset
+            ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, `${args.toAsset}%`)).limit(1))[0]?.id
+            : args.toAsset;
+        if (args.toCounterparty !== undefined)
+          updatedFields.toCounterparty = args.toCounterparty
+            ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, `${args.toCounterparty}%`)).limit(1))[0]?.id
+            : args.toCounterparty;
 
         const updatedTransactions = await db
           .update(transactions)
           .set(updatedFields)
-          .where(eq(transactions.id, args.id))
+          .where(eq(transactions.id, transaction.id))
           .returning();
         const updatedTransaction = updatedTransactions[0];
 
@@ -783,7 +839,7 @@ export const registerActivitiesMutations = () => {
           type: "updateTransaction",
           payload: {
             activityId: transaction.activity,
-            id: args.id,
+            id: transaction.id,
             ...updatedFields,
           },
           createdAt: new Date(),
@@ -847,7 +903,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(eq(activities.id, args.activityId), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, `${args.activityId}%`), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -858,20 +914,20 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(eq(transactions.id, args.id), eq(transactions.activity, args.activityId)))
+            .where(and(like(transactions.id, `${args.id}%`), eq(transactions.activity, activity.id)))
             .limit(1)
         )[0];
         if (!transaction) {
           throw new GraphQLError("Transaction not found");
         }
 
-        await db.delete(transactions).where(eq(transactions.id, args.id));
+        await db.delete(transactions).where(eq(transactions.id, transaction.id));
 
         void addEvent({
           type: "deleteTransaction",
           payload: {
             activityId: transaction.activity,
-            id: args.id,
+            id: transaction.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -910,7 +966,7 @@ export const registerActivitiesMutations = () => {
           }),
         );
 
-        return { id: args.id, success: true };
+        return { id: transaction.id, success: true };
       },
     }),
   );
@@ -968,7 +1024,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(eq(activityCategories.id, args.id))
+            .where(like(activityCategories.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!category) {
@@ -987,7 +1043,7 @@ export const registerActivitiesMutations = () => {
         const updatedCategories = await db
           .update(activityCategories)
           .set(updates)
-          .where(eq(activityCategories.id, args.id))
+          .where(eq(activityCategories.id, category.id))
           .returning();
         const updatedCategory = updatedCategories[0];
 
@@ -998,7 +1054,7 @@ export const registerActivitiesMutations = () => {
         await addEvent({
           type: "updateActivityCategory",
           payload: {
-            id: args.id,
+            id: category.id,
             name: args.name,
             ...(args.emoji !== undefined && { emoji: args.emoji }),
           },
@@ -1026,26 +1082,26 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(eq(activityCategories.id, args.id))
+            .where(like(activityCategories.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!category) {
           throw new GraphQLError("Activity category not found");
         }
 
-        await db.delete(activityCategories).where(eq(activityCategories.id, args.id));
+        await db.delete(activityCategories).where(eq(activityCategories.id, category.id));
 
         await addEvent({
           type: "deleteActivityCategory",
           payload: {
-            id: args.id,
+            id: category.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
 
-        return { id: args.id, success: true };
+        return { id: category.id, success: true };
       },
     }),
   );
@@ -1064,11 +1120,18 @@ export const registerActivitiesMutations = () => {
         emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
+        const categoryRecord = (
+          await db
+            .select({ id: activityCategories.id })
+            .from(activityCategories)
+            .where(like(activityCategories.id, `${args.category}%`))
+            .limit(1)
+        )[0];
         const subcategory = {
           id: args.id,
           user: ctx.user.id,
           name: args.name,
-          category: args.category,
+          category: categoryRecord?.id ?? args.category,
           emoji: args.emoji ?? null,
         };
         await db.insert(activitySubcategories).values(subcategory);
@@ -1102,7 +1165,7 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(eq(activitySubcategories.id, args.id))
+            .where(like(activitySubcategories.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!subcategory) {
@@ -1121,7 +1184,7 @@ export const registerActivitiesMutations = () => {
         const updatedSubCategories = await db
           .update(activitySubcategories)
           .set(updates)
-          .where(eq(activitySubcategories.id, args.id))
+          .where(eq(activitySubcategories.id, subcategory.id))
           .returning();
         const updatedSubCategory = updatedSubCategories[0];
 
@@ -1132,7 +1195,7 @@ export const registerActivitiesMutations = () => {
         await addEvent({
           type: "updateActivitySubCategory",
           payload: {
-            id: args.id,
+            id: subcategory.id,
             name: args.name,
             ...(args.emoji !== undefined && { emoji: args.emoji }),
           },
@@ -1160,26 +1223,26 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(eq(activitySubcategories.id, args.id))
+            .where(like(activitySubcategories.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!subCategory) {
           throw new GraphQLError("Activity subcategory not found");
         }
 
-        await db.delete(activitySubcategories).where(eq(activitySubcategories.id, args.id));
+        await db.delete(activitySubcategories).where(eq(activitySubcategories.id, subCategory.id));
 
         await addEvent({
           type: "deleteActivitySubCategory",
           payload: {
-            id: args.id,
+            id: subCategory.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
 
-        return { id: args.id, success: true };
+        return { id: subCategory.id, success: true };
       },
     }),
   );

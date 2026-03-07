@@ -5,7 +5,7 @@ import { db } from "@/database";
 import { accounts, accountsSharing, user as userTable, contacts } from "@/tables";
 import { addEvent } from "../events";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { randomUUID } from "crypto";
 
@@ -100,7 +100,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
@@ -123,7 +123,7 @@ export const registerAccountsMutations = () => {
         const updatedAccounts = await db
           .update(accounts)
           .set(accountUpdates)
-          .where(eq(accounts.id, args.id))
+          .where(eq(accounts.id, account.id))
           .returning();
         const updatedAccount = updatedAccounts[0];
 
@@ -134,7 +134,7 @@ export const registerAccountsMutations = () => {
         await addEvent({
           type: "updateAccount",
           payload: {
-            id: args.id,
+            id: account.id,
             ...accountUpdates,
           },
           createdAt: new Date(),
@@ -160,18 +160,18 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
         }
 
-        await db.delete(accounts).where(eq(accounts.id, args.id));
+        await db.delete(accounts).where(eq(accounts.id, account.id));
 
         await addEvent({
           type: "deleteAccount",
           payload: {
-            id: args.id,
+            id: account.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -179,7 +179,7 @@ export const registerAccountsMutations = () => {
         });
 
         return {
-          id: args.id,
+          id: account.id,
           success: true,
         };
       },
@@ -203,7 +203,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(eq(accounts.id, args.id), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!originalAccount) {
           throw new GraphQLError("Account not found or doesn't belong to you");

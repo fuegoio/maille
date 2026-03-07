@@ -5,10 +5,10 @@ import {
   MovementActivitySchema,
   DeleteMovementActivityResponseSchema,
 } from "./schemas";
-import { movements, movementsActivities } from "@/tables";
+import { accounts, activities, movements, movementsActivities } from "@/tables";
 import { db } from "@/database";
 import { addEvent } from "@/api/events";
-import { and, eq } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 export const registerMovementsMutations = () => {
@@ -27,13 +27,24 @@ export const registerMovementsMutations = () => {
         }),
       },
       resolve: async (root, args, ctx) => {
+        const account = (
+          await db
+            .select({ id: accounts.id })
+            .from(accounts)
+            .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+            .limit(1)
+        )[0];
+        if (!account) {
+          throw new GraphQLError("Account not found");
+        }
+
         await db.insert(movements).values({
           id: args.id,
           user: ctx.user.id,
           name: args.name,
           date: new Date(args.date),
           amount: args.amount,
-          account: args.account,
+          account: account.id,
         });
 
         await addEvent({
@@ -43,7 +54,7 @@ export const registerMovementsMutations = () => {
             name: args.name,
             date: args.date.toISOString(),
             amount: args.amount,
-            account: args.account,
+            account: account.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -56,7 +67,7 @@ export const registerMovementsMutations = () => {
           name: args.name,
           date: args.date,
           amount: args.amount,
-          account: args.account,
+          account: account.id,
           activities: [],
           status: "incomplete" as "incomplete" | "completed",
         };
@@ -93,7 +104,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)))
+            .where(and(like(movements.id, `${args.id}%`), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -111,13 +122,23 @@ export const registerMovementsMutations = () => {
           updates.name = args.name;
         }
         if (args.account) {
-          updates.account = args.account;
+          const account = (
+            await db
+              .select({ id: accounts.id })
+              .from(accounts)
+              .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+              .limit(1)
+          )[0];
+          if (!account) {
+            throw new GraphQLError("Account not found");
+          }
+          updates.account = account.id;
         }
 
         const updatedMovements = await db
           .update(movements)
           .set(updates)
-          .where(eq(movements.id, args.id))
+          .where(eq(movements.id, movement.id))
           .returning();
         const updatedMovement = updatedMovements[0];
 
@@ -128,7 +149,7 @@ export const registerMovementsMutations = () => {
         await addEvent({
           type: "updateMovement",
           payload: {
-            id: args.id,
+            id: movement.id,
             ...updates,
             date: updates.date?.toISOString(),
           },
@@ -140,7 +161,7 @@ export const registerMovementsMutations = () => {
         const activitiesData = await db
           .select()
           .from(movementsActivities)
-          .where(eq(movementsActivities.movement, args.id));
+          .where(eq(movementsActivities.movement, movement.id));
 
         return {
           ...updatedMovement,
@@ -167,19 +188,19 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(eq(movements.id, args.id), eq(movements.user, ctx.user.id)))
+            .where(and(like(movements.id, `${args.id}%`), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
           throw new GraphQLError("Movement not found");
         }
 
-        await db.delete(movements).where(eq(movements.id, args.id));
+        await db.delete(movements).where(eq(movements.id, movement.id));
 
         await addEvent({
           type: "deleteMovement",
           payload: {
-            id: args.id,
+            id: movement.id,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -187,7 +208,7 @@ export const registerMovementsMutations = () => {
         });
 
         return {
-          id: args.id,
+          id: movement.id,
           success: true,
         };
       },
@@ -210,10 +231,32 @@ export const registerMovementsMutations = () => {
         amount: t.arg.float(),
       },
       resolve: async (root, args, ctx) => {
+        const movement = (
+          await db
+            .select({ id: movements.id })
+            .from(movements)
+            .where(and(like(movements.id, `${args.movementId}%`), eq(movements.user, ctx.user.id)))
+            .limit(1)
+        )[0];
+        if (!movement) {
+          throw new GraphQLError("Movement not found");
+        }
+
+        const activity = (
+          await db
+            .select({ id: activities.id })
+            .from(activities)
+            .where(and(like(activities.id, `${args.activityId}%`), eq(activities.user, ctx.user.id)))
+            .limit(1)
+        )[0];
+        if (!activity) {
+          throw new GraphQLError("Activity not found");
+        }
+
         await db.insert(movementsActivities).values({
           id: args.id,
-          movement: args.movementId,
-          activity: args.activityId,
+          movement: movement.id,
+          activity: activity.id,
           amount: args.amount,
         });
 
@@ -221,8 +264,8 @@ export const registerMovementsMutations = () => {
           type: "createMovementActivity",
           payload: {
             id: args.id,
-            movement: args.movementId,
-            activity: args.activityId,
+            movement: movement.id,
+            activity: activity.id,
             amount: args.amount,
           },
           createdAt: new Date(),
@@ -232,8 +275,8 @@ export const registerMovementsMutations = () => {
 
         return {
           id: args.id,
-          movement: args.movementId,
-          activity: args.activityId,
+          movement: movement.id,
+          activity: activity.id,
           amount: args.amount,
         };
       },
@@ -255,7 +298,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movementsActivities)
-            .where(eq(movementsActivities.id, args.id))
+            .where(like(movementsActivities.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!movementActivity) {
@@ -268,7 +311,7 @@ export const registerMovementsMutations = () => {
         const updatedMovementActivities = await db
           .update(movementsActivities)
           .set(updatedFields)
-          .where(eq(movementsActivities.id, args.id))
+          .where(eq(movementsActivities.id, movementActivity.id))
           .returning();
         const updatedMovementActivity = updatedMovementActivities[0];
 
@@ -279,7 +322,7 @@ export const registerMovementsMutations = () => {
         await addEvent({
           type: "updateMovementActivity",
           payload: {
-            id: args.id,
+            id: movementActivity.id,
             activity: movementActivity.activity,
             movement: movementActivity.movement,
             amount: args.amount,
@@ -308,18 +351,18 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movementsActivities)
-            .where(eq(movementsActivities.id, args.id))
+            .where(like(movementsActivities.id, `${args.id}%`))
             .limit(1)
         )[0];
         if (!movementActivity) {
           throw new GraphQLError("MovementActivity not found");
         }
-        await db.delete(movementsActivities).where(eq(movementsActivities.id, args.id));
+        await db.delete(movementsActivities).where(eq(movementsActivities.id, movementActivity.id));
 
         await addEvent({
           type: "deleteMovementActivity",
           payload: {
-            id: args.id,
+            id: movementActivity.id,
             activity: movementActivity.activity,
             movement: movementActivity.movement,
           },
@@ -328,7 +371,7 @@ export const registerMovementsMutations = () => {
           user: ctx.user.id,
         });
 
-        return { id: args.id, success: true };
+        return { id: movementActivity.id, success: true };
       },
     }),
   );
