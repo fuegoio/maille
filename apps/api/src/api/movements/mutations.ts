@@ -127,7 +127,9 @@ export const registerMovementsMutations = () => {
             await db
               .select({ id: accounts.id })
               .from(accounts)
-              .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
+              .where(
+                and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)),
+              )
               .limit(1)
           )[0];
           if (!account) {
@@ -236,7 +238,9 @@ export const registerMovementsMutations = () => {
           await db
             .select({ id: movements.id })
             .from(movements)
-            .where(and(like(movements.id, idPattern(args.movementId)), eq(movements.user, ctx.user.id)))
+            .where(
+              and(like(movements.id, idPattern(args.movementId)), eq(movements.user, ctx.user.id)),
+            )
             .limit(1)
         )[0];
         if (!movement) {
@@ -247,7 +251,12 @@ export const registerMovementsMutations = () => {
           await db
             .select({ id: activities.id })
             .from(activities)
-            .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, ctx.user.id)))
+            .where(
+              and(
+                like(activities.id, idPattern(args.activityId)),
+                eq(activities.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!activity) {
@@ -306,6 +315,19 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("MovementActivity not found");
         }
 
+        const ownedMovement = (
+          await db
+            .select({ id: movements.id })
+            .from(movements)
+            .where(
+              and(eq(movements.id, movementActivity.movement), eq(movements.user, ctx.user.id)),
+            )
+            .limit(1)
+        )[0];
+        if (!ownedMovement) {
+          throw new GraphQLError("MovementActivity not found");
+        }
+
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
 
@@ -358,6 +380,20 @@ export const registerMovementsMutations = () => {
         if (!movementActivity) {
           throw new GraphQLError("MovementActivity not found");
         }
+
+        const ownedMovement = (
+          await db
+            .select({ id: movements.id })
+            .from(movements)
+            .where(
+              and(eq(movements.id, movementActivity.movement), eq(movements.user, ctx.user.id)),
+            )
+            .limit(1)
+        )[0];
+        if (!ownedMovement) {
+          throw new GraphQLError("MovementActivity not found");
+        }
+
         await db.delete(movementsActivities).where(eq(movementsActivities.id, movementActivity.id));
 
         await addEvent({

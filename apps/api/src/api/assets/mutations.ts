@@ -112,7 +112,9 @@ export const registerAssetsMutations = () => {
             await db
               .select()
               .from(accounts)
-              .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
+              .where(
+                and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)),
+              )
               .limit(1)
           )[0];
           if (!account) {

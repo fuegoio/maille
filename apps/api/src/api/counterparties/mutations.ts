@@ -85,7 +85,12 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(like(counterparties.id, idPattern(args.id)), eq(counterparties.user, ctx.user.id)))
+            .where(
+              and(
+                like(counterparties.id, idPattern(args.id)),
+                eq(counterparties.user, ctx.user.id),
+              ),
+            )
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
@@ -147,7 +152,12 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(like(counterparties.id, idPattern(args.id)), eq(counterparties.user, ctx.user.id)))
+            .where(
+              and(
+                like(counterparties.id, idPattern(args.id)),
+                eq(counterparties.user, ctx.user.id),
+              ),
+            )
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");

@@ -102,7 +102,10 @@ export const registerActivitiesMutations = () => {
         const ActivityTypeEnum = z.enum(ActivityType);
         const activityType = ActivityTypeEnum.parse(args.type);
 
-        const accountsQuery = await db.select().from(accounts);
+        const accountsQuery = await db
+          .select()
+          .from(accounts)
+          .where(eq(accounts.user, ctx.user.id));
         const maxNumberResult = await db
           .select({ number: max(activities.number) })
           .from(activities)
@@ -112,13 +115,43 @@ export const registerActivitiesMutations = () => {
         const number = maxNumberResult?.number ? maxNumberResult.number + 1 : 1;
 
         const category = args.category
-          ? (await db.select({ id: activityCategories.id }).from(activityCategories).where(like(activityCategories.id, idPattern(args.category))).limit(1))[0]?.id ?? null
+          ? ((
+              await db
+                .select({ id: activityCategories.id })
+                .from(activityCategories)
+                .where(
+                  and(
+                    like(activityCategories.id, idPattern(args.category)),
+                    eq(activityCategories.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id ?? null)
           : args.category;
         const subcategory = args.subcategory
-          ? (await db.select({ id: activitySubcategories.id }).from(activitySubcategories).where(like(activitySubcategories.id, idPattern(args.subcategory))).limit(1))[0]?.id ?? null
+          ? ((
+              await db
+                .select({ id: activitySubcategories.id })
+                .from(activitySubcategories)
+                .where(
+                  and(
+                    like(activitySubcategories.id, idPattern(args.subcategory)),
+                    eq(activitySubcategories.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id ?? null)
           : args.subcategory;
         const project = args.project
-          ? (await db.select({ id: projects.id }).from(projects).where(like(projects.id, idPattern(args.project))).limit(1))[0]?.id ?? null
+          ? ((
+              await db
+                .select({ id: projects.id })
+                .from(projects)
+                .where(
+                  and(like(projects.id, idPattern(args.project)), eq(projects.user, ctx.user.id)),
+                )
+                .limit(1)
+            )[0]?.id ?? null)
           : args.project;
 
         await db.insert(activities).values({
@@ -137,19 +170,87 @@ export const registerActivitiesMutations = () => {
         // Transactions
         const transactionPromises =
           args.transactions?.map(async (transaction) => {
-            const fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(transaction.fromAccount))).limit(1))[0]?.id ?? transaction.fromAccount;
-            const toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(transaction.toAccount))).limit(1))[0]?.id ?? transaction.toAccount;
+            const fromAccount =
+              (
+                await db
+                  .select({ id: accounts.id })
+                  .from(accounts)
+                  .where(
+                    and(
+                      like(accounts.id, idPattern(transaction.fromAccount)),
+                      eq(accounts.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id ?? transaction.fromAccount;
+            const toAccount =
+              (
+                await db
+                  .select({ id: accounts.id })
+                  .from(accounts)
+                  .where(
+                    and(
+                      like(accounts.id, idPattern(transaction.toAccount)),
+                      eq(accounts.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id ?? transaction.toAccount;
             const fromAsset = transaction.fromAsset
-              ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(transaction.fromAsset))).limit(1))[0]?.id
+              ? (
+                  await db
+                    .select({ id: assets.id })
+                    .from(assets)
+                    .where(
+                      and(
+                        like(assets.id, idPattern(transaction.fromAsset)),
+                        eq(assets.user, ctx.user.id),
+                      ),
+                    )
+                    .limit(1)
+                )[0]?.id
               : transaction.fromAsset;
             const toAsset = transaction.toAsset
-              ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(transaction.toAsset))).limit(1))[0]?.id
+              ? (
+                  await db
+                    .select({ id: assets.id })
+                    .from(assets)
+                    .where(
+                      and(
+                        like(assets.id, idPattern(transaction.toAsset)),
+                        eq(assets.user, ctx.user.id),
+                      ),
+                    )
+                    .limit(1)
+                )[0]?.id
               : transaction.toAsset;
             const fromCounterparty = transaction.fromCounterparty
-              ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(transaction.fromCounterparty))).limit(1))[0]?.id
+              ? (
+                  await db
+                    .select({ id: counterparties.id })
+                    .from(counterparties)
+                    .where(
+                      and(
+                        like(counterparties.id, idPattern(transaction.fromCounterparty)),
+                        eq(counterparties.user, ctx.user.id),
+                      ),
+                    )
+                    .limit(1)
+                )[0]?.id
               : transaction.fromCounterparty;
             const toCounterparty = transaction.toCounterparty
-              ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(transaction.toCounterparty))).limit(1))[0]?.id
+              ? (
+                  await db
+                    .select({ id: counterparties.id })
+                    .from(counterparties)
+                    .where(
+                      and(
+                        like(counterparties.id, idPattern(transaction.toCounterparty)),
+                        eq(counterparties.user, ctx.user.id),
+                      ),
+                    )
+                    .limit(1)
+                )[0]?.id
               : transaction.toCounterparty;
             const transactionResults = await db
               .insert(transactions)
@@ -179,7 +280,19 @@ export const registerActivitiesMutations = () => {
         // Movements
         let newMovements: ActivityMovement[] = [];
         if (args.movement) {
-          const resolvedMovement = (await db.select({ id: movements.id }).from(movements).where(like(movements.id, idPattern(args.movement.movement))).limit(1))[0]?.id ?? args.movement.movement;
+          const resolvedMovement =
+            (
+              await db
+                .select({ id: movements.id })
+                .from(movements)
+                .where(
+                  and(
+                    like(movements.id, idPattern(args.movement.movement)),
+                    eq(movements.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id ?? args.movement.movement;
           const movementActivity = {
             id: args.movement.id,
             user: ctx.user.id,
@@ -204,9 +317,14 @@ export const registerActivitiesMutations = () => {
             subcategory: subcategory ?? null,
             project: project ?? null,
             transactions: newTransactions,
-            movement: args.movement && newMovements[0]
-              ? { id: args.movement.id, amount: args.movement.amount, movement: newMovements[0].movement }
-              : undefined,
+            movement:
+              args.movement && newMovements[0]
+                ? {
+                    id: args.movement.id,
+                    amount: args.movement.amount,
+                    movement: newMovements[0].movement,
+                  }
+                : undefined,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -329,18 +447,48 @@ export const registerActivitiesMutations = () => {
         // Optional fields
         if (args.category !== undefined) {
           activityUpdates.category = args.category
-            ? (await db.select({ id: activityCategories.id }).from(activityCategories).where(like(activityCategories.id, idPattern(args.category))).limit(1))[0]?.id ?? null
+            ? ((
+                await db
+                  .select({ id: activityCategories.id })
+                  .from(activityCategories)
+                  .where(
+                    and(
+                      like(activityCategories.id, idPattern(args.category)),
+                      eq(activityCategories.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id ?? null)
             : args.category;
           activityUpdates.subcategory = null;
         }
         if (args.subcategory !== undefined) {
           activityUpdates.subcategory = args.subcategory
-            ? (await db.select({ id: activitySubcategories.id }).from(activitySubcategories).where(like(activitySubcategories.id, idPattern(args.subcategory))).limit(1))[0]?.id ?? null
+            ? ((
+                await db
+                  .select({ id: activitySubcategories.id })
+                  .from(activitySubcategories)
+                  .where(
+                    and(
+                      like(activitySubcategories.id, idPattern(args.subcategory)),
+                      eq(activitySubcategories.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id ?? null)
             : args.subcategory;
         }
         if (args.project !== undefined) {
           activityUpdates.project = args.project
-            ? (await db.select({ id: projects.id }).from(projects).where(like(projects.id, idPattern(args.project))).limit(1))[0]?.id ?? null
+            ? ((
+                await db
+                  .select({ id: projects.id })
+                  .from(projects)
+                  .where(
+                    and(like(projects.id, idPattern(args.project)), eq(projects.user, ctx.user.id)),
+                  )
+                  .limit(1)
+              )[0]?.id ?? null)
             : args.project;
         }
 
@@ -443,7 +591,10 @@ export const registerActivitiesMutations = () => {
 
         // Update activities sharing
         const sharingId = (
-          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, activity.id))
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(eq(activitiesSharing.activity, activity.id))
         )[0]?.sharingId;
         const activitySharings = sharingId
           ? await db
@@ -528,7 +679,10 @@ export const registerActivitiesMutations = () => {
         }
 
         const activitySharing = (
-          await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, activity.id))
+          await db
+            .select()
+            .from(activitiesSharing)
+            .where(eq(activitiesSharing.activity, activity.id))
         )[0];
         let sharingId = activitySharing?.sharingId;
 
@@ -647,26 +801,85 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, ctx.user.id)))
+            .where(
+              and(
+                like(activities.id, idPattern(args.activityId)),
+                eq(activities.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!activity) {
           throw new GraphQLError("Activity not found");
         }
 
-        const fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(args.fromAccount))).limit(1))[0]?.id ?? args.fromAccount;
-        const toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(args.toAccount))).limit(1))[0]?.id ?? args.toAccount;
+        const fromAccount =
+          (
+            await db
+              .select({ id: accounts.id })
+              .from(accounts)
+              .where(
+                and(like(accounts.id, idPattern(args.fromAccount)), eq(accounts.user, ctx.user.id)),
+              )
+              .limit(1)
+          )[0]?.id ?? args.fromAccount;
+        const toAccount =
+          (
+            await db
+              .select({ id: accounts.id })
+              .from(accounts)
+              .where(
+                and(like(accounts.id, idPattern(args.toAccount)), eq(accounts.user, ctx.user.id)),
+              )
+              .limit(1)
+          )[0]?.id ?? args.toAccount;
         const fromAsset = args.fromAsset
-          ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(args.fromAsset))).limit(1))[0]?.id
+          ? (
+              await db
+                .select({ id: assets.id })
+                .from(assets)
+                .where(
+                  and(like(assets.id, idPattern(args.fromAsset)), eq(assets.user, ctx.user.id)),
+                )
+                .limit(1)
+            )[0]?.id
           : args.fromAsset;
         const toAsset = args.toAsset
-          ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(args.toAsset))).limit(1))[0]?.id
+          ? (
+              await db
+                .select({ id: assets.id })
+                .from(assets)
+                .where(and(like(assets.id, idPattern(args.toAsset)), eq(assets.user, ctx.user.id)))
+                .limit(1)
+            )[0]?.id
           : args.toAsset;
         const fromCounterparty = args.fromCounterparty
-          ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(args.fromCounterparty))).limit(1))[0]?.id
+          ? (
+              await db
+                .select({ id: counterparties.id })
+                .from(counterparties)
+                .where(
+                  and(
+                    like(counterparties.id, idPattern(args.fromCounterparty)),
+                    eq(counterparties.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id
           : args.fromCounterparty;
         const toCounterparty = args.toCounterparty
-          ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(args.toCounterparty))).limit(1))[0]?.id
+          ? (
+              await db
+                .select({ id: counterparties.id })
+                .from(counterparties)
+                .where(
+                  and(
+                    like(counterparties.id, idPattern(args.toCounterparty)),
+                    eq(counterparties.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id
           : args.toCounterparty;
 
         const newTransactions = await db
@@ -784,7 +997,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, ctx.user.id)))
+            .where(
+              and(
+                like(activities.id, idPattern(args.activityId)),
+                eq(activities.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!activity) {
@@ -795,7 +1013,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(like(transactions.id, idPattern(args.id)), eq(transactions.activity, activity.id)))
+            .where(
+              and(
+                like(transactions.id, idPattern(args.id)),
+                eq(transactions.activity, activity.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!transaction) {
@@ -805,24 +1028,83 @@ export const registerActivitiesMutations = () => {
         const updatedFields: Partial<typeof transaction> = {};
         if (args.amount !== null) updatedFields.amount = args.amount;
         if (args.fromAccount)
-          updatedFields.fromAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(args.fromAccount))).limit(1))[0]?.id ?? args.fromAccount;
+          updatedFields.fromAccount =
+            (
+              await db
+                .select({ id: accounts.id })
+                .from(accounts)
+                .where(
+                  and(
+                    like(accounts.id, idPattern(args.fromAccount)),
+                    eq(accounts.user, ctx.user.id),
+                  ),
+                )
+                .limit(1)
+            )[0]?.id ?? args.fromAccount;
         if (args.fromAsset !== undefined)
           updatedFields.fromAsset = args.fromAsset
-            ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(args.fromAsset))).limit(1))[0]?.id
+            ? (
+                await db
+                  .select({ id: assets.id })
+                  .from(assets)
+                  .where(
+                    and(like(assets.id, idPattern(args.fromAsset)), eq(assets.user, ctx.user.id)),
+                  )
+                  .limit(1)
+              )[0]?.id
             : args.fromAsset;
         if (args.fromCounterparty !== undefined)
           updatedFields.fromCounterparty = args.fromCounterparty
-            ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(args.fromCounterparty))).limit(1))[0]?.id
+            ? (
+                await db
+                  .select({ id: counterparties.id })
+                  .from(counterparties)
+                  .where(
+                    and(
+                      like(counterparties.id, idPattern(args.fromCounterparty)),
+                      eq(counterparties.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id
             : args.fromCounterparty;
         if (args.toAccount)
-          updatedFields.toAccount = (await db.select({ id: accounts.id }).from(accounts).where(like(accounts.id, idPattern(args.toAccount))).limit(1))[0]?.id ?? args.toAccount;
+          updatedFields.toAccount =
+            (
+              await db
+                .select({ id: accounts.id })
+                .from(accounts)
+                .where(
+                  and(like(accounts.id, idPattern(args.toAccount)), eq(accounts.user, ctx.user.id)),
+                )
+                .limit(1)
+            )[0]?.id ?? args.toAccount;
         if (args.toAsset !== undefined)
           updatedFields.toAsset = args.toAsset
-            ? (await db.select({ id: assets.id }).from(assets).where(like(assets.id, idPattern(args.toAsset))).limit(1))[0]?.id
+            ? (
+                await db
+                  .select({ id: assets.id })
+                  .from(assets)
+                  .where(
+                    and(like(assets.id, idPattern(args.toAsset)), eq(assets.user, ctx.user.id)),
+                  )
+                  .limit(1)
+              )[0]?.id
             : args.toAsset;
         if (args.toCounterparty !== undefined)
           updatedFields.toCounterparty = args.toCounterparty
-            ? (await db.select({ id: counterparties.id }).from(counterparties).where(like(counterparties.id, idPattern(args.toCounterparty))).limit(1))[0]?.id
+            ? (
+                await db
+                  .select({ id: counterparties.id })
+                  .from(counterparties)
+                  .where(
+                    and(
+                      like(counterparties.id, idPattern(args.toCounterparty)),
+                      eq(counterparties.user, ctx.user.id),
+                    ),
+                  )
+                  .limit(1)
+              )[0]?.id
             : args.toCounterparty;
 
         const updatedTransactions = await db
@@ -904,7 +1186,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activities)
-            .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, ctx.user.id)))
+            .where(
+              and(
+                like(activities.id, idPattern(args.activityId)),
+                eq(activities.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!activity) {
@@ -915,7 +1202,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(transactions)
-            .where(and(like(transactions.id, idPattern(args.id)), eq(transactions.activity, activity.id)))
+            .where(
+              and(
+                like(transactions.id, idPattern(args.id)),
+                eq(transactions.activity, activity.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!transaction) {
@@ -1025,7 +1317,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(like(activityCategories.id, idPattern(args.id)))
+            .where(
+              and(
+                like(activityCategories.id, idPattern(args.id)),
+                eq(activityCategories.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!category) {
@@ -1083,7 +1380,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activityCategories)
-            .where(like(activityCategories.id, idPattern(args.id)))
+            .where(
+              and(
+                like(activityCategories.id, idPattern(args.id)),
+                eq(activityCategories.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!category) {
@@ -1125,7 +1427,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select({ id: activityCategories.id })
             .from(activityCategories)
-            .where(like(activityCategories.id, idPattern(args.category)))
+            .where(
+              and(
+                like(activityCategories.id, idPattern(args.category)),
+                eq(activityCategories.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         const subcategory = {
@@ -1166,7 +1473,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(like(activitySubcategories.id, idPattern(args.id)))
+            .where(
+              and(
+                like(activitySubcategories.id, idPattern(args.id)),
+                eq(activitySubcategories.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!subcategory) {
@@ -1224,7 +1536,12 @@ export const registerActivitiesMutations = () => {
           await db
             .select()
             .from(activitySubcategories)
-            .where(like(activitySubcategories.id, idPattern(args.id)))
+            .where(
+              and(
+                like(activitySubcategories.id, idPattern(args.id)),
+                eq(activitySubcategories.user, ctx.user.id),
+              ),
+            )
             .limit(1)
         )[0];
         if (!subCategory) {
