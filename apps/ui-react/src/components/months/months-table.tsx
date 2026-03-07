@@ -1,11 +1,14 @@
+import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Calendar, CalendarClock } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
+import { getAccountsBalance } from "@/logic/accounts";
+import { getActivityTypeTotalForMonth } from "@/logic/activities";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -13,18 +16,16 @@ import { useAuth } from "@/stores/auth";
 export function MonthsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
-  const user = useAuth((state) => state.user);
+  const user = useAuth((state) => state.user!);
   const currencyFormatter = useCurrencyFormatter();
 
   const today = new Date();
 
   // Generate months from user start date to 12 months in the future
   const months = useMemo(() => {
-    if (!user?.startingDate) return [];
-
     const months = [];
     const startDate = new Date(user.startingDate);
-    const endDate = new Date(today);
+    const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 12); // 12 months in the future
 
     // Start from the beginning of the user start month
@@ -45,28 +46,7 @@ export function MonthsTable() {
     }
 
     return months;
-  }, [user?.startingDate]);
-
-  const getActivityTypeTotalForMonth = (
-    monthDate: Date,
-    activityType: ActivityType,
-  ) => {
-    const startOfMonth = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth() + 1,
-      0,
-    );
-
-    return activities
-      .filter((a) => a.type === activityType)
-      .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
-      .reduce((total, a) => total + a.amount, 0);
-  };
+  }, [user.startingDate]);
 
   const getBalanceForMonth = (monthDate: Date): number => {
     // Calculate the balance for the previous month
@@ -83,15 +63,19 @@ export function MonthsTable() {
             0,
           );
 
-    // Calculate revenue and expense for the current month
-    const revenue = getActivityTypeTotalForMonth(
+    const revenue = getAccountsBalance({
+      accountType: AccountType.REVENUE,
       monthDate,
-      ActivityType.REVENUE,
-    );
-    const expense = getActivityTypeTotalForMonth(
+      activities,
+      accounts,
+    });
+
+    const expense = getAccountsBalance({
+      accountType: AccountType.EXPENSE,
       monthDate,
-      ActivityType.EXPENSE,
-    );
+      activities,
+      accounts,
+    });
 
     // Compute the balance for the current month
     return previousBalance + revenue - expense;
@@ -110,22 +94,21 @@ export function MonthsTable() {
         <div className="flex-1 overflow-y-auto">
           {months.map((monthDate) => {
             const balance = getBalanceForMonth(monthDate);
-            const revenue = getActivityTypeTotalForMonth(
+            const revenue = getActivityTypeTotalForMonth({
               monthDate,
-              ActivityType.REVENUE,
-            );
-            const expense = getActivityTypeTotalForMonth(
+              activityType: ActivityType.REVENUE,
+              activities,
+            });
+            const expense = getActivityTypeTotalForMonth({
               monthDate,
-              ActivityType.EXPENSE,
-            );
-            const investment = getActivityTypeTotalForMonth(
+              activityType: ActivityType.EXPENSE,
+              activities,
+            });
+            const investment = getActivityTypeTotalForMonth({
               monthDate,
-              ActivityType.INVESTMENT,
-            );
-            const neutral = getActivityTypeTotalForMonth(
-              monthDate,
-              ActivityType.NEUTRAL,
-            );
+              activityType: ActivityType.INVESTMENT,
+              activities,
+            });
 
             return (
               <Link
@@ -204,19 +187,6 @@ export function MonthsTable() {
                   />
                   <div className="flex-1">
                     {currencyFormatter.format(expense)}
-                  </div>
-                </div>
-
-                {/* Neutral */}
-                <div className="flex w-32 items-center pl-4 text-right font-mono text-sm">
-                  <div
-                    className={cn(
-                      "mr-3 size-2.5 shrink-0 rounded-lg",
-                      ACTIVITY_TYPES_COLOR[ActivityType.NEUTRAL],
-                    )}
-                  />
-                  <div className="flex-1">
-                    {currencyFormatter.format(neutral)}
                   </div>
                 </div>
               </Link>

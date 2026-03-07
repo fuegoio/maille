@@ -11,12 +11,14 @@ import {
   ACCOUNT_TYPES_NAME,
 } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 
 import { Badge } from "../ui/badge";
 
 export function AccountsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user!);
   const navigate = useNavigate();
 
   const [groupsFolded, setGroupsFolded] = useState<AccountType[]>([]);
@@ -41,6 +43,7 @@ export function AccountsTable() {
     if (!account) return 0;
 
     const transactionsTotal = activities
+      .filter((a) => a.date >= user.startingDate)
       .flatMap((a) => a.transactions)
       .filter((t) => t.fromAccount === accountId || t.toAccount === accountId)
       .reduce((acc, t) => {

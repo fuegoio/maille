@@ -35,7 +35,6 @@ function RouteComponent() {
           <div className="w-32 text-right">Revenue</div>
           <div className="w-32 text-right">Investment</div>
           <div className="w-32 text-right">Expenses</div>
-          <div className="w-32 text-right">Neutral</div>
         </header>
 
         <MonthsTable />

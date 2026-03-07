@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { getActivityTypeTotalForMonth } from "@/logic/activities";
 import {
   ACTIVITY_TYPES_COLOR,
   ACTIVITY_TYPES_NAME,
@@ -52,19 +53,6 @@ export function MonthActivitiesSummary({
     return color;
   };
 
-  const getActivityTypeTotalForMonth = (
-    date: Date,
-    activityType: ActivityType,
-  ) => {
-    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-    return activities
-      .filter((a) => a.type === activityType)
-      .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
-      .reduce((total, a) => total + a.amount, 0);
-  };
-
   const currencyFormatter = useCurrencyFormatter();
 
   const getCategoryTotalForMonth = (date: Date, category: string) => {
@@ -80,19 +68,35 @@ export function MonthActivitiesSummary({
   const activityTypes = [
     {
       type: ActivityType.REVENUE,
-      value: getActivityTypeTotalForMonth(monthDate, ActivityType.REVENUE),
+      value: getActivityTypeTotalForMonth({
+        monthDate,
+        activityType: ActivityType.REVENUE,
+        activities,
+      }),
     },
     {
       type: ActivityType.EXPENSE,
-      value: getActivityTypeTotalForMonth(monthDate, ActivityType.EXPENSE),
+      value: getActivityTypeTotalForMonth({
+        monthDate,
+        activityType: ActivityType.EXPENSE,
+        activities,
+      }),
     },
     {
       type: ActivityType.INVESTMENT,
-      value: getActivityTypeTotalForMonth(monthDate, ActivityType.INVESTMENT),
+      value: getActivityTypeTotalForMonth({
+        monthDate,
+        activityType: ActivityType.INVESTMENT,
+        activities,
+      }),
     },
     {
       type: ActivityType.NEUTRAL,
-      value: getActivityTypeTotalForMonth(monthDate, ActivityType.NEUTRAL),
+      value: getActivityTypeTotalForMonth({
+        monthDate,
+        activityType: ActivityType.NEUTRAL,
+        activities,
+      }),
     },
   ];
 
