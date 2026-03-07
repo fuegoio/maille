@@ -7,6 +7,7 @@ import {
 } from "./schemas";
 import { accounts, activities, movements, movementsActivities } from "@/tables";
 import { db } from "@/database";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
@@ -31,7 +32,7 @@ export const registerMovementsMutations = () => {
           await db
             .select({ id: accounts.id })
             .from(accounts)
-            .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -104,7 +105,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(like(movements.id, `${args.id}%`), eq(movements.user, ctx.user.id)))
+            .where(and(like(movements.id, idPattern(args.id)), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -126,7 +127,7 @@ export const registerMovementsMutations = () => {
             await db
               .select({ id: accounts.id })
               .from(accounts)
-              .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+              .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
               .limit(1)
           )[0];
           if (!account) {
@@ -188,7 +189,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movements)
-            .where(and(like(movements.id, `${args.id}%`), eq(movements.user, ctx.user.id)))
+            .where(and(like(movements.id, idPattern(args.id)), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -235,7 +236,7 @@ export const registerMovementsMutations = () => {
           await db
             .select({ id: movements.id })
             .from(movements)
-            .where(and(like(movements.id, `${args.movementId}%`), eq(movements.user, ctx.user.id)))
+            .where(and(like(movements.id, idPattern(args.movementId)), eq(movements.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!movement) {
@@ -246,7 +247,7 @@ export const registerMovementsMutations = () => {
           await db
             .select({ id: activities.id })
             .from(activities)
-            .where(and(like(activities.id, `${args.activityId}%`), eq(activities.user, ctx.user.id)))
+            .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!activity) {
@@ -298,7 +299,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movementsActivities)
-            .where(like(movementsActivities.id, `${args.id}%`))
+            .where(like(movementsActivities.id, idPattern(args.id)))
             .limit(1)
         )[0];
         if (!movementActivity) {
@@ -351,7 +352,7 @@ export const registerMovementsMutations = () => {
           await db
             .select()
             .from(movementsActivities)
-            .where(like(movementsActivities.id, `${args.id}%`))
+            .where(like(movementsActivities.id, idPattern(args.id)))
             .limit(1)
         )[0];
         if (!movementActivity) {

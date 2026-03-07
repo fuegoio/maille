@@ -2,6 +2,7 @@ import { db } from "@/database";
 import { builder } from "../builder";
 import { ProjectSchema } from "./schemas";
 import { projects } from "@/tables";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
@@ -73,7 +74,7 @@ export const registerProjectsMutations = () => {
           await db
             .select()
             .from(projects)
-            .where(and(like(projects.id, `${args.id}%`), eq(projects.user, ctx.user.id)))
+            .where(and(like(projects.id, idPattern(args.id)), eq(projects.user, ctx.user.id)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");
@@ -142,7 +143,7 @@ export const registerProjectsMutations = () => {
           await db
             .select()
             .from(projects)
-            .where(and(like(projects.id, `${args.id}%`), eq(projects.user, ctx.user.id)))
+            .where(and(like(projects.id, idPattern(args.id)), eq(projects.user, ctx.user.id)))
         )[0];
         if (!project) {
           throw new GraphQLError("Project not found");

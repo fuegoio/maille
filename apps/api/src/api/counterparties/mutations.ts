@@ -1,6 +1,7 @@
 import { db } from "@/database";
 import { builder } from "../builder";
 import { CounterpartySchema } from "./schemas";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
@@ -24,7 +25,7 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -84,7 +85,7 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(like(counterparties.id, `${args.id}%`), eq(counterparties.user, ctx.user.id)))
+            .where(and(like(counterparties.id, idPattern(args.id)), eq(counterparties.user, ctx.user.id)))
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");
@@ -146,7 +147,7 @@ export const registerCounterpartiesMutations = () => {
           await db
             .select()
             .from(counterparties)
-            .where(and(like(counterparties.id, `${args.id}%`), eq(counterparties.user, ctx.user.id)))
+            .where(and(like(counterparties.id, idPattern(args.id)), eq(counterparties.user, ctx.user.id)))
         )[0];
         if (!counterparty) {
           throw new GraphQLError("Counterparty not found");

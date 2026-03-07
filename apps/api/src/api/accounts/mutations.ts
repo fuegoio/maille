@@ -3,6 +3,7 @@ import { builder } from "../builder";
 import { AccountSchema, DeleteAccountResponseSchema } from "./schemas";
 import { db } from "@/database";
 import { accounts, accountsSharing, user as userTable, contacts } from "@/tables";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { z } from "zod";
 import { and, eq, like } from "drizzle-orm";
@@ -100,7 +101,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.id)), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
@@ -160,7 +161,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.id)), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!account) {
           throw new GraphQLError("Account not found");
@@ -203,7 +204,7 @@ export const registerAccountsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(like(accounts.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.id)), eq(accounts.user, ctx.user.id)))
         )[0];
         if (!originalAccount) {
           throw new GraphQLError("Account not found or doesn't belong to you");

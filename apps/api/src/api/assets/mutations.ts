@@ -2,6 +2,7 @@ import { builder } from "../builder";
 import { AssetSchema, DeleteAssetResponseSchema } from "./schemas";
 import { db } from "@/database";
 import { accounts, assets, transactions } from "@/tables";
+import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
@@ -30,7 +31,7 @@ export const registerAssetsMutations = () => {
           await db
             .select()
             .from(accounts)
-            .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
             .limit(1)
         )[0];
         if (!account) {
@@ -99,7 +100,7 @@ export const registerAssetsMutations = () => {
             .select()
             .from(assets)
             .innerJoin(accounts, eq(accounts.id, assets.account))
-            .where(and(like(assets.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(assets.id, idPattern(args.id)), eq(accounts.user, ctx.user.id)))
         )[0]?.assets;
         if (!asset) {
           throw new GraphQLError("Asset not found");
@@ -111,7 +112,7 @@ export const registerAssetsMutations = () => {
             await db
               .select()
               .from(accounts)
-              .where(and(like(accounts.id, `${args.account}%`), eq(accounts.user, ctx.user.id)))
+              .where(and(like(accounts.id, idPattern(args.account)), eq(accounts.user, ctx.user.id)))
               .limit(1)
           )[0];
           if (!account) {
@@ -170,7 +171,7 @@ export const registerAssetsMutations = () => {
             .select()
             .from(assets)
             .innerJoin(accounts, eq(accounts.id, assets.account))
-            .where(and(like(assets.id, `${args.id}%`), eq(accounts.user, ctx.user.id)))
+            .where(and(like(assets.id, idPattern(args.id)), eq(accounts.user, ctx.user.id)))
         )[0]?.assets;
         if (!asset) {
           throw new GraphQLError("Asset not found");
