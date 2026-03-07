@@ -78,10 +78,14 @@ export function MonthAccountLine({
         <div className="flex items-center font-medium">{account.name}</div>
 
         <div className="flex items-center gap-2">
-          <div className="font-mono whitespace-nowrap text-muted-foreground">
-            {currencyFormatter.format(startBalance)}
-          </div>
-          <ArrowRight className="size-4 text-muted-foreground" />
+          {Math.abs(startBalance - endBalance) >= 0.01 && (
+            <>
+              <div className="font-mono whitespace-nowrap text-muted-foreground">
+                {currencyFormatter.format(startBalance)}
+              </div>
+              <ArrowRight className="size-4 text-muted-foreground" />
+            </>
+          )}
           <div className="font-mono whitespace-nowrap">
             {currencyFormatter.format(endBalance)}
           </div>
@@ -93,7 +97,7 @@ export function MonthAccountLine({
           <div className="font-medium">Cash balance</div>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            {startCashBalance !== endCashBalance && (
+            {Math.abs(startCashBalance - endCashBalance) >= 0.01 && (
               <>
                 <span className="font-mono">
                   {currencyFormatter.format(startCashBalance)}

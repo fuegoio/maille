@@ -1,7 +1,7 @@
 import { AccountType } from "@maille/core/accounts";
+import Color from "colorjs.io";
 import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
-import Color from "colorjs.io";
 
 import {
   Tooltip,
@@ -137,7 +137,7 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                {variation.start !== variation.end && (
+                {Math.abs(variation.start - variation.end) >= 0.01 && (
                   <>
                     <span className="font-mono text-muted-foreground">
                       {currencyFormatter.format(variation.start)}
@@ -163,8 +163,7 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
                         0,
                       ),
                     );
-                    const percentage =
-                      (accountBalance / variation.end) * 100;
+                    const percentage = (accountBalance / variation.end) * 100;
 
                     const color = getProgressBarColor(index, accountType);
 
