@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "bin": {
-    "maille": "./dist/index.js"
+    "maille": "./bin/maille.ts"
   },
   "scripts": {
     "build": "tsc",
