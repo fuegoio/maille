@@ -24,17 +24,20 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
     1,
   );
 
-  const revenue = getAccountsBalance({
-    accountType: AccountType.REVENUE,
-    monthDate,
-    activities,
-    accounts,
-  });
+  const revenue =
+    getAccountsBalance({
+      accountType: AccountType.REVENUE,
+      monthDate,
+      activities,
+      accounts,
+      startDate: user.startingDate,
+    }) * -1;
   const expense = getAccountsBalance({
     accountType: AccountType.EXPENSE,
     monthDate,
     activities,
     accounts,
+    startDate: user.startingDate,
   });
 
   return (

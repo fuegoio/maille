@@ -7,16 +7,19 @@ export function getAccountsBalance({
   monthDate,
   activities,
   accounts,
+  startDate,
 }: {
   accountType: AccountType;
   monthDate: Date;
   activities: Activity[];
   accounts: Account[];
+  startDate?: Date;
 }) {
   const revenueAccounts = accounts
     .filter((account) => account.type === accountType)
     .map((account) => account.id);
   const revenue = activities
+    .filter((a) => a.date >= (startDate ?? new Date(0)))
     .filter((a) => a.date.getMonth() === monthDate.getMonth())
     .flatMap((a) => a.transactions)
     .filter(
@@ -65,18 +68,21 @@ export function getBalanceForMonth({
           0,
         );
 
-  const revenue = getAccountsBalance({
-    accountType: AccountType.REVENUE,
-    monthDate,
-    activities,
-    accounts,
-  });
+  const revenue =
+    getAccountsBalance({
+      accountType: AccountType.REVENUE,
+      monthDate,
+      activities,
+      accounts,
+      startDate: startingDate,
+    }) * -1;
 
   const expense = getAccountsBalance({
     accountType: AccountType.EXPENSE,
     monthDate,
     activities,
     accounts,
+    startDate: startingDate,
   });
 
   // Compute the balance for the current month
