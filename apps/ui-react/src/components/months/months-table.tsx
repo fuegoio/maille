@@ -1,4 +1,3 @@
-import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
@@ -7,7 +6,7 @@ import { useMemo } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
-import { getAccountsBalance } from "@/logic/accounts";
+import { getBalanceForMonth } from "@/logic/accounts";
 import { getActivityTypeTotalForMonth } from "@/logic/activities";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
@@ -48,39 +47,6 @@ export function MonthsTable() {
     return months;
   }, [user.startingDate]);
 
-  const getBalanceForMonth = (monthDate: Date): number => {
-    // Calculate the balance for the previous month
-    const previousMonth = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth() - 1,
-      1,
-    );
-    const previousBalance =
-      previousMonth >= new Date(user!.startingDate)
-        ? getBalanceForMonth(previousMonth)
-        : accounts.reduce(
-            (total, account) => total + (account.startingBalance ?? 0),
-            0,
-          );
-
-    const revenue = getAccountsBalance({
-      accountType: AccountType.REVENUE,
-      monthDate,
-      activities,
-      accounts,
-    });
-
-    const expense = getAccountsBalance({
-      accountType: AccountType.EXPENSE,
-      monthDate,
-      activities,
-      accounts,
-    });
-
-    // Compute the balance for the current month
-    return previousBalance + revenue - expense;
-  };
-
   const periodFormatter = (date: Date): string => {
     return date.toLocaleString("default", {
       month: "long",
@@ -93,7 +59,12 @@ export function MonthsTable() {
       {months.length > 0 ? (
         <div className="flex-1 overflow-y-auto">
           {months.map((monthDate) => {
-            const balance = getBalanceForMonth(monthDate);
+            const balance = getBalanceForMonth({
+              monthDate,
+              startingDate: user.startingDate,
+              activities,
+              accounts,
+            });
             const revenue = getActivityTypeTotalForMonth({
               monthDate,
               activityType: ActivityType.REVENUE,
