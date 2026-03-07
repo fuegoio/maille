@@ -16,7 +16,6 @@ const userDataQuery = graphql(/* GraphQL */ `
   query UserData {
     activities {
       id
-      number
       name
       description
       date

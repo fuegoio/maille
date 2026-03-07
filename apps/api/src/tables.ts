@@ -1,6 +1,5 @@
 import {
   text,
-  integer,
   pgTable,
   index,
   serial,
@@ -117,7 +116,6 @@ export const activities = pgTable("activities", {
   user: text("user")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  number: integer("number").notNull(),
   type: activityTypeEnum("type").notNull(),
   category: text("category").references(() => activityCategories.id, { onDelete: "set null" }),
   subcategory: text("subcategory").references(() => activitySubcategories.id, {

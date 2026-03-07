@@ -49,7 +49,6 @@ export type ActivitySharing = {
 
 export type BaseActivity = {
   id: string;
-  number: number;
   name: string;
   description: string | null;
   date: Date;

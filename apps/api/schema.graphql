@@ -23,7 +23,6 @@ type Activity {
   id: String!
   movements: [ActivityMovement!]!
   name: String!
-  number: Int!
   project: String
   sharing: [ActivitySharing!]!
   status: String!
