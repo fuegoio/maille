@@ -95,7 +95,7 @@ function SubcategoryPage() {
 
   const chartConfig = {
     views: {
-      label: "Subcategory Evolution",
+      label: "Total",
     },
     value: {
       label: "Amount",
@@ -168,7 +168,9 @@ function SubcategoryPage() {
             <div className="flex-1" />
             {selectedTab === "activities" && (
               <>
-                <FilterActivitiesButton viewId={`subcategory-${subcategory.id}`} />
+                <FilterActivitiesButton
+                  viewId={`subcategory-${subcategory.id}`}
+                />
                 <AddActivityButton size="sm" />
               </>
             )}
@@ -234,6 +236,9 @@ function SubcategoryPage() {
                     <ChartTooltipContent
                       className="w-[150px]"
                       nameKey="views"
+                      formatter={(value) =>
+                        currencyFormatter.format(value as number)
+                      }
                       labelFormatter={(value) => {
                         return new Date(value).toLocaleDateString("en-US", {
                           month: "short",

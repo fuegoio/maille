@@ -110,10 +110,10 @@ function RouteComponent() {
             : "Expense",
       color:
         activeChart === "balance"
-          ? "var(--chart-2)"
+          ? "var(--color-indigo-400)"
           : activeChart === "revenue"
-            ? "var(--chart-3)"
-            : "var(--chart-1)",
+            ? "var(--color-green-400)"
+            : "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 
@@ -200,6 +200,7 @@ function RouteComponent() {
               <ChartTooltipContent
                 className="w-[160px]"
                 nameKey="views"
+                formatter={(value) => currencyFormatter.format(value as number)}
                 labelFormatter={(value) => {
                   return new Date(value).toLocaleDateString("en-US", {
                     month: "long",

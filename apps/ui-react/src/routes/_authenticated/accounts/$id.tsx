@@ -146,7 +146,12 @@ function AccountPage() {
     },
     value: {
       label: activeChart,
-      color: "var(--chart-2)",
+      color:
+        activeChart === "balance"
+          ? "var(--color-indigo-400)"
+          : activeChart === "in"
+            ? "var(--color-green-400)"
+            : "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 
@@ -331,6 +336,7 @@ function AccountPage() {
                     <ChartTooltipContent
                       className="w-[150px]"
                       nameKey="views"
+                      formatter={(value) => currencyFormatter.format(value as number)}
                       labelFormatter={(value) => {
                         return new Date(value).toLocaleDateString("en-US", {
                           month: "short",

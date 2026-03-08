@@ -90,7 +90,7 @@ function CategoryPage() {
 
   const chartConfig = {
     views: {
-      label: "Category Evolution",
+      label: "Total",
     },
     value: {
       label: "Amount",
@@ -226,6 +226,9 @@ function CategoryPage() {
                     <ChartTooltipContent
                       className="w-[150px]"
                       nameKey="views"
+                      formatter={(value) =>
+                        currencyFormatter.format(value as number)
+                      }
                       labelFormatter={(value) => {
                         return new Date(value).toLocaleDateString("en-US", {
                           month: "short",
