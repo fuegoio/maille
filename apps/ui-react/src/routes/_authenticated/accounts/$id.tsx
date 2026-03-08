@@ -3,7 +3,6 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
   BookMarked,
-  ChevronLeft,
   ChevronRight,
   House,
   Plus,
@@ -42,7 +41,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
@@ -67,8 +68,9 @@ function AccountPage() {
     throw notFound();
   }
 
+  const isMobile = useIsMobile();
   const [selectedTab, setSelectedTab] = useState("activities");
-  const [summaryOpen, setSummaryOpen] = useState(true);
+  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   const activities = useActivities((state) => state.activities);
   const focusedActivity = useActivities((state) => state.focusedActivity);
@@ -237,22 +239,9 @@ function AccountPage() {
           </Tabs>
         </div>
 
-        {summaryOpen && (
-          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
-            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSummaryOpen(false)}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <div className="text-sm font-medium">Summary</div>
-            </div>
-
-            <AccountSummary accountId={account.id} />
-          </div>
-        )}
+        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+          <AccountSummary accountId={account.id} />
+        </SummaryPanel>
       </SidebarInset>
 
       {selectedTab === "activities" && <Activity />}

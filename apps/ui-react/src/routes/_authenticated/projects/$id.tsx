@@ -1,6 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
-  ChevronLeft,
   ChevronRight,
   Settings,
   SquareChartGantt,
@@ -10,8 +9,11 @@ import { useState } from "react";
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -48,8 +50,9 @@ function ProjectPage() {
   const activities = useActivities((state) => state.activities);
   const projectActivities = activities.filter((a) => a.project === projectId);
 
+  const isMobile = useIsMobile();
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [summaryOpen, setSummaryOpen] = useState(true);
+  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
   const [activitiesFilters, setActivitiesFilters] = useState<ActivitiesFilters>(
     {},
   );
@@ -78,6 +81,7 @@ function ProjectPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex-1" />
+          <AddActivityButton project={projectId} />
           <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
             <Settings />
             Edit
@@ -111,26 +115,13 @@ function ProjectPage() {
         </div>
       </div>
 
-      {summaryOpen && (
-        <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSummaryOpen(false)}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <div className="text-sm font-medium">Summary</div>
-          </div>
-
-          <ProjectSummary
-            project={project}
-            activitiesFilters={activitiesFilters}
-            onActivitiesFiltersChange={setActivitiesFilters}
-          />
-        </div>
-      )}
+      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+        <ProjectSummary
+          project={project}
+          activitiesFilters={activitiesFilters}
+          onActivitiesFiltersChange={setActivitiesFilters}
+        />
+      </SummaryPanel>
     </SidebarInset>
   );
 }

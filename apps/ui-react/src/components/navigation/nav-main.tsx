@@ -10,6 +10,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function NavMain({
@@ -29,6 +30,11 @@ export function NavMain({
   }[];
 }) {
   const location = useRouterState({ select: (s) => s.location });
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  function handleLinkClick() {
+    if (isMobile) setOpenMobile(false);
+  }
 
   return (
     <SidebarGroup>
@@ -48,7 +54,7 @@ export function NavMain({
                   : location.pathname === item.url
               }
             >
-              <Link to={item.url}>
+              <Link to={item.url} onClick={handleLinkClick}>
                 <item.icon />
                 <span>{item.title}</span>
               </Link>
@@ -61,7 +67,7 @@ export function NavMain({
                       asChild
                       isActive={location.pathname.startsWith(subItem.url)}
                     >
-                      <Link to={subItem.url}>
+                      <Link to={subItem.url} onClick={handleLinkClick}>
                         <span>{subItem.title}</span>
                       </Link>
                     </SidebarMenuSubButton>

@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
+import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -136,6 +137,16 @@ export function ProjectActivityCategoryLine({
               ? "Clear filter"
               : "Filter"}
           </div>
+          <div className="mr-2 hidden group-hover:block" onClick={(e) => e.stopPropagation()}>
+            <AddActivityButton
+              iconOnly
+              size="sm"
+              category={category.id}
+              project={projectId}
+              type={category.type}
+            />
+          </div>
+
           <div className="font-mono text-sm whitespace-nowrap text-white">
             {currencyFormatter.format(categoryTotal)}
           </div>

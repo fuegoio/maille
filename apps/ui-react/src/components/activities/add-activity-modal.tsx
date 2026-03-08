@@ -83,6 +83,9 @@ interface AddActivityModalProps {
   name?: string;
   date?: Date;
   type?: ActivityType;
+  category?: string;
+  subcategory?: string;
+  project?: string;
 }
 
 export function AddActivityModal({
@@ -94,6 +97,9 @@ export function AddActivityModal({
   name: initialName,
   date: initialDate,
   type: initialType,
+  category: initialCategory,
+  subcategory: initialSubcategory,
+  project: initialProject,
 }: AddActivityModalProps) {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -368,9 +374,9 @@ export function AddActivityModal({
       description: "",
       date: movement ? movement.date : initialDate || new Date(),
       type: newType,
-      category: undefined,
-      subcategory: undefined,
-      project: undefined,
+      category: initialCategory,
+      subcategory: initialSubcategory,
+      project: initialProject,
       transactions: transactions,
     });
   }, [
@@ -380,6 +386,9 @@ export function AddActivityModal({
     initialName,
     initialDate,
     initialType,
+    initialCategory,
+    initialSubcategory,
+    initialProject,
     reset,
     guessBestTransaction,
   ]);

@@ -2,7 +2,6 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   BookMarked,
   ArrowRightLeft,
-  ChevronLeft,
   SquareChartGantt,
   ChevronRight,
 } from "lucide-react";
@@ -12,6 +11,7 @@ import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
+import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
 import { MonthActivitiesSummary } from "@/components/months/month-activities-summary";
@@ -30,7 +30,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
@@ -78,7 +80,8 @@ function MonthPage() {
     {},
   );
 
-  const [summaryOpen, setSummaryOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   useEffect(() => {
     if (focusedActivity || focusedMovement) {
@@ -167,9 +170,12 @@ function MonthPage() {
               </TabsList>
               <div className="flex-1" />
               {selectedTab === "activities" && (
-                <FilterActivitiesButton
-                  viewId={`month-${month}-${year}-activities`}
-                />
+                <>
+                  <FilterActivitiesButton
+                    viewId={`month-${month}-${year}-activities`}
+                  />
+                  <AddActivityButton size="sm" />
+                </>
               )}
               {selectedTab === "movements" && (
                 <FilterMovementsButton
@@ -197,41 +203,28 @@ function MonthPage() {
           </Tabs>
         </div>
 
-        {summaryOpen && (
-          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
-            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSummaryOpen(false)}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <div className="text-sm font-medium">Summary</div>
-            </div>
+        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+          <MonthSummary monthDate={monthDate} />
 
-            <MonthSummary monthDate={monthDate} />
+          <Tabs className="h-full" defaultValue="activities">
+            <TabsList className="h-12! w-full shrink-0 border-b bg-muted/50 px-4 py-2">
+              <TabsTrigger value="activities">Activities</TabsTrigger>
+              <TabsTrigger value="accounts">Accounts</TabsTrigger>
+            </TabsList>
 
-            <Tabs className="h-full" defaultValue="activities">
-              <TabsList className="h-12! w-full shrink-0 border-b bg-muted/50 px-4 py-2">
-                <TabsTrigger value="activities">Activities</TabsTrigger>
-                <TabsTrigger value="accounts">Accounts</TabsTrigger>
-              </TabsList>
+            <TabsContent value="activities">
+              <MonthActivitiesSummary
+                activitiesFilters={activitiesFilters}
+                onActivitiesFiltersChange={setActivitiesFilters}
+                monthDate={monthDate}
+              />
+            </TabsContent>
 
-              <TabsContent value="activities">
-                <MonthActivitiesSummary
-                  activitiesFilters={activitiesFilters}
-                  onActivitiesFiltersChange={setActivitiesFilters}
-                  monthDate={monthDate}
-                />
-              </TabsContent>
-
-              <TabsContent value="accounts">
-                <MonthAccountsSummary monthDate={monthDate} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+            <TabsContent value="accounts">
+              <MonthAccountsSummary monthDate={monthDate} />
+            </TabsContent>
+          </Tabs>
+        </SummaryPanel>
       </SidebarInset>
 
       {selectedTab === "activities" && <Activity />}

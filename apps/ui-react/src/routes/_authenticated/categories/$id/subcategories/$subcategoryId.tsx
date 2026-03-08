@@ -175,7 +175,11 @@ function SubcategoryPage() {
             />
             <div className="flex-1" />
             <SearchBar />
-            <AddActivityButton />
+            <AddActivityButton
+              type={category.type}
+              category={category.id}
+              subcategory={subcategory.id}
+            />
             {!summaryOpen && (
               <Button
                 variant="secondary"

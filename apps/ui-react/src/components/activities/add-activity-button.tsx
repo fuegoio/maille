@@ -1,3 +1,4 @@
+import type { ActivityType } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
 
 import { useHotkey } from "@tanstack/react-hotkeys";
@@ -13,6 +14,12 @@ interface AddActivityButtonProps {
   className?: string;
   movement?: Movement;
   size?: "default" | "sm" | "lg";
+  category?: string;
+  subcategory?: string;
+  project?: string;
+  date?: Date;
+  type?: ActivityType;
+  iconOnly?: boolean;
 }
 
 export function AddActivityButton({
@@ -20,6 +27,12 @@ export function AddActivityButton({
   className,
   movement,
   size = "default",
+  category,
+  subcategory,
+  project,
+  date,
+  type,
+  iconOnly = false,
 }: AddActivityButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -41,16 +54,21 @@ export function AddActivityButton({
         onClick={handleClick}
         className={className}
         variant="default"
-        size={size}
+        size={iconOnly ? "icon" : size}
       >
         <Plus />
-        Add activity
+        {!iconOnly && "Add activity"}
       </Button>
 
       <AddActivityModal
         open={showModal}
         onOpenChange={setShowModal}
         movement={movement}
+        category={category}
+        subcategory={subcategory}
+        project={project}
+        date={date}
+        type={type}
       />
     </>
   );
