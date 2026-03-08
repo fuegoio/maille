@@ -29,7 +29,7 @@ import {
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useActivities } from "@/stores/activities";
+import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
 export const Route = createFileRoute(
@@ -65,6 +65,9 @@ function SubcategoryPage() {
   const category = useActivities((state) =>
     state.getActivityCategoryById(subcategory.category),
   );
+  if (!category) {
+    throw notFound();
+  }
 
   const currencyFormatter = useCurrencyFormatter();
 
@@ -99,7 +102,8 @@ function SubcategoryPage() {
     },
     value: {
       label: "Amount",
-      color: "var(--color-red-400)",
+      color:
+        ACTIVITY_TYPES_CHART_COLOR[category.type] ?? "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 
@@ -120,11 +124,7 @@ function SubcategoryPage() {
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link to={`/categories/$id`} params={{ id: categoryId }}>
-                    {category ? (
-                      <CategoryLabel categoryId={category.id} />
-                    ) : (
-                      "Category"
-                    )}
+                    <CategoryLabel categoryId={category.id} />
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>

@@ -32,7 +32,7 @@ import {
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useActivities } from "@/stores/activities";
+import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
@@ -94,7 +94,8 @@ function CategoryPage() {
     },
     value: {
       label: "Amount",
-      color: "var(--color-red-400)",
+      color:
+        ACTIVITY_TYPES_CHART_COLOR[category.type] ?? "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 

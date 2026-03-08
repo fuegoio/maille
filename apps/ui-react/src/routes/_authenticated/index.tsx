@@ -20,7 +20,7 @@ import {
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
-import { useActivities } from "@/stores/activities";
+import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -40,7 +40,10 @@ function RouteComponent() {
   const nonBalanceAccountTypes = [AccountType.REVENUE, AccountType.EXPENSE];
 
   // Helper: cumulative balance up to a given day
-  const getDayTotal = (upToDate: Date, type: "balance" | "revenue" | "expense") => {
+  const getDayTotal = (
+    upToDate: Date,
+    type: "balance" | "revenue" | "expense",
+  ) => {
     const day = startOfDay(upToDate);
 
     if (type === "balance") {
@@ -54,8 +57,10 @@ function RouteComponent() {
         .reduce((sum, t) => {
           const fromAccount = accounts.find((a) => a.id === t.fromAccount);
           const toAccount = accounts.find((a) => a.id === t.toAccount);
-          const fromIsBalance = fromAccount && !nonBalanceAccountTypes.includes(fromAccount.type);
-          const toIsBalance = toAccount && !nonBalanceAccountTypes.includes(toAccount.type);
+          const fromIsBalance =
+            fromAccount && !nonBalanceAccountTypes.includes(fromAccount.type);
+          const toIsBalance =
+            toAccount && !nonBalanceAccountTypes.includes(toAccount.type);
           if (fromIsBalance && !toIsBalance) return sum - t.amount;
           if (!fromIsBalance && toIsBalance) return sum + t.amount;
           return sum;
@@ -64,7 +69,8 @@ function RouteComponent() {
       return startingBalance + transactionsTotal;
     }
 
-    const targetType = type === "revenue" ? AccountType.REVENUE : AccountType.EXPENSE;
+    const targetType =
+      type === "revenue" ? AccountType.REVENUE : AccountType.EXPENSE;
     const targetAccounts = accounts
       .filter((a) => a.type === targetType)
       .map((a) => a.id);
@@ -72,7 +78,11 @@ function RouteComponent() {
     return activities
       .filter((a) => startOfDay(a.date) <= day && a.date >= user.startingDate)
       .flatMap((a) => a.transactions)
-      .filter((t) => targetAccounts.includes(t.fromAccount) || targetAccounts.includes(t.toAccount))
+      .filter(
+        (t) =>
+          targetAccounts.includes(t.fromAccount) ||
+          targetAccounts.includes(t.toAccount),
+      )
       .reduce((sum, t) => {
         if (targetAccounts.includes(t.fromAccount)) return sum - t.amount;
         return sum + t.amount;
@@ -96,7 +106,7 @@ function RouteComponent() {
       revenue: getDayTotal(date, "revenue") * -1,
       expense: getDayTotal(date, "expense"),
     }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days, activities, accounts]);
 
   const chartConfig = {
@@ -111,9 +121,8 @@ function RouteComponent() {
       color:
         activeChart === "balance"
           ? "var(--color-indigo-400)"
-          : activeChart === "revenue"
-            ? "var(--color-green-400)"
-            : "var(--color-red-400)",
+          : (ACTIVITY_TYPES_CHART_COLOR[activeChart] ??
+            "var(--color-indigo-400)"),
     },
   } satisfies ChartConfig;
 
@@ -210,10 +219,7 @@ function RouteComponent() {
               />
             }
           />
-          <Bar
-            dataKey={activeChart}
-            fill="var(--color-value)"
-          />
+          <Bar dataKey={activeChart} fill="var(--color-value)" />
         </BarChart>
       </ChartContainer>
     </SidebarInset>

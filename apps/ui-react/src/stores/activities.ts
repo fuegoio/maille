@@ -26,6 +26,13 @@ export const ACTIVITY_TYPES_COLOR = {
   [ActivityType.NEUTRAL]: "bg-slate-400",
 };
 
+export const ACTIVITY_TYPES_CHART_COLOR = {
+  [ActivityType.EXPENSE]: "var(--color-red-400)",
+  [ActivityType.REVENUE]: "var(--color-green-400)",
+  [ActivityType.INVESTMENT]: "var(--color-orange-400)",
+  [ActivityType.NEUTRAL]: "var(--color-slate-400)",
+};
+
 // Activity type names mapping
 export const ACTIVITY_TYPES_NAME = {
   [ActivityType.EXPENSE]: "Expense",
