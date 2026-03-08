@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
   Breadcrumb,
@@ -228,6 +228,9 @@ function RouteComponent() {
               />
             }
           />
+          {activeChart === "balance" && (
+            <YAxis domain={["auto", "auto"]} hide />
+          )}
           <Bar dataKey={activeChart} fill="var(--color-value)" />
         </BarChart>
       </ChartContainer>
