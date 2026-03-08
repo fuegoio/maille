@@ -1,9 +1,11 @@
 import type { Movement } from "@maille/core/movements";
 
+import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -75,9 +77,16 @@ export function MovementLine({
       </div>
 
       <div className="flex-1" />
-      <div className="mr-3 rounded-full border px-2 py-1">
-        <AccountLabel accountId={movement.account} />
-      </div>
+      <Badge
+        variant="outline"
+        asChild
+        className="mr-3 h-6 [a]:hover:bg-border/50"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Link to={`/accounts/$id`} params={{ id: movement.account }}>
+          <AccountLabel accountId={movement.account} />
+        </Link>
+      </Badge>
       <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(movement.amount)}
       </div>
