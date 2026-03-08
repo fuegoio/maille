@@ -209,9 +209,13 @@ export function ActivityLine({
         </div>
 
         <div
-          className={cn("text-right font-mono font-medium whitespace-nowrap", {
-            "text-muted-foreground": accountFilter !== null || showTransactions,
-          })}
+          className={cn(
+            "text-right font-mono font-medium whitespace-nowrap sm:min-w-16",
+            {
+              "text-muted-foreground":
+                accountFilter !== null || showTransactions,
+            },
+          )}
         >
           {currencyFormatter.format(activity.amount)}
         </div>
