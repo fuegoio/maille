@@ -1,3 +1,5 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { AnimatePresence, motion } from "framer-motion";
 import { Search } from "lucide-react";
 import * as React from "react";
 
@@ -9,32 +11,34 @@ import {
 import { useSearch } from "@/stores/search";
 
 export function SearchBar() {
+  const [visible, setVisible] = React.useState(false);
   const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
 
   const search = useSearch((state) => state.search);
   const setSearch = useSearch((state) => state.setSearch);
   const clearSearch = useSearch((state) => state.clearSearch);
 
-  const handleBlur = () => {
-    if (search === "") {
-      clearSearch();
+  useHotkey("Mod+F", (event) => {
+    event.preventDefault();
+    setVisible(true);
+  });
+
+  React.useEffect(() => {
+    if (visible) {
+      inputRef?.focus();
     }
+  }, [visible, inputRef]);
+
+  const handleClose = () => {
+    setVisible(false);
+    clearSearch();
   };
 
-  // Handle Ctrl+F keyboard shortcut
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "f") {
-        e.preventDefault();
-        inputRef?.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [inputRef]);
+  const handleBlur = () => {
+    if (search === "") {
+      handleClose();
+    }
+  };
 
   React.useEffect(() => {
     return () => {
@@ -43,26 +47,37 @@ export function SearchBar() {
   }, [clearSearch]);
 
   return (
-    <InputGroup className="max-w-xs">
-      <InputGroupInput
-        id="search"
-        name="search"
-        ref={setInputRef}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        onBlur={handleBlur}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") {
-            clearSearch();
-            e.stopPropagation();
-          }
-        }}
-        placeholder="Search..."
-        className="flex-1"
-      />
-      <InputGroupAddon>
-        <Search className="h-4 w-4 text-muted-foreground" />
-      </InputGroupAddon>
-    </InputGroup>
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.15 }}
+        >
+          <InputGroup className="max-w-xs">
+            <InputGroupInput
+              id="search"
+              name="search"
+              ref={setInputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onBlur={handleBlur}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  handleClose();
+                  e.stopPropagation();
+                }
+              }}
+              placeholder="Search..."
+              className="flex-1"
+            />
+            <InputGroupAddon>
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </InputGroupAddon>
+          </InputGroup>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
