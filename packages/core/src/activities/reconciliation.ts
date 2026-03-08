@@ -255,7 +255,6 @@ export const getActivitySharingsReconciliation = (
   }[],
   user: string,
 ): ActivitySharing[] => {
-  console.log(activitySharings[0]?.accountsSharing);
   return activitySharings.map((activitySharing) => {
     const liabilitySum = activitySharing.transactions.reduce((s, transaction) => {
       let amount = 0;
