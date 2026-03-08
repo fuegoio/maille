@@ -265,7 +265,10 @@ export function ProjectSettingsDialog({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} variant="destructive">
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    variant="destructive"
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>

@@ -346,7 +346,9 @@ function AccountPage() {
                     <ChartTooltipContent
                       className="w-[150px]"
                       nameKey="views"
-                      formatter={(value) => currencyFormatter.format(value as number)}
+                      formatter={(value) =>
+                        currencyFormatter.format(value as number)
+                      }
                       labelFormatter={(value) => {
                         return new Date(value).toLocaleDateString("en-US", {
                           month: "short",

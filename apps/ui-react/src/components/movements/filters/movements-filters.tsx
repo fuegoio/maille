@@ -3,17 +3,15 @@ import { type Movement } from "@maille/core/movements";
 import { Button } from "@/components/ui/button";
 import { useViews } from "@/stores/views";
 
-import { MovementFilter } from "./movement-filter";
 import { FilterMovementsButton } from "./filter-movements-button";
+import { MovementFilter } from "./movement-filter";
 
 interface MovementsFiltersProps {
   viewId: string;
   movements: Movement[];
 }
 
-export function MovementsFilters({
-  viewId,
-}: MovementsFiltersProps) {
+export function MovementsFilters({ viewId }: MovementsFiltersProps) {
   const movementView = useViews((state) => state.getMovementView(viewId));
   const setMovementView = useViews((state) => state.setMovementView);
 

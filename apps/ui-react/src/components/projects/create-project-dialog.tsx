@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { Project } from "@maille/core/projects";
 import { type ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
@@ -22,7 +23,10 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createProjectMutation, updateProjectMutation } from "@/mutations/projects";
+import {
+  createProjectMutation,
+  updateProjectMutation,
+} from "@/mutations/projects";
 import { useSync } from "@/stores/sync";
 
 const createProjectSchema = z
@@ -86,8 +90,12 @@ export function CreateProjectDialog({
 
   const onSubmit = (data: CreateProjectFormValues) => {
     const id = crypto.randomUUID();
-    const startDate = data.startDate ? data.startDate.toISOString().split("T")[0] : null;
-    const endDate = data.endDate ? data.endDate.toISOString().split("T")[0] : null;
+    const startDate = data.startDate
+      ? data.startDate.toISOString().split("T")[0]
+      : null;
+    const endDate = data.endDate
+      ? data.endDate.toISOString().split("T")[0]
+      : null;
 
     mutate({
       name: "createProject",
@@ -103,11 +111,18 @@ export function CreateProjectDialog({
     });
 
     if (startDate) {
+      const rollbackProject: Project = {
+        id,
+        name: data.name,
+        emoji: data.emoji ?? null,
+        startDate: null,
+        endDate: null,
+      };
       mutate({
         name: "updateProject",
         mutation: updateProjectMutation,
         variables: { id, startDate, endDate },
-        rollbackData: undefined,
+        rollbackData: rollbackProject,
         events: [
           {
             type: "updateProject",

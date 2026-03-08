@@ -1,8 +1,8 @@
-import type { Counterparty } from "@/gql/graphql";
 import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { Counterparty } from "@/gql/graphql";
 import type { Mutation } from "@/mutations";
 
 import { storage } from "./storage";
@@ -35,12 +35,16 @@ export const useCounterparties = create<CounterpartiesState>()(
       counterparties: [],
       focusedCounterparty: null,
 
-      getCounterpartyById: (counterpartyId: string): Counterparty | undefined => {
+      getCounterpartyById: (
+        counterpartyId: string,
+      ): Counterparty | undefined => {
         return get().counterparties.find((c) => c.id === counterpartyId);
       },
 
       getCounterpartiesByAccount: (accountId: string): Counterparty[] => {
-        return get().counterparties.filter((counterparty) => counterparty.account === accountId);
+        return get().counterparties.filter(
+          (counterparty) => counterparty.account === accountId,
+        );
       },
 
       addCounterparty: (counterparty) => {
@@ -76,7 +80,9 @@ export const useCounterparties = create<CounterpartiesState>()(
 
       deleteCounterparty: (counterpartyId: string) => {
         set((state) => ({
-          counterparties: state.counterparties.filter((counterparty) => counterparty.id !== counterpartyId),
+          counterparties: state.counterparties.filter(
+            (counterparty) => counterparty.id !== counterpartyId,
+          ),
         }));
       },
 

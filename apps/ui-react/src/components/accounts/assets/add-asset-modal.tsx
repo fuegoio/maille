@@ -142,4 +142,3 @@ export function AddAssetModal({ accountId, children }: AddAssetModalProps) {
     </Dialog>
   );
 }
-

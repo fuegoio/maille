@@ -74,7 +74,8 @@ export function ProjectsTable() {
 
           {/* Activities count */}
           <div className="mr-4 flex w-32 items-center justify-end text-right font-mono text-sm text-muted-foreground">
-            {activities.filter((a) => a.project === project.id).length} activities
+            {activities.filter((a) => a.project === project.id).length}{" "}
+            activities
           </div>
 
           {/* Revenue */}

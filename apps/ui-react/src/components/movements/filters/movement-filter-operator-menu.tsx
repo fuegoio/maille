@@ -1,10 +1,10 @@
-import type { MovementFilter } from "@maille/core/movements";
 import {
   ActivityFilterAmountOperators,
   ActivityFilterDateOperators,
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
 } from "@maille/core/activities";
+import type { MovementFilter } from "@maille/core/movements";
 
 import {
   Select,

@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import type { PropsSingle } from "react-day-picker";
+import type { DayPickerProps } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
-  value: Date;
+  value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   className?: string;
   id?: string;
@@ -25,7 +25,7 @@ export function DatePicker({
   className,
   id,
   ...props
-}: Omit<PropsSingle, "mode"> & DatePickerProps) {
+}: Omit<DayPickerProps, "mode" | "selected" | "onSelect"> & DatePickerProps) {
   const [open, setOpen] = useState(false);
 
   return (

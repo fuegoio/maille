@@ -1,8 +1,8 @@
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
 

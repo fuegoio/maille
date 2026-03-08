@@ -1,7 +1,7 @@
+import { Plus, Trash2 } from "lucide-react";
 import * as React from "react";
-import { useActivities } from "@/stores/activities";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +9,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { Plus, Trash2 } from "lucide-react";
+import { useActivities } from "@/stores/activities";
 
 interface SplitActivityModalProps {
   open: boolean;
@@ -18,12 +19,22 @@ interface SplitActivityModalProps {
   activityId: string;
 }
 
-export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActivityModalProps) {
-  const activity = useActivities((state) => state.getActivityById(activityId as string));
+export function SplitActivityModal({
+  open,
+  onOpenChange,
+  activityId,
+}: SplitActivityModalProps) {
+  const activity = useActivities((state) =>
+    state.getActivityById(activityId as string),
+  );
   const currencyFormatter = useCurrencyFormatter();
 
-  const [splitAmounts, setSplitAmounts] = React.useState<number[]>([activity?.amount || 0]);
-  const [splitNames, setSplitNames] = React.useState<string[]>([activity?.name || ""]);
+  const [splitAmounts, setSplitAmounts] = React.useState<number[]>([
+    activity?.amount || 0,
+  ]);
+  const [splitNames, setSplitNames] = React.useState<string[]>([
+    activity?.name || "",
+  ]);
 
   React.useEffect(() => {
     if (activity) {
@@ -122,12 +133,20 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
             ))}
           </div>
 
-          <Button type="button" variant="outline" size="sm" onClick={addSplit} className="mt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addSplit}
+            className="mt-2"
+          >
             <Plus className="mr-2 h-4 w-4" />
             <span>Add Split</span>
           </Button>
 
-          <div className={`text-sm ${difference !== 0 ? "text-red-400" : "text-green-400"}`}>
+          <div
+            className={`text-sm ${difference !== 0 ? "text-red-400" : "text-green-400"}`}
+          >
             {difference !== 0 ? (
               <>Difference: {currencyFormatter.format(difference)}</>
             ) : (
@@ -137,10 +156,19 @@ export function SplitActivityModal({ open, onOpenChange, activityId }: SplitActi
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
-          <Button type="button" variant="default" onClick={handleSplit} disabled={difference !== 0}>
+          <Button
+            type="button"
+            variant="default"
+            onClick={handleSplit}
+            disabled={difference !== 0}
+          >
             Split Activity
           </Button>
         </DialogFooter>

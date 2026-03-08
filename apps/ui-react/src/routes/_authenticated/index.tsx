@@ -76,7 +76,11 @@ function RouteComponent() {
       .map((a) => a.id);
 
     return activities
-      .filter((a) => startOfDay(a.date).getTime() === day.getTime() && a.date >= user.startingDate)
+      .filter(
+        (a) =>
+          startOfDay(a.date).getTime() === day.getTime() &&
+          a.date >= user.startingDate,
+      )
       .flatMap((a) => a.transactions)
       .filter(
         (t) =>

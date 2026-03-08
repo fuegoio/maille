@@ -17,8 +17,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth";
 import { useIsOnline } from "@/hooks/use-is-online";
+import { authClient } from "@/lib/auth";
 import { useSync } from "@/stores/sync";
 
 import { Contacts } from "../contacts/contacts";

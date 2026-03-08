@@ -170,7 +170,9 @@ export function ProjectActivityCategoryLine({
                     : "Filter"}
                 </div>
                 <div className="font-mono text-xs whitespace-nowrap">
-                  {currencyFormatter.format(subcategoriesValues[subcategory.id])}
+                  {currencyFormatter.format(
+                    subcategoriesValues[subcategory.id],
+                  )}
                 </div>
               </div>
             </div>

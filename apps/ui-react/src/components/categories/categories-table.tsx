@@ -11,8 +11,6 @@ import {
   ACTIVITY_TYPES_NAME,
 } from "@/stores/activities";
 
-import { Badge } from "../ui/badge";
-
 export function CategoriesTable() {
   const activityCategories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);

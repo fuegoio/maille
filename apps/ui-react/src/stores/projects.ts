@@ -1,10 +1,11 @@
+import type { ActivityType } from "@maille/core/activities";
+import type { Project } from "@maille/core/projects";
+import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Project } from "@maille/core/projects";
 
-import type { SyncEvent } from "@maille/core/sync";
 import type { Mutation } from "@/mutations";
-import type { ActivityType } from "@maille/core/activities";
+
 import { useActivities } from "./activities";
 import { storage } from "./storage";
 
@@ -102,9 +103,16 @@ export const useProjects = create<ProjectsState>()(
               return {
                 ...project,
                 name: update.name !== undefined ? update.name : project.name,
-                emoji: update.emoji !== undefined ? update.emoji : project.emoji,
-                startDate: update.startDate !== undefined ? update.startDate : project.startDate,
-                endDate: update.endDate !== undefined ? update.endDate : project.endDate,
+                emoji:
+                  update.emoji !== undefined ? update.emoji : project.emoji,
+                startDate:
+                  update.startDate !== undefined
+                    ? update.startDate
+                    : project.startDate,
+                endDate:
+                  update.endDate !== undefined
+                    ? update.endDate
+                    : project.endDate,
               };
             }
             return project;
@@ -114,7 +122,9 @@ export const useProjects = create<ProjectsState>()(
 
       deleteProject: (projectId: string) => {
         set((state) => ({
-          projects: state.projects.filter((project) => project.id !== projectId),
+          projects: state.projects.filter(
+            (project) => project.id !== projectId,
+          ),
         }));
       },
 
@@ -143,11 +153,13 @@ export const useProjects = create<ProjectsState>()(
           get().updateProject(event.payload.id, {
             ...event.payload,
             startDate:
-              event.payload.startDate !== null && event.payload.startDate !== undefined
+              event.payload.startDate !== null &&
+              event.payload.startDate !== undefined
                 ? new Date(event.payload.startDate)
                 : event.payload.startDate,
             endDate:
-              event.payload.endDate !== null && event.payload.endDate !== undefined
+              event.payload.endDate !== null &&
+              event.payload.endDate !== undefined
                 ? new Date(event.payload.endDate)
                 : event.payload.endDate,
           });

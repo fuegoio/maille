@@ -1,8 +1,8 @@
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import { cn } from "@/lib/utils";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
