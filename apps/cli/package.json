@@ -1,13 +1,13 @@
 {
   "name": "maille",
   "version": "0.1.0",
-  "type": "module",
   "bin": {
     "maille": "./dist/maille.js"
   },
   "files": [
     "dist"
   ],
+  "type": "module",
   "scripts": {
     "build": "bun build ./src/index.ts --outfile ./dist/maille.js --target node --minify",
     "dev": "tsx src/index.ts",
