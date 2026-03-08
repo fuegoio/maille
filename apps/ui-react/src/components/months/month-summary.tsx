@@ -7,7 +7,7 @@ import {
 } from "date-fns";
 import { ArrowRight, Minus, Plus } from "lucide-react";
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
   ChartContainer,
@@ -183,6 +183,7 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
               />
             }
           />
+          <YAxis domain={["auto", "auto"]} hide />
           <Bar dataKey="balance" fill="var(--color-balance)" />
         </BarChart>
       </ChartContainer>
