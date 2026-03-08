@@ -39,7 +39,7 @@ function RouteComponent() {
 
   const nonBalanceAccountTypes = [AccountType.REVENUE, AccountType.EXPENSE];
 
-  // Helper: cumulative balance up to a given day
+  // Helper: cumulative balance up to a given day, or per-day total for revenue/expense
   const getDayTotal = (
     upToDate: Date,
     type: "balance" | "revenue" | "expense",
@@ -76,7 +76,7 @@ function RouteComponent() {
       .map((a) => a.id);
 
     return activities
-      .filter((a) => startOfDay(a.date) <= day && a.date >= user.startingDate)
+      .filter((a) => startOfDay(a.date).getTime() === day.getTime() && a.date >= user.startingDate)
       .flatMap((a) => a.transactions)
       .filter(
         (t) =>
@@ -95,8 +95,12 @@ function RouteComponent() {
   );
 
   const currentBalance = getDayTotal(new Date(), "balance");
-  const totalRevenue = getDayTotal(new Date(), "revenue") * -1;
-  const totalExpense = getDayTotal(new Date(), "expense");
+  const totalRevenue =
+    days.reduce((sum, d) => sum + getDayTotal(d, "revenue"), 0) * -1;
+  const totalExpense = days.reduce(
+    (sum, d) => sum + getDayTotal(d, "expense"),
+    0,
+  );
 
   // Chart data: one point per day
   const chartData = useMemo(() => {

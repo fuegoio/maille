@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { eachDayOfInterval } from "date-fns";
+import { eachDayOfInterval, startOfDay } from "date-fns";
 import { BookMarked, LayoutDashboard, Settings } from "lucide-react";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
@@ -75,9 +75,15 @@ function SubcategoryPage() {
     return a.subcategory === subcategory.id;
   });
 
-  const getSubcategoryTotal = (date?: string) => {
+  const getSubcategoryTotal = (date?: string, exactDay?: boolean) => {
     return activities
-      .filter((a) => (date ? a.date <= new Date(date) : true))
+      .filter((a) => {
+        if (!date) return true;
+        const d = startOfDay(new Date(date));
+        return exactDay
+          ? startOfDay(a.date).getTime() === d.getTime()
+          : startOfDay(a.date) <= d;
+      })
       .filter((a) => a.subcategory === subcategory.id)
       .reduce((acc, a) => {
         return acc + a.amount;
@@ -92,7 +98,7 @@ function SubcategoryPage() {
   const chartData = days.map((date) => {
     return {
       date: date.toISOString(),
-      value: getSubcategoryTotal(date.toISOString()),
+      value: getSubcategoryTotal(date.toISOString(), true),
     };
   });
 

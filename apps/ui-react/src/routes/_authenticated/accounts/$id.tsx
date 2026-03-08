@@ -98,14 +98,20 @@ function AccountPage() {
   const getAccountTotal = ({
     date,
     flow,
+    exactDay,
   }: {
     date?: string;
     flow?: "in" | "out";
+    exactDay?: boolean;
   }) => {
     const transactionsTotal = activities
-      .filter((a) =>
-        date ? startOfDay(a.date) <= startOfDay(new Date(date)) : true,
-      )
+      .filter((a) => {
+        if (!date) return true;
+        const d = startOfDay(new Date(date));
+        return exactDay
+          ? startOfDay(a.date).getTime() === d.getTime()
+          : startOfDay(a.date) <= d;
+      })
       .flatMap((a) => a.transactions)
       .filter(
         (t) =>
@@ -122,6 +128,8 @@ function AccountPage() {
         }
       }, 0);
 
+    // For flow charts (in/out), don't include startingBalance — it's a flow, not a state
+    if (flow) return transactionsTotal;
     return (account.startingBalance ?? 0) + transactionsTotal;
   };
 
@@ -131,11 +139,13 @@ function AccountPage() {
   });
 
   const chartData = days.map((date) => {
+    const flow = activeChart === "balance" ? undefined : activeChart;
     return {
       date: date.toISOString(),
       value: getAccountTotal({
         date: date.toISOString(),
-        flow: activeChart === "balance" ? undefined : activeChart,
+        flow,
+        exactDay: flow !== undefined,
       }),
     };
   });
