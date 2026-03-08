@@ -1,7 +1,12 @@
 import { type Activity } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
+import {
+  ChevronRight,
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+} from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -142,24 +147,11 @@ export function ActivityLine({
         <div className="flex-1" />
 
         <div className="mr-2 hidden min-w-0 items-center lg:flex">
-          {activity.project !== null &&
-            !hideProject &&
-            getProjectById(activity.project) && (
-              <div className="mr-4 flex h-6 min-w-0 items-center rounded-xl border px-2 text-xs tracking-wide transition-colors hover:border-gray-300 hover:bg-accent">
-                <span className="mr-2">
-                  {getProjectById(activity.project)!.emoji}
-                </span>
-                <span className="truncate">
-                  {getProjectById(activity.project)!.name}
-                </span>
-              </div>
-            )}
-
           {activity.category !== null && getCategoryName() && (
             <Badge
               variant="outline"
               asChild
-              className="h-6"
+              className="h-6 [a]:hover:bg-border/50"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -171,23 +163,49 @@ export function ActivityLine({
           )}
 
           {activity.subcategory !== null && getSubcategoryName() && (
-            <Badge
-              variant="outline"
-              asChild
-              onClick={(e) => e.stopPropagation()}
-              className="ml-2 h-6"
-            >
-              <Link
-                to={`/categories/$id/subcategories/$subcategoryId`}
-                params={{
-                  id: activity.category!,
-                  subcategoryId: activity.subcategory,
-                }}
+            <>
+              <ChevronRight className="mx-1 size-4 text-muted-foreground" />
+              <Badge
+                variant="outline"
+                asChild
+                onClick={(e) => e.stopPropagation()}
+                className="h-6 [a]:hover:bg-border/50"
               >
-                {getSubcategoryName()}
-              </Link>
-            </Badge>
+                <Link
+                  to={`/categories/$id/subcategories/$subcategoryId`}
+                  params={{
+                    id: activity.category!,
+                    subcategoryId: activity.subcategory,
+                  }}
+                >
+                  {getSubcategoryName()}
+                </Link>
+              </Badge>
+            </>
           )}
+
+          {activity.project !== null &&
+            !hideProject &&
+            getProjectById(activity.project) && (
+              <>
+                <div className="mx-3 h-4 w-px bg-muted-foreground" />
+                <Badge
+                  variant="secondary"
+                  asChild
+                  className="h-6 [a]:hover:bg-border/50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <Link to={`/projects/$id`} params={{ id: activity.project }}>
+                    <span>{getProjectById(activity.project)!.emoji}</span>
+                    <span className="truncate">
+                      {getProjectById(activity.project)!.name}
+                    </span>
+                  </Link>
+                </Badge>
+              </>
+            )}
         </div>
 
         <div
