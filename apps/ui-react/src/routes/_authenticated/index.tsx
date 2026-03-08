@@ -200,7 +200,7 @@ function RouteComponent() {
               const date = new Date(value);
               return date.toLocaleDateString("en-US", {
                 month: "short",
-                year: "numeric",
+                day: "numeric",
               });
             }}
           />
@@ -211,8 +211,9 @@ function RouteComponent() {
                 nameKey="views"
                 formatter={(value) => currencyFormatter.format(value as number)}
                 labelFormatter={(value) => {
-                  return new Date(value).toLocaleDateString("en-US", {
+                  return new Date(value).toLocaleString("default", {
                     month: "long",
+                    day: "numeric",
                     year: "numeric",
                   });
                 }}
