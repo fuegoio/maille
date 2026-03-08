@@ -1,7 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay } from "date-fns";
-import { BookMarked, LayoutDashboard, Settings } from "lucide-react";
-import { useState } from "react";
+import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  SquareChartGantt,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
@@ -27,7 +32,6 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -58,10 +62,10 @@ function SubcategoryPage() {
     throw notFound();
   }
 
-  const [selectedTab, setSelectedTab] = useState("summary");
   const user = useAuth((state) => state.user!);
-
   const activities = useActivities((state) => state.activities);
+  const focusedActivity = useActivities((state) => state.focusedActivity);
+
   const category = useActivities((state) =>
     state.getActivityCategoryById(subcategory.category),
   );
@@ -71,41 +75,60 @@ function SubcategoryPage() {
 
   const currencyFormatter = useCurrencyFormatter();
 
-  const viewActivities = activities.filter((a) => {
-    return a.subcategory === subcategory.id;
-  });
+  const [summaryOpen, setSummaryOpen] = useState(true);
 
-  const getSubcategoryTotal = (date?: string, exactDay?: boolean) => {
-    return activities
-      .filter((a) => {
-        if (!date) return true;
-        const d = startOfDay(new Date(date));
-        return exactDay
-          ? startOfDay(a.date).getTime() === d.getTime()
-          : startOfDay(a.date) <= d;
-      })
-      .filter((a) => a.subcategory === subcategory.id)
-      .reduce((acc, a) => {
-        return acc + a.amount;
-      }, 0);
-  };
+  useEffect(() => {
+    if (focusedActivity) {
+      setSummaryOpen(false);
+    }
+  }, [focusedActivity]);
 
-  const days = eachDayOfInterval({
-    start: user.startingDate,
-    end: new Date(),
-  });
+  const viewActivities = activities.filter(
+    (a) => a.subcategory === subcategory.id,
+  );
 
-  const chartData = days.map((date) => {
-    return {
-      date: date.toISOString(),
-      value: getSubcategoryTotal(date.toISOString(), true),
-    };
-  });
+  const subcategoryActivities = useMemo(
+    () => activities.filter((a) => a.subcategory === subcategory.id),
+    [activities, subcategory.id],
+  );
+
+  const totalOverall = useMemo(
+    () => subcategoryActivities.reduce((acc, a) => acc + a.amount, 0),
+    [subcategoryActivities],
+  );
+
+  const total30Days = useMemo(() => {
+    const cutoff = startOfDay(subDays(new Date(), 30));
+    return subcategoryActivities
+      .filter((a) => startOfDay(a.date) >= cutoff)
+      .reduce((acc, a) => acc + a.amount, 0);
+  }, [subcategoryActivities]);
+
+  const days = useMemo(
+    () =>
+      eachDayOfInterval({
+        start: user.startingDate,
+        end: new Date(),
+      }),
+    [user.startingDate],
+  );
+
+  const chartData = useMemo(
+    () =>
+      days.map((date) => {
+        const d = startOfDay(date);
+        return {
+          date: date.toISOString(),
+          value: subcategoryActivities
+            .filter((a) => startOfDay(a.date).getTime() === d.getTime())
+            .reduce((acc, a) => acc + a.amount, 0),
+        };
+      }),
+    [days, subcategoryActivities],
+  );
 
   const chartConfig = {
-    views: {
-      label: "Total",
-    },
+    views: { label: "Total" },
     value: {
       label: "Amount",
       color:
@@ -115,158 +138,154 @@ function SubcategoryPage() {
 
   return (
     <>
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-          <SidebarTrigger className="mr-1" />
+      <SidebarInset className="flex-row">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+            <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/categories">Categories</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to={`/categories/$id`} params={{ id: categoryId }}>
-                    <CategoryLabel categoryId={category.id} />
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {subcategory.emoji && (
-                    <span className="mr-2">{subcategory.emoji}</span>
-                  )}
-                  {subcategory.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <div className="flex-1" />
-          <SearchBar />
-          <SubcategorySettingsDialog subcategory={subcategory}>
-            <Button variant="ghost" size="icon">
-              <Settings />
-            </Button>
-          </SubcategorySettingsDialog>
-        </header>
-
-        <Tabs
-          value={selectedTab}
-          onValueChange={setSelectedTab}
-          className="h-full"
-        >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-            <TabsList className="ml-5">
-              <TabsTrigger value="summary">
-                <LayoutDashboard />
-                Summary
-              </TabsTrigger>
-              <TabsTrigger value="activities">
-                <BookMarked />
-                Activities
-              </TabsTrigger>
-            </TabsList>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/categories">Categories</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to={`/categories/$id`} params={{ id: categoryId }}>
+                      <CategoryLabel categoryId={category.id} />
+                    </Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {subcategory.emoji && (
+                      <span className="mr-2">{subcategory.emoji}</span>
+                    )}
+                    {subcategory.name}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <FilterActivitiesButton
+              viewId={`subcategory-${subcategory.id}`}
+              className="ml-2 text-muted-foreground"
+            />
             <div className="flex-1" />
-            {selectedTab === "activities" && (
-              <>
-                <FilterActivitiesButton
-                  viewId={`subcategory-${subcategory.id}`}
-                />
-                <AddActivityButton size="sm" />
-              </>
+            <SearchBar />
+            <AddActivityButton />
+            {!summaryOpen && (
+              <Button
+                variant="secondary"
+                onClick={() => setSummaryOpen(true)}
+                size={focusedActivity ? "icon" : "default"}
+              >
+                <SquareChartGantt />
+                {!focusedActivity && (
+                  <>
+                    Summary
+                    <ChevronRight />
+                  </>
+                )}
+              </Button>
             )}
+            <SubcategorySettingsDialog subcategory={subcategory}>
+              <Button variant="ghost" size="icon">
+                <Settings />
+              </Button>
+            </SubcategorySettingsDialog>
           </header>
 
-          <TabsContent value="summary">
-            <div className="grid grid-cols-2 border-b">
-              {(
-                [
-                  {
-                    id: "total",
-                    name: "Total",
-                    value: getSubcategoryTotal(),
-                  },
-                ] as const
-              ).map((kpi) => {
-                return (
-                  <div
-                    key={kpi.name}
-                    className="flex flex-1 cursor-pointer flex-col justify-center gap-1 border-r px-6 py-8
-                text-left transition-colors last:border-r-0 hover:bg-muted/50"
-                  >
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      {kpi.name}
-                    </div>
-                    <span className="font-mono text-lg leading-none font-semibold sm:text-3xl">
-                      {currencyFormatter.format(kpi.value)}
-                    </span>
-                  </div>
-                );
-              })}
+          <ActivitiesTable
+            viewId={`subcategory-${subcategory.id}`}
+            activities={viewActivities}
+            grouping="period"
+          />
+        </div>
+
+        {summaryOpen && (
+          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
+            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSummaryOpen(false)}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <div className="text-sm font-medium">Summary</div>
             </div>
 
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[250px] w-full border-b py-4"
-            >
-              <BarChart
-                accessibilityLayer
-                data={chartData}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
+            {/* KPIs + chart */}
+            <div className="w-full border-b">
+              <div className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="font-semibold">Last 30 days</div>
+                  <div className="flex-1" />
+                  <span className="font-mono">
+                    {currencyFormatter.format(total30Days)}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center text-sm">
+                  <div className="font-medium text-muted-foreground">Total</div>
+                  <div className="flex-1" />
+                  <span className="font-mono text-muted-foreground">
+                    {currencyFormatter.format(totalOverall)}
+                  </span>
+                </div>
+              </div>
+
+              <ChartContainer
+                config={chartConfig}
+                className="aspect-auto h-[180px] w-full border-t p-3"
               >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      className="w-[150px]"
-                      nameKey="views"
-                      formatter={(value) =>
-                        currencyFormatter.format(value as number)
-                      }
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        });
-                      }}
-                    />
-                  }
-                />
-                <Bar dataKey="value" fill={`var(--color-value)`} />
-              </BarChart>
-            </ChartContainer>
-          </TabsContent>
-          <TabsContent value="activities" className="flex">
-            <ActivitiesTable
-              viewId={`subcategory-${subcategory.id}`}
-              activities={viewActivities}
-              grouping="period"
-            />
-          </TabsContent>
-        </Tabs>
+                <BarChart
+                  accessibilityLayer
+                  data={chartData}
+                  margin={{ left: 12, right: 12 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={32}
+                    tickFormatter={(value) => {
+                      const date = new Date(value);
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        className="w-[150px]"
+                        nameKey="views"
+                        formatter={(value) =>
+                          currencyFormatter.format(value as number)
+                        }
+                        labelFormatter={(value) =>
+                          new Date(value).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        }
+                      />
+                    }
+                  />
+                  <Bar dataKey="value" fill="var(--color-value)" />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </div>
+        )}
       </SidebarInset>
 
       <Activity />

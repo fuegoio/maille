@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay } from "date-fns";
-import { BookMarked, LayoutDashboard, Settings, Tag } from "lucide-react";
-import { Plus } from "lucide-react";
-import { useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  SquareChartGantt,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
@@ -11,8 +13,7 @@ import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { CategorySettingsDialog } from "@/components/categories/category-settings-dialog";
-import { CreateSubcategoryDialog } from "@/components/categories/create-subcategory-dialog";
-import { SubcategoriesTable } from "@/components/categories/subcategories-table";
+import { CategorySummary } from "@/components/categories/category-summary";
 import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
@@ -23,17 +24,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
-import { useAuth } from "@/stores/auth";
+import { useActivities } from "@/stores/activities";
 
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
   component: CategoryPage,
@@ -57,210 +49,93 @@ function CategoryPage() {
     throw notFound();
   }
 
-  const [selectedTab, setSelectedTab] = useState("summary");
-  const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
+  const focusedActivity = useActivities((state) => state.focusedActivity);
 
-  const currencyFormatter = useCurrencyFormatter();
+  const [summaryOpen, setSummaryOpen] = useState(true);
 
-  const viewActivities = activities.filter((a) => {
-    return a.category === category.id;
-  });
+  useEffect(() => {
+    if (focusedActivity) {
+      setSummaryOpen(false);
+    }
+  }, [focusedActivity]);
 
-  const getCategoryTotal = (date?: string, exactDay?: boolean) => {
-    return activities
-      .filter((a) => {
-        if (!date) return true;
-        const d = startOfDay(new Date(date));
-        return exactDay
-          ? startOfDay(a.date).getTime() === d.getTime()
-          : startOfDay(a.date) <= d;
-      })
-      .filter((a) => a.category === category.id)
-      .reduce((acc, a) => {
-        return acc + a.amount;
-      }, 0);
-  };
-
-  const days = eachDayOfInterval({
-    start: user.startingDate,
-    end: new Date(),
-  });
-
-  const chartData = days.map((date) => {
-    return {
-      date: date.toISOString(),
-      value: getCategoryTotal(date.toISOString(), true),
-    };
-  });
-
-  const chartConfig = {
-    views: {
-      label: "Total",
-    },
-    value: {
-      label: "Amount",
-      color:
-        ACTIVITY_TYPES_CHART_COLOR[category.type] ?? "var(--color-red-400)",
-    },
-  } satisfies ChartConfig;
+  const viewActivities = activities.filter((a) => a.category === category.id);
 
   return (
     <>
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-          <SidebarTrigger className="mr-1" />
+      <SidebarInset className="flex-row">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+            <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/categories">Categories</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  <CategoryLabel categoryId={category.id} />
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <div className="flex-1" />
-          <SearchBar />
-          <CategorySettingsDialog category={category}>
-            <Button variant="ghost" size="icon">
-              <Settings />
-            </Button>
-          </CategorySettingsDialog>
-        </header>
-
-        <Tabs
-          value={selectedTab}
-          onValueChange={setSelectedTab}
-          className="h-full"
-        >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-            <TabsList className="ml-5">
-              <TabsTrigger value="summary">
-                <LayoutDashboard />
-                Summary
-              </TabsTrigger>
-              <TabsTrigger value="subcategories">
-                <Tag />
-                Subcategories
-              </TabsTrigger>
-              <TabsTrigger value="activities">
-                <BookMarked />
-                Activities
-              </TabsTrigger>
-            </TabsList>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/categories">Categories</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    <CategoryLabel categoryId={category.id} />
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <FilterActivitiesButton
+              viewId={`category-${category.id}`}
+              className="ml-2 text-muted-foreground"
+            />
             <div className="flex-1" />
-            {selectedTab === "subcategories" && (
-              <CreateSubcategoryDialog categoryId={category.id}>
-                <Button variant="default" size="sm">
-                  <Plus />
-                  Add subcategory
-                </Button>
-              </CreateSubcategoryDialog>
+            <SearchBar />
+            <AddActivityButton />
+            {!summaryOpen && (
+              <Button
+                variant="outline"
+                onClick={() => setSummaryOpen(true)}
+                size={focusedActivity ? "icon" : "default"}
+              >
+                <SquareChartGantt />
+                {!focusedActivity && (
+                  <>
+                    Summary
+                    <ChevronRight />
+                  </>
+                )}
+              </Button>
             )}
-            {selectedTab === "activities" && (
-              <>
-                <FilterActivitiesButton viewId={`category-${category.id}`} />
-                <AddActivityButton size="sm" />
-              </>
-            )}
+            <CategorySettingsDialog category={category}>
+              <Button variant="ghost" size="icon">
+                <Settings />
+              </Button>
+            </CategorySettingsDialog>
           </header>
 
-          <TabsContent value="summary">
-            <div className="grid grid-cols-2 border-b">
-              {(
-                [
-                  {
-                    id: "total",
-                    name: "Total",
-                    value: getCategoryTotal(),
-                  },
-                ] as const
-              ).map((kpi) => {
-                return (
-                  <div
-                    key={kpi.name}
-                    className="flex flex-1 cursor-pointer flex-col justify-center gap-1 border-r px-6 py-8
-                text-left transition-colors last:border-r-0 hover:bg-muted/50"
-                  >
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      {kpi.name}
-                    </div>
-                    <span className="font-mono text-lg leading-none font-semibold sm:text-3xl">
-                      {currencyFormatter.format(kpi.value)}
-                    </span>
-                  </div>
-                );
-              })}
+          <ActivitiesTable
+            viewId={`category-${category.id}`}
+            activities={viewActivities}
+            grouping="period"
+          />
+        </div>
+
+        {summaryOpen && (
+          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
+            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSummaryOpen(false)}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <div className="text-sm font-medium">Summary</div>
             </div>
 
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[250px] w-full border-b py-4"
-            >
-              <BarChart
-                accessibilityLayer
-                data={chartData}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      className="w-[150px]"
-                      nameKey="views"
-                      formatter={(value) =>
-                        currencyFormatter.format(value as number)
-                      }
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        });
-                      }}
-                    />
-                  }
-                />
-                <Bar dataKey="value" fill={`var(--color-value)`} />
-              </BarChart>
-            </ChartContainer>
-          </TabsContent>
-          <TabsContent value="subcategories">
-            <SubcategoriesTable categoryId={category.id} />
-          </TabsContent>
-          <TabsContent value="activities" className="flex">
-            <ActivitiesTable
-              viewId={`category-${category.id}`}
-              activities={viewActivities}
-              grouping="period"
-            />
-          </TabsContent>
-        </Tabs>
+            <CategorySummary category={category} />
+          </div>
+        )}
       </SidebarInset>
 
       <Activity />
