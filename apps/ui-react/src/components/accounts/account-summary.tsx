@@ -1,5 +1,5 @@
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -102,20 +102,20 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
           <span className="font-mono">{currencyFormatter.format(balance)}</span>
         </div>
 
-        <div className="mt-3 flex items-center text-sm">
+        <div className="mt-3 flex items-center gap-2 text-sm">
+          <TrendingUp className="size-3" />
           <div className="font-medium">In</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            <ArrowDown className="size-3 text-emerald-400" />
             {currencyFormatter.format(last30In)}
           </span>
         </div>
 
-        <div className="mt-2 flex items-center text-sm">
+        <div className="mt-2 flex items-center gap-2 text-sm">
+          <TrendingDown className="size-3" />
           <div className="font-medium">Out</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            <ArrowUp className="size-3 text-red-400" />
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
