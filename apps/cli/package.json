@@ -1,13 +1,15 @@
 {
-  "name": "@maille/cli",
+  "name": "maille",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "bin": {
-    "maille": "./bin/maille.ts"
+    "maille": "./dist/maille.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "bun build ./src/index.ts --outfile ./dist/maille.js --target node --minify",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit"
   },
