@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/database";
-import { deviceAuthorization } from "better-auth/plugins";
+import { bearer, deviceAuthorization } from "better-auth/plugins";
 import { account, deviceCode, session, user, verification } from "./tables";
 import { env } from "./env";
 import { createUserAccounts } from "./services/users";
@@ -18,6 +18,7 @@ export const auth = betterAuth({
     },
   }),
   plugins: [
+    bearer(),
     deviceAuthorization({
       expiresIn: "1800s",
       interval: "5s",

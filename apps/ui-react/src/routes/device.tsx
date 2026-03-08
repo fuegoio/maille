@@ -93,7 +93,7 @@ function RouteComponent() {
     try {
       const { error } = await authClient.device.approve({ userCode });
       if (error) {
-        setError(error.message ?? "Failed to approve. Please try again.");
+        setError(error.error_description);
       } else {
         setDone(true);
       }
@@ -106,11 +106,7 @@ function RouteComponent() {
   const handleDeny = async () => {
     setLoading(true);
     setError(null);
-    try {
-      await authClient.device.deny({ userCode });
-    } catch {
-      /* best-effort */
-    }
+    await authClient.device.deny({ userCode });
     navigate({ to: "/" });
   };
 

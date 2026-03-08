@@ -45,9 +45,9 @@ import { useSync } from "@/stores/sync";
 
 import { DatePicker } from "../ui/date-picker";
 
+import { ActivityCategorySelect } from "./activity-category-select";
 import { Transaction as TransactionComponent } from "./transaction";
 import { TransactionDropdown } from "./transaction-dropdown";
-import { ActivityCategorySelect } from "./activity-category-select";
 
 // Form schema using zod
 const formSchema = z.object({
@@ -98,7 +98,6 @@ export function AddActivityModal({
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
   const mutate = useSync((state) => state.mutate);
-  const activities = useActivities((state) => state.activities);
   const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
   const currencyFormatter = useCurrencyFormatter();
 

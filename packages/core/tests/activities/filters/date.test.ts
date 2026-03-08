@@ -67,7 +67,6 @@ describe("date filters on activity", () => {
   ).forEach((testCase) => {
     const activity: Activity = {
       id: "0",
-      number: 1,
       name: "test activity",
       description: "test",
       date: new Date(testCase.activityDate),

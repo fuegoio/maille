@@ -3,37 +3,9 @@ import chalk from "chalk";
 import ora from "ora";
 import { spawn } from "node:child_process";
 import { readConfig, writeConfig, clearAuth } from "../config.js";
+import { createCliAuthClient } from "../client-auth.js";
 
 const CLIENT_ID = "maille-cli";
-const GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
-
-interface DeviceCodeResponse {
-  device_code: string;
-  user_code: string;
-  verification_uri: string;
-  verification_uri_complete?: string;
-  expires_in: number;
-  interval: number;
-}
-
-interface DeviceTokenResponse {
-  access_token?: string;
-  token_type?: string;
-  error?: string;
-  error_description?: string;
-}
-
-interface BetterAuthUser {
-  id: string;
-  name: string;
-  email: string;
-  currency?: string;
-}
-
-interface SessionResponse {
-  session: { token: string };
-  user: BetterAuthUser;
-}
 
 function openBrowser(url: string): void {
   const cmd =
@@ -43,7 +15,7 @@ function openBrowser(url: string): void {
 }
 
 async function pollForToken(
-  apiUrl: string,
+  authClient: ReturnType<typeof createCliAuthClient>,
   deviceCode: string,
   intervalSecs: number,
   expiresIn: number,
@@ -58,25 +30,19 @@ async function pollForToken(
         return;
       }
 
-      try {
-        const res = await fetch(`${apiUrl}/api/auth/device/token`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            grant_type: GRANT_TYPE,
-            device_code: deviceCode,
-            client_id: CLIENT_ID,
-          }),
-        });
+      const { data, error } = await authClient.device.token({
+        grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+        device_code: deviceCode,
+        client_id: CLIENT_ID,
+      });
 
-        const data = (await res.json()) as DeviceTokenResponse;
+      if (data?.access_token) {
+        resolve(data.access_token);
+        return;
+      }
 
-        if (data.access_token) {
-          resolve(data.access_token);
-          return;
-        }
-
-        switch (data.error) {
+      if (error) {
+        switch (error.error) {
           case "authorization_pending":
             break;
           case "slow_down":
@@ -89,12 +55,9 @@ async function pollForToken(
             reject(new Error("Device code expired. Please run `maille login` again."));
             return;
           default:
-            reject(new Error(data.error_description ?? data.error ?? "Unknown error"));
+            reject(new Error(error.error_description ?? error.error ?? "Unknown error"));
             return;
         }
-      } catch (err) {
-        reject(new Error(`Network error: ${err instanceof Error ? err.message : String(err)}`));
-        return;
       }
 
       setTimeout(poll, pollingInterval * 1000);
@@ -117,47 +80,43 @@ authCommand
     const apiUrl = opts.url ?? config.apiUrl;
     const uiUrl = opts.uiUrl ?? config.uiUrl ?? "https://maille.alexistac.net";
 
+    const authClient = createCliAuthClient(apiUrl);
+
     // 1. Request device code
-    let deviceData: DeviceCodeResponse;
-    try {
-      const res = await fetch(`${apiUrl}/api/auth/device/code`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client_id: CLIENT_ID }),
-      });
-      if (!res.ok) {
-        const err = (await res.json()) as { message?: string };
-        console.error(chalk.red(`Failed to start login: ${err.message ?? res.statusText}`));
-        process.exit(1);
-      }
-      deviceData = (await res.json()) as DeviceCodeResponse;
-    } catch (err) {
+    const { data: deviceData, error: deviceError } = await authClient.device.code({
+      client_id: CLIENT_ID,
+    });
+
+    if (deviceError || !deviceData) {
       console.error(
-        chalk.red(`Network error: ${err instanceof Error ? err.message : String(err)}`),
+        chalk.red(
+          `Failed to start login: ${deviceError?.error_description ?? deviceError?.error ?? "Unknown error"}`,
+        ),
       );
       process.exit(1);
     }
 
-    const { device_code, user_code, interval = 5, expires_in = 1800 } = deviceData;
+    const { device_code, user_code, interval, expires_in } = deviceData;
 
     // 2. Display instructions
     const verifyUrl = `${uiUrl}/device?user_code=${user_code}`;
+    const displayCode =
+      user_code.length === 8 ? `${user_code.slice(0, 4)}-${user_code.slice(4)}` : user_code;
+
     console.log();
-    console.log(`  ${chalk.bold("Visit:")}  ${chalk.cyan(uiUrl + "/device")}`);
-    console.log(
-      `  ${chalk.bold("Code:")}   ${chalk.yellow.bold(user_code.length === 8 ? `${user_code.slice(0, 4)}-${user_code.slice(4)}` : user_code)}`,
-    );
+    console.log(`  ${chalk.bold("Visit:")}  ${chalk.cyan(`${uiUrl}/device`)}`);
+    console.log(`  ${chalk.bold("Code:")}   ${chalk.yellow.bold(displayCode)}`);
     console.log();
 
     // 3. Open browser
     openBrowser(verifyUrl);
 
-    // 4. Poll
+    // 4. Poll for token
     const spinner = ora("Waiting for authorization...").start();
 
     let accessToken: string;
     try {
-      accessToken = await pollForToken(apiUrl, device_code, interval, expires_in);
+      accessToken = await pollForToken(authClient, device_code, interval, expires_in);
     } catch (err) {
       spinner.fail("Authorization failed");
       console.error(chalk.red(err instanceof Error ? err.message : String(err)));
@@ -166,31 +125,30 @@ authCommand
 
     spinner.text = "Fetching session...";
 
-    // 5. Fetch user info from session
-    try {
-      const res = await fetch(`${apiUrl}/api/auth/get-session`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const data = (await res.json()) as SessionResponse;
+    // 5. Fetch user info
+    const { data: session, error: sessionError } = await authClient.getSession({
+      fetchOptions: { headers: { Authorization: `Bearer ${accessToken}` } },
+    });
 
-      writeConfig({
-        apiUrl,
-        uiUrl,
-        token: accessToken,
-        user: {
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          currency: data.user.currency ?? "EUR",
-        },
-      });
-
-      spinner.succeed(`Logged in as ${chalk.cyan(data.user.email)}`);
-    } catch (err) {
+    if (sessionError || !session?.user) {
       spinner.fail("Failed to fetch session");
-      console.error(chalk.red(err instanceof Error ? err.message : String(err)));
+      console.error(chalk.red(sessionError?.message ?? "No session returned"));
       process.exit(1);
     }
+
+    writeConfig({
+      apiUrl,
+      uiUrl,
+      token: accessToken,
+      user: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        currency: (session.user as { currency?: string }).currency ?? "EUR",
+      },
+    });
+
+    spinner.succeed(`Logged in as ${chalk.cyan(session.user.email)}`);
   });
 
 authCommand
@@ -204,10 +162,10 @@ authCommand
       return;
     }
     const spinner = ora("Signing out...").start();
+    const authClient = createCliAuthClient(config.apiUrl);
     try {
-      await fetch(`${config.apiUrl}/api/auth/sign-out`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${config.token}` },
+      await authClient.signOut({
+        fetchOptions: { headers: { Authorization: `Bearer ${config.token}` } },
       });
     } catch {
       /* best-effort */
