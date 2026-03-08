@@ -20,19 +20,19 @@ jobs:
 
       - name: Install dependencies
         run: bun install
-        working_directory: apps/ui-react
+        working-directory: apps/ui-react
 
       - name: Lint
         run: bun run lint
-        working_directory: apps/ui-react
+        working-directory: apps/ui-react
 
       - name: Typecheck
         run: bun run typecheck
-        working_directory: apps/ui-react
+        working-directory: apps/ui-react
 
       - name: Format check
         run: bun run fmt:check
-        working_directory: apps/ui-react
+        working-directory: apps/ui-react
 
   build-and-push:
     needs: check
