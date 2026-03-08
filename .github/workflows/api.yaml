@@ -20,15 +20,19 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        working_directory: apps/api
 
       - name: Lint
-        run: bun run --cwd apps/api lint
+        run: bun run lint
+        working_directory: apps/api
 
       - name: Typecheck
-        run: bun run --cwd apps/api typecheck
+        run: bun run typecheck
+        working_directory: apps/api
 
       - name: Format check
-        run: bun run --cwd apps/api fmt:check
+        run: bun run fmt:check
+        working_directory: apps/api
 
   build-and-push:
     needs: check
