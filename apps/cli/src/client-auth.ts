@@ -5,7 +5,7 @@ import { readConfig } from "./config.js";
 export function createCliAuthClient(apiUrl?: string) {
   const url = apiUrl ?? readConfig().apiUrl;
   return createAuthClient({
-    baseURL: `${url}/api/auth`,
+    baseURL: `${url}/auth`,
     plugins: [deviceAuthorizationClient()],
   });
 }
