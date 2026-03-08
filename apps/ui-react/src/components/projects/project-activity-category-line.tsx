@@ -1,139 +1,182 @@
-import { useState, useMemo } from "react";
-import { useProjects } from "@/stores/projects";
-import { useActivities } from "@/stores/activities";
-import type { ActivityCategory, ActivitySubCategory } from "@maille/core/activities";
-import type { Activity } from "@maille/core/activities";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import type {
+  ActivityCategory,
+  ActivitySubCategory,
+} from "@maille/core/activities";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
+import { useActivities } from "@/stores/activities";
+import type { ActivitiesFilters } from "@/types/activities";
 
 interface ProjectActivityCategoryLineProps {
-  projectActivities: Activity[];
+  projectId: string;
   category: ActivityCategory;
+  activitiesFilters: ActivitiesFilters;
+  onActivitiesFiltersChange(filters: ActivitiesFilters): void;
 }
 
 export function ProjectActivityCategoryLine({
-  projectActivities,
+  projectId,
   category,
+  activitiesFilters,
+  onActivitiesFiltersChange,
 }: ProjectActivityCategoryLineProps) {
-  const { activitySubcategories } = useActivities((state) => ({
-    activitySubcategories: state.activitySubcategories,
-  }));
-
+  const activities = useActivities((state) => state.activities);
+  const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
+  const currencyFormatter = useCurrencyFormatter();
 
-  const categoryValue = useMemo(() => {
-    return projectActivities
-      .filter((activity) => activity.category === category.id)
-      .reduce((sum, activity) => sum + activity.amount, 0);
-  }, [projectActivities, category.id]);
+  const projectActivities = useMemo(
+    () => activities.filter((a) => a.project === projectId),
+    [activities, projectId],
+  );
 
-  const categorySubcategories = useMemo(() => {
-    return activitySubcategories.filter((sc) => sc.category === category.id);
-  }, [activitySubcategories, category.id]);
+  const categoryTotal = useMemo(
+    () =>
+      projectActivities
+        .filter((a) => a.category === category.id)
+        .reduce((total, a) => total + a.amount, 0),
+    [projectActivities, category.id],
+  );
+
+  const categorySubcategories = useMemo(
+    () => subcategories.filter((sc) => sc.category === category.id),
+    [subcategories, category.id],
+  );
 
   const subcategoriesValues = useMemo(() => {
     const values: Record<string, number> = {};
-
-    categorySubcategories.forEach((subcategory) => {
-      values[subcategory.id] = 0;
+    categorySubcategories.forEach((sc) => {
+      values[sc.id] = 0;
     });
-
     projectActivities
-      .filter((activity) => activity.category === category.id && activity.subcategory !== null)
-      .forEach((activity) => {
-        if (values[activity.subcategory!] !== undefined) {
-          values[activity.subcategory!] += activity.amount;
+      .filter((a) => a.category === category.id && a.subcategory !== null)
+      .forEach((a) => {
+        if (values[a.subcategory!] !== undefined) {
+          values[a.subcategory!] += a.amount;
         }
       });
-
     return values;
   }, [projectActivities, category.id, categorySubcategories]);
 
-  const viewFilters = useProjects((state) => state.viewFilters);
-  const selectCategoryToFilterActivities = () => {
-    viewFilters.subcategory = null;
-    viewFilters.activityType = null;
-    if (viewFilters.category !== category.id) {
-      viewFilters.category = category.id;
-    } else {
-      viewFilters.category = null;
-    }
+  const selectCategory = () => {
+    onActivitiesFiltersChange({
+      activityType: undefined,
+      category:
+        activitiesFilters.category !== category.id ? category.id : undefined,
+      subcategory: undefined,
+    });
   };
 
-  const selectSubcategoryToFilterActivities = (subcategory: ActivitySubCategory) => {
-    viewFilters.category = null;
-    viewFilters.activityType = null;
-    if (viewFilters.subcategory !== subcategory.id) {
-      viewFilters.subcategory = subcategory.id;
-    } else {
-      viewFilters.subcategory = null;
-    }
+  const selectSubcategory = (subcategory: ActivitySubCategory) => {
+    onActivitiesFiltersChange({
+      activityType: undefined,
+      category: undefined,
+      subcategory:
+        activitiesFilters.subcategory !== subcategory.id
+          ? subcategory.id
+          : undefined,
+    });
   };
-
-  if (categoryValue === 0) return null;
 
   return (
-    <>
-      <div className={`group $ flex h-9 cursor-pointer items-center justify-between rounded px-3
-          ${viewFilters.category === category.id ? "bg-primary-800" : "hover:bg-primary-800"}
-        `} onClick={selectCategoryToFilterActivities}>
-        <div className={`$ flex items-center text-xs font-medium
-            ${categorySubcategories.length === 0 ? "pl-6" : ""}
-          `}>
+    <div className="space-y-2">
+      <div
+        className={cn(
+          "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
+          {
+            "bg-muted": activitiesFilters.category === category.id,
+            "hover:bg-muted/50": activitiesFilters.category !== category.id,
+          },
+        )}
+        onClick={selectCategory}
+      >
+        <div className="group flex items-center text-xs font-medium">
           {categorySubcategories.length > 0 && (
-            <button
-              className="mr-2 flex h-4 w-4 items-center"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="mr-1 hidden h-4 w-4 group-hover:flex"
               onClick={(e) => {
                 e.stopPropagation();
                 setExpanded(!expanded);
               }}
             >
               {expanded ? (
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-4 w-4" />
               ) : (
-                <ChevronRight className="h-3 w-3" />
+                <ChevronRight className="h-4 w-4" />
               )}
-            </button>
+            </Button>
           )}
+          <span
+            className={cn(
+              "mr-2",
+              categorySubcategories.length > 0 ? "group-hover:hidden" : "",
+            )}
+          >
+            {category.emoji}
+          </span>
           {category.name}
         </div>
 
         <div className="flex items-center">
-          <div className={`text-primary-200 $ mr-4 text-sm
-              ${viewFilters.category === category.id ? "" : "hidden group-hover:block"}
-            `}>{viewFilters.category === category.id ? "Clear filter" : "Filter"}</div>
-
+          <div
+            className={cn("mr-4 text-sm text-muted-foreground", {
+              "hidden group-hover:block":
+                activitiesFilters.category !== category.id,
+            })}
+          >
+            {activitiesFilters.category === category.id
+              ? "Clear filter"
+              : "Filter"}
+          </div>
           <div className="font-mono text-sm whitespace-nowrap text-white">
-            {useCurrencyFormatter().format(categoryValue)}
+            {currencyFormatter.format(categoryTotal)}
           </div>
         </div>
       </div>
 
       {expanded && (
-        <div className="mb-2">
+        <div className="space-y-1 border-b pb-2">
           {categorySubcategories.map((subcategory) => (
             <div
               key={subcategory.id}
-              className={`group $ ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-5
-                ${viewFilters.subcategory === subcategory.id ? "bg-primary-800" : "hover:bg-primary-800"}
-              `}
-              onClick={() => selectSubcategoryToFilterActivities(subcategory)}
+              className={cn(
+                "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
+                {
+                  "bg-muted": activitiesFilters.subcategory === subcategory.id,
+                  "hover:bg-muted/50":
+                    activitiesFilters.subcategory !== subcategory.id,
+                },
+              )}
+              onClick={() => selectSubcategory(subcategory)}
             >
-              <div className="flex items-center text-xs font-medium">{subcategory.name}</div>
-
+              <div className="flex items-center text-xs font-medium">
+                {subcategory.name}
+              </div>
               <div className="flex items-center">
-                <div className={`text-primary-200 $ mr-4 text-sm
-                    ${viewFilters.subcategory === subcategory.id ? "" : "hidden group-hover:block"}
-                  `}>{viewFilters.subcategory === subcategory.id ? "Clear filter" : "Filter"}</div>
-
-                <div className="font-mono text-sm whitespace-nowrap text-white">
-                  {useCurrencyFormatter().format(subcategoriesValues[subcategory.id])}
+                <div
+                  className={cn("mr-4 text-sm text-muted-foreground", {
+                    "hidden group-hover:block":
+                      activitiesFilters.subcategory !== subcategory.id,
+                  })}
+                >
+                  {activitiesFilters.subcategory === subcategory.id
+                    ? "Clear filter"
+                    : "Filter"}
+                </div>
+                <div className="font-mono text-xs whitespace-nowrap">
+                  {currencyFormatter.format(subcategoriesValues[subcategory.id])}
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }

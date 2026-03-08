@@ -3,6 +3,7 @@ import { TentTree } from "lucide-react";
 import { useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyContent,
@@ -14,7 +15,7 @@ import {
 import { useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
-import { AddAndEditProjectModal } from "./add-and-edit-project-modal";
+import { CreateProjectDialog } from "./create-project-dialog";
 
 export function ProjectsTable() {
   const projects = useProjects((state) => state.projects);
@@ -49,12 +50,6 @@ export function ProjectsTable() {
             <div className="text-sm font-medium">{project.name}</div>
           </div>
 
-          <div className="flex-1" />
-
-          <Badge className="ml-4" variant="outline">
-            {getActivitiesLinkedToProject(project.id)} activities
-          </Badge>
-
           {project.startDate || project.endDate ? (
             <div className="ml-4 text-sm text-muted-foreground">
               {project.startDate ? (
@@ -74,6 +69,12 @@ export function ProjectsTable() {
               ) : null}
             </div>
           ) : null}
+
+          <div className="flex-1" />
+
+          <div className="mr-4 text-sm text-muted-foreground">
+            {getActivitiesLinkedToProject(project.id)} activities
+          </div>
         </div>
       ))}
 
@@ -91,7 +92,9 @@ export function ProjectsTable() {
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent className="flex-row justify-center gap-2">
-              <AddAndEditProjectModal />
+              <CreateProjectDialog>
+                <Button>Create project</Button>
+              </CreateProjectDialog>
             </EmptyContent>
           </Empty>
         </div>

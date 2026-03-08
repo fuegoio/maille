@@ -104,11 +104,11 @@ export function CategoriesTable() {
                 <div className="text-sm font-medium">{category.name}</div>
               </div>
 
-              <Badge className="ml-4" variant="outline">
-                {getNumberOfActivities(category.id)} activities
-              </Badge>
-
               <div className="flex-1" />
+
+              <div className="mr-4 text-sm text-muted-foreground">
+                {getNumberOfActivities(category.id)} activities
+              </div>
 
               <div className="font-mono text-sm">
                 {currencyFormatter.format(getTotalOfCategory(category.id))}

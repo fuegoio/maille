@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 
-import { AddAndEditProjectModal } from "@/components/projects/add-and-edit-project-modal";
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectsTable } from "@/components/projects/projects-table";
 import {
   Breadcrumb,
@@ -8,6 +9,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/_authenticated/projects/")({
@@ -27,7 +29,12 @@ function ProjectsPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex-1" />
-        <AddAndEditProjectModal />
+        <CreateProjectDialog>
+          <Button>
+            <Plus />
+            <span>New project</span>
+          </Button>
+        </CreateProjectDialog>
       </header>
 
       <ProjectsTable />

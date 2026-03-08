@@ -31,6 +31,7 @@ import {
 } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
+import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
 import {
@@ -43,7 +44,6 @@ import {
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 
 import { ActivityCategorySelect } from "./activity-category-select";
-
 import { ActivityMovements } from "./activity-movements";
 import { ActivitySharing } from "./activity-sharing";
 import { ActivityTransactions } from "./activity-transactions";
@@ -336,6 +336,15 @@ export function Activity() {
                       ))}
                     </SelectContent>
                   </Select>
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="project">Project</FieldLabel>
+                  <ProjectSelect
+                    value={activity.project}
+                    onValueChange={(value) =>
+                      updateActivity({ project: value })
+                    }
+                  />
                 </Field>
               </FieldGroup>
             </FieldSet>

@@ -43,6 +43,7 @@ import {
 } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
+import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
 
 import { ActivityCategorySelect } from "./activity-category-select";
@@ -550,21 +551,10 @@ export function AddActivityModal({
                 name="project"
                 control={control}
                 render={({ field }) => (
-                  <Select
+                  <ProjectSelect
+                    value={field.value || null}
                     onValueChange={field.onChange}
-                    value={field.value || ""}
-                    disabled
-                  >
-                    <SelectTrigger className="bg-primary-700 border-primary-600 h-8 text-sm text-white">
-                      <SelectValue placeholder="Project" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-primary-800 border-primary-700">
-                      {/* Project options would go here - disabled for now */}
-                      <SelectItem value="placeholder" disabled>
-                        Projects not implemented yet
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                 )}
               />
             </div>
