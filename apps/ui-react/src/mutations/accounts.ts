@@ -18,9 +18,12 @@ export const createAccountMutation = graphql(/* GraphQL */ `
     $startingCashBalance: Float
     $movements: Boolean
   ) {
-    createAccount(id: $id, name: $name, type: $type,
-      startingBalance: $startingBalance,
-      startingCashBalance: $startingCashBalance,
+    createAccount(
+      id: $id
+      name: $name
+      type: $type
+      startingBalance: $startingBalance
+      startingCashBalance: $startingCashBalance
       movements: $movements
     ) {
       id

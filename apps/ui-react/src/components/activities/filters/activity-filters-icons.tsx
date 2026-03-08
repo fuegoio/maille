@@ -1,4 +1,5 @@
 import type { ActivityFilter } from "@maille/core/activities";
+
 import {
   ArrowRightLeft,
   Calendar,

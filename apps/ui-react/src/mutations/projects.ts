@@ -10,11 +10,7 @@ import { graphql } from "@/gql";
 import type { MutationType } from "./type";
 
 export const createProjectMutation = graphql(/* GraphQL */ `
-  mutation CreateProject(
-    $id: String!
-    $name: String!
-    $emoji: String
-  ) {
+  mutation CreateProject($id: String!, $name: String!, $emoji: String) {
     createProject(id: $id, name: $name, emoji: $emoji) {
       id
     }

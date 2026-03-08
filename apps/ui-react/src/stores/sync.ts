@@ -1,13 +1,15 @@
 import type { SyncEvent } from "@maille/core/sync";
+
 import { ClientError } from "graphql-request";
 import { createClient, type Client } from "graphql-sse";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { Mutation } from "@/mutations";
+
 import { graphql } from "@/gql";
 import { graphqlClient } from "@/gql/client";
 import { baseApiURL } from "@/lib/api";
-import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
 import { useActivities } from "./activities";
@@ -32,9 +34,7 @@ interface SyncState {
 }
 
 const missingEventsQuery = graphql(/* GraphQL */ `
-  query MissingEvents(
-      $lastSync: Float!,
-  ) {
+  query MissingEvents($lastSync: Float!) {
     events(lastSync: $lastSync) {
       type
       payload

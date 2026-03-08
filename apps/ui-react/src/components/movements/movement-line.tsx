@@ -1,4 +1,5 @@
 import type { Movement } from "@maille/core/movements";
+
 import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 

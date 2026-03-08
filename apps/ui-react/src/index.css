@@ -147,11 +147,11 @@
   }
 
   html {
-    @apply font-sans h-full w-full select-none;
+    @apply h-full w-full font-sans select-none;
   }
 
   body {
-    @apply bg-background text-foreground h-full w-full;
+    @apply h-full w-full bg-background text-foreground;
   }
 
   #root {

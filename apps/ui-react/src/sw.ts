@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 
 import type { ManifestEntry } from "workbox-build";
+
 import { CacheableResponsePlugin } from "workbox-cacheable-response";
 import { registerRoute } from "workbox-routing";
 import { CacheFirst } from "workbox-strategies";

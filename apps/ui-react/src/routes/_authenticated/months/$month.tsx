@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import type { ActivitiesFilters } from "@/types/activities";
+
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { Activity } from "@/components/activities/activity";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
@@ -31,7 +33,6 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
-import type { ActivitiesFilters } from "@/types/activities";
 
 export const Route = createFileRoute("/_authenticated/months/$month")({
   component: MonthPage,

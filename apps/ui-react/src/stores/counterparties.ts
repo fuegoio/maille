@@ -1,4 +1,5 @@
 import type { SyncEvent } from "@maille/core/sync";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

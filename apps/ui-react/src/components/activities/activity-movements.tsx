@@ -1,9 +1,10 @@
+import type { MovementWithLink } from "@maille/core/movements";
+
 import { type Activity } from "@maille/core/activities";
 import {
   getActivityMovementsReconciliated,
   getActivityMovementsReconciliatedByAccount,
 } from "@maille/core/activities";
-import type { MovementWithLink } from "@maille/core/movements";
 import { CircleCheck, Ellipsis, TriangleAlert } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 

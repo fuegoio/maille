@@ -1,6 +1,7 @@
 import type { ActivityType } from "@maille/core/activities";
 import type { Project } from "@maille/core/projects";
 import type { SyncEvent } from "@maille/core/sync";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

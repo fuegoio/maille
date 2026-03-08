@@ -1,4 +1,5 @@
 import type { MovementFilter } from "@maille/core/movements";
+
 import {
   Calendar,
   DollarSign,

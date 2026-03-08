@@ -1,3 +1,5 @@
+import type { ActivityFilter } from "@maille/core/activities";
+
 import {
   ActivityFilterAmountOperators,
   ActivityFilterCategoryOperators,
@@ -5,7 +7,6 @@ import {
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
 } from "@maille/core/activities";
-import type { ActivityFilter } from "@maille/core/activities";
 
 import {
   Select,

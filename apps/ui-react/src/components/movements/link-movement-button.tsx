@@ -1,6 +1,7 @@
-import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
 import type { Activity } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
+
+import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
 import _ from "lodash";
 import { Plus } from "lucide-react";
 import * as React from "react";

@@ -1,4 +1,5 @@
 import type { Movement } from "@maille/core/movements";
+
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Plus } from "lucide-react";
 import { useState } from "react";

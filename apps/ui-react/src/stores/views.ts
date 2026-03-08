@@ -1,5 +1,6 @@
 import type { ActivityFilter } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

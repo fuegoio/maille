@@ -40,7 +40,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       }
       amount
       status
-      sharing { 
+      sharing {
         user
         liability
         accounts {
@@ -108,7 +108,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       description
       location
     }
-    
+
     counterparties {
       id
       account
@@ -116,7 +116,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       description
       contact
     }
-    
+
     contacts {
       id
       contact {

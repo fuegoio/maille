@@ -17,7 +17,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../../ui/empty";
-
 import { AddCounterpartyModal } from "./add-counterparty-modal";
 
 interface CounterpartiesTableProps {

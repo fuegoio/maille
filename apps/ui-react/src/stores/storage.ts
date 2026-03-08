@@ -1,5 +1,6 @@
-import superjson from "superjson";
 import type { PersistStorage } from "zustand/middleware";
+
+import superjson from "superjson";
 
 export const storage: PersistStorage<unknown> = {
   getItem: (name) => {

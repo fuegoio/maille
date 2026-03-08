@@ -2,6 +2,8 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";
 
+import type { Counterparty } from "@/gql/graphql";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,6 @@ import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
-import type { Counterparty } from "@/gql/graphql";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import {

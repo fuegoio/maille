@@ -1,5 +1,6 @@
-import { verifyMovementFilter } from "@maille/core/movements";
 import type { Movement } from "@maille/core/movements";
+
+import { verifyMovementFilter } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";

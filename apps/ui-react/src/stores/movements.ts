@@ -1,5 +1,6 @@
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import type { SyncEvent } from "@maille/core/sync";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

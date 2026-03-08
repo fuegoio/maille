@@ -1,4 +1,5 @@
 import type { Asset } from "@maille/core/accounts";
+
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";

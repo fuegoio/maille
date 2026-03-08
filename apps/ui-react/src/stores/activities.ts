@@ -1,3 +1,5 @@
+import type { SyncEvent } from "@maille/core/sync";
+
 import {
   ActivityType,
   getActivityStatus,
@@ -9,7 +11,6 @@ import {
   type ActivitySubCategory,
   type Transaction,
 } from "@maille/core/activities";
-import type { SyncEvent } from "@maille/core/sync";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

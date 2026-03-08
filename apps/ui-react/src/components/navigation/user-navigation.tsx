@@ -1,5 +1,6 @@
-import { useNavigate } from "@tanstack/react-router";
 import type { User } from "better-auth";
+
+import { useNavigate } from "@tanstack/react-router";
 import { ChevronsUpDown, Loader, LogOut, GlobeOff } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +25,6 @@ import { useSync } from "@/stores/sync";
 import { Contacts } from "../contacts/contacts";
 import { SettingsDialog } from "../settings-dialog";
 import { Badge } from "../ui/badge";
-
 import { ThemeSwitcher } from "./theme-switcher";
 
 export function UserNavigation({ user }: { user: User }) {

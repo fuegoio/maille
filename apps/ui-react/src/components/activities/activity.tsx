@@ -42,7 +42,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
-
 import { ActivityCategorySelect } from "./activity-category-select";
 import { ActivityMovements } from "./activity-movements";
 import { ActivitySharing } from "./activity-sharing";

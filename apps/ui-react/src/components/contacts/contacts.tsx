@@ -38,14 +38,8 @@ const formSchema = z.object({
 });
 
 const createContactMutation = graphql(/* GraphQL */ `
-  mutation CreateContact(
-    $id: String!
-    $contact: String!
-  ) {
-    createContact(
-      id: $id
-      contact: $contact
-    ) {
+  mutation CreateContact($id: String!, $contact: String!) {
+    createContact(id: $id, contact: $contact) {
       id
       createdAt
       contact {

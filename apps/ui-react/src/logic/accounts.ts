@@ -1,6 +1,7 @@
-import { AccountType } from "@maille/core/accounts";
 import type { Account } from "@maille/core/accounts";
 import type { Activity } from "@maille/core/activities";
+
+import { AccountType } from "@maille/core/accounts";
 
 export function getAccountsBalance({
   accountType,

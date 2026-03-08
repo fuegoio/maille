@@ -2,14 +2,16 @@ import type {
   ActivityCategory,
   ActivitySubCategory,
 } from "@maille/core/activities";
+
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
+
+import type { ActivitiesFilters } from "@/types/activities";
 
 import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
-import type { ActivitiesFilters } from "@/types/activities";
 
 interface MonthActivityCategoryLineProps {
   monthDate: Date;

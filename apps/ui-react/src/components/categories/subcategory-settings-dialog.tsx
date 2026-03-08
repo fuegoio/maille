@@ -1,5 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { ActivitySubCategory } from "@maille/core/activities";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";

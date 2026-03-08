@@ -1,5 +1,6 @@
-import { AccountType } from "@maille/core/accounts";
 import type { Transaction } from "@maille/core/activities";
+
+import { AccountType } from "@maille/core/accounts";
 import { CornerDownRight, Ellipsis, MoveRight, TrashIcon } from "lucide-react";
 
 import { AccountSelect } from "@/components/accounts/account-select";

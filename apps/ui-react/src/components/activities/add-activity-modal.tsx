@@ -1,8 +1,9 @@
+import type { Transaction } from "@maille/core/activities";
+import type { Movement } from "@maille/core/movements";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
-import type { Transaction } from "@maille/core/activities";
-import type { Movement } from "@maille/core/movements";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -45,7 +46,6 @@ import { useSync } from "@/stores/sync";
 
 import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
-
 import { ActivityCategorySelect } from "./activity-category-select";
 import { Transaction as TransactionComponent } from "./transaction";
 import { TransactionDropdown } from "./transaction-dropdown";

@@ -1,5 +1,6 @@
-import { ActivityFilterDateValues } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
+
+import { ActivityFilterDateValues } from "@maille/core/activities";
 import { useState } from "react";
 
 import { Input } from "@/components/ui/input";

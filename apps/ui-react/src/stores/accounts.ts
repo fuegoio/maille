@@ -1,5 +1,6 @@
-import { AccountType, type Account } from "@maille/core/accounts";
 import type { SyncEvent } from "@maille/core/sync";
+
+import { AccountType, type Account } from "@maille/core/accounts";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

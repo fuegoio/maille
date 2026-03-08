@@ -16,7 +16,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../../ui/empty";
-
 import { AddAssetModal } from "./add-asset-modal";
 
 interface AssetsTableProps {

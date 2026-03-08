@@ -1,4 +1,5 @@
 import type { Movement } from "@maille/core/movements";
+
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";

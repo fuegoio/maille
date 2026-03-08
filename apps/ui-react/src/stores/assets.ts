@@ -1,5 +1,6 @@
 import type { Asset } from "@maille/core/accounts";
 import type { SyncEvent } from "@maille/core/sync";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

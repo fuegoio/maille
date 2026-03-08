@@ -33,8 +33,20 @@ export const createMovementMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateMovementMutation = graphql(/* GraphQL */ `
-  mutation UpdateMovement($id: String!, $date: Date, $amount: Float, $name: String, $account: String) {
-    updateMovement(id: $id, date: $date, amount: $amount, name: $name, account: $account) {
+  mutation UpdateMovement(
+    $id: String!
+    $date: Date
+    $amount: Float
+    $name: String
+    $account: String
+  ) {
+    updateMovement(
+      id: $id
+      date: $date
+      amount: $amount
+      name: $name
+      account: $account
+    ) {
       id
     }
   }
@@ -42,7 +54,7 @@ export const updateMovementMutation = graphql(/* GraphQL */ `
 
 export const deleteMovementMutation = graphql(/* GraphQL */ `
   mutation DeleteMovement($id: String!) {
-      deleteMovement(id: $id) {
+    deleteMovement(id: $id) {
       success
     }
   }

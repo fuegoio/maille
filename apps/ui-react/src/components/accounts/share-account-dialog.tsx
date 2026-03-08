@@ -1,5 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import type { Account } from "@maille/core/accounts";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";

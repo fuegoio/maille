@@ -1,6 +1,8 @@
 import { ActivityType } from "@maille/core/activities";
 import Color from "colorjs.io";
 
+import type { ActivitiesFilters } from "@/types/activities";
+
 import {
   Tooltip,
   TooltipContent,
@@ -14,7 +16,6 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
-import type { ActivitiesFilters } from "@/types/activities";
 
 import { MonthActivityCategoryLine } from "./month-activity-category-line";
 

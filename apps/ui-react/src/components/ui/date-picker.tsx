@@ -1,7 +1,8 @@
+import type { DayPickerProps } from "react-day-picker";
+
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import type { DayPickerProps } from "react-day-picker";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";

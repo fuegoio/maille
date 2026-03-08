@@ -1,5 +1,4 @@
 import "./index.css";
-
 import { Link, RouterProvider, createRouter } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { StrictMode } from "react";

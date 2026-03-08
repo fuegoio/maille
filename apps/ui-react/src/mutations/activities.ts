@@ -119,14 +119,8 @@ export type DeleteActivityMutation = MutationType<
 >;
 
 export const shareActivityMutation = graphql(/* GraphQL */ `
-  mutation ShareActivity(
-    $id: String!
-    $userId: String!
-  ) {
-    shareActivity(
-      id: $id
-      userId: $userId
-    ) {
+  mutation ShareActivity($id: String!, $userId: String!) {
+    shareActivity(id: $id, userId: $userId) {
       user
       liability
       accounts {
@@ -241,19 +235,18 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
     $type: String!
     $emoji: String
   ) {
-    createActivityCategory(
-      id: $id
-      name: $name
-      type: $type
-      emoji: $emoji
-    ) {
+    createActivityCategory(id: $id, name: $name, type: $type, emoji: $emoji) {
       id
     }
   }
 `);
 
 export const updateActivityCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivityCategory($id: String!, $name: String!, $emoji: String) {
+  mutation UpdateActivityCategory(
+    $id: String!
+    $name: String!
+    $emoji: String
+  ) {
     updateActivityCategory(id: $id, name: $name, emoji: $emoji) {
       id
     }
@@ -287,7 +280,11 @@ export const createActivitySubCategoryMutation = graphql(/* GraphQL */ `
 `);
 
 export const updateActivitySubCategoryMutation = graphql(/* GraphQL */ `
-  mutation UpdateActivitySubCategory($id: String!, $name: String!, $emoji: String) {
+  mutation UpdateActivitySubCategory(
+    $id: String!
+    $name: String!
+    $emoji: String
+  ) {
     updateActivitySubCategory(id: $id, name: $name, emoji: $emoji) {
       id
     }

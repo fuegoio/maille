@@ -1,5 +1,6 @@
-import { type Contact } from "@maille/core/contacts";
 import type { SyncEvent } from "@maille/core/sync";
+
+import { type Contact } from "@maille/core/contacts";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

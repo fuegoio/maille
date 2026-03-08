@@ -1,12 +1,14 @@
-import { ActivityType } from "@maille/core/activities";
 import type { Project } from "@maille/core/projects";
+
+import { ActivityType } from "@maille/core/activities";
 import { format } from "date-fns";
 import { ArrowRight, CalendarIcon } from "lucide-react";
 import { useMemo } from "react";
 
+import type { ActivitiesFilters } from "@/types/activities";
+
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
-import type { ActivitiesFilters } from "@/types/activities";
 
 import { ProjectActivitiesSummary } from "./project-activities-summary";
 

@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import type { ActivitiesFilters } from "@/types/activities";
+
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
@@ -22,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
-import type { ActivitiesFilters } from "@/types/activities";
 
 export const Route = createFileRoute("/_authenticated/projects/$id")({
   component: ProjectPage,
