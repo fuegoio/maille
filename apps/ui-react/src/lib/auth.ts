@@ -1,4 +1,4 @@
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import { deviceAuthorizationClient, inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 import { baseApiURL } from "./api";
@@ -6,6 +6,7 @@ import { baseApiURL } from "./api";
 export const authClient = createAuthClient({
   baseURL: baseApiURL + "/auth",
   plugins: [
+    deviceAuthorizationClient(),
     inferAdditionalFields({
       user: {
         currency: {

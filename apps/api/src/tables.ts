@@ -7,6 +7,7 @@ import {
   boolean,
   pgEnum,
   real,
+  integer,
 } from "drizzle-orm/pg-core";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
@@ -86,6 +87,21 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+export const deviceCode = pgTable("device_code", {
+  id: text("id").primaryKey(),
+  deviceCode: text("device_code").notNull(),
+  userCode: text("user_code").notNull(),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  clientId: text("client_id"),
+  scope: text("scope"),
+  status: text("status").notNull(),
+  expiresAt: timestamp("expires_at", { precision: 6 }).notNull(),
+  lastPolledAt: timestamp("last_polled_at", { precision: 6 }),
+  pollingInterval: integer("polling_interval"),
+  createdAt: timestamp("created_at", { precision: 6 }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { precision: 6 }).notNull().defaultNow(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

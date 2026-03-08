@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DeviceRouteImport } from './routes/device'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
@@ -33,6 +34,11 @@ const SignupRoute = SignupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeviceRoute = DeviceRouteImport.update({
+  id: '/device',
+  path: '/device',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -111,6 +117,7 @@ const AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
+  '/device': typeof DeviceRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/accounts/$id': typeof AuthenticatedAccountsIdRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
 }
 export interface FileRoutesByTo {
+  '/device': typeof DeviceRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/': typeof AuthenticatedIndexRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/device': typeof DeviceRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/device'
     | '/login'
     | '/signup'
     | '/accounts/$id'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/categories/$id/subcategories/$subcategoryId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/device'
     | '/login'
     | '/signup'
     | '/'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
+    | '/device'
     | '/login'
     | '/signup'
     | '/_authenticated/'
@@ -213,6 +225,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  DeviceRoute: typeof DeviceRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/device': {
+      id: '/device'
+      path: '/device'
+      fullPath: '/device'
+      preLoaderRoute: typeof DeviceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -366,6 +386,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  DeviceRoute: DeviceRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }
