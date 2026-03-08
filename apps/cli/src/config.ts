@@ -7,6 +7,7 @@ const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 
 export interface Config {
   apiUrl: string;
+  uiUrl: string;
   token: string | null;
   user: {
     id: string;
@@ -17,7 +18,8 @@ export interface Config {
 }
 
 const DEFAULT_CONFIG: Config = {
-  apiUrl: "http://localhost:3000",
+  apiUrl: "https://maille.alexistac.net/api",
+  uiUrl: "https://maille.alexistac.net",
   token: null,
   user: null,
 };

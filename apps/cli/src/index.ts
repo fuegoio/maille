@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { authCommand } from "./commands/auth.js";
-import { activitiesCommand, categoriesCommand, transactionsCommand } from "./commands/activities.js";
+import {
+  activitiesCommand,
+  categoriesCommand,
+  transactionsCommand,
+} from "./commands/activities.js";
 import { movementsCommand } from "./commands/movements.js";
 import { accountsCommand } from "./commands/accounts.js";
 import { assetsCommand } from "./commands/assets.js";
@@ -11,10 +15,7 @@ import { contactsCommand } from "./commands/contacts.js";
 
 const program = new Command();
 
-program
-  .name("maille")
-  .description("CLI for the Maille personal finance API")
-  .version("0.1.0");
+program.name("maille").description("CLI for the Maille personal finance API").version("0.1.0");
 
 // Resource commands
 program.addCommand(authCommand);
@@ -32,15 +33,18 @@ program.addCommand(contactsCommand);
 program.addCommand(
   new Command("login")
     .description("Log in (shortcut for: maille auth login)")
-    .option("--url <url>", "API URL", "http://localhost:3000")
-    .option("--email <email>", "Email address")
-    .option("--password <password>", "Password")
+    .option("--url <url>", "API URL")
+    .option("--ui-url <uiUrl>", "UI URL")
     .action(async (opts) => {
       await authCommand.parseAsync(
-        ["login", ...(opts.url ? ["--url", opts.url] : []), ...(opts.email ? ["--email", opts.email] : []), ...(opts.password ? ["--password", opts.password] : [])],
-        { from: "user" }
+        [
+          "login",
+          ...(opts.url ? ["--url", opts.url] : []),
+          ...(opts.uiUrl ? ["--ui-url", opts.uiUrl] : []),
+        ],
+        { from: "user" },
       );
-    })
+    }),
 );
 
 program.addCommand(
@@ -48,7 +52,7 @@ program.addCommand(
     .description("Log out (shortcut for: maille auth logout)")
     .action(async () => {
       await authCommand.parseAsync(["logout"], { from: "user" });
-    })
+    }),
 );
 
 program.addCommand(
@@ -56,7 +60,7 @@ program.addCommand(
     .description("Show current user (shortcut for: maille auth whoami)")
     .action(async () => {
       await authCommand.parseAsync(["whoami"], { from: "user" });
-    })
+    }),
 );
 
 program.parse();
