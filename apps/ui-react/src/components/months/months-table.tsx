@@ -149,7 +149,7 @@ export function MonthsTable() {
                 </div>
 
                 {/* Expense */}
-                <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+                <div className="flex w-32 items-center pl-4 text-right font-mono text-sm">
                   <div
                     className={cn(
                       "mr-3 size-2.5 shrink-0 rounded-lg",

@@ -1,8 +1,8 @@
+import { ActivityType } from "@maille/core/activities";
 import { useNavigate } from "@tanstack/react-router";
 import { TentTree } from "lucide-react";
 import { useMemo } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -12,7 +12,10 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { useActivities } from "@/stores/activities";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
+import { getActivityTypeTotalForProject } from "@/logic/activities";
+import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
 import { CreateProjectDialog } from "./create-project-dialog";
@@ -21,10 +24,7 @@ export function ProjectsTable() {
   const projects = useProjects((state) => state.projects);
   const activities = useActivities((state) => state.activities);
   const navigate = useNavigate();
-
-  const getActivitiesLinkedToProject = (projectId: string) => {
-    return activities.filter((a) => a.project === projectId).length;
-  };
+  const currencyFormatter = useCurrencyFormatter();
 
   const sortedProjects = useMemo(() => {
     return [...projects].sort((a, b) => {
@@ -72,8 +72,85 @@ export function ProjectsTable() {
 
           <div className="flex-1" />
 
-          <div className="mr-4 text-sm text-muted-foreground">
-            {getActivitiesLinkedToProject(project.id)} activities
+          {/* Activities count */}
+          <div className="mr-4 flex w-32 items-center justify-end text-right font-mono text-sm text-muted-foreground">
+            {activities.filter((a) => a.project === project.id).length} activities
+          </div>
+
+          {/* Revenue */}
+          <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+            <div
+              className={cn(
+                "mr-3 size-2.5 shrink-0 rounded-lg",
+                ACTIVITY_TYPES_COLOR[ActivityType.REVENUE],
+              )}
+            />
+            <div className="flex-1">
+              {currencyFormatter.format(
+                getActivityTypeTotalForProject({
+                  projectId: project.id,
+                  activityType: ActivityType.REVENUE,
+                  activities,
+                }),
+              )}
+            </div>
+          </div>
+
+          {/* Investment */}
+          <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+            <div
+              className={cn(
+                "mr-3 size-2.5 shrink-0 rounded-lg",
+                ACTIVITY_TYPES_COLOR[ActivityType.INVESTMENT],
+              )}
+            />
+            <div className="flex-1">
+              {currencyFormatter.format(
+                getActivityTypeTotalForProject({
+                  projectId: project.id,
+                  activityType: ActivityType.INVESTMENT,
+                  activities,
+                }),
+              )}
+            </div>
+          </div>
+
+          {/* Expense */}
+          <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+            <div
+              className={cn(
+                "mr-3 size-2.5 shrink-0 rounded-lg",
+                ACTIVITY_TYPES_COLOR[ActivityType.EXPENSE],
+              )}
+            />
+            <div className="flex-1">
+              {currencyFormatter.format(
+                getActivityTypeTotalForProject({
+                  projectId: project.id,
+                  activityType: ActivityType.EXPENSE,
+                  activities,
+                }),
+              )}
+            </div>
+          </div>
+
+          {/* Neutral */}
+          <div className="flex w-32 items-center pl-4 text-right font-mono text-sm">
+            <div
+              className={cn(
+                "mr-3 size-2.5 shrink-0 rounded-lg",
+                ACTIVITY_TYPES_COLOR[ActivityType.NEUTRAL],
+              )}
+            />
+            <div className="flex-1">
+              {currencyFormatter.format(
+                getActivityTypeTotalForProject({
+                  projectId: project.id,
+                  activityType: ActivityType.NEUTRAL,
+                  activities,
+                }),
+              )}
+            </div>
           </div>
         </div>
       ))}

@@ -77,6 +77,11 @@ function ProjectPage() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="flex-1" />
+          <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
+            <Settings />
+            Edit
+          </Button>
+
           {!summaryOpen && (
             <Button variant="default" onClick={() => setSummaryOpen(true)}>
               <SquareChartGantt />
@@ -84,14 +89,6 @@ function ProjectPage() {
               <ChevronRight />
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSettingsDialog(true)}
-          >
-            <Settings />
-            Edit
-          </Button>
 
           <ProjectSettingsDialog
             project={project}

@@ -37,6 +37,16 @@ function ProjectsPage() {
         </CreateProjectDialog>
       </header>
 
+      <header className="flex h-8 items-center gap-4 border-b bg-muted/50 pr-6 pl-6 text-xs font-medium text-muted-foreground">
+        <div>Project</div>
+        <div className="flex-1" />
+        <div className="w-32 text-right">Activities</div>
+        <div className="w-32 text-right">Revenue</div>
+        <div className="w-32 text-right">Investment</div>
+        <div className="w-32 text-right">Expenses</div>
+        <div className="w-32 text-right">Neutral</div>
+      </header>
+
       <ProjectsTable />
     </SidebarInset>
   );
