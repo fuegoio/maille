@@ -115,7 +115,7 @@ function AccountPage() {
             <SearchBar />
             {!summaryOpen && (
               <Button
-                variant="default"
+                variant="secondary"
                 onClick={() => setSummaryOpen(true)}
                 size={focusedActivity || focusedMovement ? "icon" : "default"}
               >
