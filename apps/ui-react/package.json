@@ -1,7 +1,6 @@
 {
   "name": "@maille/ui-react",
   "version": "0.0.1",
-  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",

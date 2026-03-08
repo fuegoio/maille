@@ -1,6 +1,6 @@
 {
-  "name": "maille",
-  "version": "0.1.0",
+  "name": "@maille/cli",
+  "version": "0.0.1",
   "bin": {
     "maille": "./dist/maille.js"
   },

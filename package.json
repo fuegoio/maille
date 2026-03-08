@@ -1,6 +1,5 @@
 {
   "name": "maille",
-  "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
