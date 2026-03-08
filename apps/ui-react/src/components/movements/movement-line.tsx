@@ -70,7 +70,7 @@ export function MovementLine({
         <CircleCheck className="size-4 text-indigo-300" />
       )}
 
-      <div className="text-primary-100 ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
+      <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
         {movement.name}
       </div>
 
