@@ -8,11 +8,11 @@ export interface GraphQLResponse<T> {
 export async function gql<T>(
   query: string,
   variables?: Record<string, unknown>,
-  auth?: { token: string; apiUrl: string }
+  auth?: { token: string; apiUrl: string },
 ): Promise<T> {
   const { token, apiUrl } = auth ?? requireAuth();
 
-  const response = await fetch(`${apiUrl}/api/graphql`, {
+  const response = await fetch(`${apiUrl}/graphql`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
