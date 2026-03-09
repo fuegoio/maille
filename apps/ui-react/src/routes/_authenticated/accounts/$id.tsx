@@ -44,6 +44,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
@@ -94,7 +95,7 @@ function AccountPage() {
   return (
     <>
       <SidebarInset className="flex-row">
-        <div className="flex-1">
+        <div className={cn("flex-1", summaryOpen && "hidden md:block")}>
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 

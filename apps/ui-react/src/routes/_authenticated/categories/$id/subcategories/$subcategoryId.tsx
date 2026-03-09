@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
@@ -139,7 +140,12 @@ function SubcategoryPage() {
   return (
     <>
       <SidebarInset className="flex-row">
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col",
+            summaryOpen && "hidden md:flex",
+          )}
+        >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 

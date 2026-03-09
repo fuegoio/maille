@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
@@ -63,7 +64,12 @@ function CategoryPage() {
   return (
     <>
       <SidebarInset className="flex-row">
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col",
+            summaryOpen && "hidden md:flex",
+          )}
+        >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 

@@ -33,6 +33,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
@@ -115,7 +116,7 @@ function MonthPage() {
   return (
     <>
       <SidebarInset className="flex-row">
-        <div className="flex-1">
+        <div className={cn("min-w-0 flex-1", summaryOpen && "hidden md:block")}>
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
