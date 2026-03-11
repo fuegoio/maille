@@ -1,9 +1,8 @@
-import { startOfDay } from "date-fns";
-
 import type { Account } from "@maille/core/accounts";
 import type { Activity } from "@maille/core/activities";
 
 import { AccountType } from "@maille/core/accounts";
+import { startOfDay } from "date-fns";
 
 export function getAccountBalanceAtDate({
   accountId,
