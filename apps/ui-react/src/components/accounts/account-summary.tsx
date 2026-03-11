@@ -12,6 +12,7 @@ import {
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 
 interface AccountSummaryProps {
   accountId: string;
@@ -21,6 +22,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const account = useAccounts((state) => state.getAccountById(accountId));
   const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user!);
 
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
@@ -35,6 +37,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
     rangeStart?: Date;
   }) => {
     const transactionsTotal = activities
+      .filter((a) => a.date >= user.startingDate)
       .filter((a) => {
         const d = startOfDay(a.date);
         if (rangeStart && d < rangeStart) return false;
