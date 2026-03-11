@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { getAccountBalanceAtDate } from "@/logic/accounts";
 import {
   useAccounts,
   ACCOUNT_TYPES_COLOR,
@@ -38,24 +39,13 @@ export function AccountsTable() {
 
   const currencyFormatter = useCurrencyFormatter();
 
-  const getAccountTotal = (accountId: string) => {
-    const account = accounts.find((a) => a.id === accountId);
-    if (!account) return 0;
-
-    const transactionsTotal = activities
-      .filter((a) => a.date >= user.startingDate)
-      .flatMap((a) => a.transactions)
-      .filter((t) => t.fromAccount === accountId || t.toAccount === accountId)
-      .reduce((acc, t) => {
-        if (t.fromAccount === accountId) {
-          return acc - t.amount;
-        } else {
-          return acc + t.amount;
-        }
-      }, 0);
-
-    return (account.startingBalance ?? 0) + transactionsTotal;
-  };
+  const getAccountTotal = (accountId: string) =>
+    getAccountBalanceAtDate({
+      accountId,
+      activities,
+      accounts,
+      startingDate: user.startingDate,
+    });
 
   const getAccountTypeTotal = (accountType: AccountType) => {
     return accounts

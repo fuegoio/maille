@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { getAccountBalanceAtDate } from "@/logic/accounts";
 import {
   useAccounts,
   ACCOUNT_TYPES_COLOR,
   ACCOUNT_TYPES_NAME,
 } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 
 import { MonthAccountLine } from "./month-account-line";
 
@@ -26,30 +28,18 @@ interface MonthAccountsSummaryProps {
 export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user!);
 
   const currencyFormatter = useCurrencyFormatter();
 
-  const getAccountBalanceAtDate = (accountId: string, date: Date): number => {
-    const account = accounts.find((a) => a.id === accountId);
-    if (!account) return 0;
-
-    // Get all transactions for this account up to the given date
-    const transactions = activities
-      .filter((a) => new Date(a.date) <= date)
-      .flatMap((a) => a.transactions)
-      .filter((t) => t.fromAccount === accountId || t.toAccount === accountId);
-
-    // Calculate balance from transactions
-    const transactionsBalance = transactions.reduce((acc, t) => {
-      if (t.fromAccount === accountId) {
-        return acc - t.amount;
-      } else {
-        return acc + t.amount;
-      }
-    }, 0);
-
-    return (account.startingBalance ?? 0) + transactionsBalance;
-  };
+  const getBalanceAtDate = (accountId: string, date: Date): number =>
+    getAccountBalanceAtDate({
+      accountId,
+      date,
+      activities,
+      accounts,
+      startingDate: user.startingDate,
+    });
 
   const getAccountTypeVariation = (
     accountType: AccountType,
@@ -70,15 +60,12 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
     const startBalance = accountsOfType.reduce((total, account) => {
       return (
         total +
-        getAccountBalanceAtDate(
-          account.id,
-          new Date(startOfMonth.getTime() - 1),
-        )
+        getBalanceAtDate(account.id, new Date(startOfMonth.getTime() - 1))
       );
     }, 0);
 
     const endBalance = accountsOfType.reduce((total, account) => {
-      return total + getAccountBalanceAtDate(account.id, endOfMonth);
+      return total + getBalanceAtDate(account.id, endOfMonth);
     }, 0);
 
     return { start: startBalance, end: endBalance };
@@ -153,7 +140,7 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
               <div className="mt-1 mb-2 px-2">
                 <div className="flex h-2 w-full items-center overflow-hidden rounded-md bg-muted transition-all hover:h-4">
                   {accountsOfType.map((account, index) => {
-                    const accountBalance = getAccountBalanceAtDate(
+                    const accountBalance = getBalanceAtDate(
                       account.id,
                       new Date(
                         monthDate.getFullYear(),

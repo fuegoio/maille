@@ -10,6 +10,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { getAccountBalanceAtDate } from "@/logic/accounts";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -35,31 +36,16 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
     date?: Date;
     flow?: "in" | "out";
     rangeStart?: Date;
-  }) => {
-    const transactionsTotal = activities
-      .filter((a) => a.date >= user.startingDate)
-      .filter((a) => {
-        const d = startOfDay(a.date);
-        if (rangeStart && d < rangeStart) return false;
-        if (!date) return true;
-        return d <= date;
-      })
-      .flatMap((a) => a.transactions)
-      .filter(
-        (t) =>
-          ((flow === "in" || flow === undefined) &&
-            t.toAccount === accountId) ||
-          ((flow === "out" || flow === undefined) &&
-            t.fromAccount === accountId),
-      )
-      .reduce((acc, t) => {
-        if (t.fromAccount === accountId) return acc - t.amount;
-        return acc + t.amount;
-      }, 0);
-
-    if (flow) return transactionsTotal;
-    return (account?.startingBalance ?? 0) + transactionsTotal;
-  };
+  }) =>
+    getAccountBalanceAtDate({
+      accountId,
+      date,
+      flow,
+      rangeStart,
+      activities,
+      accounts: account ? [account] : [],
+      startingDate: user.startingDate,
+    });
 
   const balance = getAccountTotal({});
   const balancePrev = getAccountTotal({ date: thirtyDaysAgo });

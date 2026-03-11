@@ -1,7 +1,52 @@
+import { startOfDay } from "date-fns";
+
 import type { Account } from "@maille/core/accounts";
 import type { Activity } from "@maille/core/activities";
 
 import { AccountType } from "@maille/core/accounts";
+
+export function getAccountBalanceAtDate({
+  accountId,
+  date,
+  activities,
+  accounts,
+  startingDate,
+  flow,
+  rangeStart,
+}: {
+  accountId: string;
+  date?: Date;
+  activities: Activity[];
+  accounts: Account[];
+  startingDate: Date;
+  flow?: "in" | "out";
+  rangeStart?: Date;
+}): number {
+  const account = accounts.find((a) => a.id === accountId);
+  if (!account) return 0;
+
+  const transactionsTotal = activities
+    .filter((a) => a.date >= startingDate)
+    .filter((a) => {
+      const d = startOfDay(a.date);
+      if (rangeStart && d < rangeStart) return false;
+      if (!date) return true;
+      return d <= startOfDay(date);
+    })
+    .flatMap((a) => a.transactions)
+    .filter(
+      (t) =>
+        ((flow === "in" || flow === undefined) && t.toAccount === accountId) ||
+        ((flow === "out" || flow === undefined) && t.fromAccount === accountId),
+    )
+    .reduce((acc, t) => {
+      if (t.fromAccount === accountId) return acc - t.amount;
+      return acc + t.amount;
+    }, 0);
+
+  if (flow) return transactionsTotal;
+  return (account.startingBalance ?? 0) + transactionsTotal;
+}
 
 export function getAccountsBalance({
   accountType,

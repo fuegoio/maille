@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { getAccountBalanceAtDate } from "@/logic/accounts";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -35,24 +36,14 @@ export function MonthAccountLine({
     0,
   );
 
-  const getAccountBalanceAtDate = (date: Date): number => {
-    // Get all transactions for this account up to the given date
-    const transactions = activities
-      .filter((a) => a.date >= user.startingDate && new Date(a.date) <= date)
-      .flatMap((a) => a.transactions)
-      .filter((t) => t.fromAccount === accountId || t.toAccount === accountId);
-
-    // Calculate balance from transactions
-    const transactionsBalance = transactions.reduce((acc, t) => {
-      if (t.fromAccount === accountId) {
-        return acc - t.amount;
-      } else {
-        return acc + t.amount;
-      }
-    }, 0);
-
-    return (account.startingBalance ?? 0) + transactionsBalance;
-  };
+  const getBalanceAtDate = (date: Date): number =>
+    getAccountBalanceAtDate({
+      accountId,
+      date,
+      activities,
+      accounts,
+      startingDate: user.startingDate,
+    });
 
   const getAccountCashBalanceAtDate = (date: Date): number => {
     // Get all movements for this account up to the given date
@@ -67,10 +58,8 @@ export function MonthAccountLine({
     return accountMovements.reduce((acc, m) => acc + m.amount, 0);
   };
 
-  const startBalance = getAccountBalanceAtDate(
-    new Date(startOfMonth.getTime() - 1),
-  );
-  const endBalance = getAccountBalanceAtDate(endOfMonth);
+  const startBalance = getBalanceAtDate(new Date(startOfMonth.getTime() - 1));
+  const endBalance = getBalanceAtDate(endOfMonth);
 
   const startCashBalance = getAccountCashBalanceAtDate(
     new Date(startOfMonth.getTime() - 1),
