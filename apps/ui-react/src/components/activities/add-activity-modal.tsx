@@ -520,7 +520,10 @@ export function AddActivityModal({
                 render={({ field }) => (
                   <ActivityCategorySelect
                     value={field.value || null}
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      setValue("subcategory", "");
+                    }}
                     type={type}
                     categories={filteredCategories}
                     disabled={!type || filteredCategories.length === 0}
