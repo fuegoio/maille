@@ -3,7 +3,7 @@ import type { Movement } from "@maille/core/movements";
 
 import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
 import _ from "lodash";
-import { Plus } from "lucide-react";
+import { Euro, Plus } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -36,12 +36,20 @@ export function LinkMovementButton({
   const [search, setSearch] = React.useState("");
   const [filterAmount, setFilterAmount] = React.useState(true);
 
+  const handleOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (open) {
+      setSearch("");
+      setFilterAmount(true);
+    }
+  };
+
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);
   const currencyFormatter = useCurrencyFormatter();
 
-  const filteredMovements = React.useMemo(() => {
+  const { filteredMovements, hasAmountMatches } = React.useMemo(() => {
     const transactionsSumByAccount = getActivityTransactionsSumByAccount(
       activity.transactions,
       accounts,
@@ -50,11 +58,21 @@ export function LinkMovementButton({
       (tba) => tba.account === account,
     );
 
-    return _.orderBy(
-      movements.filter((m) => {
-        if (m.account !== account) return false;
-        else if (m.status === "completed") return false;
+    const baseMovements = movements.filter((m) => {
+      if (m.account !== account) return false;
+      if (m.status === "completed") return false;
+      return true;
+    });
 
+    const amountMatches = transactionsSumOfAccount
+      ? baseMovements.filter(
+          (m) =>
+            _.round(m.amount, 2) === _.round(transactionsSumOfAccount.total, 2),
+        )
+      : baseMovements;
+
+    const filtered = _.orderBy(
+      baseMovements.filter((m) => {
         if (
           filterAmount &&
           transactionsSumOfAccount &&
@@ -69,6 +87,11 @@ export function LinkMovementButton({
       ["date"],
       ["desc"],
     );
+
+    return {
+      filteredMovements: filtered,
+      hasAmountMatches: amountMatches.length > 0,
+    };
   }, [
     movements,
     accounts,
@@ -108,14 +131,9 @@ export function LinkMovementButton({
 
   const openDialog = () => {
     setDialogOpen(true);
+    setSearch("");
+    setFilterAmount(true);
   };
-
-  // Auto-disable amount filter if no movements match
-  React.useEffect(() => {
-    if (filteredMovements.length === 0) {
-      setFilterAmount(false);
-    }
-  }, [filteredMovements]);
 
   return (
     <>
@@ -136,50 +154,59 @@ export function LinkMovementButton({
         </TooltipContent>
       </Tooltip>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="flex max-h-[400px] flex-col sm:max-w-2xl">
           <DialogHeader>
             <div className="mb-2 flex">
-              <div className="bg-primary-400 flex h-6 items-center rounded px-2.5 text-xs font-medium text-white">
+              <div className="flex h-6 items-center rounded bg-muted px-2.5 text-xs font-medium text-foreground">
                 {activity.name}
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="-mr-1 flex items-center gap-2">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search for a movement ..."
-                className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-white outline-none"
+                className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-foreground outline-none"
                 autoFocus
               />
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className={`transition ${filterAmount ? "text-primary-400" : "text-primary-400"}`}
-                onClick={() => setFilterAmount(!filterAmount)}
-              >
-                <i
-                  className="mdi mdi-currency-eur text-base"
-                  aria-hidden="true"
-                />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`transition ${filterAmount ? "opacity-100" : "opacity-50"}`}
+                    onClick={() => setFilterAmount(!filterAmount)}
+                  >
+                    <Euro />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {filterAmount
+                      ? hasAmountMatches
+                        ? "Filter by amount (active)"
+                        : "No movements match the amount — click to disable filter"
+                      : "Filter by amount (disabled)"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-auto px-3 py-3">
+          <div className="flex-1 overflow-auto">
             {filteredMovements.map((movement) => (
               <div
                 key={movement.id}
-                className="hover:bg-primary-600 my-1 flex h-8 shrink-0 cursor-pointer items-center rounded px-2 text-sm"
+                className="flex h-8 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted"
                 onClick={() => linkMovement(movement)}
               >
-                <div className="text-primary-100 hidden w-20 shrink-0 sm:block">
+                <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
                   {movement.date.toLocaleDateString("fr-FR")}
                 </div>
-                <div className="text-primary-100 w-10 shrink-0 sm:hidden">
+                <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
                   {movement.date.toLocaleDateString("fr-FR", {
                     day: "2-digit",
                     month: "2-digit",
@@ -198,7 +225,7 @@ export function LinkMovementButton({
             ))}
 
             {filteredMovements.length === 0 && (
-              <div className="text-primary-100 flex w-full items-center justify-center py-2 text-sm">
+              <div className="flex w-full items-center justify-center py-2 text-sm text-muted-foreground">
                 No movement waiting for reconciliation found.
               </div>
             )}
