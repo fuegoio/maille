@@ -137,7 +137,10 @@ export function ProjectActivityCategoryLine({
               ? "Clear filter"
               : "Filter"}
           </div>
-          <div className="mr-2 hidden group-hover:block" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="mr-2 hidden group-hover:block"
+            onClick={(e) => e.stopPropagation()}
+          >
             <AddActivityButton
               iconOnly
               size="sm"
