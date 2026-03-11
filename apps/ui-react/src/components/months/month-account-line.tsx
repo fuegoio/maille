@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 import { useMovements } from "@/stores/movements";
 
 interface MonthAccountLineProps {
@@ -18,6 +19,7 @@ export function MonthAccountLine({
   const activities = useActivities((state) => state.activities);
   const movements = useMovements((state) => state.movements);
   const currencyFormatter = useCurrencyFormatter();
+  const user = useAuth((state) => state.user!);
 
   const account = accounts.find((a) => a.id === accountId);
   if (!account) return null;
@@ -36,7 +38,7 @@ export function MonthAccountLine({
   const getAccountBalanceAtDate = (date: Date): number => {
     // Get all transactions for this account up to the given date
     const transactions = activities
-      .filter((a) => new Date(a.date) <= date)
+      .filter((a) => a.date >= user.startingDate && new Date(a.date) <= date)
       .flatMap((a) => a.transactions)
       .filter((t) => t.fromAccount === accountId || t.toAccount === accountId);
 
@@ -55,7 +57,10 @@ export function MonthAccountLine({
   const getAccountCashBalanceAtDate = (date: Date): number => {
     // Get all movements for this account up to the given date
     const accountMovements = movements.filter(
-      (m) => m.account === accountId && new Date(m.date) <= date,
+      (m) =>
+        m.account === accountId &&
+        new Date(m.date) <= date &&
+        m.date >= user.startingDate,
     );
 
     // Calculate cash balance from movements
