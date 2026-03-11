@@ -101,17 +101,15 @@ function ProjectPage() {
           />
         </header>
 
-        <div className="flex flex-1 flex-col">
-          <ActivitiesTable
-            viewId="project-detail"
-            grouping="period"
-            activities={projectActivities}
-            hideProject={true}
-            activityTypeFilter={activitiesFilters.activityType}
-            categoryFilter={activitiesFilters.category}
-            subcategoryFilter={activitiesFilters.subcategory}
-          />
-        </div>
+        <ActivitiesTable
+          viewId="project-detail"
+          grouping="period"
+          activities={projectActivities}
+          hideProject={true}
+          activityTypeFilter={activitiesFilters.activityType}
+          categoryFilter={activitiesFilters.category}
+          subcategoryFilter={activitiesFilters.subcategory}
+        />
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>

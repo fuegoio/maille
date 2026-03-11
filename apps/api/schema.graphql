@@ -157,77 +157,16 @@ type MovementActivity {
 }
 
 type Mutation {
-  addTransaction(
-    activityId: String!
-    amount: Float!
-    fromAccount: String!
-    fromAsset: String
-    fromCounterparty: String
-    id: String!
-    toAccount: String!
-    toAsset: String
-    toCounterparty: String
-  ): Transaction!
-  createAccount(
-    id: String!
-    movements: Boolean
-    name: String!
-    startingBalance: Float
-    startingCashBalance: Float
-    type: String!
-  ): Account!
-  createActivity(
-    category: String
-    date: Date!
-    description: String
-    id: String!
-    movement: ActivityMovementInput
-    name: String!
-    project: String
-    subcategory: String
-    transactions: [TransactionInput!]
-    type: String!
-  ): Activity!
-  createActivityCategory(
-    emoji: String
-    id: String!
-    name: String!
-    type: String!
-  ): ActivityCategory!
-  createActivitySubCategory(
-    category: String!
-    emoji: String
-    id: String!
-    name: String!
-  ): ActivitySubCategory!
-  createAsset(
-    account: String!
-    description: String
-    id: String!
-    location: String
-    name: String!
-  ): Asset!
+  addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromAsset: String, fromCounterparty: String, id: String!, toAccount: String!, toAsset: String, toCounterparty: String): Transaction!
+  createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!): Account!
+  createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!): Activity!
+  createActivityCategory(emoji: String, id: String!, name: String!, type: String!): ActivityCategory!
+  createActivitySubCategory(category: String!, emoji: String, id: String!, name: String!): ActivitySubCategory!
+  createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
   createContact(contact: String!, id: String!): Contact!
-  createCounterparty(
-    account: String!
-    contact: String
-    description: String
-    id: String!
-    name: String!
-  ): Counterparty!
-  createMovement(
-    account: String!
-    amount: Float!
-    date: Date!
-    id: String!
-    name: String!
-  ): Movement!
-  createMovementActivity(
-    activityId: String!
-    amount: Float!
-    id: String!
-    movementId: String!
-  ): MovementActivity!
+  createCounterparty(account: String!, contact: String, description: String, id: String!, name: String!): Counterparty!
+  createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
+  createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
   deleteAccount(id: String!): DeleteAccountResponse!
   deleteActivity(id: String!): DeleteActivityResponse!
@@ -242,47 +181,16 @@ type Mutation {
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
   shareAccount(id: String!, userId: String!): Account!
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
-  updateAccount(
-    id: String!
-    movements: Boolean
-    name: String
-    startingBalance: Float
-    startingCashBalance: Float
-  ): Account!
-  updateActivity(
-    category: String
-    date: Date
-    description: String
-    id: String!
-    name: String
-    project: String
-    subcategory: String
-    type: String
-  ): Activity!
+  updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
+  updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
-  updateAsset(
-    account: String
-    description: String
-    id: String!
-    location: String
-    name: String
-  ): Asset!
+  updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateCounterparty(contact: String, description: String, id: String!, name: String): Counterparty!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
-  updateTransaction(
-    activityId: String!
-    amount: Float
-    fromAccount: String
-    fromAsset: String
-    fromCounterparty: String
-    id: String!
-    toAccount: String
-    toAsset: String
-    toCounterparty: String
-  ): Transaction!
+  updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromAsset: String, fromCounterparty: String, id: String!, toAccount: String, toAsset: String, toCounterparty: String): Transaction!
 }
 
 type Project {
@@ -307,9 +215,7 @@ type Query {
 }
 
 type Subscription {
-  """
-  Events related to posts
-  """
+  """Events related to posts"""
   events: Event!
 }
 

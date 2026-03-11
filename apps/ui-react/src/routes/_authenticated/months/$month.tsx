@@ -116,7 +116,12 @@ function MonthPage() {
   return (
     <>
       <SidebarInset className="flex-row">
-        <div className={cn("min-w-0 flex-1", summaryOpen && "hidden md:block")}>
+        <div
+          className={cn(
+            "flex flex-1 flex-col",
+            summaryOpen && "hidden md:block",
+          )}
+        >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
@@ -156,7 +161,7 @@ function MonthPage() {
           <Tabs
             value={selectedTab}
             onValueChange={setSelectedTab}
-            className="h-full"
+            className="flex-1"
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
               <TabsList className="ml-5">
