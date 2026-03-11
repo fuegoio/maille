@@ -55,7 +55,10 @@ export function MonthAccountLine({
     );
 
     // Calculate cash balance from movements
-    return accountMovements.reduce((acc, m) => acc + m.amount, 0);
+    return accountMovements.reduce(
+      (acc, m) => acc + m.amount,
+      account.startingCashBalance ?? 0,
+    );
   };
 
   const startBalance = getBalanceAtDate(new Date(startOfMonth.getTime() - 1));
