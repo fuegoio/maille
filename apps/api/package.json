@@ -3,6 +3,7 @@
   "type": "module",
   "module": "index.ts",
   "scripts": {
+    "build": "SKIP_ENV_VALIDATION=1 bun build index.ts --compile --target=bun --outfile=dist/server",
     "dev": "bun run --watch index.ts | pino-pretty",
     "db:generate": "bunx drizzle-kit generate --dialect postgresql --schema ./src/tables.ts",
     "start": "bun run index.ts | pino-pretty",
