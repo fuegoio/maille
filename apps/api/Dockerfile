@@ -22,7 +22,7 @@ RUN cd apps/api && \
     --target=bun \
     --outfile=../../dist/server
 
-FROM alpine:3.21 AS release
+FROM debian:bookworm-slim AS release
 
 WORKDIR /app
 
