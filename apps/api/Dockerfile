@@ -1,6 +1,7 @@
 FROM oven/bun:1-debian AS build
 
 WORKDIR /app
+ENV NODE_ENV=production
 
 COPY package.json bun.lock ./
 COPY apps/api/package.json ./apps/api/
@@ -26,6 +27,5 @@ COPY apps/api/drizzle ./drizzle
 COPY --from=build /app/apps/api/dist/server ./server
 
 EXPOSE 3000/tcp
-ENV NODE_ENV=production
 
 ENTRYPOINT ["./server"]
