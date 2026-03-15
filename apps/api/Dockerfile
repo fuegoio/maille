@@ -16,18 +16,14 @@ COPY apps/api/index.ts ./apps/api/
 COPY apps/api/src ./apps/api/src
 COPY apps/api/tsconfig.json ./apps/api/
 
-RUN cd apps/api && \
-    SKIP_ENV_VALIDATION=1 bun build index.ts \
-    --compile \
-    --target=bun \
-    --outfile=../../dist/server
+RUN cd apps/api && bun run build
 
 FROM debian:bookworm-slim AS release
 
 WORKDIR /app
 
-COPY --from=build /app/dist/server ./server
 COPY apps/api/drizzle ./drizzle
+COPY --from=build /app/apps/api/dist/server ./server
 
 EXPOSE 3000/tcp
 ENV NODE_ENV=production

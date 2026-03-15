@@ -6,7 +6,6 @@
     "build": "SKIP_ENV_VALIDATION=1 bun build index.ts --compile --target=bun --outfile=dist/server",
     "dev": "bun run --watch index.ts | pino-pretty",
     "db:generate": "bunx drizzle-kit generate --dialect postgresql --schema ./src/tables.ts",
-    "start": "bun run index.ts | pino-pretty",
     "typecheck": "tsc",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --type-aware --fix",
