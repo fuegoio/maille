@@ -4,8 +4,6 @@ import {
   Calendar,
   Folder,
   LayoutDashboard,
-  LifeBuoy,
-  Send,
   Tag,
   TentTree,
 } from "lucide-react";
@@ -20,7 +18,7 @@ import {
 import { useAuth } from "@/stores/auth";
 
 import { NavMain } from "./nav-main";
-import { NavSecondary } from "./nav-secondary";
+import { SidebarCalculator } from "./sidebar-calculator";
 import { UserNavigation } from "./user-navigation";
 
 const data = {
@@ -88,25 +86,26 @@ const data = {
       icon: TentTree,
     },
   ],
-  navFooter: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useAuth((state) => state.user);
+  const [calculatorOpen, setCalculatorOpen] = React.useState(false);
+
   if (!user) {
     throw new Error("no user available");
   }
+
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.metaKey && e.key === "m") {
+        e.preventDefault();
+        setCalculatorOpen((prev) => !prev);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -119,7 +118,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain title="Foundations" items={data.navFoundations} />
       </SidebarContent>
       <SidebarFooter>
-        <NavSecondary items={data.navFooter} />
+        <SidebarCalculator
+          open={calculatorOpen}
+          onToggle={() => setCalculatorOpen((prev) => !prev)}
+          onClose={() => setCalculatorOpen(false)}
+        />
       </SidebarFooter>
     </Sidebar>
   );
