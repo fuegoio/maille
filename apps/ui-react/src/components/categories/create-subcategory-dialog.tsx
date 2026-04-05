@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -34,25 +35,46 @@ type CreateSubcategoryFormValues = z.infer<typeof createSubcategorySchema>;
 export function CreateSubcategoryDialog({
   categoryId,
   children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  initialName = "",
+  onSubcategoryCreated,
 }: {
   categoryId: string;
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialName?: string;
+  onSubcategoryCreated?: (subcategoryId: string) => void;
 }) {
   const mutate = useSync((state) => state.mutate);
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled
+    ? (controlledOnOpenChange ?? setInternalOpen)
+    : setInternalOpen;
 
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateSubcategoryFormValues>({
     resolver: zodResolver(createSubcategorySchema),
     defaultValues: {
-      name: "",
+      name: initialName,
       emoji: null,
     },
   });
+
+  React.useEffect(() => {
+    if (open) {
+      setValue("name", initialName);
+    }
+  }, [open, initialName, setValue]);
 
   const onSubmit = async (data: CreateSubcategoryFormValues) => {
     try {
@@ -77,6 +99,8 @@ export function CreateSubcategoryDialog({
           },
         ],
       });
+
+      onSubcategoryCreated?.(subcategory.id);
 
       // Reset form and close dialog on success
       reset();

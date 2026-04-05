@@ -45,6 +45,7 @@ import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { ActivityCategorySelect } from "./activity-category-select";
 import { ActivityMovements } from "./activity-movements";
 import { ActivitySharing } from "./activity-sharing";
+import { ActivitySubcategorySelect } from "./activity-subcategory-select";
 import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
 
@@ -66,11 +67,6 @@ export function Activity() {
     if (!activity?.type) return categories;
     return categories.filter((c) => c.type === activity.type);
   }, [activity?.type, categories]);
-
-  const filteredSubcategories = React.useMemo(() => {
-    if (!activity?.category) return [];
-    return subcategories.filter((sc) => sc.category === activity.category);
-  }, [activity?.category, subcategories]);
 
   const currencyFormatter = useCurrencyFormatter();
 
@@ -315,26 +311,14 @@ export function Activity() {
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
-                  <Select
-                    value={activity.subcategory || ""}
+                  <ActivitySubcategorySelect
+                    value={activity.subcategory}
                     onValueChange={(value) =>
                       updateActivity({ subcategory: value })
                     }
-                  >
-                    <SelectTrigger id="subcategory">
-                      <SelectValue placeholder="Subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredSubcategories.map((subcat) => (
-                        <SelectItem key={subcat.id} value={subcat.id}>
-                          {subcat.emoji && (
-                            <span className="mr-0.5">{subcat.emoji}</span>
-                          )}
-                          {subcat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    categoryId={activity.category}
+                    subcategories={subcategories}
+                  />
                 </Field>
                 <Field orientation="horizontal">
                   <FieldLabel htmlFor="project">Project</FieldLabel>

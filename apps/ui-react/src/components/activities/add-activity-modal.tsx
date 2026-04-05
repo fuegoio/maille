@@ -47,6 +47,7 @@ import { useSync } from "@/stores/sync";
 import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
 import { ActivityCategorySelect } from "./activity-category-select";
+import { ActivitySubcategorySelect } from "./activity-subcategory-select";
 import { Transaction as TransactionComponent } from "./transaction";
 import { TransactionDropdown } from "./transaction-dropdown";
 
@@ -133,11 +134,6 @@ export function AddActivityModal({
     if (!type) return categories;
     return categories.filter((c) => c.type === type);
   }, [type, categories]);
-
-  const filteredSubcategories = React.useMemo(() => {
-    if (!category) return [];
-    return subcategories.filter((sc) => sc.category === category);
-  }, [category, subcategories]);
 
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -536,25 +532,12 @@ export function AddActivityModal({
                 name="subcategory"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                    disabled={!category || filteredSubcategories.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredSubcategories.map((subcat) => (
-                        <SelectItem key={subcat.id} value={subcat.id}>
-                          {subcat.emoji && (
-                            <span className="mr-0.5">{subcat.emoji}</span>
-                          )}
-                          {subcat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <ActivitySubcategorySelect
+                    value={field.value || null}
+                    onValueChange={(val) => field.onChange(val ?? "")}
+                    categoryId={category}
+                    subcategories={subcategories}
+                  />
                 )}
               />
 
