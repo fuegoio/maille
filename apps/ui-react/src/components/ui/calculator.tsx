@@ -63,7 +63,10 @@ interface CalculatorClearableProps extends CalculatorBaseProps {
 type CalculatorProps = CalculatorNotClearableProps | CalculatorClearableProps;
 
 export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
-  function Calculator({ className, initialValue, autoFocus, clearable, onValidate }, ref) {
+  function Calculator(
+    { className, initialValue, autoFocus, clearable, onValidate },
+    ref,
+  ) {
     const containerRef = React.useRef<HTMLDivElement>(null);
     const [input, setInput] = React.useState<string>(
       initialValue != null ? initialValue.toString() : "",
@@ -197,7 +200,12 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
     }, [autoFocus]);
 
     return (
-      <div ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown} className={cn("flex flex-col outline-none", className)}>
+      <div
+        ref={containerRef}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        className={cn("flex flex-col outline-none", className)}
+      >
         <div className="flex h-10 items-center px-4 font-mono text-sm">
           <div className="font-medium">
             {input || <span className="text-muted-foreground">0</span>}
@@ -205,7 +213,7 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
           <div className="flex-1" />
           <div
             className={cn(
-              "text-muted-foreground text-xs",
+              "text-xs text-muted-foreground",
               !isNaN(computedValue) && parseFloat(input) !== computedValue
                 ? "visible"
                 : "invisible",
