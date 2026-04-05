@@ -16,13 +16,13 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^25.2.0",
-    "globals": "^16.1.0",
+    "@types/node": "^25.5.2",
+    "globals": "^16.5.0",
     "husky": "^9.1.7",
     "oxfmt": "^0.36.0",
-    "oxlint": "^1.51.0",
+    "oxlint": "^1.58.0",
     "oxlint-tsgolint": "^0.16.0",
-    "turbo": "^2.0.9",
+    "turbo": "^2.9.3",
     "typescript": "^5.9.3"
   },
   "packageManager": "bun@1.2.23"
