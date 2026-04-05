@@ -46,7 +46,6 @@ function ProjectPage() {
   }
 
   const activities = useActivities((state) => state.activities);
-  const focusedActivity = useActivities((state) => state.focusedActivity);
   const projectActivities = activities.filter((a) => a.project === projectId);
 
   const isMobile = useIsMobile();
@@ -63,7 +62,6 @@ function ProjectPage() {
           className={cn(
             "flex min-w-0 shrink flex-col",
             summaryOpen && "hidden md:flex",
-            focusedActivity && "hidden xl:flex",
           )}
         >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
