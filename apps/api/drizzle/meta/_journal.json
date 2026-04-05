@@ -50,6 +50,13 @@
       "when": 1772985845815,
       "tag": "0006_sweet_living_tribunal",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775378641597,
+      "tag": "0007_dusty_absorbing_man",
+      "breakpoints": true
     }
   ]
 }

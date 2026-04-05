@@ -1,1 +1,0 @@
-ALTER TABLE "counterparties" ADD COLUMN "initial_balance" real;
