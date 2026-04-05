@@ -60,7 +60,7 @@ function ProjectPage() {
       <SidebarInset className="flex-row">
         <div
           className={cn(
-            "flex min-w-0 shrink flex-col",
+            "flex min-w-0 flex-1 flex-col",
             summaryOpen && "hidden md:flex",
           )}
         >
