@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
@@ -45,6 +46,7 @@ function ProjectPage() {
   }
 
   const activities = useActivities((state) => state.activities);
+  const focusedActivity = useActivities((state) => state.focusedActivity);
   const projectActivities = activities.filter((a) => a.project === projectId);
 
   const isMobile = useIsMobile();
@@ -57,7 +59,11 @@ function ProjectPage() {
   return (
     <SidebarInset className="flex-row">
       <div
-        className={cn("flex flex-1 flex-col", summaryOpen && "hidden md:flex")}
+        className={cn(
+          "flex min-w-0 shrink flex-col",
+          summaryOpen && "hidden md:flex",
+          focusedActivity && "hidden xl:flex",
+        )}
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
@@ -119,6 +125,8 @@ function ProjectPage() {
           onActivitiesFiltersChange={setActivitiesFilters}
         />
       </SummaryPanel>
+
+      <Activity />
     </SidebarInset>
   );
 }
