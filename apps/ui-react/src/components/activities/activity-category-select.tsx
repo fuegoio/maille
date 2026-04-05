@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 import {
   InputGroup,
@@ -39,8 +40,46 @@ export function ActivityCategorySelect({
   disabled,
   placeholder = "Category",
 }: ActivityCategorySelectProps) {
+  const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [openCreate, setOpenCreate] = React.useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [highlightedIndex, setHighlightedIndex] = React.useState<number>(-1);
+
+  React.useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [searchTerm]);
+
+  React.useEffect(() => {
+    if (open) {
+      const frame = requestAnimationFrame(() =>
+        searchInputRef.current?.focus(),
+      );
+      return () => cancelAnimationFrame(frame);
+    } else {
+      setSearchTerm("");
+      setHighlightedIndex(-1);
+    }
+  }, [open]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((i) =>
+        Math.min(i + 1, filteredCategories.length - 1),
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const index = highlightedIndex >= 0 ? highlightedIndex : 0;
+      if (filteredCategories[index]) {
+        handleCategoryChange(filteredCategories[index].id);
+        setOpen(false);
+      }
+    }
+  };
 
   // Filter categories based on search term and type
   const filteredCategories = React.useMemo(() => {
@@ -73,32 +112,52 @@ export function ActivityCategorySelect({
     <Select
       value={value || ""}
       onValueChange={handleCategoryChange}
+      open={open}
+      onOpenChange={setOpen}
       disabled={disabled || categories.length === 0}
     >
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         {/* Search input */}
         <InputGroup className="gap-1 rounded-none border-t-0 border-r-0 border-b border-l-0 bg-background! ring-0!">
           <InputGroupInput
+            ref={searchInputRef}
             type="text"
             placeholder="Search ..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
+            onKeyDown={handleSearchKeyDown}
           />
           <InputGroupAddon>
             <Search className="size-3 text-muted-foreground" />
           </InputGroupAddon>
         </InputGroup>
 
-        {filteredCategories.map((cat) => (
-          <SelectItem key={cat.id} value={cat.id} className="px-2">
-            {cat.emoji && <span className="mr-1">{cat.emoji}</span>}
-            <span>{cat.name}</span>
-          </SelectItem>
-        ))}
+        {categories
+          .filter((c) => (type ? c.type === type : true))
+          .map((cat) => {
+            const visibleIndex = filteredCategories.findIndex(
+              (f) => f.id === cat.id,
+            );
+            const isHidden = visibleIndex === -1;
+            const isHighlighted = visibleIndex === highlightedIndex;
+            return (
+              <SelectItem
+                key={cat.id}
+                value={cat.id}
+                className={cn(
+                  "px-2",
+                  isHidden && "hidden",
+                  isHighlighted && "bg-accent text-accent-foreground",
+                )}
+              >
+                {cat.emoji && <span className="mr-1">{cat.emoji}</span>}
+                <span>{cat.name}</span>
+              </SelectItem>
+            );
+          })}
 
         {/* Categories list */}
         {filteredCategories.length === 0 && (

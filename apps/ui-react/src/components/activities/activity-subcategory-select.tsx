@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 import {
   InputGroup,
@@ -38,8 +39,11 @@ export function ActivitySubcategorySelect({
   disabled,
   placeholder = "Subcategory",
 }: ActivitySubcategorySelectProps) {
+  const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [openCreate, setOpenCreate] = React.useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [highlightedIndex, setHighlightedIndex] = React.useState<number>(-1);
 
   const filteredSubcategories = React.useMemo(() => {
     return subcategories.filter((sc) => {
@@ -50,6 +54,41 @@ export function ActivitySubcategorySelect({
       return matchesCategory && matchesSearch;
     });
   }, [subcategories, categoryId, searchTerm]);
+
+  React.useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [searchTerm]);
+
+  React.useEffect(() => {
+    if (open) {
+      const frame = requestAnimationFrame(() =>
+        searchInputRef.current?.focus(),
+      );
+      return () => cancelAnimationFrame(frame);
+    } else {
+      setSearchTerm("");
+      setHighlightedIndex(-1);
+    }
+  }, [open]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((i) =>
+        Math.min(i + 1, filteredSubcategories.length - 1),
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const index = highlightedIndex >= 0 ? highlightedIndex : 0;
+      if (filteredSubcategories[index]) {
+        handleValueChange(filteredSubcategories[index].id);
+        setOpen(false);
+      }
+    }
+  };
 
   const handleValueChange = (val: string) => {
     if (val === "create-new") {
@@ -69,32 +108,52 @@ export function ActivitySubcategorySelect({
     <Select
       value={value || ""}
       onValueChange={handleValueChange}
+      open={open}
+      onOpenChange={setOpen}
       disabled={disabled || !categoryId}
     >
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         {/* Search input */}
         <InputGroup className="gap-1 rounded-none border-t-0 border-r-0 border-b border-l-0 bg-background! ring-0!">
           <InputGroupInput
+            ref={searchInputRef}
             type="text"
             placeholder="Search ..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
+            onKeyDown={handleSearchKeyDown}
           />
           <InputGroupAddon>
             <Search className="size-3 text-muted-foreground" />
           </InputGroupAddon>
         </InputGroup>
 
-        {filteredSubcategories.map((sc) => (
-          <SelectItem key={sc.id} value={sc.id} className="px-2">
-            {sc.emoji && <span className="mr-1">{sc.emoji}</span>}
-            <span>{sc.name}</span>
-          </SelectItem>
-        ))}
+        {subcategories
+          .filter((sc) => (categoryId ? sc.category === categoryId : true))
+          .map((sc) => {
+            const visibleIndex = filteredSubcategories.findIndex(
+              (f) => f.id === sc.id,
+            );
+            const isHidden = visibleIndex === -1;
+            const isHighlighted = visibleIndex === highlightedIndex;
+            return (
+              <SelectItem
+                key={sc.id}
+                value={sc.id}
+                className={cn(
+                  "px-2",
+                  isHidden && "hidden",
+                  isHighlighted && "bg-accent text-accent-foreground",
+                )}
+              >
+                {sc.emoji && <span className="mr-1">{sc.emoji}</span>}
+                <span>{sc.name}</span>
+              </SelectItem>
+            );
+          })}
 
         {filteredSubcategories.length === 0 && (
           <>
