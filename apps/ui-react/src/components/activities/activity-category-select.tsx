@@ -119,7 +119,13 @@ export function ActivityCategorySelect({
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent position="popper">
+      <SelectContent
+        position="popper"
+        onPointerDownOutside={(e) => {
+          if (document.activeElement === searchInputRef.current)
+            e.preventDefault();
+        }}
+      >
         {/* Search input */}
         <InputGroup className="gap-1 rounded-none border-t-0 border-r-0 border-b border-l-0 bg-background! ring-0!">
           <InputGroupInput
