@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
+import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,7 +32,7 @@ const createCounterpartySchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   contact: z.string().optional(),
-  initialBalance: z.coerce.number().optional(),
+  initialBalance: z.number().optional(),
 });
 
 type CreateCounterpartyFormValues = z.infer<typeof createCounterpartySchema>;
@@ -145,17 +146,10 @@ export function AddCounterpartyModal({
               <Field>
                 <FieldLabel>Initial balance (optional)</FieldLabel>
                 <FieldContent>
-                  <Input
-                    {...field}
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value === "" ? undefined : e.target.valueAsNumber,
-                      )
-                    }
+                  <AmountInput
+                    value={field.value ?? 0}
+                    onChange={field.onChange}
+                    mode="field"
                   />
                 </FieldContent>
                 <FieldDescription>

@@ -57,76 +57,81 @@ function ProjectPage() {
   );
 
   return (
-    <SidebarInset className="flex-row">
-      <div
-        className={cn(
-          "flex min-w-0 shrink flex-col",
-          summaryOpen && "hidden md:flex",
-          focusedActivity && "hidden xl:flex",
-        )}
-      >
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-          <SidebarTrigger className="mr-1" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/projects">Projects</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {project.emoji && (
-                    <span className="mr-1">{project.emoji}</span>
-                  )}
-                  <span>{project.name}</span>
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="flex-1" />
-          <AddActivityButton project={projectId} />
-          <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
-            <Settings />
-            Edit
-          </Button>
-
-          {!summaryOpen && (
-            <Button variant="default" onClick={() => setSummaryOpen(true)}>
-              <SquareChartGantt />
-              Summary
-              <ChevronRight />
-            </Button>
+    <>
+      <SidebarInset className="flex-row">
+        <div
+          className={cn(
+            "flex min-w-0 shrink flex-col",
+            summaryOpen && "hidden md:flex",
+            focusedActivity && "hidden xl:flex",
           )}
+        >
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+            <SidebarTrigger className="mr-1" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/projects">Projects</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {project.emoji && (
+                      <span className="mr-1">{project.emoji}</span>
+                    )}
+                    <span>{project.name}</span>
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+            <div className="flex-1" />
+            <AddActivityButton project={projectId} />
+            <Button
+              variant="outline"
+              onClick={() => setShowSettingsDialog(true)}
+            >
+              <Settings />
+              Edit
+            </Button>
 
-          <ProjectSettingsDialog
-            project={project}
-            open={showSettingsDialog}
-            onOpenChange={setShowSettingsDialog}
+            {!summaryOpen && (
+              <Button variant="default" onClick={() => setSummaryOpen(true)}>
+                <SquareChartGantt />
+                Summary
+                <ChevronRight />
+              </Button>
+            )}
+
+            <ProjectSettingsDialog
+              project={project}
+              open={showSettingsDialog}
+              onOpenChange={setShowSettingsDialog}
+            />
+          </header>
+
+          <ActivitiesTable
+            viewId="project-detail"
+            grouping="period"
+            activities={projectActivities}
+            hideProject={true}
+            activityTypeFilter={activitiesFilters.activityType}
+            categoryFilter={activitiesFilters.category}
+            subcategoryFilter={activitiesFilters.subcategory}
           />
-        </header>
+        </div>
 
-        <ActivitiesTable
-          viewId="project-detail"
-          grouping="period"
-          activities={projectActivities}
-          hideProject={true}
-          activityTypeFilter={activitiesFilters.activityType}
-          categoryFilter={activitiesFilters.category}
-          subcategoryFilter={activitiesFilters.subcategory}
-        />
-      </div>
-
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        <ProjectSummary
-          project={project}
-          activitiesFilters={activitiesFilters}
-          onActivitiesFiltersChange={setActivitiesFilters}
-        />
-      </SummaryPanel>
+        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+          <ProjectSummary
+            project={project}
+            activitiesFilters={activitiesFilters}
+            onActivitiesFiltersChange={setActivitiesFilters}
+          />
+        </SummaryPanel>
+      </SidebarInset>
 
       <Activity />
-    </SidebarInset>
+    </>
   );
 }
