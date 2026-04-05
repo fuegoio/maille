@@ -17,6 +17,7 @@ export const createCounterpartyMutation = graphql(/* GraphQL */ `
     $name: String!
     $description: String
     $contact: String
+    $initialBalance: Float
   ) {
     createCounterparty(
       id: $id
@@ -24,6 +25,7 @@ export const createCounterpartyMutation = graphql(/* GraphQL */ `
       name: $name
       description: $description
       contact: $contact
+      initialBalance: $initialBalance
     ) {
       id
     }
@@ -43,12 +45,14 @@ export const updateCounterpartyMutation = graphql(/* GraphQL */ `
     $name: String
     $description: String
     $contact: String
+    $initialBalance: Float
   ) {
     updateCounterparty(
       id: $id
       name: $name
       description: $description
       contact: $contact
+      initialBalance: $initialBalance
     ) {
       id
     }

@@ -13,5 +13,6 @@ CounterpartySchema.implement({
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
     contact: t.exposeString("contact", { nullable: true }),
+    initialBalance: t.exposeFloat("initialBalance", { nullable: true }),
   }),
 });

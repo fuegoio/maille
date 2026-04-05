@@ -286,6 +286,7 @@ export interface CreateCounterpartyEvent extends BaseSyncEvent {
     name: string;
     description: string | null;
     contact: string | null;
+    initialBalance: number | null;
   };
 }
 
@@ -296,6 +297,7 @@ export interface UpdateCounterpartyEvent extends BaseSyncEvent {
     name?: string;
     description?: string | null;
     contact?: string | null;
+    initialBalance?: number | null;
   };
 }
 

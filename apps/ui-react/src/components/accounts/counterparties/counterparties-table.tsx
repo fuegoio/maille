@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 import { useContacts } from "@/stores/contacts";
 import { useCounterparties } from "@/stores/counterparties";
 
@@ -33,6 +34,7 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   );
   const activities = useActivities((state) => state.activities);
   const contacts = useContacts((state) => state.contacts);
+  const user = useAuth((state) => state.user!);
 
   const currencyFormatter = useCurrencyFormatter();
 
@@ -43,8 +45,13 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   }, [counterparties, accountId]);
 
   const getCounterpartyLiability = (counterpartyId: string) => {
-    return activities
-      .flatMap((activity) => activity.transactions)
+    const counterparty = accountCounterparties.find(
+      (c) => c.id === counterpartyId,
+    );
+
+    const transactionsTotal = activities
+      .filter((a) => a.date >= user.startingDate)
+      .flatMap((a) => a.transactions)
       .filter(
         (transaction) =>
           transaction.fromCounterparty === counterpartyId ||
@@ -61,6 +68,8 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
         }
         return total;
       }, 0);
+
+    return (counterparty?.initialBalance ?? 0) + transactionsTotal;
   };
 
   return (

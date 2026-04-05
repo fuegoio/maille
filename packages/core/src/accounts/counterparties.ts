@@ -4,4 +4,5 @@ export type Counterparty = {
   name: string;
   description: string | null;
   contact: string | null;
+  initialBalance: number | null;
 };

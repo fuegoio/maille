@@ -115,6 +115,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       name
       description
       contact
+      initialBalance
     }
 
     contacts {

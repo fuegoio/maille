@@ -94,6 +94,7 @@ type Counterparty {
   contact: String
   description: String
   id: String!
+  initialBalance: Float
   name: String!
 }
 
@@ -164,7 +165,7 @@ type Mutation {
   createActivitySubCategory(category: String!, emoji: String, id: String!, name: String!): ActivitySubCategory!
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
   createContact(contact: String!, id: String!): Contact!
-  createCounterparty(account: String!, contact: String, description: String, id: String!, name: String!): Counterparty!
+  createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
@@ -186,7 +187,7 @@ type Mutation {
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
-  updateCounterparty(contact: String, description: String, id: String!, name: String): Counterparty!
+  updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!

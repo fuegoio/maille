@@ -31,6 +31,7 @@ const createCounterpartySchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   contact: z.string().optional(),
+  initialBalance: z.coerce.number().optional(),
 });
 
 type CreateCounterpartyFormValues = z.infer<typeof createCounterpartySchema>;
@@ -59,6 +60,7 @@ export function AddCounterpartyModal({
       name: "",
       description: "",
       contact: "",
+      initialBalance: undefined,
     },
   });
 
@@ -69,6 +71,7 @@ export function AddCounterpartyModal({
       name: data.name,
       description: data.description || null,
       contact: data.contact || null,
+      initialBalance: data.initialBalance ?? null,
     };
 
     mutate({
@@ -131,6 +134,33 @@ export function AddCounterpartyModal({
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="initialBalance"
+            control={control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>Initial balance (optional)</FieldLabel>
+                <FieldContent>
+                  <Input
+                    {...field}
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === "" ? undefined : e.target.valueAsNumber,
+                      )
+                    }
+                  />
+                </FieldContent>
+                <FieldDescription>
+                  Amount already owed before any transactions.
+                </FieldDescription>
               </Field>
             )}
           />

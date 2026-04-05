@@ -19,6 +19,7 @@ export const registerCounterpartiesMutations = () => {
         name: t.arg.string(),
         description: t.arg.string({ required: false }),
         contact: t.arg.string({ required: false }),
+        initialBalance: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const account = (
@@ -42,6 +43,7 @@ export const registerCounterpartiesMutations = () => {
             name: args.name,
             description: args.description,
             contact: args.contact,
+            initialBalance: args.initialBalance,
           })
           .returning();
         const counterparty = counterpartyResults[0];
@@ -58,6 +60,7 @@ export const registerCounterpartiesMutations = () => {
             name: args.name,
             description: args.description ?? null,
             contact: args.contact ?? null,
+            initialBalance: args.initialBalance ?? null,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -79,6 +82,7 @@ export const registerCounterpartiesMutations = () => {
         name: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
         contact: t.arg.string({ required: false }),
+        initialBalance: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const counterparty = (
@@ -108,6 +112,9 @@ export const registerCounterpartiesMutations = () => {
         if (args.contact !== undefined) {
           // TODO: check contact
           updates.contact = args.contact;
+        }
+        if (args.initialBalance !== undefined) {
+          updates.initialBalance = args.initialBalance;
         }
 
         const updatedCounterparties = await db

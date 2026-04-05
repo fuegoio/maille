@@ -283,6 +283,7 @@ export const counterparties = pgTable("counterparties", {
   name: text("name").notNull(),
   description: text("description"),
   contact: text("contact").references(() => user.id, { onDelete: "set null" }),
+  initialBalance: real("initial_balance"),
 });
 
 export const events = pgTable("events", {

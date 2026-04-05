@@ -28,6 +28,7 @@ import {
   updateCounterpartyMutation,
 } from "@/mutations/counterparties";
 import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 import { useCounterparties } from "@/stores/counterparties";
 import { useSync } from "@/stores/sync";
 
@@ -50,13 +51,15 @@ export function Counterparty() {
     counterpartyId ? state.getCounterpartyById(counterpartyId) : undefined,
   );
   const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user!);
 
   // Calculate the current liability of the counterparty based on transactions
   const getCounterpartyLiability = React.useCallback(() => {
     if (!counterparty) return 0;
 
-    return activities
-      .flatMap((activity) => activity.transactions)
+    const transactionsTotal = activities
+      .filter((a) => a.date >= user.startingDate)
+      .flatMap((a) => a.transactions)
       .filter(
         (transaction) =>
           transaction.fromCounterparty === counterparty.id ||
@@ -73,7 +76,9 @@ export function Counterparty() {
         }
         return total;
       }, 0);
-  }, [counterparty, activities]);
+
+    return (counterparty.initialBalance ?? 0) + transactionsTotal;
+  }, [counterparty, activities, user.startingDate]);
 
   // Get activities that involve this counterparty
   const counterpartyActivities = React.useMemo(() => {
@@ -113,6 +118,7 @@ export function Counterparty() {
     name?: string;
     description?: string | null;
     contact?: string | null;
+    initialBalance?: number | null;
   }) => {
     if (!counterparty) return;
     const counterpartyData = { ...counterparty };
@@ -222,6 +228,25 @@ export function Counterparty() {
                   className="resize-none"
                   placeholder="Add a description ..."
                   rows={3}
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="initialBalance">Initial balance</FieldLabel>
+                <Input
+                  id="initialBalance"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={counterparty.initialBalance ?? ""}
+                  onChange={(e) =>
+                    handleUpdateCounterparty({
+                      initialBalance:
+                        e.target.value === ""
+                          ? null
+                          : parseFloat(e.target.value),
+                    })
+                  }
                 />
               </Field>
 

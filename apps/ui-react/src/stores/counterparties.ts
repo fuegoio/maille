@@ -20,6 +20,7 @@ interface CounterpartiesState {
       name?: string;
       description?: string | null;
       user?: string | null;
+      initialBalance?: number | null;
     },
   ) => void;
   deleteCounterparty: (counterpartyId: string) => void;
@@ -101,6 +102,7 @@ export const useCounterparties = create<CounterpartiesState>()(
         if (event.type === "createCounterparty") {
           get().addCounterparty({
             ...event.payload,
+            initialBalance: event.payload.initialBalance ?? null,
           });
         } else if (event.type === "updateCounterparty") {
           get().updateCounterparty(event.payload.id, {
