@@ -232,7 +232,9 @@ export function Counterparty() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="initialBalance">Initial balance</FieldLabel>
+                <FieldLabel htmlFor="initialBalance">
+                  Initial balance
+                </FieldLabel>
                 <Input
                   id="initialBalance"
                   type="number"
