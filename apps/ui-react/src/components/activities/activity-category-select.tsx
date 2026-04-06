@@ -56,7 +56,7 @@ export function ActivityCategorySelect({
         searchInputRef.current?.focus(),
       );
       return () => cancelAnimationFrame(frame);
-    } else {
+    } else if (!openCreate) {
       setSearchTerm("");
       setHighlightedIndex(-1);
     }
