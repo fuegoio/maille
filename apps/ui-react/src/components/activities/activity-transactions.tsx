@@ -180,8 +180,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   };
 
   return (
-    <div className="border-b px-4 py-6 sm:px-8">
-      <div className="flex items-center">
+    <div className="border-b px-2 py-6 sm:px-6">
+      <div className="flex items-center pl-2">
         <div className="text-sm font-medium">Transactions</div>
         <div className="flex-1" />
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
@@ -205,7 +205,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         </div>
       </div>
 
-      <div className="my-2">
+      <div className="my-2 space-y-2">
         {activity.transactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
             No transaction added for this activity.

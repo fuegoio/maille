@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useAccounts, ACCOUNT_TYPES_NAME } from "@/stores/accounts";
 
 import { AccountLabel } from "./account-label";
@@ -31,6 +32,7 @@ export function AccountSelect({
   disabled = false,
   placeholder = "Account",
   movementsOnly = false,
+  className,
 }: AccountSelectProps) {
   const accounts = useAccounts((state) => state.accounts);
 
@@ -47,7 +49,7 @@ export function AccountSelect({
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger id={id} className="min-w-32">
+      <SelectTrigger id={id} className={cn("min-w-32", className)}>
         <SelectValue
           placeholder={
             <div className="flex min-w-0 shrink-0 items-center">

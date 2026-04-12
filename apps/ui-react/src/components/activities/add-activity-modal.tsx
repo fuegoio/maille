@@ -557,7 +557,7 @@ export function AddActivityModal({
 
           {/* Transactions section */}
           <div className="border-primary-700 border-t pt-4">
-            <div className="mb-2 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between pr-2">
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
                 <span className="mr-1.75 font-mono text-sm text-muted-foreground">
@@ -589,7 +589,7 @@ export function AddActivityModal({
               </div>
             </div>
 
-            <div className="pr-1">
+            <div className="space-y-2 pr-1">
               {transactions.map((transaction, index) => (
                 <TransactionComponent
                   key={index}

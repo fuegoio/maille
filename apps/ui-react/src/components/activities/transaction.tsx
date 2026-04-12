@@ -1,7 +1,14 @@
 import type { Transaction } from "@maille/core/activities";
 
 import { AccountType } from "@maille/core/accounts";
-import { CornerDownRight, Ellipsis, MoveRight, TrashIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CornerDownRight,
+  Ellipsis,
+  MoveDown,
+  MoveRight,
+  TrashIcon,
+} from "lucide-react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { AmountInput } from "@/components/ui/amount-input";
@@ -37,9 +44,15 @@ export function Transaction({
   const toAccount = accounts.find((a) => a.id === transaction.toAccount);
 
   return (
-    <div className={cn("flex items-start py-2 text-sm", className)}>
-      <div className="flex flex-col gap-2">
+    <div
+      className={cn(
+        "flex flex-col items-start gap-3 rounded-lg border bg-muted/30 p-2 py-2 text-sm shadow-md sm:flex-row sm:gap-0",
+        className,
+      )}
+    >
+      <div className="flex w-full gap-2 sm:w-auto sm:flex-col">
         <AccountSelect
+          className="w-full sm:w-auto"
           value={transaction.fromAccount}
           onChange={(account) =>
             onUpdate?.({
@@ -50,8 +63,9 @@ export function Transaction({
           }
         />
         {fromAccount?.type === AccountType.LIABILITIES && (
-          <div className="flex items-center gap-1 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 sm:pl-2">
+            <CornerDownRight className="hidden size-4 text-muted-foreground sm:block" />
+            <ArrowRight className="size-4 text-muted-foreground sm:hidden" />
             <CounterpartiesSelect
               accountId={transaction.fromAccount}
               value={transaction.fromCounterparty || ""}
@@ -64,8 +78,9 @@ export function Transaction({
           </div>
         )}
         {fromAccount?.type === AccountType.ASSETS && (
-          <div className="flex items-center gap-1 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 sm:pl-2">
+            <CornerDownRight className="hidden size-4 text-muted-foreground sm:block" />
+            <ArrowRight className="size-4 text-muted-foreground sm:hidden" />
             <AssetSelect
               accountId={transaction.fromAccount}
               value={transaction.fromAsset || ""}
@@ -78,11 +93,15 @@ export function Transaction({
           </div>
         )}
       </div>
-      <div className="mx-3 py-2 text-center">
-        <MoveRight className="size-4" />
+
+      <div className="mx-3 text-center sm:py-2">
+        <MoveRight className="hidden size-4 sm:block" />
+        <MoveDown className="size-4 sm:hidden" />
       </div>
-      <div className="flex flex-col gap-2">
+
+      <div className="flex w-full gap-2 sm:w-auto sm:flex-col">
         <AccountSelect
+          className="w-full sm:w-auto"
           value={transaction.toAccount}
           onChange={(account) =>
             onUpdate?.({
@@ -93,8 +112,9 @@ export function Transaction({
           }
         />
         {toAccount?.type === AccountType.LIABILITIES && (
-          <div className="flex items-center gap-1 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 sm:pl-2">
+            <CornerDownRight className="hidden size-4 text-muted-foreground sm:block" />
+            <ArrowRight className="size-4 text-muted-foreground sm:hidden" />
             <CounterpartiesSelect
               accountId={transaction.toAccount}
               value={transaction.toCounterparty || ""}
@@ -107,8 +127,9 @@ export function Transaction({
           </div>
         )}
         {toAccount?.type === AccountType.ASSETS && (
-          <div className="flex items-center gap-1 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 sm:pl-2">
+            <CornerDownRight className="hidden size-4 text-muted-foreground sm:block" />
+            <ArrowRight className="size-4 text-muted-foreground sm:hidden" />
             <AssetSelect
               accountId={transaction.toAccount}
               value={transaction.toAsset || ""}
@@ -122,32 +143,38 @@ export function Transaction({
         )}
       </div>
 
-      <div className="flex-1" />
+      <div className="hidden flex-1 sm:block" />
 
-      <AmountInput
-        value={transaction.amount}
-        onChange={(amount) => {
-          onUpdate?.({
-            amount,
-          });
-        }}
-        mode="cell"
-        className="mr-2 w-24"
-      />
+      <div className="flex w-full sm:w-auto">
+        <AmountInput
+          value={transaction.amount}
+          onChange={(amount) => {
+            onUpdate?.({
+              amount,
+            });
+          }}
+          mode="cell"
+          className="mr-2 sm:w-24"
+        />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-xs" className="my-1">
-            <Ellipsis />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem variant="destructive" onClick={() => onDelete?.()}>
-            <TrashIcon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <div className="flex-1 sm:hidden" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon-xs" className="my-1">
+              <Ellipsis />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onDelete?.()}
+            >
+              <TrashIcon />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
