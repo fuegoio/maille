@@ -52,6 +52,8 @@ export function ActivityCategorySelect({
 
   React.useEffect(() => {
     if (open) {
+      const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+      if (isTouchDevice) return;
       const frame = requestAnimationFrame(() =>
         searchInputRef.current?.focus(),
       );
