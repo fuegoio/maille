@@ -204,7 +204,7 @@ export function MovementsTable({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <MovementsFilters viewId={viewId} movements={movementsFiltered} />
 
-      <div className="flex flex-1 flex-col overflow-x-hidden sm:min-w-[575px]">
+      <div className="flex flex-1 flex-col overflow-y-auto">
         {movementsFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40">
             {grouping

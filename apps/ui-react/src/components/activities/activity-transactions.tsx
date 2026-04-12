@@ -4,6 +4,7 @@ import {
   type Activity,
   type Transaction,
 } from "@maille/core/activities";
+import { useState } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -22,10 +23,15 @@ interface ActivityTransactionsProps {
   activity: Activity;
 }
 
+type StagedTransaction = Omit<Transaction, "id"> & { id: string };
+
 export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   const currencyFormatter = useCurrencyFormatter();
   const mutate = useSync((state) => state.mutate);
   const accounts = useAccounts((state) => state.accounts);
+  const [stagedTransactions, setStagedTransactions] = useState<
+    StagedTransaction[]
+  >([]);
 
   const transactionsSum = activity.transactions.reduce(
     (sum, t) => sum + t.amount,
@@ -148,16 +154,82 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     return { fromAccount, toAccount };
   };
 
+  const commitTransaction = (transaction: StagedTransaction) => {
+    mutate({
+      name: "addTransaction",
+      mutation: addTransactionMutation,
+      variables: {
+        activityId: activity.id,
+        id: transaction.id,
+        fromAccount: transaction.fromAccount,
+        toAccount: transaction.toAccount,
+        amount: transaction.amount,
+        fromAsset: transaction.fromAsset || null,
+        fromCounterparty: transaction.fromCounterparty || null,
+        toAsset: transaction.toAsset || null,
+        toCounterparty: transaction.toCounterparty || null,
+      },
+      rollbackData: undefined,
+      events: [
+        {
+          type: "addTransaction",
+          payload: {
+            activityId: activity.id,
+            id: transaction.id,
+            fromAccount: transaction.fromAccount,
+            toAccount: transaction.toAccount,
+            amount: transaction.amount,
+            fromAsset: transaction.fromAsset || null,
+            fromCounterparty: transaction.fromCounterparty || null,
+            toAsset: transaction.toAsset || null,
+            toCounterparty: transaction.toCounterparty || null,
+          },
+        },
+      ],
+    });
+  };
+
+  const handleStagedTransactionUpdate = (
+    id: string,
+    updateData: Partial<Transaction>,
+  ) => {
+    setStagedTransactions((prev) => {
+      const updated = prev.map((t) =>
+        t.id === id ? { ...t, ...updateData } : t,
+      );
+      const transaction = updated.find((t) => t.id === id);
+      if (transaction?.fromAccount && transaction?.toAccount) {
+        commitTransaction(transaction);
+        return prev.filter((t) => t.id !== id);
+      }
+      return updated;
+    });
+  };
+
+  const handleStagedTransactionDelete = (id: string) => {
+    setStagedTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const addTransaction = () => {
     const { fromAccount, toAccount } = guessBestTransaction();
 
     const transactionId = crypto.randomUUID();
-    const transaction = {
+    const transaction: StagedTransaction = {
       id: transactionId,
       fromAccount: fromAccount || "",
       toAccount: toAccount || "",
       amount: 0,
+      fromAsset: null,
+      fromCounterparty: null,
+      toAsset: null,
+      toCounterparty: null,
     };
+
+    // For Neutral activities, accounts are unknown — stage locally until complete
+    if (activity.type === ActivityType.NEUTRAL) {
+      setStagedTransactions((prev) => [...prev, transaction]);
+      return;
+    }
 
     mutate({
       name: "addTransaction",
@@ -206,25 +278,46 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
       </div>
 
       <div className="my-2 space-y-2">
-        {activity.transactions.length === 0 ? (
+        {activity.transactions.length === 0 &&
+        stagedTransactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
             No transaction added for this activity.
           </div>
         ) : (
-          activity.transactions.map((transaction, index) => (
-            <TransactionComponent
-              key={transaction.id}
-              className={cn(
-                "pr-1",
-                index !== activity.transactions.length - 1 ? "border-b" : "",
-              )}
-              transaction={transaction}
-              onUpdate={(update) =>
-                handleTransactionUpdate(transaction, update)
-              }
-              onDelete={() => handleTransactionDelete(transaction)}
-            />
-          ))
+          <>
+            {activity.transactions.map((transaction, index) => (
+              <TransactionComponent
+                key={transaction.id}
+                className={cn(
+                  "pr-1",
+                  index !== activity.transactions.length - 1 ||
+                    stagedTransactions.length > 0
+                    ? "border-b"
+                    : "",
+                )}
+                transaction={transaction}
+                onUpdate={(update) =>
+                  handleTransactionUpdate(transaction, update)
+                }
+                onDelete={() => handleTransactionDelete(transaction)}
+              />
+            ))}
+            {stagedTransactions.map((transaction, index) => (
+              <TransactionComponent
+                key={transaction.id}
+                className={cn(
+                  "pr-1",
+                  index !== stagedTransactions.length - 1 ? "border-b" : "",
+                )}
+                transaction={transaction}
+                isStaged
+                onUpdate={(update) =>
+                  handleStagedTransactionUpdate(transaction.id, update)
+                }
+                onDelete={() => handleStagedTransactionDelete(transaction.id)}
+              />
+            ))}
+          </>
         )}
       </div>
     </div>

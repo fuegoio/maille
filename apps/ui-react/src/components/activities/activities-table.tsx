@@ -287,7 +287,7 @@ export function ActivitiesTable({
         activities={activitiesFiltered}
       />
 
-      <div className="flex h-full flex-1 flex-col">
+      <div className="flex h-full flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40">
             {grouping

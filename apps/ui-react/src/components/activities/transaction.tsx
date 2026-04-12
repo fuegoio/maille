@@ -28,6 +28,7 @@ import { CounterpartiesSelect } from "../accounts/counterparties/counterparties-
 interface TransactionProps {
   transaction: Omit<Transaction, "id">;
   className?: string;
+  isStaged?: boolean;
   onUpdate?: (updateData: Partial<Transaction>) => void;
   onDelete?: () => void;
 }
@@ -35,6 +36,7 @@ interface TransactionProps {
 export function Transaction({
   transaction,
   className,
+  isStaged,
   onUpdate,
   onDelete,
 }: TransactionProps) {
@@ -47,6 +49,7 @@ export function Transaction({
     <div
       className={cn(
         "flex flex-col items-start gap-3 rounded-lg border bg-muted/30 p-2 py-2 text-sm shadow-md sm:flex-row sm:gap-0",
+        isStaged && "border-dashed opacity-70",
         className,
       )}
     >
