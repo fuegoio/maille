@@ -57,11 +57,11 @@ export function ActivityLine({
 
   const getStatusIcon = () => {
     if (activity.status === "scheduled") {
-      return <CircleDashed className="size-4 text-muted-foreground" />;
+      return <CircleDashed className="size-4 shrink-0 text-muted-foreground" />;
     } else if (activity.status === "incomplete") {
-      return <CircleDotDashed className="size-4 text-orange-300" />;
+      return <CircleDotDashed className="size-4 shrink-0 text-orange-300" />;
     } else {
-      return <CircleCheck className="size-4 text-indigo-300" />;
+      return <CircleCheck className="size-4 shrink-0 text-indigo-300" />;
     }
   };
 
@@ -72,8 +72,8 @@ export function ActivityLine({
 
     return (
       <>
-        {category.emoji && <span className="mr-0.5">{category.emoji}</span>}
-        {category.name}
+        {category.emoji && <span className="sm:mr-0.5">{category.emoji}</span>}
+        <span className="hidden sm:inline">{category.name}</span>
       </>
     );
   };
@@ -87,9 +87,9 @@ export function ActivityLine({
     return (
       <>
         {subcategory.emoji && (
-          <span className="mr-0.5">{subcategory.emoji}</span>
+          <span className="sm:mr-0.5">{subcategory.emoji}</span>
         )}
-        {subcategory.name}
+        <span className="hidden sm:inline">{subcategory.name}</span>
       </>
     );
   };
@@ -97,7 +97,7 @@ export function ActivityLine({
   return (
     <div
       className={cn(
-        "group block shrink-0 overflow-hidden border-b transition-colors hover:bg-accent",
+        "group block shrink border-b transition-colors hover:bg-accent",
         {
           "border-l-4 border-l-primary bg-accent": selected,
           "pl-1": !selected,
@@ -134,7 +134,7 @@ export function ActivityLine({
         <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
           {format(activity.date, "dd EEE")}
         </div>
-        <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
+        <div className="ml-1 w-7 shrink-0 text-muted-foreground lg:hidden">
           {format(activity.date, "dd EEEEE")}
         </div>
 
@@ -146,7 +146,7 @@ export function ActivityLine({
 
         <div className="flex-1" />
 
-        <div className="mr-2 hidden min-w-0 items-center lg:flex">
+        <div className="mr-2 flex min-w-0 items-center">
           {activity.category !== null && getCategoryName() && (
             <Badge
               variant="outline"
@@ -199,7 +199,7 @@ export function ActivityLine({
                 >
                   <Link to={`/projects/$id`} params={{ id: activity.project }}>
                     <span>{getProjectById(activity.project)!.emoji}</span>
-                    <span className="truncate">
+                    <span className="hidden truncate sm:inline">
                       {getProjectById(activity.project)!.name}
                     </span>
                   </Link>

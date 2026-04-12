@@ -52,7 +52,7 @@ export function FilterActivitiesButton({
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className={className} size="sm">
             <ListFilter />
-            <span className="font-normal">Filter</span>
+            <span className="hidden font-normal sm:inline">Filter</span>
           </Button>
         </DropdownMenuTrigger>
       )}

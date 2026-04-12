@@ -68,7 +68,7 @@ function MovementsPage() {
       <SidebarInset
         className={cn("min-w-0 shrink", focusedMovement && "hidden xl:flex")}
       >
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-3 sm:pl-4">
+        <header className="flex h-12 shrink-0 items-center gap-1 border-b pr-2 pl-3 sm:gap-2 sm:pl-4">
           <SidebarTrigger className="mr-1" />
           <Breadcrumb>
             <BreadcrumbList>
@@ -95,11 +95,11 @@ function MovementsPage() {
           />
           <div className="flex-1" />
           <SearchBar />
-          <ImportMovementsButton />
+          <ImportMovementsButton className="hidden sm:flex" />
           <AddMovementButton />
-          <div className="h-full w-px bg-border" />
+          <div className="hidden h-full w-px bg-border sm:block" />
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger asChild className="hidden sm:flex">
               <Button variant="ghost" size="icon">
                 <Download className="h-4 w-4" />
               </Button>

@@ -62,7 +62,7 @@ export function MovementLine({
       <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
         {format(movement.date, "dd EEE")}
       </div>
-      <div className="w-10 shrink-0 text-muted-foreground lg:hidden">
+      <div className="ml-2 w-8 shrink-0 text-muted-foreground lg:hidden">
         {format(movement.date, "dd EEEEE")}
       </div>
 
@@ -80,7 +80,7 @@ export function MovementLine({
       <Badge
         variant="outline"
         asChild
-        className="mr-3 h-6 [a]:hover:bg-border/50"
+        className="h-6 sm:mr-3 [a]:hover:bg-border/50"
         onClick={(e) => e.stopPropagation()}
       >
         <Link to={`/accounts/$id`} params={{ id: movement.account }}>

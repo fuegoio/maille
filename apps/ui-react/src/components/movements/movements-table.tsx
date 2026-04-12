@@ -211,10 +211,10 @@ export function MovementsTable({
               ? movementsWithGroups.map((item) => (
                   <React.Fragment key={item.id}>
                     {item.itemType === "group" ? (
-                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-5 sm:px-6">
+                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
                         <ChevronDown
                           className={cn(
-                            "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
+                            "mr-2 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
                             groupsFolded.includes(item.id) &&
                               "-rotate-90 opacity-100",
                           )}
@@ -228,7 +228,7 @@ export function MovementsTable({
                             }
                           }}
                         />
-                        <Calendar className="size-4" />
+                        <Calendar className="hidden size-4 sm:block" />
                         <div className="text-sm">
                           {periodFormatter(item.month, item.year)}
                         </div>

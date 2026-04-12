@@ -287,116 +287,108 @@ export function ActivitiesTable({
         activities={activitiesFiltered}
       />
 
-      <div className="flex h-full flex-1 overflow-x-hidden">
-        <div className="flex w-full flex-col overflow-x-hidden sm:min-w-[575px]">
-          {activitiesFiltered.length !== 0 ? (
-            <ScrollArea className="flex-1 pb-40">
-              {grouping
-                ? activitiesWithGroups.map((item) => (
-                    <React.Fragment key={item.id}>
-                      {item.itemType === "group" ? (
-                        <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-5 sm:px-6">
-                          <ChevronDown
-                            className={cn(
-                              "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
-                              groupsFolded.includes(item.id) &&
-                                "-rotate-90 opacity-100",
-                            )}
-                            onClick={() => {
-                              if (groupsFolded.includes(item.id)) {
-                                setGroupsFolded((prev) =>
-                                  prev.filter((id) => id !== item.id),
-                                );
-                              } else {
-                                setGroupsFolded((prev) => [...prev, item.id]);
-                              }
-                            }}
-                          />
-                          <Calendar className="size-4" />
-                          <div className="text-sm">
-                            {periodFormatter(item.month, item.year)}
-                          </div>
-                          <div className="flex-1" />
-
-                          {[
-                            ActivityType.INVESTMENT,
-                            ActivityType.REVENUE,
-                            ActivityType.EXPENSE,
-                          ].map((activityType) => {
-                            const typeKey =
-                              activityType.toLowerCase() as keyof Group["total"];
-                            return item.total[typeKey] ? (
-                              <div
-                                key={activityType}
-                                className="hidden items-center pl-4 text-right font-mono text-sm sm:flex"
-                              >
-                                <div
-                                  className={cn(
-                                    "mr-3 size-2.5 shrink-0 rounded-lg",
-                                    ACTIVITY_TYPES_COLOR[activityType],
-                                  )}
-                                />
-                                {currencyFormatter.format(item.total[typeKey]!)}
-                              </div>
-                            ) : null;
-                          })}
-                        </div>
-                      ) : (
-                        <ActivityLine
-                          activity={item}
-                          accountFilter={accountFilter}
-                          hideProject={hideProject}
-                          onClick={handleActivityClick}
-                          selected={focusedActivity === item.id}
-                          checked={selectedActivities.includes(item.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedActivities((prev) => [
-                                ...prev,
-                                item.id,
-                              ]);
-                            } else {
-                              setSelectedActivities((prev) =>
+      <div className="flex h-full flex-1 flex-col">
+        {activitiesFiltered.length !== 0 ? (
+          <ScrollArea className="flex-1 pb-40">
+            {grouping
+              ? activitiesWithGroups.map((item) => (
+                  <React.Fragment key={item.id}>
+                    {item.itemType === "group" ? (
+                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
+                        <ChevronDown
+                          className={cn(
+                            "mr-1 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
+                            groupsFolded.includes(item.id) &&
+                              "-rotate-90 opacity-100",
+                          )}
+                          onClick={() => {
+                            if (groupsFolded.includes(item.id)) {
+                              setGroupsFolded((prev) =>
                                 prev.filter((id) => id !== item.id),
                               );
+                            } else {
+                              setGroupsFolded((prev) => [...prev, item.id]);
                             }
                           }}
                         />
-                      )}
-                    </React.Fragment>
-                  ))
-                : activitiesSorted.map((activity) => (
-                    <ActivityLine
-                      key={activity.id}
-                      activity={activity}
-                      accountFilter={accountFilter}
-                      hideProject={hideProject}
-                      onClick={handleActivityClick}
-                      selected={focusedActivity === activity.id}
-                      checked={selectedActivities.includes(activity.id)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedActivities((prev) => [
-                            ...prev,
-                            activity.id,
-                          ]);
-                        } else {
-                          setSelectedActivities((prev) =>
-                            prev.filter((id) => id !== activity.id),
-                          );
-                        }
-                      }}
-                    />
-                  ))}
-            </ScrollArea>
-          ) : (
-            <div className="flex flex-1 items-center justify-center overflow-hidden">
-              <div className="text-sm text-muted-foreground">
-                No activity found.
-              </div>
+                        <Calendar className="hidden size-4 sm:block" />
+                        <div className="text-sm">
+                          {periodFormatter(item.month, item.year)}
+                        </div>
+                        <div className="flex-1" />
+
+                        {[
+                          ActivityType.INVESTMENT,
+                          ActivityType.REVENUE,
+                          ActivityType.EXPENSE,
+                        ].map((activityType) => {
+                          const typeKey =
+                            activityType.toLowerCase() as keyof Group["total"];
+                          return item.total[typeKey] ? (
+                            <div
+                              key={activityType}
+                              className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
+                            >
+                              <div
+                                className={cn(
+                                  "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
+                                  ACTIVITY_TYPES_COLOR[activityType],
+                                )}
+                              />
+                              {currencyFormatter.format(item.total[typeKey]!)}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    ) : (
+                      <ActivityLine
+                        activity={item}
+                        accountFilter={accountFilter}
+                        hideProject={hideProject}
+                        onClick={handleActivityClick}
+                        selected={focusedActivity === item.id}
+                        checked={selectedActivities.includes(item.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedActivities((prev) => [...prev, item.id]);
+                          } else {
+                            setSelectedActivities((prev) =>
+                              prev.filter((id) => id !== item.id),
+                            );
+                          }
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
+                ))
+              : activitiesSorted.map((activity) => (
+                  <ActivityLine
+                    key={activity.id}
+                    activity={activity}
+                    accountFilter={accountFilter}
+                    hideProject={hideProject}
+                    onClick={handleActivityClick}
+                    selected={focusedActivity === activity.id}
+                    checked={selectedActivities.includes(activity.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedActivities((prev) => [...prev, activity.id]);
+                      } else {
+                        setSelectedActivities((prev) =>
+                          prev.filter((id) => id !== activity.id),
+                        );
+                      }
+                    }}
+                  />
+                ))}
+          </ScrollArea>
+        ) : (
+          <div className="flex flex-1 items-center justify-center overflow-hidden">
+            <div className="text-sm text-muted-foreground">
+              No activity found.
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <ActivitiesSelection
