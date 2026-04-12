@@ -67,9 +67,9 @@ export function MovementLine({
       </div>
 
       {movement.status === "incomplete" ? (
-        <CircleDotDashed className=" size-4 text-orange-300" />
+        <CircleDotDashed className=" size-4 shrink-0 text-orange-300" />
       ) : (
-        <CircleCheck className="size-4 text-indigo-300" />
+        <CircleCheck className="size-4 shrink-0 text-indigo-300" />
       )}
 
       <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
