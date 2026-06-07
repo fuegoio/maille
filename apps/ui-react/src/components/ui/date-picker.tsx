@@ -28,9 +28,21 @@ export function DatePicker({
   ...props
 }: Omit<DayPickerProps, "mode" | "selected" | "onSelect"> & DatePickerProps) {
   const [open, setOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState<Date | undefined>(value);
+
+  const handleMonthChange = (month: Date) => {
+    setCurrentMonth(month);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen && value) {
+      setCurrentMonth(value);
+    }
+  };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -49,7 +61,8 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={value}
-          month={value}
+          month={currentMonth}
+          onMonthChange={handleMonthChange}
           onSelect={(value) => {
             onChange(value);
             setOpen(false);
