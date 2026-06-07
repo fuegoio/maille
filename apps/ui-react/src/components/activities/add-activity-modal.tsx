@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { getGraphQLDate } from "@/lib/date";
+import { extractDateFromMovementName, getGraphQLDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
@@ -297,11 +297,14 @@ export function AddActivityModal({
     movements.forEach((movement) => {
       const { fromAccount, toAccount } = guessBestTransaction(type);
 
+      const extractedDate = extractDateFromMovementName(movement.name);
+      const activityDate = extractedDate || movement.date;
+
       const newActivity = {
         id: crypto.randomUUID(),
         name: movement.name,
         description: data.description || null,
-        date: getGraphQLDate(movement.date),
+        date: getGraphQLDate(activityDate),
         type: movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
         category: data.category || null,
         subcategory: data.subcategory || null,
@@ -365,10 +368,16 @@ export function AddActivityModal({
       });
     }
 
+    const getMovementDate = (m: Movement | undefined): Date => {
+      if (!m) return initialDate || new Date();
+      const extractedDate = extractDateFromMovementName(m.name);
+      return extractedDate || m.date;
+    };
+
     reset({
       name: movement ? movement.name : initialName || "",
       description: "",
-      date: movement ? movement.date : initialDate || new Date(),
+      date: movement ? getMovementDate(movement) : initialDate || new Date(),
       type: newType,
       category: initialCategory,
       subcategory: initialSubcategory,
