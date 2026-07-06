@@ -11,7 +11,11 @@ export function getActivityTypeTotalForMonth({
 }) {
   return activities
     .filter((a) => a.type === activityType)
-    .filter((a) => a.date.getMonth() === monthDate.getMonth())
+    .filter(
+      (a) =>
+        a.date.getMonth() === monthDate.getMonth() &&
+        a.date.getFullYear() === monthDate.getFullYear(),
+    )
     .reduce((acc, a) => acc + a.amount, 0);
 }
 
