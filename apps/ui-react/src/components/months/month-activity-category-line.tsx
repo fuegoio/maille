@@ -11,6 +11,7 @@ import type { ActivitiesFilters } from "@/types/activities";
 import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { getActivityCategoryTotalForMonth } from "@/logic/activities";
 import { useActivities } from "@/stores/activities";
 
 interface MonthActivityCategoryLineProps {
@@ -31,23 +32,15 @@ export function MonthActivityCategoryLine({
   const [expanded, setExpanded] = useState(false);
   const currencyFormatter = useCurrencyFormatter();
 
-  const monthActivityCategoryValue = useMemo<number>(() => {
-    const startOfMonth = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth(),
-      1,
-    );
-    const endOfMonth = new Date(
-      monthDate.getFullYear(),
-      monthDate.getMonth() + 1,
-      0,
-    );
-
-    return activities
-      .filter((a) => a.category === category.id)
-      .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
-      .reduce((total, a) => total + a.amount, 0);
-  }, [monthDate, category.id, activities]);
+  const monthActivityCategoryValue = useMemo<number>(
+    () =>
+      getActivityCategoryTotalForMonth({
+        monthDate,
+        categoryId: category.id,
+        activities,
+      }),
+    [monthDate, category.id, activities],
+  );
 
   const categorySubcategories = useMemo(() => {
     return subcategories.filter((sc) => sc.category === category.id);

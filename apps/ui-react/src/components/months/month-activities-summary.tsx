@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
-import { getActivityTypeTotalForMonth } from "@/logic/activities";
+import {
+  getActivityCategoryTotalForMonth,
+  getActivityTypeTotalForMonth,
+} from "@/logic/activities";
 import {
   ACTIVITY_TYPES_COLOR,
   ACTIVITY_TYPES_NAME,
@@ -56,15 +59,12 @@ export function MonthActivitiesSummary({
 
   const currencyFormatter = useCurrencyFormatter();
 
-  const getCategoryTotalForMonth = (date: Date, category: string) => {
-    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-    return activities
-      .filter((a) => a.category === category)
-      .filter((a) => a.date >= startOfMonth && a.date <= endOfMonth)
-      .reduce((total, a) => total + a.amount, 0);
-  };
+  const getCategoryTotalForMonth = (date: Date, category: string) =>
+    getActivityCategoryTotalForMonth({
+      monthDate: date,
+      categoryId: category,
+      activities,
+    });
 
   const activityTypes = [
     {

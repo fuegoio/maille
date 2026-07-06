@@ -1,5 +1,24 @@
 import type { ActivityType, Activity } from "@maille/core/activities";
 
+export function getActivityCategoryTotalForMonth({
+  monthDate,
+  categoryId,
+  activities,
+}: {
+  monthDate: Date;
+  categoryId: string;
+  activities: Activity[];
+}) {
+  return activities
+    .filter((a) => a.category === categoryId)
+    .filter(
+      (a) =>
+        a.date.getMonth() === monthDate.getMonth() &&
+        a.date.getFullYear() === monthDate.getFullYear(),
+    )
+    .reduce((acc, a) => acc + a.amount, 0);
+}
+
 export function getActivityTypeTotalForMonth({
   monthDate,
   activityType,
