@@ -45,6 +45,29 @@ import { useSync } from "@/stores/sync";
 
 import { Separator } from "../ui/separator";
 
+type DelimiterOption = "auto" | "semicolon" | "comma" | "tab";
+
+const DELIMITER_VALUES: Record<DelimiterOption, string | string[]> = {
+  auto: [";", ","],
+  semicolon: ";",
+  comma: ",",
+  tab: "\t",
+};
+
+function parseRecords(
+  text: string,
+  delimiter: DelimiterOption,
+): Record<string, string>[] {
+  const clean = text.replace(/^\uFEFF/, "");
+  return parseCSV(clean, {
+    delimiter: DELIMITER_VALUES[delimiter],
+    columns: true,
+    skip_empty_lines: true,
+    relax_quotes: true,
+    relax_column_count: true,
+  }) as Record<string, string>[];
+}
+
 // Form schema using zod
 const formSchema = z.object({
   account: z.string().min(1, "Account is required"),
@@ -71,6 +94,8 @@ export function ImportMovementsButton({
 }: ImportMovementsButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [step, setStep] = React.useState(0);
+  const [rawText, setRawText] = React.useState("");
+  const [delimiter, setDelimiter] = React.useState<DelimiterOption>("auto");
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
@@ -99,20 +124,27 @@ export function ImportMovementsButton({
     const reader = new FileReader();
     reader.addEventListener("load", (event) => {
       const data = event.target!.result as string;
-      const parsedRecords = parseCSV(data, {
-        delimiter: [";", ","],
-        columns: true,
-        skip_empty_lines: true,
-        relax_quotes: true,
-        relax_column_count: true,
-      });
-
-      setRecords(parsedRecords as Record<string, string>[]);
+      setRawText(data);
+      setDelimiter("auto");
+      const parsedRecords = parseRecords(data, "auto");
+      setRecords(parsedRecords);
       if (parsedRecords.length !== 0) {
         setStep(1);
       }
     });
     reader.readAsText(file);
+  };
+
+  const handleDelimiterChange = (value: DelimiterOption) => {
+    setDelimiter(value);
+    const parsedRecords = parseRecords(rawText, value);
+    setRecords(parsedRecords);
+    // Column names may have changed, so reset the mapping
+    reset({
+      account: form.getValues("account"),
+      mapping: { date: "", amounts: [], name: "" },
+      ratio: form.getValues("ratio"),
+    });
   };
 
   const processFile = (data: FormValues) => {
@@ -180,6 +212,8 @@ export function ImportMovementsButton({
   const resetDialog = () => {
     setDialogOpen(false);
     setStep(0);
+    setRawText("");
+    setDelimiter("auto");
     setRecords([]);
     reset({
       account: "",
@@ -234,6 +268,28 @@ export function ImportMovementsButton({
                     </Field>
                   )}
                 />
+
+                <Separator />
+
+                <Field>
+                  <FieldLabel htmlFor="delimiter">Separator</FieldLabel>
+                  <Select
+                    value={delimiter}
+                    onValueChange={(value) =>
+                      handleDelimiterChange(value as DelimiterOption)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select separator" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Auto</SelectItem>
+                      <SelectItem value="semicolon">Semicolon (;)</SelectItem>
+                      <SelectItem value="comma">Comma (,)</SelectItem>
+                      <SelectItem value="tab">Tab</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
 
                 <Separator />
 
