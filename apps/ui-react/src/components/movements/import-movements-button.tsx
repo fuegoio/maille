@@ -17,10 +17,19 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -41,9 +50,12 @@ const formSchema = z.object({
   account: z.string().min(1, "Account is required"),
   mapping: z.object({
     date: z.string().min(1, "Date field is required"),
-    amount: z.string().min(1, "Amount field is required"),
+    amounts: z
+      .array(z.string())
+      .min(1, "At least one value column is required"),
     name: z.string().min(1, "Name field is required"),
   }),
+  ratio: z.number().min(0),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,9 +81,10 @@ export function ImportMovementsButton({
       account: "",
       mapping: {
         date: "",
-        amount: "",
+        amounts: [],
         name: "",
       },
+      ratio: 1,
     },
   });
 
@@ -103,7 +116,7 @@ export function ImportMovementsButton({
   };
 
   const processFile = (data: FormValues) => {
-    const { account, mapping } = data;
+    const { account, mapping, ratio } = data;
 
     records.forEach((record) => {
       const movementName = record[mapping.name];
@@ -119,9 +132,14 @@ export function ImportMovementsButton({
           break;
         }
       }
-      const movementAmount = parseFloat(
-        record[mapping.amount].replace(/ /g, "").replace(/,/g, "."),
-      );
+
+      const movementAmount =
+        mapping.amounts.reduce((sum, column) => {
+          const raw = record[column];
+          if (!raw) return sum;
+          const parsed = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
+          return sum + (isNaN(parsed) ? 0 : parsed);
+        }, 0) * ratio;
 
       const existingMovement = movements.find(
         (m) =>
@@ -167,9 +185,10 @@ export function ImportMovementsButton({
       account: "",
       mapping: {
         date: "",
-        amount: "",
+        amounts: [],
         name: "",
       },
+      ratio: 1,
     });
   };
 
@@ -247,28 +266,55 @@ export function ImportMovementsButton({
                 />
 
                 <Controller
-                  name="mapping.amount"
+                  name="mapping.amounts"
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="amount-field">
-                        Amount field
+                        Value columns
                       </FieldLabel>
-                      <Select
+                      <MultiSelect
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select amount field" />
-                        </SelectTrigger>
-                        <SelectContent>
+                        <MultiSelectTrigger className="w-full">
+                          <MultiSelectValue placeholder="Select value column(s)" />
+                        </MultiSelectTrigger>
+                        <MultiSelectContent className="w-fit">
                           {headers.map((header) => (
-                            <SelectItem key={header} value={header}>
+                            <MultiSelectItem key={header} value={header}>
                               {header}
-                            </SelectItem>
+                            </MultiSelectItem>
                           ))}
-                        </SelectContent>
-                      </Select>
+                        </MultiSelectContent>
+                      </MultiSelect>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="ratio"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="ratio">Ratio</FieldLabel>
+                      <Input
+                        id="ratio"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={field.value}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value) || 0)
+                        }
+                      />
+                      <FieldDescription>
+                        Applied to every imported amount. Use 0.5 for a shared
+                        account (50%).
+                      </FieldDescription>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
