@@ -117,7 +117,7 @@ export function ImportMovementsButton({
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
-    return Object.keys(records[0]);
+    return Object.keys(records[0]).filter((h) => h.trim() !== "");
   }, [records]);
 
   const handleInputFile = (file: File) => {
