@@ -374,7 +374,7 @@ export function ImportMovementsButton({
                           <InputGroupInput
                             id="ratio"
                             type="number"
-                            step="1"
+                            step="0.01"
                             min="0"
                             value={field.value}
                             onChange={(e) =>
