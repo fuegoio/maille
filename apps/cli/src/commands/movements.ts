@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 
 const MOVEMENTS_QUERY = `
   query {
-    movements { id name date amount account activities { id } }
+    movements { id name date amount account status activities { id } }
   }
 `;
 
@@ -20,21 +20,29 @@ movementsCommand
   .alias("ls")
   .description("List all movements")
   .option("--json", "Output as JSON")
+  .option("--unreconciled", "Only show movements that are not fully reconciliated")
   .action(async (opts) => {
     const spinner = ora("Fetching movements...").start();
     try {
       const data = await gql<{ movements: Record<string, unknown>[] }>(MOVEMENTS_QUERY);
       spinner.stop();
-      if (opts.json) { console.log(JSON.stringify(data.movements, null, 2)); return; }
-      if (!data.movements.length) { console.log(chalk.yellow("No movements found.")); return; }
+      const movements = opts.unreconciled
+        ? data.movements.filter((m) => String(m.status) === "incomplete")
+        : data.movements;
+      if (opts.json) { console.log(JSON.stringify(movements, null, 2)); return; }
+      if (!movements.length) {
+        console.log(chalk.yellow(opts.unreconciled ? "No unreconciled movements." : "No movements found."));
+        return;
+      }
       printTable(
-        ["ID", "NAME", "DATE", "AMOUNT", "ACCOUNT", "ACTIVITIES"],
-        data.movements.map((m) => [
+        ["ID", "NAME", "DATE", "AMOUNT", "ACCOUNT", "STATUS", "ACTIVITIES"],
+        movements.map((m) => [
           String(m.id).slice(0, 8),
           String(m.name),
           new Date(String(m.date)).toLocaleDateString(),
           formatCurrency(Number(m.amount)),
           String(m.account),
+          String(m.status),
           String((m.activities as unknown[])?.length ?? 0),
         ])
       );

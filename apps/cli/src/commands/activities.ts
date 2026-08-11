@@ -31,16 +31,23 @@ activitiesCommand
   .alias("ls")
   .description("List all activities")
   .option("--json", "Output as JSON")
+  .option("--unreconciled", "Only show activities that are not fully reconciliated")
   .action(async (opts) => {
     const spinner = ora("Fetching activities...").start();
     try {
       const data = await gql<{ activities: Record<string, unknown>[] }>(ACTIVITIES_QUERY);
       spinner.stop();
-      if (opts.json) { console.log(JSON.stringify(data.activities, null, 2)); return; }
-      if (!data.activities.length) { console.log(chalk.yellow("No activities found.")); return; }
+      const activities = opts.unreconciled
+        ? data.activities.filter((a) => String(a.status) === "incomplete")
+        : data.activities;
+      if (opts.json) { console.log(JSON.stringify(activities, null, 2)); return; }
+      if (!activities.length) {
+        console.log(chalk.yellow(opts.unreconciled ? "No unreconciled activities." : "No activities found."));
+        return;
+      }
       printTable(
         ["ID", "NAME", "DATE", "TYPE", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
-        data.activities.map((a) => [
+        activities.map((a) => [
           String(a.id).slice(0, 8),
           String(a.name),
           new Date(String(a.date)).toLocaleDateString(),
