@@ -122,3 +122,25 @@ movementsCommand
       process.exit(1);
     }
   });
+
+movementsCommand
+  .command("link <id>")
+  .description("Link a movement to an existing activity (reconcile)")
+  .requiredOption("--activity <activityId>", "Activity ID to link the movement to")
+  .requiredOption("--amount <amount>", "Amount attributed to the movement in this activity")
+  .action(async (id, opts) => {
+    const spinner = ora("Linking movement to activity...").start();
+    try {
+      const data = await gql<{ createMovementActivity: { id: string } }>(
+        `mutation CreateMovementActivity($id: String!, $movementId: String!, $activityId: String!, $amount: Float!) {
+          createMovementActivity(id: $id, movementId: $movementId, activityId: $activityId, amount: $amount) { id }
+        }`,
+        { id: randomUUID(), movementId: id, activityId: opts.activity, amount: Number(opts.amount) }
+      );
+      spinner.succeed(`Movement ${chalk.cyan(id.slice(0, 8))} linked to activity ${chalk.cyan(opts.activity.slice(0, 8))} (${formatCurrency(Number(opts.amount))})`);
+    } catch (err) {
+      spinner.fail("Failed to link movement");
+      console.error(chalk.red(err instanceof Error ? err.message : String(err)));
+      process.exit(1);
+    }
+  });
