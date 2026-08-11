@@ -1,4 +1,4 @@
-name: Build and Push API Docker Image
+name: API
 
 on:
   push:
@@ -6,6 +6,9 @@ on:
       - main
     tags:
       - "v*"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   check:
@@ -36,6 +39,7 @@ jobs:
 
   build-and-push:
     needs: check
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
