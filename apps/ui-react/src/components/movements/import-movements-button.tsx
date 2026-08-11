@@ -22,7 +22,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import {
   MultiSelect,
   MultiSelectContent,
@@ -109,7 +114,7 @@ export function ImportMovementsButton({
         amounts: [],
         name: "",
       },
-      ratio: 1,
+      ratio: 100,
     },
   });
 
@@ -171,7 +176,8 @@ export function ImportMovementsButton({
           if (!raw) return sum;
           const parsed = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
           return sum + (isNaN(parsed) ? 0 : parsed);
-        }, 0) * ratio;
+        }, 0) *
+        (ratio / 100);
 
       const existingMovement = movements.find(
         (m) =>
@@ -222,7 +228,7 @@ export function ImportMovementsButton({
         amounts: [],
         name: "",
       },
-      ratio: 1,
+      ratio: 100,
     });
   };
 
@@ -321,62 +327,74 @@ export function ImportMovementsButton({
                   )}
                 />
 
-                <Controller
-                  name="mapping.amounts"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="amount-field">
-                        Value columns
-                      </FieldLabel>
-                      <MultiSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
+                <div className="flex items-start gap-4">
+                  <Controller
+                    name="mapping.amounts"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        className="min-w-0 flex-1"
+                        data-invalid={fieldState.invalid}
                       >
-                        <MultiSelectTrigger className="w-full">
-                          <MultiSelectValue placeholder="Select value column(s)" />
-                        </MultiSelectTrigger>
-                        <MultiSelectContent className="w-fit">
-                          {headers.map((header) => (
-                            <MultiSelectItem key={header} value={header}>
-                              {header}
-                            </MultiSelectItem>
-                          ))}
-                        </MultiSelectContent>
-                      </MultiSelect>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
+                        <FieldLabel htmlFor="amount-field">
+                          Value columns
+                        </FieldLabel>
+                        <MultiSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <MultiSelectTrigger className="w-full">
+                            <MultiSelectValue placeholder="Select value column(s)" />
+                          </MultiSelectTrigger>
+                          <MultiSelectContent className="w-fit">
+                            {headers.map((header) => (
+                              <MultiSelectItem key={header} value={header}>
+                                {header}
+                              </MultiSelectItem>
+                            ))}
+                          </MultiSelectContent>
+                        </MultiSelect>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
 
-                <Controller
-                  name="ratio"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="ratio">Ratio</FieldLabel>
-                      <Input
-                        id="ratio"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        value={field.value}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
-                      />
-                      <FieldDescription>
-                        Applied to every imported amount. Use 0.5 for a shared
-                        account (50%).
-                      </FieldDescription>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
+                  <Controller
+                    name="ratio"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        className="w-32 shrink-0"
+                        data-invalid={fieldState.invalid}
+                      >
+                        <FieldLabel htmlFor="ratio">Ratio</FieldLabel>
+                        <InputGroup>
+                          <InputGroupInput
+                            id="ratio"
+                            type="number"
+                            step="1"
+                            min="0"
+                            value={field.value}
+                            onChange={(e) =>
+                              field.onChange(parseFloat(e.target.value) || 0)
+                            }
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupText>%</InputGroupText>
+                          </InputGroupAddon>
+                        </InputGroup>
+                        <FieldDescription>
+                          Use 50 for a shared account (50%).
+                        </FieldDescription>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
 
                 <Controller
                   name="mapping.date"
