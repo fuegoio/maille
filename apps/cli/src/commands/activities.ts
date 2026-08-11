@@ -31,16 +31,23 @@ activitiesCommand
   .alias("ls")
   .description("List all activities")
   .option("--json", "Output as JSON")
+  .option("--unreconciled", "Only show activities that are not fully reconciliated")
   .action(async (opts) => {
     const spinner = ora("Fetching activities...").start();
     try {
       const data = await gql<{ activities: Record<string, unknown>[] }>(ACTIVITIES_QUERY);
       spinner.stop();
-      if (opts.json) { console.log(JSON.stringify(data.activities, null, 2)); return; }
-      if (!data.activities.length) { console.log(chalk.yellow("No activities found.")); return; }
+      const activities = opts.unreconciled
+        ? data.activities.filter((a) => String(a.status) === "incomplete")
+        : data.activities;
+      if (opts.json) { console.log(JSON.stringify(activities, null, 2)); return; }
+      if (!activities.length) {
+        console.log(chalk.yellow(opts.unreconciled ? "No unreconciled activities." : "No activities found."));
+        return;
+      }
       printTable(
         ["ID", "NAME", "DATE", "TYPE", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
-        data.activities.map((a) => [
+        activities.map((a) => [
           String(a.id).slice(0, 8),
           String(a.name),
           new Date(String(a.date)).toLocaleDateString(),
@@ -115,26 +122,36 @@ activitiesCommand
   .option("--category <id>", "Category ID")
   .option("--subcategory <id>", "Subcategory ID")
   .option("--project <id>", "Project ID")
+  .option("--movement <id>", "Link a movement to this activity at creation")
+  .option("--movement-amount <amount>", "Amount attributed to the linked movement (required with --movement)")
   .action(async (opts) => {
+    if (opts.movement && !opts.movementAmount) {
+      console.error(chalk.red("--movement-amount is required when --movement is set"));
+      process.exit(1);
+    }
     const spinner = ora("Creating activity...").start();
     try {
       const date = opts.date ? opts.date : new Date().toISOString().slice(0, 10);
+      const variables: Record<string, unknown> = {
+        id: randomUUID(),
+        name: opts.name,
+        date,
+        type: opts.type,
+        description: opts.description ?? null,
+        category: opts.category ?? null,
+        subcategory: opts.subcategory ?? null,
+        project: opts.project ?? null,
+      };
+      if (opts.movement) {
+        variables.movement = { id: randomUUID(), movement: opts.movement, amount: Number(opts.movementAmount) };
+      }
       const data = await gql<{ createActivity: { id: string; name: string } }>(
-        `mutation CreateActivity($id: String!, $name: String!, $date: Date!, $type: String!, $description: String, $category: String, $subcategory: String, $project: String) {
-          createActivity(id: $id, name: $name, date: $date, type: $type, description: $description, category: $category, subcategory: $subcategory, project: $project) {
+        `mutation CreateActivity($id: String!, $name: String!, $date: Date!, $type: String!, $description: String, $category: String, $subcategory: String, $project: String, $movement: ActivityMovementInput) {
+          createActivity(id: $id, name: $name, date: $date, type: $type, description: $description, category: $category, subcategory: $subcategory, project: $project, movement: $movement) {
             id name
           }
         }`,
-        {
-          id: randomUUID(),
-          name: opts.name,
-          date,
-          type: opts.type,
-          description: opts.description ?? null,
-          category: opts.category ?? null,
-          subcategory: opts.subcategory ?? null,
-          project: opts.project ?? null,
-        }
+        variables
       );
       spinner.succeed(`Activity created: ${chalk.cyan(data.createActivity.id.slice(0, 8))} ${data.createActivity.name}`);
     } catch (err) {
