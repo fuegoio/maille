@@ -55,77 +55,81 @@ export function AccountsTable() {
       }, 0);
   };
 
-  return ACCOUNT_TYPES.map((accountType) => (
-    <div key={accountType}>
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
-        <ChevronDown
-          className={cn(
-            "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
-            groupsFolded.includes(accountType) && "-rotate-90 opacity-100",
-          )}
-          onClick={() => {
-            if (groupsFolded.includes(accountType)) {
-              setGroupsFolded((prev) =>
-                prev.filter((id) => id !== accountType),
-              );
-            } else {
-              setGroupsFolded((prev) => [...prev, accountType]);
-            }
-          }}
-        />
-
-        <div
-          className={cn(
-            "mr-2 h-3 w-3 shrink-0 rounded-xl",
-            ACCOUNT_TYPES_COLOR[accountType],
-          )}
-        />
-        <div className="text-sm font-medium">
-          {ACCOUNT_TYPES_NAME[accountType]}
-        </div>
-        <div className="flex-1" />
-
-        <div className="pl-4 text-right font-mono text-sm">
-          {currencyFormatter.format(getAccountTypeTotal(accountType))}
-        </div>
-      </div>
-
-      {!groupsFolded.includes(accountType) &&
-        sortedAccounts
-          .filter((account) => account.type === accountType)
-          .map((account) => (
-            <div
-              key={account.id}
-              className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      {ACCOUNT_TYPES.map((accountType) => (
+        <div key={accountType}>
+          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
+            <ChevronDown
+              className={cn(
+                "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
+                groupsFolded.includes(accountType) && "-rotate-90 opacity-100",
+              )}
               onClick={() => {
-                navigate({
-                  to: `/accounts/$id`,
-                  params: { id: account.id },
-                });
+                if (groupsFolded.includes(accountType)) {
+                  setGroupsFolded((prev) =>
+                    prev.filter((id) => id !== accountType),
+                  );
+                } else {
+                  setGroupsFolded((prev) => [...prev, accountType]);
+                }
               }}
-            >
-              <div className="text-sm font-medium">{account.name}</div>
-              {account.default && (
-                <Badge variant="outline" className="ml-4">
-                  Default
-                </Badge>
-              )}
-              {account.sharing.length > 0 && (
-                <Badge variant="default" className="ml-4">
-                  Shared
-                </Badge>
-              )}
+            />
 
-              <div className="flex-1" />
-              <div className="mr-4 text-sm text-muted-foreground">
-                {getTransactionsLinkedToAccount(account.id)} transactions
-              </div>
-
-              <div className="text-right font-mono text-sm">
-                {currencyFormatter.format(getAccountTotal(account.id))}
-              </div>
+            <div
+              className={cn(
+                "mr-2 h-3 w-3 shrink-0 rounded-xl",
+                ACCOUNT_TYPES_COLOR[accountType],
+              )}
+            />
+            <div className="text-sm font-medium">
+              {ACCOUNT_TYPES_NAME[accountType]}
             </div>
-          ))}
+            <div className="flex-1" />
+
+            <div className="pl-4 text-right font-mono text-sm">
+              {currencyFormatter.format(getAccountTypeTotal(accountType))}
+            </div>
+          </div>
+
+          {!groupsFolded.includes(accountType) &&
+            sortedAccounts
+              .filter((account) => account.type === accountType)
+              .map((account) => (
+                <div
+                  key={account.id}
+                  className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+                  onClick={() => {
+                    navigate({
+                      to: `/accounts/$id`,
+                      params: { id: account.id },
+                    });
+                  }}
+                >
+                  <div className="text-sm font-medium">{account.name}</div>
+                  {account.default && (
+                    <Badge variant="outline" className="ml-4">
+                      Default
+                    </Badge>
+                  )}
+                  {account.sharing.length > 0 && (
+                    <Badge variant="default" className="ml-4">
+                      Shared
+                    </Badge>
+                  )}
+
+                  <div className="flex-1" />
+                  <div className="mr-4 text-sm text-muted-foreground">
+                    {getTransactionsLinkedToAccount(account.id)} transactions
+                  </div>
+
+                  <div className="text-right font-mono text-sm">
+                    {currencyFormatter.format(getAccountTotal(account.id))}
+                  </div>
+                </div>
+              ))}
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
