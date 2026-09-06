@@ -1,4 +1,4 @@
-import { accounts } from "@/tables";
+import { accounts, funds } from "@/tables";
 import { db } from "@/database";
 import { AccountType } from "@maille/core/accounts";
 import { logger } from "@/logger";
@@ -68,6 +68,15 @@ export const createUserAccounts = async (userId: string) => {
       },
     ])
     .returning();
+
+  // Create the default fund
+  await db.insert(funds).values({
+    id: crypto.randomUUID(),
+    user: userId,
+    name: "Liquid",
+    emoji: null,
+    isDefault: true,
+  });
 
   logger.info({ userId }, "User bootstrapped successfully");
 

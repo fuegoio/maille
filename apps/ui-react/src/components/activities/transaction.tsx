@@ -1,4 +1,5 @@
 import type { Transaction } from "@maille/core/activities";
+import type { FundMove } from "@maille/core/funds";
 
 import { AccountType } from "@maille/core/accounts";
 import {
@@ -7,10 +8,12 @@ import {
   Ellipsis,
   MoveDown,
   MoveRight,
+  PiggyBank,
   TrashIcon,
 } from "lucide-react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
+import { FundSelect } from "@/components/funds/fund-select";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
+import { useFunds } from "@/stores/funds";
 
 import { AssetSelect } from "../accounts/assets/assets-select";
 import { CounterpartiesSelect } from "../accounts/counterparties/counterparties-select";
@@ -29,7 +33,9 @@ interface TransactionProps {
   transaction: Omit<Transaction, "id">;
   className?: string;
   isStaged?: boolean;
-  onUpdate?: (updateData: Partial<Transaction>) => void;
+  onUpdate?: (
+    updateData: Partial<Transaction> & { fundMoves?: FundMove[] },
+  ) => void;
   onDelete?: () => void;
 }
 
@@ -41,9 +47,71 @@ export function Transaction({
   onDelete,
 }: TransactionProps) {
   const accounts = useAccounts((state) => state.accounts);
+  const funds = useFunds((state) => state.funds);
 
   const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
   const toAccount = accounts.find((a) => a.id === transaction.toAccount);
+
+  // The fund this transaction draws from / feeds into, derived from its legs
+  const fromFundMove = transaction.fundMoves?.find((m) => m.fromFund);
+  const toFundMove = transaction.fundMoves?.find((m) => m.toFund);
+  const trackedFromFund = fromFundMove
+    ? funds.find((f) => f.id === fromFundMove.fromFund)
+    : undefined;
+  const trackedToFund = toFundMove
+    ? funds.find((f) => f.id === toFundMove.toFund)
+    : undefined;
+
+  // Money leaving a balance account (expense, investment) tracks the source fund;
+  // money entering one (revenue, refund) tracks the destination fund
+  const isFromBalance =
+    fromAccount &&
+    ![AccountType.EXPENSE, AccountType.REVENUE].includes(fromAccount.type);
+  const isToBalance =
+    toAccount &&
+    ![AccountType.EXPENSE, AccountType.REVENUE].includes(toAccount.type);
+  const trackFromFund = isFromBalance && !isToBalance;
+  const trackToFund = !isFromBalance && isToBalance;
+
+  const handleFromFundChange = (fundId: string | null) => {
+    // Replace all legs with a single leg on the chosen fund at full amount.
+    // The server auto-assigns any remainder to the default fund.
+    onUpdate?.({
+      fundMoves:
+        fundId !== null
+          ? [
+              {
+                id: crypto.randomUUID(),
+                fromFund: fundId,
+                toFund: null,
+                amount: transaction.amount,
+                note: null,
+                date: new Date(),
+                transaction: null,
+              },
+            ]
+          : [],
+    });
+  };
+
+  const handleToFundChange = (fundId: string | null) => {
+    onUpdate?.({
+      fundMoves:
+        fundId !== null
+          ? [
+              {
+                id: crypto.randomUUID(),
+                fromFund: null,
+                toFund: fundId,
+                amount: transaction.amount,
+                note: null,
+                date: new Date(),
+                transaction: null,
+              },
+            ]
+          : [],
+    });
+  };
 
   return (
     <div
@@ -147,6 +215,30 @@ export function Transaction({
       </div>
 
       <div className="hidden flex-1 sm:block" />
+
+      {(trackFromFund || trackToFund) && (
+        <div className="flex items-center gap-2">
+          <PiggyBank className="size-4 text-muted-foreground" />
+          {trackFromFund && (
+            <FundSelect
+              value={trackedFromFund?.id ?? null}
+              onValueChange={handleFromFundChange}
+              placeholder="Fund"
+              allowEmpty
+              emptyLabel="Untracked"
+            />
+          )}
+          {trackToFund && (
+            <FundSelect
+              value={trackedToFund?.id ?? null}
+              onValueChange={handleToFundChange}
+              placeholder="Fund"
+              allowEmpty
+              emptyLabel="Untracked"
+            />
+          )}
+        </div>
+      )}
 
       <div className="flex w-full sm:w-auto">
         <AmountInput

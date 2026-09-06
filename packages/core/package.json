@@ -9,6 +9,7 @@
     "./accounts": "./src/accounts/index.ts",
     "./movements": "./src/movements/index.ts",
     "./projects": "./src/projects/index.ts",
+    "./funds": "./src/funds/index.ts",
     "./sync": "./src/sync/index.ts",
     "./contacts": "./src/contacts/index.ts"
   },

@@ -8,6 +8,7 @@ import { useActivities } from "./stores/activities";
 import { useAssets } from "./stores/assets";
 import { useContacts } from "./stores/contacts";
 import { useCounterparties } from "./stores/counterparties";
+import { useFunds } from "./stores/funds";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
@@ -99,6 +100,25 @@ const userDataQuery = graphql(/* GraphQL */ `
       emoji
       startDate
       endDate
+    }
+
+    funds {
+      id
+      name
+      emoji
+      isDefault
+      startDate
+      endDate
+    }
+
+    fundMoves {
+      id
+      fromFund
+      toFund
+      amount
+      date
+      note
+      transaction
     }
 
     assets {
@@ -193,6 +213,23 @@ export const fetchUserData = async () => {
     });
   });
 
+  // Populate funds
+  userData.funds.forEach((fund) => {
+    useFunds.getState().addFund({
+      ...fund,
+      startDate: fund.startDate ? new Date(fund.startDate) : null,
+      endDate: fund.endDate ? new Date(fund.endDate) : null,
+    });
+  });
+
+  // Populate fund moves
+  userData.fundMoves.forEach((fundMove) => {
+    useFunds.getState().addFundMove({
+      ...fundMove,
+      date: new Date(fundMove.date),
+    });
+  });
+
   // Populate assets
   userData.assets.forEach((asset) => {
     useAssets.getState().addAsset({
@@ -233,4 +270,5 @@ export const clearAllStores = () => {
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
+  useFunds.setState({ funds: [], fundMoves: [] });
 };

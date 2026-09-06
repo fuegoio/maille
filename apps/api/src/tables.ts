@@ -286,6 +286,33 @@ export const counterparties = pgTable("counterparties", {
   initialBalance: real("initial_balance"),
 });
 
+export const funds = pgTable("funds", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  emoji: text("emoji"),
+  isDefault: boolean("is_default").notNull().default(false),
+  startDate: timestamp("start_date", { mode: "date" }),
+  endDate: timestamp("end_date", { mode: "date" }),
+});
+
+export const fundMoves = pgTable("fund_moves", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  fromFund: text("from_fund").references(() => funds.id, { onDelete: "cascade" }),
+  toFund: text("to_fund").references(() => funds.id, { onDelete: "cascade" }),
+  amount: real("amount").notNull(),
+  date: timestamp("date", { mode: "date" }).notNull(),
+  note: text("note"),
+  transaction: text("transaction").references(() => transactions.id, {
+    onDelete: "cascade",
+  }),
+});
+
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   user: text("user")

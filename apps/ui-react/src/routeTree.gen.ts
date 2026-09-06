@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
 import { Route as AuthenticatedMonthsIndexRouteImport } from './routes/_authenticated/months/index'
+import { Route as AuthenticatedFundsIndexRouteImport } from './routes/_authenticated/funds/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authenticated/accounts/index'
 import { Route as AuthenticatedProjectsIdRouteImport } from './routes/_authenticated/projects/$id'
@@ -62,6 +63,11 @@ const AuthenticatedMonthsIndexRoute =
     path: '/months/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFundsIndexRoute = AuthenticatedFundsIndexRouteImport.update({
+  id: '/funds/',
+  path: '/funds/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedCategoriesIndexRoute =
   AuthenticatedCategoriesIndexRouteImport.update({
     id: '/categories/',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/accounts/': typeof AuthenticatedAccountsIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
+  '/funds/': typeof AuthenticatedFundsIndexRoute
   '/months/': typeof AuthenticatedMonthsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/accounts': typeof AuthenticatedAccountsIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
+  '/funds': typeof AuthenticatedFundsIndexRoute
   '/months': typeof AuthenticatedMonthsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/categories/$id': typeof AuthenticatedCategoriesIdIndexRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/_authenticated/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
+  '/_authenticated/funds/': typeof AuthenticatedFundsIndexRoute
   '/_authenticated/months/': typeof AuthenticatedMonthsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/projects/$id'
     | '/accounts/'
     | '/categories/'
+    | '/funds/'
     | '/months/'
     | '/projects/'
     | '/categories/$id/'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/projects/$id'
     | '/accounts'
     | '/categories'
+    | '/funds'
     | '/months'
     | '/projects'
     | '/categories/$id'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects/$id'
     | '/_authenticated/accounts/'
     | '/_authenticated/categories/'
+    | '/_authenticated/funds/'
     | '/_authenticated/months/'
     | '/_authenticated/projects/'
     | '/_authenticated/categories/$id/'
@@ -279,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/months'
       fullPath: '/months/'
       preLoaderRoute: typeof AuthenticatedMonthsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/funds/': {
+      id: '/_authenticated/funds/'
+      path: '/funds'
+      fullPath: '/funds/'
+      preLoaderRoute: typeof AuthenticatedFundsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/categories/': {
@@ -356,6 +375,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProjectsIdRoute: typeof AuthenticatedProjectsIdRoute
   AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
+  AuthenticatedFundsIndexRoute: typeof AuthenticatedFundsIndexRoute
   AuthenticatedMonthsIndexRoute: typeof AuthenticatedMonthsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedCategoriesIdIndexRoute: typeof AuthenticatedCategoriesIdIndexRoute
@@ -373,6 +393,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProjectsIdRoute: AuthenticatedProjectsIdRoute,
   AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
+  AuthenticatedFundsIndexRoute: AuthenticatedFundsIndexRoute,
   AuthenticatedMonthsIndexRoute: AuthenticatedMonthsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedCategoriesIdIndexRoute: AuthenticatedCategoriesIdIndexRoute,

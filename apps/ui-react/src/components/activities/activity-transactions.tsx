@@ -1,3 +1,5 @@
+import type { FundMove } from "@maille/core/funds";
+
 import { AccountType } from "@maille/core/accounts";
 import {
   ActivityType,
@@ -40,8 +42,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
 
   const handleTransactionUpdate = (
     transaction: Transaction,
-    updateData: Partial<Transaction>,
+    updateData: Partial<Transaction> & { fundMoves?: FundMove[] },
   ) => {
+    const { fundMoves, ...updateFields } = updateData;
     const oldTransaction = { ...transaction };
     mutate({
       name: "updateTransaction",
@@ -49,7 +52,18 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
       variables: {
         activityId: activity.id,
         id: transaction.id,
-        ...updateData,
+        ...updateFields,
+        ...(fundMoves !== undefined
+          ? {
+              fundMoves: fundMoves.map((move) => ({
+                id: move.id,
+                fromFund: move.fromFund,
+                toFund: move.toFund,
+                amount: move.amount,
+                note: move.note,
+              })),
+            }
+          : {}),
       },
       rollbackData: oldTransaction,
       events: [
@@ -58,7 +72,15 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
           payload: {
             activityId: activity.id,
             id: transaction.id,
-            ...updateData,
+            ...updateFields,
+            ...(fundMoves !== undefined
+              ? {
+                  fundMoves: fundMoves.map((move) => ({
+                    ...move,
+                    date: move.date.toISOString(),
+                  })),
+                }
+              : {}),
           },
         },
       ],
@@ -114,6 +136,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             payload: {
               activityId: activity.id,
               id: crypto.randomUUID(),
+              fundMoves: [],
               amount: transaction.amount,
               fromAccount: transaction.fromAccount,
               fromAsset: transaction.fromAsset || null,
@@ -176,6 +199,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
           payload: {
             activityId: activity.id,
             id: transaction.id,
+            fundMoves: (transaction.fundMoves ?? []).map((move) => ({
+              ...move,
+              date: move.date.toISOString(),
+            })),
             fromAccount: transaction.fromAccount,
             toAccount: transaction.toAccount,
             amount: transaction.amount,
@@ -245,6 +272,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
           payload: {
             activityId: activity.id,
             ...transaction,
+            fundMoves: (transaction.fundMoves ?? []).map((move) => ({
+              ...move,
+              date: move.date.toISOString(),
+            })),
           },
         },
       ],

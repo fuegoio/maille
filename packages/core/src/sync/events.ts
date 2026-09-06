@@ -1,6 +1,7 @@
 import type { Account, AccountSharing, AccountType } from "#accounts/index.ts";
 import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
 import type { ContactUser } from "#contacts/index.ts";
+import type { FundMove } from "#funds/types.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -19,7 +20,9 @@ export interface CreateActivityEvent extends BaseSyncEvent {
     category: string | null;
     subcategory: string | null;
     project: string | null;
-    transactions: Omit<Transaction, "user">[];
+    transactions: (Omit<Transaction, "user" | "fundMoves"> & {
+      fundMoves?: SerializedFundMove[];
+    })[];
     movement?: {
       id: string;
       amount: number;
@@ -53,8 +56,9 @@ export interface DeleteActivityEvent extends BaseSyncEvent {
 
 export interface AddTransactionEvent extends BaseSyncEvent {
   type: "addTransaction";
-  payload: Transaction & {
+  payload: Omit<Transaction, "fundMoves"> & {
     activityId: string;
+    fundMoves: SerializedFundMove[];
   };
 }
 
@@ -63,13 +67,68 @@ export interface UpdateTransactionEvent extends BaseSyncEvent {
   payload: {
     activityId: string;
     id: string;
-  } & Partial<Omit<Transaction, "id" | "user">>;
+  } & Partial<Omit<Transaction, "id" | "user" | "fundMoves">> & {
+      fundMoves?: SerializedFundMove[];
+    };
 }
+
+/** A fund move as serialized in sync event payloads (dates as ISO strings). */
+export type SerializedFundMove = Omit<FundMove, "date"> & { date: string };
 
 export interface DeleteTransactionEvent extends BaseSyncEvent {
   type: "deleteTransaction";
   payload: {
     activityId: string;
+    id: string;
+  };
+}
+
+export interface UpdateFundMoveEvent extends BaseSyncEvent {
+  type: "updateFundMove";
+  payload: Partial<Omit<FundMove, "id" | "date">> & {
+    id: string;
+    date?: string | null;
+  };
+}
+
+export interface CreateFundEvent extends BaseSyncEvent {
+  type: "createFund";
+  payload: {
+    id: string;
+    name: string;
+    emoji: string | null;
+    isDefault: boolean;
+    startDate: string | null;
+    endDate: string | null;
+  };
+}
+
+export interface UpdateFundEvent extends BaseSyncEvent {
+  type: "updateFund";
+  payload: {
+    id: string;
+    name?: string;
+    emoji?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
+  };
+}
+
+export interface DeleteFundEvent extends BaseSyncEvent {
+  type: "deleteFund";
+  payload: {
+    id: string;
+  };
+}
+
+export interface CreateFundMoveEvent extends BaseSyncEvent {
+  type: "createFundMove";
+  payload: SerializedFundMove;
+}
+
+export interface DeleteFundMoveEvent extends BaseSyncEvent {
+  type: "deleteFundMove";
+  payload: {
     id: string;
   };
 }
@@ -367,6 +426,12 @@ export type SyncEvent =
   | CreateProjectEvent
   | UpdateProjectEvent
   | DeleteProjectEvent
+  | CreateFundEvent
+  | UpdateFundEvent
+  | DeleteFundEvent
+  | CreateFundMoveEvent
+  | UpdateFundMoveEvent
+  | DeleteFundMoveEvent
   | CreateAccountEvent
   | UpdateAccountEvent
   | DeleteAccountEvent
