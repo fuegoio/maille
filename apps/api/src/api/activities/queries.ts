@@ -6,6 +6,7 @@ import {
   activities,
   activityCategories,
   activitySubcategories,
+  fundMoves,
   movements,
   movementsActivities,
   transactions,
@@ -38,6 +39,11 @@ export const registerActivitiesQueries = () => {
           .from(movements)
           .where(eq(movements.user, ctx.user.id));
 
+        const fundMovesData = await db
+          .select()
+          .from(fundMoves)
+          .where(eq(fundMoves.user, ctx.user.id));
+
         return activitiesData.map(async (activity) => {
           const activityTransactions = await db
             .select()
@@ -51,7 +57,10 @@ export const registerActivitiesQueries = () => {
 
           return {
             ...activity,
-            transactions: activityTransactions,
+            transactions: activityTransactions.map((transaction) => ({
+              ...transaction,
+              fundMoves: fundMovesData.filter((move) => move.transaction === transaction.id),
+            })),
             movements: activityMovements,
             amount: getActivityTransactionsReconciliationSum(
               activity.type,

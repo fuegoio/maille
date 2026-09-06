@@ -4,6 +4,7 @@ import {
   Calendar,
   Folder,
   LayoutDashboard,
+  PiggyBank,
   Tag,
   TentTree,
 } from "lucide-react";
@@ -84,6 +85,11 @@ const data = {
       title: "Projects",
       url: "/projects",
       icon: TentTree,
+    },
+    {
+      title: "Funds",
+      url: "/funds",
+      icon: PiggyBank,
     },
   ],
 };

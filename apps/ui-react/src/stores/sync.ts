@@ -17,6 +17,7 @@ import { useAssets } from "./assets";
 import { useAuth } from "./auth";
 import { useContacts } from "./contacts";
 import { useCounterparties } from "./counterparties";
+import { useFunds } from "./funds";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
 import { storage } from "./storage";
@@ -71,6 +72,7 @@ export const useSync = create<SyncState>()(
             useMovements.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
+            useFunds.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
@@ -109,6 +111,10 @@ export const useSync = create<SyncState>()(
             result,
           } as Mutation);
           useProjects.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
+          useFunds.getState().handleMutationSuccess({
             ...mutation,
             result,
           } as Mutation);
@@ -155,6 +161,7 @@ export const useSync = create<SyncState>()(
           useActivities.getState().handleMutationError(mutation);
           useMovements.getState().handleMutationError(mutation);
           useProjects.getState().handleMutationError(mutation);
+          useFunds.getState().handleMutationError(mutation);
           useAccounts.getState().handleMutationError(mutation);
           useAssets.getState().handleMutationError(mutation);
           useCounterparties.getState().handleMutationError(mutation);
@@ -193,6 +200,7 @@ export const useSync = create<SyncState>()(
             useActivities.getState().handleEvent(event);
             useMovements.getState().handleEvent(event);
             useProjects.getState().handleEvent(event);
+            useFunds.getState().handleEvent(event);
             useAccounts.getState().handleEvent(event);
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
@@ -248,6 +256,7 @@ export const useSync = create<SyncState>()(
           useActivities.getState().handleEvent(event);
           useMovements.getState().handleEvent(event);
           useProjects.getState().handleEvent(event);
+          useFunds.getState().handleEvent(event);
           useAccounts.getState().handleEvent(event);
           useAssets.getState().handleEvent(event);
           useCounterparties.getState().handleEvent(event);

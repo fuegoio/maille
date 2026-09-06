@@ -1,3 +1,5 @@
+import type { FundMove } from "../funds/types";
+
 export type Transaction = {
   id: string;
   amount: number;
@@ -7,6 +9,7 @@ export type Transaction = {
   toAccount: string;
   toCounterparty?: string | null;
   toAsset?: string | null;
+  fundMoves?: FundMove[];
 };
 
 export enum ActivityType {

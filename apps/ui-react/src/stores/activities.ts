@@ -544,6 +544,15 @@ export const useActivities = create<ActivitiesState>()(
             date: new Date(event.payload.date),
             sharing: event.payload.sharing ?? [],
             movements: event.payload.movement ? [event.payload.movement] : [],
+            transactions: event.payload.transactions.map<Transaction>(
+              (transaction) => ({
+                ...transaction,
+                fundMoves: transaction.fundMoves?.map((move) => ({
+                  ...move,
+                  date: new Date(move.date),
+                })),
+              }),
+            ),
           });
         } else if (event.type === "updateActivity") {
           get().updateActivity(event.payload.id, {
@@ -569,13 +578,31 @@ export const useActivities = create<ActivitiesState>()(
         } else if (event.type === "deleteActivitySubCategory") {
           get().deleteActivitySubcategory(event.payload.id);
         } else if (event.type === "addTransaction") {
-          get().addTransaction(event.payload.activityId, event.payload);
+          const { activityId, fundMoves, ...transaction } = event.payload;
+          get().addTransaction(activityId, {
+            ...transaction,
+            ...(fundMoves !== undefined
+              ? {
+                  fundMoves: fundMoves.map((move) => ({
+                    ...move,
+                    date: new Date(move.date),
+                  })),
+                }
+              : {}),
+          } as Transaction);
         } else if (event.type === "updateTransaction") {
-          get().updateTransaction(
-            event.payload.activityId,
-            event.payload.id,
-            event.payload,
-          );
+          const { activityId, id, fundMoves, ...update } = event.payload;
+          get().updateTransaction(activityId, id, {
+            ...update,
+            ...(fundMoves !== undefined
+              ? {
+                  fundMoves: fundMoves.map((move) => ({
+                    ...move,
+                    date: new Date(move.date),
+                  })),
+                }
+              : {}),
+          });
         } else if (event.type === "deleteTransaction") {
           get().deleteTransaction(event.payload.activityId, event.payload.id);
         } else if (event.type === "createMovementActivity") {

@@ -1,4 +1,5 @@
 import { builder } from "@/api/builder";
+import { FundMoveSchema } from "@/api/funds/schemas";
 import type {
   Activity,
   Transaction,
@@ -140,6 +141,11 @@ TransactionSchema.implement({
       type: "String",
       nullable: true,
       resolve: (parent) => parent.toCounterparty,
+    }),
+    fundMoves: t.field({
+      type: [FundMoveSchema],
+      nullable: true,
+      resolve: (parent) => parent.fundMoves ?? [],
     }),
   }),
 });

@@ -11,6 +11,7 @@ import { accountsCommand } from "./commands/accounts.js";
 import { assetsCommand } from "./commands/assets.js";
 import { counterpartiesCommand } from "./commands/counterparties.js";
 import { projectsCommand } from "./commands/projects.js";
+import { fundsCommand } from "./commands/funds.js";
 import { contactsCommand } from "./commands/contacts.js";
 
 const program = new Command();
@@ -27,6 +28,7 @@ program.addCommand(accountsCommand);
 program.addCommand(assetsCommand);
 program.addCommand(counterpartiesCommand);
 program.addCommand(projectsCommand);
+program.addCommand(fundsCommand);
 program.addCommand(contactsCommand);
 
 // Top-level shortcuts for common auth commands

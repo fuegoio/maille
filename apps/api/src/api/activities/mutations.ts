@@ -24,6 +24,7 @@ import {
   assets,
   contacts,
   counterparties,
+  fundMoves,
   movements,
   movementsActivities,
   projects,
@@ -33,6 +34,11 @@ import { db } from "@/database";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
 import { getActivitySharings } from "@/services/sharing";
+import {
+  getDefaultFund,
+  insertTransactionFundMoves,
+  serializeFundMoves,
+} from "@/api/funds/transactions";
 import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
@@ -50,6 +56,17 @@ const TransactionInput = builder.inputType("TransactionInput", {
     toAccount: t.field({ type: "String" }),
     toAsset: t.field({ type: "String", required: false }),
     toCounterparty: t.field({ type: "String", required: false }),
+    fundMoves: t.field({ type: [FundMoveInput], required: false }),
+  }),
+});
+
+const FundMoveInput = builder.inputType("FundMoveInput", {
+  fields: (t) => ({
+    id: t.field({ type: "String" }),
+    fromFund: t.field({ type: "String", required: false }),
+    toFund: t.field({ type: "String", required: false }),
+    amount: t.float(),
+    note: t.field({ type: "String", required: false }),
   }),
 });
 
@@ -264,7 +281,19 @@ export const registerActivitiesMutations = () => {
               throw new GraphQLError("Failed to create transaction");
             }
 
-            return newTransaction;
+            const defaultFund = transaction.fundMoves?.length
+              ? await getDefaultFund(ctx.user.id)
+              : null;
+            const newFundMoves = await insertTransactionFundMoves({
+              userId: ctx.user.id,
+              transactionId: newTransaction.id,
+              transactionDate: new Date(args.date),
+              amount: transaction.amount,
+              fundMovesInput: transaction.fundMoves,
+              defaultFundId: defaultFund?.id ?? null,
+            });
+
+            return { ...newTransaction, fundMoves: newFundMoves };
           }) || [];
 
         const newTransactions = await Promise.all(transactionPromises);
@@ -307,7 +336,10 @@ export const registerActivitiesMutations = () => {
             category: category ?? null,
             subcategory: subcategory ?? null,
             project: project ?? null,
-            transactions: newTransactions,
+            transactions: newTransactions.map((transaction) => ({
+              ...transaction,
+              fundMoves: serializeFundMoves(transaction.fundMoves),
+            })),
             movement:
               args.movement && newMovements[0]
                 ? {
@@ -784,6 +816,7 @@ export const registerActivitiesMutations = () => {
         toAccount: t.arg({ type: "String" }),
         toAsset: t.arg({ type: "String", required: false }),
         toCounterparty: t.arg({ type: "String", required: false }),
+        fundMoves: t.arg({ type: [FundMoveInput], required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -891,11 +924,22 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to create transaction");
         }
 
+        const defaultFund = args.fundMoves?.length ? await getDefaultFund(ctx.user.id) : null;
+        const newFundMoves = await insertTransactionFundMoves({
+          userId: ctx.user.id,
+          transactionId: newTransaction.id,
+          transactionDate: activity.date,
+          amount: args.amount,
+          fundMovesInput: args.fundMoves,
+          defaultFundId: defaultFund?.id ?? null,
+        });
+
         void addEvent({
           type: "addTransaction",
           payload: {
             activityId: activity.id,
             ...newTransaction,
+            fundMoves: serializeFundMoves(newFundMoves),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -980,6 +1024,7 @@ export const registerActivitiesMutations = () => {
           type: "String",
           required: false,
         }),
+        fundMoves: t.arg({ type: [FundMoveInput], required: false }),
       },
       resolve: async (root, args, ctx) => {
         const activity = (
@@ -1015,7 +1060,7 @@ export const registerActivitiesMutations = () => {
         }
 
         const updatedFields: Partial<typeof transaction> = {};
-        if (args.amount !== null) updatedFields.amount = args.amount;
+        if (args.amount !== null && args.amount !== undefined) updatedFields.amount = args.amount;
         if (args.fromAccount)
           updatedFields.fromAccount =
             (
@@ -1096,15 +1141,42 @@ export const registerActivitiesMutations = () => {
               )[0]?.id
             : args.toCounterparty;
 
-        const updatedTransactions = await db
-          .update(transactions)
-          .set(updatedFields)
-          .where(eq(transactions.id, transaction.id))
-          .returning();
+        const updatedTransactions =
+          Object.keys(updatedFields).length > 0
+            ? await db
+                .update(transactions)
+                .set(updatedFields)
+                .where(eq(transactions.id, transaction.id))
+                .returning()
+            : await db.select().from(transactions).where(eq(transactions.id, transaction.id));
         const updatedTransaction = updatedTransactions[0];
 
         if (!updatedTransaction) {
           throw new GraphQLError("Failed to update transaction");
+        }
+
+        // Replace fund legs when provided (undefined = keep existing legs)
+        let updatedFundMoves: Awaited<ReturnType<typeof insertTransactionFundMoves>> | null = null;
+        if (args.fundMoves !== null && args.fundMoves !== undefined) {
+          const existingFundMoves = await db
+            .select()
+            .from(fundMoves)
+            .where(eq(fundMoves.transaction, transaction.id));
+          await db.delete(fundMoves).where(eq(fundMoves.transaction, transaction.id));
+
+          if (args.fundMoves.length > 0) {
+            const defaultFund = await getDefaultFund(ctx.user.id);
+            updatedFundMoves = await insertTransactionFundMoves({
+              userId: ctx.user.id,
+              transactionId: transaction.id,
+              transactionDate: activity.date,
+              amount: updatedTransaction.amount,
+              fundMovesInput: args.fundMoves,
+              defaultFundId: defaultFund?.id ?? null,
+            });
+          } else if (existingFundMoves.length > 0) {
+            updatedFundMoves = [];
+          }
         }
 
         void addEvent({
@@ -1113,6 +1185,9 @@ export const registerActivitiesMutations = () => {
             activityId: transaction.activity,
             id: transaction.id,
             ...updatedFields,
+            ...(updatedFundMoves !== null
+              ? { fundMoves: serializeFundMoves(updatedFundMoves) }
+              : {}),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,

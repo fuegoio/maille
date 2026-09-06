@@ -149,6 +149,7 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
     $toAccount: String!
     $toAsset: String
     $toCounterparty: String
+    $fundMoves: [FundMoveInput!]
   ) {
     addTransaction(
       activityId: $activityId
@@ -160,6 +161,7 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
       toAccount: $toAccount
       toAsset: $toAsset
       toCounterparty: $toCounterparty
+      fundMoves: $fundMoves
     ) {
       id
     }
@@ -177,6 +179,7 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
     $toAccount: String
     $toAsset: String
     $toCounterparty: String
+    $fundMoves: [FundMoveInput!]
   ) {
     updateTransaction(
       activityId: $activityId
@@ -188,6 +191,7 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
       toAccount: $toAccount
       toAsset: $toAsset
       toCounterparty: $toCounterparty
+      fundMoves: $fundMoves
     ) {
       id
     }
