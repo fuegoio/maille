@@ -1,6 +1,6 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { ChevronRight, Trash2, Scissors } from "lucide-react";
+import { ChevronRight, Copy, Ellipsis, Scissors, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -15,12 +15,20 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { duplicateActivities } from "@/logic/activities";
 import {
+  createActivityMutation,
   updateActivityMutation,
   deleteActivityMutation,
 } from "@/mutations/activities";
@@ -101,6 +109,35 @@ export function Activity() {
     setShowDeleteModal(false);
   };
 
+  const duplicateActivity = () => {
+    if (!activity) return;
+
+    const [duplicatedActivity] = duplicateActivities({
+      activities: [activity],
+    });
+
+    mutate({
+      name: "createActivity",
+      mutation: createActivityMutation,
+      variables: {
+        ...duplicatedActivity,
+        date: getGraphQLDate(duplicatedActivity.date),
+      },
+      rollbackData: undefined,
+      events: [
+        {
+          type: "createActivity",
+          payload: {
+            ...duplicatedActivity,
+            date: getGraphQLDate(duplicatedActivity.date),
+          },
+        },
+      ],
+    });
+
+    setFocusedActivity(duplicatedActivity.id);
+  };
+
   const updateActivity = (update: {
     name?: string;
     description?: string | null;
@@ -167,23 +204,33 @@ export function Activity() {
           <div className="flex-1" />
 
           <div className="flex items-center justify-end gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSplitModal(true)}
-            >
-              <Scissors />
-            </Button>
-
             <AlertDialog
               open={showDeleteModal}
               onOpenChange={setShowDeleteModal}
             >
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Trash2 />
-                </Button>
-              </AlertDialogTrigger>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Ellipsis />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowSplitModal(true)}>
+                    <Scissors />
+                    Split
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={duplicateActivity}>
+                    <Copy />
+                    Duplicate
+                  </DropdownMenuItem>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem variant="destructive">
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete activity</AlertDialogTitle>

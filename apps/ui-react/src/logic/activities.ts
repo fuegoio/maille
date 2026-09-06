@@ -52,3 +52,26 @@ export function getActivityTypeTotalForProject({
     .filter((a) => a.type === activityType)
     .reduce((acc, a) => acc + a.amount, 0);
 }
+
+export function duplicateActivities({
+  activities,
+  generateId = () => crypto.randomUUID(),
+}: {
+  activities: Activity[];
+  generateId?: () => string;
+}) {
+  return activities.map((activity) => ({
+    id: generateId(),
+    name: activity.name,
+    description: activity.description,
+    date: activity.date,
+    type: activity.type,
+    category: activity.category,
+    subcategory: activity.subcategory,
+    project: activity.project,
+    transactions: activity.transactions.map((transaction) => ({
+      ...transaction,
+      id: generateId(),
+    })),
+  }));
+}

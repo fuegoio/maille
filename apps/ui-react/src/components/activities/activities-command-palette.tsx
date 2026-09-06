@@ -1,6 +1,7 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import {
   ArrowRightLeft,
+  Copy,
   Tag,
   TentTree,
   TextCursor,
@@ -20,7 +21,9 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { getGraphQLDate } from "@/lib/date";
+import { duplicateActivities } from "@/logic/activities";
 import {
+  createActivityMutation,
   deleteActivityMutation,
   updateActivityMutation,
 } from "@/mutations/activities";
@@ -130,6 +133,33 @@ export function ActivitiesCommandPalette({
     },
     [selectedActivityIds, activities, mutate],
   );
+
+  const duplicateActivitiesAction = React.useCallback(() => {
+    const duplicatedActivities = duplicateActivities({
+      activities: selectedActivitiesData,
+    });
+
+    duplicatedActivities.forEach((duplicatedActivity) => {
+      mutate({
+        name: "createActivity",
+        mutation: createActivityMutation,
+        variables: {
+          ...duplicatedActivity,
+          date: getGraphQLDate(duplicatedActivity.date),
+        },
+        rollbackData: undefined,
+        events: [
+          {
+            type: "createActivity",
+            payload: {
+              ...duplicatedActivity,
+              date: getGraphQLDate(duplicatedActivity.date),
+            },
+          },
+        ],
+      });
+    });
+  }, [selectedActivitiesData, mutate]);
 
   const deleteActivities = React.useCallback(() => {
     selectedActivityIds.forEach((activityId) => {
@@ -293,6 +323,17 @@ export function ActivitiesCommandPalette({
         },
       },
       {
+        value: "duplicate",
+        label: "Duplicate",
+        icon: <Copy />,
+        type: null,
+        shortcut: "C",
+        action: () => {
+          duplicateActivitiesAction();
+          onClearSelection?.();
+        },
+      },
+      {
         value: "delete",
         label: "Delete",
         icon: <Trash2 />,
@@ -311,6 +352,7 @@ export function ActivitiesCommandPalette({
     filteredSubcategories,
     projects,
     updateActivities,
+    duplicateActivitiesAction,
     deleteActivities,
     onClearSelection,
   ]);

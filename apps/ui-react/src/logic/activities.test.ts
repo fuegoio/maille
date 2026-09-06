@@ -1,7 +1,14 @@
+import type {
+  ActivityMovement,
+  ActivitySharing,
+  Transaction,
+} from "@maille/core/activities";
+
 import { ActivityType } from "@maille/core/activities";
 import { describe, expect, it } from "vitest";
 
 import {
+  duplicateActivities,
   getActivityCategoryTotalForMonth,
   getActivityTypeTotalForMonth,
   getActivityTypeTotalForProject,
@@ -10,12 +17,17 @@ import {
 const makeActivity = (
   overrides: Partial<{
     id: string;
+    name: string;
+    description: string | null;
     type: ActivityType;
     date: Date;
     amount: number;
     category: string | null;
     subcategory: string | null;
     project: string | null;
+    transactions: Transaction[];
+    movements: ActivityMovement[];
+    sharing: ActivitySharing[];
   }>,
 ) => ({
   id: "a",
@@ -391,5 +403,98 @@ describe("getActivityCategoryTotalForMonth", () => {
     });
 
     expect(result).toBe(0);
+  });
+});
+
+describe("duplicateActivities", () => {
+  it("copies activity fields with fresh ids for the activity and its transactions", () => {
+    const activity = makeActivity({
+      id: "original",
+      name: "Rent",
+      description: "Monthly rent",
+      type: ActivityType.EXPENSE,
+      date: new Date("2025-03-10"),
+      category: "cat-rent",
+      subcategory: "sub-home",
+      project: "proj-1",
+      transactions: [
+        {
+          id: "t1",
+          amount: 900,
+          fromAccount: "bank",
+          toAccount: "landlord",
+        },
+      ],
+    });
+
+    const [duplicate] = duplicateActivities({
+      activities: [activity],
+      generateId: () => "new-id",
+    });
+
+    expect(duplicate).toEqual({
+      id: "new-id",
+      name: "Rent",
+      description: "Monthly rent",
+      date: new Date("2025-03-10"),
+      type: ActivityType.EXPENSE,
+      category: "cat-rent",
+      subcategory: "sub-home",
+      project: "proj-1",
+      transactions: [
+        {
+          id: "new-id",
+          amount: 900,
+          fromAccount: "bank",
+          toAccount: "landlord",
+        },
+      ],
+    });
+    expect(duplicate.id).not.toBe(activity.id);
+    expect(duplicate.transactions[0].id).not.toBe(activity.transactions[0].id);
+  });
+
+  it("does not carry over computed or linked fields", () => {
+    const activity = makeActivity({
+      id: "original",
+      movements: [{ id: "am1", movement: "m1", amount: -900 }],
+      sharing: [
+        {
+          user: "u1",
+          liability: 450,
+          accounts: [{ account: "bank", amount: -450 }],
+        },
+      ],
+    });
+
+    const [duplicate] = duplicateActivities({
+      activities: [activity],
+      generateId: () => "new-id",
+    });
+
+    expect(duplicate).not.toHaveProperty("amount");
+    expect(duplicate).not.toHaveProperty("status");
+    expect(duplicate).not.toHaveProperty("movements");
+    expect(duplicate).not.toHaveProperty("sharing");
+  });
+
+  it("duplicates each activity independently", () => {
+    const activities = [
+      makeActivity({ id: "1", name: "One" }),
+      makeActivity({ id: "2", name: "Two" }),
+    ];
+
+    const duplicates = duplicateActivities({
+      activities,
+      generateId: (() => {
+        let i = 0;
+        return () => `new-${++i}`;
+      })(),
+    });
+
+    expect(duplicates).toHaveLength(2);
+    expect(duplicates[0].id).toBe("new-1");
+    expect(duplicates[1].id).toBe("new-2");
+    expect(duplicates.map((a) => a.name)).toEqual(["One", "Two"]);
   });
 });
