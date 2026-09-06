@@ -70,8 +70,14 @@ export function duplicateActivities({
     subcategory: activity.subcategory,
     project: activity.project,
     transactions: activity.transactions.map((transaction) => ({
-      ...transaction,
       id: generateId(),
+      amount: transaction.amount,
+      fromAccount: transaction.fromAccount,
+      fromAsset: transaction.fromAsset ?? null,
+      fromCounterparty: transaction.fromCounterparty ?? null,
+      toAccount: transaction.toAccount,
+      toAsset: transaction.toAsset ?? null,
+      toCounterparty: transaction.toCounterparty ?? null,
     })),
   }));
 }

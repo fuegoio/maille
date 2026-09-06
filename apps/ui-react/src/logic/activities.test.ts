@@ -446,7 +446,11 @@ describe("duplicateActivities", () => {
           id: "new-id",
           amount: 900,
           fromAccount: "bank",
+          fromAsset: null,
+          fromCounterparty: null,
           toAccount: "landlord",
+          toAsset: null,
+          toCounterparty: null,
         },
       ],
     });
@@ -476,6 +480,38 @@ describe("duplicateActivities", () => {
     expect(duplicate).not.toHaveProperty("status");
     expect(duplicate).not.toHaveProperty("movements");
     expect(duplicate).not.toHaveProperty("sharing");
+  });
+
+  it("strips extra transaction fields added by sync events", () => {
+    const activity = makeActivity({
+      id: "original",
+      transactions: [
+        {
+          id: "t1",
+          // Added to stored transactions by addTransaction sync events.
+          activityId: "original",
+          amount: 900,
+          fromAccount: "bank",
+          toAccount: "landlord",
+        } as Transaction,
+      ],
+    });
+
+    const [duplicate] = duplicateActivities({
+      activities: [activity],
+      generateId: () => "new-id",
+    });
+
+    expect(duplicate.transactions[0]).toEqual({
+      id: "new-id",
+      amount: 900,
+      fromAccount: "bank",
+      fromAsset: null,
+      fromCounterparty: null,
+      toAccount: "landlord",
+      toAsset: null,
+      toCounterparty: null,
+    });
   });
 
   it("duplicates each activity independently", () => {
