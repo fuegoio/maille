@@ -37,6 +37,7 @@ import {
 import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
 import { Input } from "../ui/input";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
+import { LinkActivityButton } from "./link-activity-button";
 
 export function Movement() {
   const router = useRouter();
@@ -228,6 +229,7 @@ export function Movement() {
             <div className="text-sm font-medium">Activities linked</div>
             <div className="flex-1" />
 
+            <LinkActivityButton movement={movement} />
             <AddActivityButton movement={movement} />
           </div>
 
