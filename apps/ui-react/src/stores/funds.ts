@@ -166,6 +166,12 @@ export const useFunds = create<FundsState>()(
           });
         } else if (event.type === "deleteFundMove") {
           get().deleteFundMove(event.payload.id);
+        } else if (event.type === "createActivity") {
+          event.payload.transactions?.forEach((transaction) => {
+            transaction.fundMoves?.forEach((move) => {
+              get().addFundMove(toFundMove(move));
+            });
+          });
         } else if (event.type === "addTransaction") {
           event.payload.fundMoves?.forEach((move) => {
             get().addFundMove(toFundMove(move));
