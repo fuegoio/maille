@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { PiggyBank, TrashIcon } from "lucide-react";
+import { ArrowDownToLine, PiggyBank, SettingsIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,15 @@ import {
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getFundsBalances } from "@/logic/funds";
-import { deleteFundMutation } from "@/mutations/funds";
 import { useFunds } from "@/stores/funds";
-import { useSync } from "@/stores/sync";
 
 import { AllocateDialog } from "./allocate-dialog";
 import { CreateFundDialog } from "./create-fund-dialog";
+import { FundSettingsDialog } from "./fund-settings-dialog";
 
 export function FundsTable() {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const mutate = useSync((state) => state.mutate);
   const currencyFormatter = useCurrencyFormatter();
 
   const sortedFunds = useMemo(() => {
@@ -38,24 +36,6 @@ export function FundsTable() {
     [sortedFunds, fundMoves],
   );
 
-  const handleDelete = (fundId: string) => {
-    const fund = funds.find((f) => f.id === fundId);
-    if (!fund || fund.isDefault) return;
-
-    mutate({
-      name: "deleteFund",
-      mutation: deleteFundMutation,
-      variables: { id: fundId },
-      rollbackData: fund,
-      events: [
-        {
-          type: "deleteFund",
-          payload: { id: fundId },
-        },
-      ],
-    });
-  };
-
   if (funds.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
@@ -64,7 +44,7 @@ export function FundsTable() {
             <EmptyMedia variant="icon">
               <PiggyBank />
             </EmptyMedia>
-            <EmptyTitle>No funds</EmptyTitle>
+            <EmptyTitle>No Funds Yet</EmptyTitle>
             <EmptyDescription>
               Funds let you label what your money is for, while accounts track
               where it is.
@@ -111,24 +91,30 @@ export function FundsTable() {
 
           <div className="flex-1" />
 
-          <div className="mr-4 font-mono text-sm whitespace-nowrap">
+          <div className="mr-4 flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap">
             {currencyFormatter.format(balance)}
           </div>
 
-          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex w-14 shrink-0 items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <AllocateDialog defaultToFund={fund.id}>
-              <Button variant="ghost" size="icon-xs">
-                <PiggyBank />
-              </Button>
-            </AllocateDialog>
-            {!fund.isDefault && (
               <Button
                 variant="ghost"
                 size="icon-xs"
-                onClick={() => handleDelete(fund.id)}
+                aria-label={`Allocate to ${fund.name}`}
               >
-                <TrashIcon />
+                <ArrowDownToLine />
               </Button>
+            </AllocateDialog>
+            {!fund.isDefault && (
+              <FundSettingsDialog fund={fund}>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`${fund.name} settings`}
+                >
+                  <SettingsIcon />
+                </Button>
+              </FundSettingsDialog>
             )}
           </div>
         </div>

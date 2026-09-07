@@ -52,7 +52,7 @@ export function AccountSelect({
       <SelectTrigger id={id} className={cn("min-w-32", className)}>
         <SelectValue
           placeholder={
-            <div className="flex min-w-0 shrink-0 items-center">
+            <div className="flex min-w-0 items-center">
               <div className="size-3.5 shrink-0 rounded-xl bg-gray-200" />
               <div className="ml-2 overflow-hidden font-medium text-ellipsis whitespace-nowrap">
                 {placeholder}
