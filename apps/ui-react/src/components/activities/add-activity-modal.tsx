@@ -1,4 +1,5 @@
 import type { Transaction } from "@maille/core/activities";
+import type { FundMove } from "@maille/core/funds";
 import type { Movement } from "@maille/core/movements";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,6 +70,17 @@ const formSchema = z.object({
       toAsset: z.string().nullable(),
       toCounterparty: z.string().nullable(),
       amount: z.number().min(0.01, "Amount must be greater than 0"),
+      fundMoves: z.array(
+        z.object({
+          id: z.string(),
+          fromFund: z.string().nullable(),
+          toFund: z.string().nullable(),
+          amount: z.number(),
+          date: z.date(),
+          note: z.string().nullable(),
+          transaction: z.string().nullable(),
+        }),
+      ),
     }),
   ),
 });
@@ -141,12 +153,21 @@ export function AddActivityModal({
   // Handle transaction updates for the form
   const handleTransactionUpdate = (
     transactionIndex: number,
-    updateData: Partial<Transaction>,
+    updateData: Partial<Transaction> & { fundMoves?: FundMove[] },
   ) => {
     const updatedTransactions = [...transactions];
+    const current = updatedTransactions[transactionIndex];
+    const newAmount = updateData.amount ?? current.amount;
+    const newFundMoves =
+      updateData.fundMoves ??
+      current.fundMoves?.map((move) => ({
+        ...move,
+        amount: newAmount,
+      }));
     updatedTransactions[transactionIndex] = {
-      ...updatedTransactions[transactionIndex],
+      ...current,
       ...updateData,
+      fundMoves: newFundMoves,
     };
     setValue("transactions", updatedTransactions);
   };
@@ -229,6 +250,7 @@ export function AddActivityModal({
           toAsset: null,
           toCounterparty: null,
           amount,
+          fundMoves: [],
         },
       ]);
     },
@@ -248,6 +270,11 @@ export function AddActivityModal({
 
   // Create a single activity
   const createActivity = (data: FormValues) => {
+    const transactionsWithIds = data.transactions.map((t) => ({
+      ...t,
+      id: crypto.randomUUID(),
+    }));
+
     const newActivity = {
       id: crypto.randomUUID(),
       name: data.name,
@@ -257,9 +284,15 @@ export function AddActivityModal({
       category: data.category || null,
       subcategory: data.subcategory || null,
       project: data.project || null,
-      transactions: data.transactions.map((t) => ({
-        id: crypto.randomUUID(),
-        ...t,
+      transactions: transactionsWithIds.map((t) => ({
+        id: t.id,
+        fromAccount: t.fromAccount,
+        fromAsset: t.fromAsset || null,
+        fromCounterparty: t.fromCounterparty || null,
+        toAccount: t.toAccount,
+        toAsset: t.toAsset || null,
+        toCounterparty: t.toCounterparty || null,
+        amount: t.amount,
       })),
       movement: movement
         ? {
@@ -270,17 +303,51 @@ export function AddActivityModal({
         : undefined,
     };
 
+    const eventPayload = {
+      ...newActivity,
+      transactions: newActivity.transactions.map((t) => {
+        const source = transactionsWithIds.find((s) => s.id === t.id);
+        return {
+          ...t,
+          fundMoves: (source?.fundMoves ?? []).map((move) => ({
+            id: move.id,
+            fromFund: move.fromFund,
+            toFund: move.toFund,
+            amount: move.amount,
+            date: getGraphQLDate(move.date),
+            note: move.note,
+            transaction: t.id,
+          })),
+        };
+      }),
+    };
+
+    const variables = {
+      ...newActivity,
+      transactions: newActivity.transactions.map((t) => {
+        const source = transactionsWithIds.find((s) => s.id === t.id);
+        return {
+          ...t,
+          fundMoves: (source?.fundMoves ?? []).map((move) => ({
+            id: move.id,
+            fromFund: move.fromFund,
+            toFund: move.toFund,
+            amount: move.amount,
+            note: move.note,
+          })),
+        };
+      }),
+    };
+
     mutate({
       name: "createActivity",
       mutation: createActivityMutation,
-      variables: {
-        ...newActivity,
-      },
+      variables,
       rollbackData: undefined,
       events: [
         {
           type: "createActivity",
-          payload: newActivity,
+          payload: eventPayload,
         },
       ],
     });
@@ -365,6 +432,7 @@ export function AddActivityModal({
         toAsset: null,
         toCounterparty: null,
         amount,
+        fundMoves: [],
       });
     }
 
@@ -569,7 +637,7 @@ export function AddActivityModal({
             <div className="mb-2 flex items-center justify-between pr-2">
               <h3 className="text-sm font-medium text-white">Transactions</h3>
               <div className="flex items-center gap-2">
-                <span className="mr-1.75 font-mono text-sm text-muted-foreground">
+                <span className="mr-2 font-mono text-sm text-muted-foreground">
                   {currencyFormatter.format(transactionsSum)}
                 </span>
                 {!movements && (
@@ -589,6 +657,7 @@ export function AddActivityModal({
                           toAsset: t.toAsset || null,
                           toCounterparty: t.toCounterparty || null,
                           amount: t.amount,
+                          fundMoves: t.fundMoves ?? [],
                         })),
                       );
                     }}
