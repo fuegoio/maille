@@ -144,7 +144,12 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
   return (
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
-        <div className="text-sm font-medium">Movements</div>
+        <div>
+          <div className="text-sm font-medium">Movements</div>
+          <div className="text-xs text-muted-foreground">
+            Bank records reconciled with this activity's transactions.
+          </div>
+        </div>
         <div className="flex-1" />
         {!isReconciled ? (
           <TriangleAlert className="mr-1.5 size-5 text-orange-300" />

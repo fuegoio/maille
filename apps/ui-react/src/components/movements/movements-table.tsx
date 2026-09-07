@@ -2,13 +2,13 @@ import type { Movement } from "@maille/core/movements";
 
 import { verifyMovementFilter } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { useMovements } from "@/stores/movements";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -29,21 +29,13 @@ export function MovementsTable({
   grouping = null,
   accountFilter = null,
 }: MovementsTableProps) {
-  const focusedMovement = useMovements((state) => state.focusedMovement);
+  const router = useRouter();
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
-  const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
     [],
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      setFocusedMovement(null);
-    };
-  }, [setFocusedMovement]);
 
   const movementsFiltered = React.useMemo(() => {
     return movements
@@ -133,11 +125,7 @@ export function MovementsTable({
   };
 
   const handleMovementClick = (movementId: string) => {
-    if (focusedMovement === movementId) {
-      setFocusedMovement(null);
-    } else {
-      setFocusedMovement(movementId);
-    }
+    void router.navigate({ to: "/movements/$id", params: { id: movementId } });
   };
 
   const selectMovement = (movementId: string) => {
@@ -148,33 +136,28 @@ export function MovementsTable({
     );
   };
 
-  // Hotkeys
+  // Hotkeys: open the first movement of the list, then continue with J/K on
+  // the movement page
   useHotkey("K", (event) => {
     if (event.key !== "k") return;
     if (movementsSorted.length === 0) return;
 
-    const currentIndex = movementsSorted.findIndex(
-      (movement) => movement.id === focusedMovement,
-    );
-
-    const nextIndex =
-      currentIndex === -1
-        ? 0
-        : (currentIndex - 1 + movementsSorted.length) % movementsSorted.length;
-
-    setFocusedMovement(movementsSorted[nextIndex].id);
+    void router.navigate({
+      to: "/movements/$id",
+      params: { id: movementsSorted[0].id },
+      replace: true,
+    });
   });
 
   useHotkey("J", (event) => {
     if (event.key !== "j") return;
     if (movementsSorted.length === 0) return;
 
-    const currentIndex = movementsSorted.findIndex(
-      (movement) => movement.id === focusedMovement,
-    );
-
-    const nextIndex = (currentIndex + 1) % movementsSorted.length;
-    setFocusedMovement(movementsSorted[nextIndex].id);
+    void router.navigate({
+      to: "/movements/$id",
+      params: { id: movementsSorted[0].id },
+      replace: true,
+    });
   });
 
   useHotkey(
@@ -237,7 +220,6 @@ export function MovementsTable({
                     ) : (
                       <MovementLine
                         movement={item}
-                        selected={focusedMovement === item.id}
                         checked={selectedMovements.includes(item.id)}
                         onCheckedChange={() => selectMovement(item.id)}
                         onClick={() => handleMovementClick(item.id)}
@@ -249,7 +231,6 @@ export function MovementsTable({
                   <MovementLine
                     key={movement.id}
                     movement={movement}
-                    selected={focusedMovement === movement.id}
                     checked={selectedMovements.includes(movement.id)}
                     onCheckedChange={() => selectMovement(movement.id)}
                     onClick={() => handleMovementClick(movement.id)}

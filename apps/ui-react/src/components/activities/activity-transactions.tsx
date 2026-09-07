@@ -285,7 +285,12 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   return (
     <div className="border-b px-2 py-6 sm:px-6">
       <div className="flex items-center pl-2">
-        <div className="text-sm font-medium">Transactions</div>
+        <div>
+          <div className="text-sm font-medium">Transactions</div>
+          <div className="text-xs text-muted-foreground">
+            The double-entry legs of this activity, from account to account.
+          </div>
+        </div>
         <div className="flex-1" />
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(transactionsSum)}

@@ -64,11 +64,7 @@ export function ActivitiesCommandPalette({
   const projects = useProjects((state) => state.projects);
 
   const selectedActivityIds = React.useMemo(() => {
-    return selectedActivities.length > 0
-      ? selectedActivities
-      : useActivities.getState().focusedActivity
-        ? [useActivities.getState().focusedActivity]
-        : [];
+    return selectedActivities;
   }, [selectedActivities]);
 
   const selectedActivitiesData = React.useMemo(() => {

@@ -1,14 +1,20 @@
-import type { Movement } from "@maille/core/movements";
-
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
-import { ChevronRight, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AmountInput } from "@/components/ui/amount-input";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -39,21 +45,17 @@ import { Input } from "../ui/input";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { LinkActivityButton } from "./link-activity-button";
 
-export function Movement() {
+interface MovementPageProps {
+  movementId: string;
+}
+
+export function MovementPage({ movementId }: MovementPageProps) {
   const router = useRouter();
   const currencyFormatter = useCurrencyFormatter();
-  const movementId = useMovements((state) => state.focusedMovement);
-  const setFocusedMovement = useMovements((state) => state.setFocusedMovement);
-
-  const onClose = () => {
-    setFocusedMovement(null);
-  };
-
   const mutate = useSync((state) => state.mutate);
 
-  const movement = useMovements((state) =>
-    movementId ? state.getMovementById(movementId) : undefined,
-  );
+  const movement = useMovements((state) => state.getMovementById(movementId));
+  const movements = useMovements((state) => state.movements);
 
   const activities = useActivities((state) => state.activities);
 
@@ -86,13 +88,8 @@ export function Movement() {
         },
       ],
     });
-  };
 
-  const focusActivity = async (activityId: string) => {
-    await router.navigate({
-      to: "/activities/{-$id}",
-      params: { id: activityId },
-    });
+    void router.navigate({ to: "/movements" });
   };
 
   const handleUpdateMovement = (update: {
@@ -128,28 +125,70 @@ export function Movement() {
     });
   };
 
-  // Hotkeys
-  useHotkey(
-    "Escape",
-    () => {
-      onClose();
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
+  // Hotkeys to navigate between movements (same order as the movements table)
+  const sortedMovements = React.useMemo(() => {
+    return [...movements].sort((a, b) => {
+      if (a.date.getTime() !== b.date.getTime()) {
+        return b.date.getTime() - a.date.getTime();
+      }
+      return b.id.localeCompare(a.id);
+    });
+  }, [movements]);
+
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    if (sortedMovements.length === 0) return;
+
+    const currentIndex = sortedMovements.findIndex((m) => m.id === movementId);
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex - 1 + sortedMovements.length) % sortedMovements.length;
+
+    void router.navigate({
+      to: "/movements/$id",
+      params: { id: sortedMovements[nextIndex].id },
+      replace: true,
+    });
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    if (sortedMovements.length === 0) return;
+
+    const currentIndex = sortedMovements.findIndex((m) => m.id === movementId);
+    const nextIndex =
+      currentIndex === -1 ? 0 : (currentIndex + 1) % sortedMovements.length;
+
+    void router.navigate({
+      to: "/movements/$id",
+      params: { id: sortedMovements[nextIndex].id },
+      replace: true,
+    });
+  });
 
   if (!movement) return null;
 
   return (
-    <SidebarInset className="xl:max-w-lg">
+    <SidebarInset>
       <div className="flex h-full flex-col">
-        <div className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
-          <SidebarTrigger className="xl:hidden" />
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <ChevronRight />
-          </Button>
-          <div className="text-sm font-medium">Movement</div>
+        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
+          <SidebarTrigger />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/movements">Movements</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="max-w-48 truncate">
+                  {movement.name}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="flex-1" />
           <AlertDialog>
@@ -177,94 +216,103 @@ export function Movement() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
+        </header>
 
-        <div className="mb-4 px-4 pt-6 sm:px-8">
-          <FieldSet>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="date">Date</FieldLabel>
-                <DatePicker
-                  value={movement.date}
-                  id="date"
-                  onChange={(date) => handleUpdateMovement({ date })}
-                />
-              </Field>
+        <div className="flex-1 overflow-y-auto pb-20">
+          <div className="mx-auto w-full max-w-3xl">
+            <div className="border-b px-4 py-8 sm:px-8">
+              <FieldSet>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="date">Date</FieldLabel>
+                    <DatePicker
+                      value={movement.date}
+                      id="date"
+                      onChange={(date) => handleUpdateMovement({ date })}
+                    />
+                  </Field>
 
-              <Field>
-                <FieldLabel htmlFor="name">Movement name</FieldLabel>
-                <Input
-                  id="name"
-                  value={movement.name}
-                  onChange={(e) =>
-                    handleUpdateMovement({ name: e.target.value })
-                  }
-                />
-              </Field>
+                  <Field>
+                    <FieldLabel htmlFor="name">Movement name</FieldLabel>
+                    <Input
+                      id="name"
+                      value={movement.name}
+                      onChange={(e) =>
+                        handleUpdateMovement({ name: e.target.value })
+                      }
+                    />
+                  </Field>
 
-              <Field>
-                <FieldLabel htmlFor="account">Account</FieldLabel>
-                <AccountSelect
-                  id="account"
-                  value={movement.account}
-                  onChange={(account) => handleUpdateMovement({ account })}
-                  movementsOnly
-                />
-              </Field>
+                  <Field>
+                    <FieldLabel htmlFor="account">Account</FieldLabel>
+                    <AccountSelect
+                      id="account"
+                      value={movement.account}
+                      onChange={(account) => handleUpdateMovement({ account })}
+                      movementsOnly
+                    />
+                  </Field>
 
-              <Field>
-                <FieldLabel htmlFor="amount">Amount</FieldLabel>
-                <AmountInput
-                  value={movement.amount}
-                  onChange={(amount) => handleUpdateMovement({ amount })}
-                  mode="field"
-                />
-              </Field>
-            </FieldGroup>
-          </FieldSet>
-        </div>
+                  <Field>
+                    <FieldLabel htmlFor="amount">Amount</FieldLabel>
+                    <AmountInput
+                      value={movement.amount}
+                      onChange={(amount) => handleUpdateMovement({ amount })}
+                      mode="field"
+                    />
+                  </Field>
+                </FieldGroup>
+              </FieldSet>
+            </div>
 
-        <div className="border-t px-4 py-6 sm:px-8">
-          <div className="flex items-center">
-            <div className="text-sm font-medium">Activities linked</div>
-            <div className="flex-1" />
+            <div className="px-4 py-6 sm:px-8">
+              <div className="flex items-center">
+                <div className="text-sm font-medium">Activities linked</div>
+                <div className="flex-1" />
 
-            <LinkActivityButton movement={movement} />
-            <AddActivityButton movement={movement} />
-          </div>
-
-          <div className="mt-4 mb-2 rounded border bg-muted/50">
-            {movementActivities.length === 0 ? (
-              <div className="text-primary-300 flex items-center justify-center py-4 text-xs">
-                No activity linked to this movement yet.
+                <LinkActivityButton movement={movement} />
+                <AddActivityButton movement={movement} size="sm" />
               </div>
-            ) : (
-              movementActivities.map((movementActivity, index) => (
-                <div
-                  key={movementActivity.id}
-                  className={cn(
-                    "flex h-10 cursor-pointer items-center justify-center px-4 text-sm hover:bg-muted",
-                    index !== movementActivities.length - 1 && "border-b",
-                  )}
-                  onClick={() => focusActivity(movementActivity.activity!.id)}
-                >
-                  <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
-                    {format(movementActivity.activity!.date, "dd/MM/yyyy")}
-                  </div>
-                  <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
-                    {format(movementActivity.activity!.date, "dd/MM")}
-                  </div>
 
-                  <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                    {movementActivity.activity!.name}
+              <div className="mt-4 mb-2 rounded border bg-muted/50">
+                {movementActivities.length === 0 ? (
+                  <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
+                    No activity linked to this movement yet.
                   </div>
-                  <div className="flex-1" />
-                  <div className="w-20 text-right font-mono whitespace-nowrap">
-                    {currencyFormatter.format(movementActivity.amount)}
-                  </div>
-                </div>
-              ))
-            )}
+                ) : (
+                  movementActivities.map((movementActivity, index) => (
+                    <div
+                      key={movementActivity.id}
+                      className={cn(
+                        "flex h-10 cursor-pointer items-center justify-center px-4 text-sm hover:bg-muted",
+                        index !== movementActivities.length - 1 && "border-b",
+                      )}
+                      onClick={() =>
+                        router.navigate({
+                          to: "/activities/$id",
+                          params: { id: movementActivity.activity!.id },
+                        })
+                      }
+                    >
+                      <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
+                        {format(movementActivity.activity!.date, "dd/MM/yyyy")}
+                      </div>
+                      <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
+                        {format(movementActivity.activity!.date, "dd/MM")}
+                      </div>
+
+                      <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {movementActivity.activity!.name}
+                      </div>
+                      <div className="flex-1" />
+                      <div className="w-20 text-right font-mono whitespace-nowrap">
+                        {currencyFormatter.format(movementActivity.amount)}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

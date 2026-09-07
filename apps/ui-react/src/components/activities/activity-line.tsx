@@ -21,7 +21,6 @@ interface ActivityLineProps {
   activity: Activity;
   onClick?: (activityId: string) => void;
   onCheckedChange: (checked: boolean) => void;
-  selected?: boolean;
   checked?: boolean;
   accountFilter?: string | null;
   hideProject?: boolean;
@@ -31,7 +30,6 @@ export function ActivityLine({
   activity,
   onClick,
   onCheckedChange,
-  selected = false,
   checked = false,
   accountFilter = null,
   hideProject = false,
@@ -97,10 +95,8 @@ export function ActivityLine({
   return (
     <div
       className={cn(
-        "group block shrink border-b transition-colors hover:bg-accent",
+        "group block shrink border-b border-l-4 border-l-transparent pl-1 transition-colors hover:bg-accent",
         {
-          "border-l-4 border-l-primary bg-accent": selected,
-          "pl-1": !selected,
           "bg-primary/30 hover:bg-primary/40": checked,
         },
       )}

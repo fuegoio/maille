@@ -15,14 +15,18 @@ import { Route as DeviceRouteImport } from './routes/device'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProjectsIndexRouteImport } from './routes/_authenticated/projects/index'
+import { Route as AuthenticatedMovementsIndexRouteImport } from './routes/_authenticated/movements/index'
 import { Route as AuthenticatedMonthsIndexRouteImport } from './routes/_authenticated/months/index'
 import { Route as AuthenticatedFundsIndexRouteImport } from './routes/_authenticated/funds/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
+import { Route as AuthenticatedActivitiesIndexRouteImport } from './routes/_authenticated/activities/index'
 import { Route as AuthenticatedAccountsIndexRouteImport } from './routes/_authenticated/accounts/index'
 import { Route as AuthenticatedProjectsIdRouteImport } from './routes/_authenticated/projects/$id'
-import { Route as AuthenticatedMovementsChar123IdChar125RouteImport } from './routes/_authenticated/movements/{-$id}'
+import { Route as AuthenticatedMovementsToLinkRouteImport } from './routes/_authenticated/movements/to-link'
+import { Route as AuthenticatedMovementsIdRouteImport } from './routes/_authenticated/movements/$id'
 import { Route as AuthenticatedMonthsMonthRouteImport } from './routes/_authenticated/months/$month'
-import { Route as AuthenticatedActivitiesChar123IdChar125RouteImport } from './routes/_authenticated/activities/{-$id}'
+import { Route as AuthenticatedActivitiesToReconciliateRouteImport } from './routes/_authenticated/activities/to-reconciliate'
+import { Route as AuthenticatedActivitiesIdRouteImport } from './routes/_authenticated/activities/$id'
 import { Route as AuthenticatedAccountsIdRouteImport } from './routes/_authenticated/accounts/$id'
 import { Route as AuthenticatedCategoriesIdIndexRouteImport } from './routes/_authenticated/categories/$id/index'
 import { Route as AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRouteImport } from './routes/_authenticated/categories/$id/subcategories/$subcategoryId'
@@ -57,6 +61,12 @@ const AuthenticatedProjectsIndexRoute =
     path: '/projects/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMovementsIndexRoute =
+  AuthenticatedMovementsIndexRouteImport.update({
+    id: '/movements/',
+    path: '/movements/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMonthsIndexRoute =
   AuthenticatedMonthsIndexRouteImport.update({
     id: '/months/',
@@ -74,6 +84,12 @@ const AuthenticatedCategoriesIndexRoute =
     path: '/categories/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedActivitiesIndexRoute =
+  AuthenticatedActivitiesIndexRouteImport.update({
+    id: '/activities/',
+    path: '/activities/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAccountsIndexRoute =
   AuthenticatedAccountsIndexRouteImport.update({
     id: '/accounts/',
@@ -85,10 +101,16 @@ const AuthenticatedProjectsIdRoute = AuthenticatedProjectsIdRouteImport.update({
   path: '/projects/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedMovementsChar123IdChar125Route =
-  AuthenticatedMovementsChar123IdChar125RouteImport.update({
-    id: '/movements/{-$id}',
-    path: '/movements/{-$id}',
+const AuthenticatedMovementsToLinkRoute =
+  AuthenticatedMovementsToLinkRouteImport.update({
+    id: '/movements/to-link',
+    path: '/movements/to-link',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMovementsIdRoute =
+  AuthenticatedMovementsIdRouteImport.update({
+    id: '/movements/$id',
+    path: '/movements/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMonthsMonthRoute =
@@ -97,10 +119,16 @@ const AuthenticatedMonthsMonthRoute =
     path: '/months/$month',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedActivitiesChar123IdChar125Route =
-  AuthenticatedActivitiesChar123IdChar125RouteImport.update({
-    id: '/activities/{-$id}',
-    path: '/activities/{-$id}',
+const AuthenticatedActivitiesToReconciliateRoute =
+  AuthenticatedActivitiesToReconciliateRouteImport.update({
+    id: '/activities/to-reconciliate',
+    path: '/activities/to-reconciliate',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedActivitiesIdRoute =
+  AuthenticatedActivitiesIdRouteImport.update({
+    id: '/activities/$id',
+    path: '/activities/$id',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAccountsIdRoute = AuthenticatedAccountsIdRouteImport.update({
@@ -127,14 +155,18 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/accounts/$id': typeof AuthenticatedAccountsIdRoute
-  '/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/activities/$id': typeof AuthenticatedActivitiesIdRoute
+  '/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
-  '/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/movements/$id': typeof AuthenticatedMovementsIdRoute
+  '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
   '/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/activities/': typeof AuthenticatedActivitiesIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/funds/': typeof AuthenticatedFundsIndexRoute
   '/months/': typeof AuthenticatedMonthsIndexRoute
+  '/movements/': typeof AuthenticatedMovementsIndexRoute
   '/projects/': typeof AuthenticatedProjectsIndexRoute
   '/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
   '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
@@ -145,14 +177,18 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/': typeof AuthenticatedIndexRoute
   '/accounts/$id': typeof AuthenticatedAccountsIdRoute
-  '/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/activities/$id': typeof AuthenticatedActivitiesIdRoute
+  '/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
-  '/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/movements/$id': typeof AuthenticatedMovementsIdRoute
+  '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
   '/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/accounts': typeof AuthenticatedAccountsIndexRoute
+  '/activities': typeof AuthenticatedActivitiesIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/funds': typeof AuthenticatedFundsIndexRoute
   '/months': typeof AuthenticatedMonthsIndexRoute
+  '/movements': typeof AuthenticatedMovementsIndexRoute
   '/projects': typeof AuthenticatedProjectsIndexRoute
   '/categories/$id': typeof AuthenticatedCategoriesIdIndexRoute
   '/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
@@ -165,14 +201,18 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/accounts/$id': typeof AuthenticatedAccountsIdRoute
-  '/_authenticated/activities/{-$id}': typeof AuthenticatedActivitiesChar123IdChar125Route
+  '/_authenticated/activities/$id': typeof AuthenticatedActivitiesIdRoute
+  '/_authenticated/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
   '/_authenticated/months/$month': typeof AuthenticatedMonthsMonthRoute
-  '/_authenticated/movements/{-$id}': typeof AuthenticatedMovementsChar123IdChar125Route
+  '/_authenticated/movements/$id': typeof AuthenticatedMovementsIdRoute
+  '/_authenticated/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
   '/_authenticated/projects/$id': typeof AuthenticatedProjectsIdRoute
   '/_authenticated/accounts/': typeof AuthenticatedAccountsIndexRoute
+  '/_authenticated/activities/': typeof AuthenticatedActivitiesIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/funds/': typeof AuthenticatedFundsIndexRoute
   '/_authenticated/months/': typeof AuthenticatedMonthsIndexRoute
+  '/_authenticated/movements/': typeof AuthenticatedMovementsIndexRoute
   '/_authenticated/projects/': typeof AuthenticatedProjectsIndexRoute
   '/_authenticated/categories/$id/': typeof AuthenticatedCategoriesIdIndexRoute
   '/_authenticated/categories/$id/subcategories/$subcategoryId': typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
@@ -185,14 +225,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/accounts/$id'
-    | '/activities/{-$id}'
+    | '/activities/$id'
+    | '/activities/to-reconciliate'
     | '/months/$month'
-    | '/movements/{-$id}'
+    | '/movements/$id'
+    | '/movements/to-link'
     | '/projects/$id'
     | '/accounts/'
+    | '/activities/'
     | '/categories/'
     | '/funds/'
     | '/months/'
+    | '/movements/'
     | '/projects/'
     | '/categories/$id/'
     | '/categories/$id/subcategories/$subcategoryId'
@@ -203,14 +247,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/'
     | '/accounts/$id'
-    | '/activities/{-$id}'
+    | '/activities/$id'
+    | '/activities/to-reconciliate'
     | '/months/$month'
-    | '/movements/{-$id}'
+    | '/movements/$id'
+    | '/movements/to-link'
     | '/projects/$id'
     | '/accounts'
+    | '/activities'
     | '/categories'
     | '/funds'
     | '/months'
+    | '/movements'
     | '/projects'
     | '/categories/$id'
     | '/categories/$id/subcategories/$subcategoryId'
@@ -222,14 +270,18 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/'
     | '/_authenticated/accounts/$id'
-    | '/_authenticated/activities/{-$id}'
+    | '/_authenticated/activities/$id'
+    | '/_authenticated/activities/to-reconciliate'
     | '/_authenticated/months/$month'
-    | '/_authenticated/movements/{-$id}'
+    | '/_authenticated/movements/$id'
+    | '/_authenticated/movements/to-link'
     | '/_authenticated/projects/$id'
     | '/_authenticated/accounts/'
+    | '/_authenticated/activities/'
     | '/_authenticated/categories/'
     | '/_authenticated/funds/'
     | '/_authenticated/months/'
+    | '/_authenticated/movements/'
     | '/_authenticated/projects/'
     | '/_authenticated/categories/$id/'
     | '/_authenticated/categories/$id/subcategories/$subcategoryId'
@@ -286,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/movements/': {
+      id: '/_authenticated/movements/'
+      path: '/movements'
+      fullPath: '/movements/'
+      preLoaderRoute: typeof AuthenticatedMovementsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/months/': {
       id: '/_authenticated/months/'
       path: '/months'
@@ -307,6 +366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/activities/': {
+      id: '/_authenticated/activities/'
+      path: '/activities'
+      fullPath: '/activities/'
+      preLoaderRoute: typeof AuthenticatedActivitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/accounts/': {
       id: '/_authenticated/accounts/'
       path: '/accounts'
@@ -321,11 +387,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/movements/{-$id}': {
-      id: '/_authenticated/movements/{-$id}'
-      path: '/movements/{-$id}'
-      fullPath: '/movements/{-$id}'
-      preLoaderRoute: typeof AuthenticatedMovementsChar123IdChar125RouteImport
+    '/_authenticated/movements/to-link': {
+      id: '/_authenticated/movements/to-link'
+      path: '/movements/to-link'
+      fullPath: '/movements/to-link'
+      preLoaderRoute: typeof AuthenticatedMovementsToLinkRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/movements/$id': {
+      id: '/_authenticated/movements/$id'
+      path: '/movements/$id'
+      fullPath: '/movements/$id'
+      preLoaderRoute: typeof AuthenticatedMovementsIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/months/$month': {
@@ -335,11 +408,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMonthsMonthRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/activities/{-$id}': {
-      id: '/_authenticated/activities/{-$id}'
-      path: '/activities/{-$id}'
-      fullPath: '/activities/{-$id}'
-      preLoaderRoute: typeof AuthenticatedActivitiesChar123IdChar125RouteImport
+    '/_authenticated/activities/to-reconciliate': {
+      id: '/_authenticated/activities/to-reconciliate'
+      path: '/activities/to-reconciliate'
+      fullPath: '/activities/to-reconciliate'
+      preLoaderRoute: typeof AuthenticatedActivitiesToReconciliateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/activities/$id': {
+      id: '/_authenticated/activities/$id'
+      path: '/activities/$id'
+      fullPath: '/activities/$id'
+      preLoaderRoute: typeof AuthenticatedActivitiesIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/accounts/$id': {
@@ -369,14 +449,18 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAccountsIdRoute: typeof AuthenticatedAccountsIdRoute
-  AuthenticatedActivitiesChar123IdChar125Route: typeof AuthenticatedActivitiesChar123IdChar125Route
+  AuthenticatedActivitiesIdRoute: typeof AuthenticatedActivitiesIdRoute
+  AuthenticatedActivitiesToReconciliateRoute: typeof AuthenticatedActivitiesToReconciliateRoute
   AuthenticatedMonthsMonthRoute: typeof AuthenticatedMonthsMonthRoute
-  AuthenticatedMovementsChar123IdChar125Route: typeof AuthenticatedMovementsChar123IdChar125Route
+  AuthenticatedMovementsIdRoute: typeof AuthenticatedMovementsIdRoute
+  AuthenticatedMovementsToLinkRoute: typeof AuthenticatedMovementsToLinkRoute
   AuthenticatedProjectsIdRoute: typeof AuthenticatedProjectsIdRoute
   AuthenticatedAccountsIndexRoute: typeof AuthenticatedAccountsIndexRoute
+  AuthenticatedActivitiesIndexRoute: typeof AuthenticatedActivitiesIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedFundsIndexRoute: typeof AuthenticatedFundsIndexRoute
   AuthenticatedMonthsIndexRoute: typeof AuthenticatedMonthsIndexRoute
+  AuthenticatedMovementsIndexRoute: typeof AuthenticatedMovementsIndexRoute
   AuthenticatedProjectsIndexRoute: typeof AuthenticatedProjectsIndexRoute
   AuthenticatedCategoriesIdIndexRoute: typeof AuthenticatedCategoriesIdIndexRoute
   AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute: typeof AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute
@@ -385,16 +469,19 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAccountsIdRoute: AuthenticatedAccountsIdRoute,
-  AuthenticatedActivitiesChar123IdChar125Route:
-    AuthenticatedActivitiesChar123IdChar125Route,
+  AuthenticatedActivitiesIdRoute: AuthenticatedActivitiesIdRoute,
+  AuthenticatedActivitiesToReconciliateRoute:
+    AuthenticatedActivitiesToReconciliateRoute,
   AuthenticatedMonthsMonthRoute: AuthenticatedMonthsMonthRoute,
-  AuthenticatedMovementsChar123IdChar125Route:
-    AuthenticatedMovementsChar123IdChar125Route,
+  AuthenticatedMovementsIdRoute: AuthenticatedMovementsIdRoute,
+  AuthenticatedMovementsToLinkRoute: AuthenticatedMovementsToLinkRoute,
   AuthenticatedProjectsIdRoute: AuthenticatedProjectsIdRoute,
   AuthenticatedAccountsIndexRoute: AuthenticatedAccountsIndexRoute,
+  AuthenticatedActivitiesIndexRoute: AuthenticatedActivitiesIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedFundsIndexRoute: AuthenticatedFundsIndexRoute,
   AuthenticatedMonthsIndexRoute: AuthenticatedMonthsIndexRoute,
+  AuthenticatedMovementsIndexRoute: AuthenticatedMovementsIndexRoute,
   AuthenticatedProjectsIndexRoute: AuthenticatedProjectsIndexRoute,
   AuthenticatedCategoriesIdIndexRoute: AuthenticatedCategoriesIdIndexRoute,
   AuthenticatedCategoriesIdSubcategoriesSubcategoryIdRoute:

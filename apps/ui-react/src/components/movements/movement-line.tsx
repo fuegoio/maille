@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 
 interface MovementLineProps {
   movement: Movement;
-  selected: boolean;
   checked: boolean;
   onClick: () => void;
   onCheckedChange: (checked: boolean) => void;
@@ -20,7 +19,6 @@ interface MovementLineProps {
 
 export function MovementLine({
   movement,
-  selected,
   checked,
   onClick,
   onCheckedChange,
@@ -31,10 +29,8 @@ export function MovementLine({
     <div
       key={movement.id}
       className={cn(
-        "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b pr-2 text-sm transition-colors hover:bg-accent lg:pr-6",
+        "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b border-l-4 border-l-transparent pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
         {
-          "border-l-4 border-l-primary bg-accent pl-4.5": selected,
-          "pl-5.5": !selected,
           "bg-primary/30 hover:bg-primary/40": checked,
         },
       )}

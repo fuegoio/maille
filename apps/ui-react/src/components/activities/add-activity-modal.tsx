@@ -5,6 +5,7 @@ import type { Movement } from "@maille/core/movements";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
+import { useRouter } from "@tanstack/react-router";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -118,7 +119,7 @@ export function AddActivityModal({
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
   const mutate = useSync((state) => state.mutate);
-  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
+  const router = useRouter();
   const currencyFormatter = useCurrencyFormatter();
 
   const form = useForm<FormValues>({
@@ -354,7 +355,10 @@ export function AddActivityModal({
 
     reset();
     onOpenChange(false);
-    setFocusedActivity(newActivity.id);
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: newActivity.id },
+    });
   };
 
   // Create multiple activities from movements

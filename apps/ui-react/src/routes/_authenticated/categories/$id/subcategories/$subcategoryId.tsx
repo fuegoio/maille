@@ -6,11 +6,10 @@ import {
   Settings,
   SquareChartGantt,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
-import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
@@ -65,7 +64,6 @@ function SubcategoryPage() {
 
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
-  const focusedActivity = useActivities((state) => state.focusedActivity);
 
   const category = useActivities((state) =>
     state.getActivityCategoryById(subcategory.category),
@@ -77,12 +75,6 @@ function SubcategoryPage() {
   const currencyFormatter = useCurrencyFormatter();
 
   const [summaryOpen, setSummaryOpen] = useState(true);
-
-  useEffect(() => {
-    if (focusedActivity) {
-      setSummaryOpen(false);
-    }
-  }, [focusedActivity]);
 
   const viewActivities = activities.filter(
     (a) => a.subcategory === subcategory.id,
@@ -138,167 +130,155 @@ function SubcategoryPage() {
   } satisfies ChartConfig;
 
   return (
-    <>
-      <SidebarInset className="flex-row">
-        <div
-          className={cn(
-            "flex min-w-0 flex-1 flex-col",
-            summaryOpen && "hidden md:flex",
-          )}
-        >
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
+    <SidebarInset className="flex-row">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          summaryOpen && "hidden md:flex",
+        )}
+      >
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/categories">Categories</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to={`/categories/$id`} params={{ id: categoryId }}>
-                      <CategoryLabel categoryId={category.id} />
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {subcategory.emoji && (
-                      <span className="mr-2">{subcategory.emoji}</span>
-                    )}
-                    {subcategory.name}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-            <FilterActivitiesButton
-              viewId={`subcategory-${subcategory.id}`}
-              className="ml-2 text-muted-foreground"
-            />
-            <div className="flex-1" />
-            <SearchBar />
-            <AddActivityButton
-              type={category.type}
-              category={category.id}
-              subcategory={subcategory.id}
-            />
-            {!summaryOpen && (
-              <Button
-                variant="secondary"
-                onClick={() => setSummaryOpen(true)}
-                size={focusedActivity ? "icon" : "default"}
-              >
-                <SquareChartGantt />
-                {!focusedActivity && (
-                  <>
-                    Summary
-                    <ChevronRight />
-                  </>
-                )}
-              </Button>
-            )}
-            <SubcategorySettingsDialog subcategory={subcategory}>
-              <Button variant="ghost" size="icon">
-                <Settings />
-              </Button>
-            </SubcategorySettingsDialog>
-          </header>
-
-          <ActivitiesTable
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/categories">Categories</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/categories/$id`} params={{ id: categoryId }}>
+                    <CategoryLabel categoryId={category.id} />
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {subcategory.emoji && (
+                    <span className="mr-2">{subcategory.emoji}</span>
+                  )}
+                  {subcategory.name}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <FilterActivitiesButton
             viewId={`subcategory-${subcategory.id}`}
-            activities={viewActivities}
-            grouping="period"
+            className="ml-2 text-muted-foreground"
           />
-        </div>
+          <div className="flex-1" />
+          <SearchBar />
+          <AddActivityButton
+            type={category.type}
+            category={category.id}
+            subcategory={subcategory.id}
+          />
+          {!summaryOpen && (
+            <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
+              <SquareChartGantt />
+              Summary
+              <ChevronRight />
+            </Button>
+          )}
+          <SubcategorySettingsDialog subcategory={subcategory}>
+            <Button variant="ghost" size="icon">
+              <Settings />
+            </Button>
+          </SubcategorySettingsDialog>
+        </header>
 
-        {summaryOpen && (
-          <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
-            <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSummaryOpen(false)}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <div className="text-sm font-medium">Summary</div>
-            </div>
+        <ActivitiesTable
+          viewId={`subcategory-${subcategory.id}`}
+          activities={viewActivities}
+          grouping="period"
+        />
+      </div>
 
-            {/* KPIs + chart */}
-            <div className="w-full border-b">
-              <div className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="font-semibold">Last 30 days</div>
-                  <div className="flex-1" />
-                  <span className="font-mono">
-                    {currencyFormatter.format(total30Days)}
-                  </span>
-                </div>
+      {summaryOpen && (
+        <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
+          <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSummaryOpen(false)}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <div className="text-sm font-medium">Summary</div>
+          </div>
 
-                <div className="mt-3 flex items-center text-sm">
-                  <div className="font-medium text-muted-foreground">Total</div>
-                  <div className="flex-1" />
-                  <span className="font-mono text-muted-foreground">
-                    {currencyFormatter.format(totalOverall)}
-                  </span>
-                </div>
+          {/* KPIs + chart */}
+          <div className="w-full border-b">
+            <div className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="font-semibold">Last 30 days</div>
+                <div className="flex-1" />
+                <span className="font-mono">
+                  {currencyFormatter.format(total30Days)}
+                </span>
               </div>
 
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-auto h-[180px] w-full border-t p-3"
-              >
-                <BarChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{ left: 12, right: 12 }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="date"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value);
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      });
-                    }}
-                  />
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        className="w-[150px]"
-                        nameKey="views"
-                        formatter={(value) =>
-                          currencyFormatter.format(value as number)
-                        }
-                        labelFormatter={(value) =>
-                          new Date(value).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        }
-                      />
-                    }
-                  />
-                  <Bar dataKey="value" fill="var(--color-value)" />
-                </BarChart>
-              </ChartContainer>
+              <div className="mt-3 flex items-center text-sm">
+                <div className="font-medium text-muted-foreground">Total</div>
+                <div className="flex-1" />
+                <span className="font-mono text-muted-foreground">
+                  {currencyFormatter.format(totalOverall)}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </SidebarInset>
 
-      <Activity />
-    </>
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-auto h-[180px] w-full border-t p-3"
+            >
+              <BarChart
+                accessibilityLayer
+                data={chartData}
+                margin={{ left: 12, right: 12 }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  minTickGap={32}
+                  tickFormatter={(value) => {
+                    const date = new Date(value);
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    });
+                  }}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      className="w-[150px]"
+                      nameKey="views"
+                      formatter={(value) =>
+                        currencyFormatter.format(value as number)
+                      }
+                      labelFormatter={(value) =>
+                        new Date(value).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      }
+                    />
+                  }
+                />
+                <Bar dataKey="value" fill="var(--color-value)" />
+              </BarChart>
+            </ChartContainer>
+          </div>
+        </div>
+      )}
+    </SidebarInset>
   );
 }

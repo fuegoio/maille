@@ -1,9 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
-import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
@@ -48,88 +47,69 @@ function CategoryPage() {
   }
 
   const activities = useActivities((state) => state.activities);
-  const focusedActivity = useActivities((state) => state.focusedActivity);
 
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
-  useEffect(() => {
-    if (focusedActivity) {
-      setSummaryOpen(false);
-    }
-  }, [focusedActivity]);
-
   const viewActivities = activities.filter((a) => a.category === category.id);
 
   return (
-    <>
-      <SidebarInset className="flex-row">
-        <div
-          className={cn(
-            "flex min-w-0 flex-1 flex-col",
-            summaryOpen && "hidden md:flex",
-          )}
-        >
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
+    <SidebarInset className="flex-row">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          summaryOpen && "hidden md:flex",
+        )}
+      >
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/categories">Categories</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <CategoryLabel categoryId={category.id} />
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-            <FilterActivitiesButton
-              viewId={`category-${category.id}`}
-              className="ml-2 text-muted-foreground"
-            />
-            <div className="flex-1" />
-            <SearchBar />
-            <AddActivityButton type={category.type} category={category.id} />
-            {!summaryOpen && (
-              <Button
-                variant="outline"
-                onClick={() => setSummaryOpen(true)}
-                size={focusedActivity ? "icon" : "default"}
-              >
-                <SquareChartGantt />
-                {!focusedActivity && (
-                  <>
-                    Summary
-                    <ChevronRight />
-                  </>
-                )}
-              </Button>
-            )}
-            <CategorySettingsDialog category={category}>
-              <Button variant="ghost" size="icon">
-                <Settings />
-              </Button>
-            </CategorySettingsDialog>
-          </header>
-
-          <ActivitiesTable
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/categories">Categories</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  <CategoryLabel categoryId={category.id} />
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <FilterActivitiesButton
             viewId={`category-${category.id}`}
-            activities={viewActivities}
-            grouping="period"
+            className="ml-2 text-muted-foreground"
           />
-        </div>
+          <div className="flex-1" />
+          <SearchBar />
+          <AddActivityButton type={category.type} category={category.id} />
+          {!summaryOpen && (
+            <Button variant="outline" onClick={() => setSummaryOpen(true)}>
+              <SquareChartGantt />
+              Summary
+              <ChevronRight />
+            </Button>
+          )}
+          <CategorySettingsDialog category={category}>
+            <Button variant="ghost" size="icon">
+              <Settings />
+            </Button>
+          </CategorySettingsDialog>
+        </header>
 
-        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-          <CategorySummary category={category} />
-        </SummaryPanel>
-      </SidebarInset>
+        <ActivitiesTable
+          viewId={`category-${category.id}`}
+          activities={viewActivities}
+          grouping="period"
+        />
+      </div>
 
-      <Activity />
-    </>
+      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+        <CategorySummary category={category} />
+      </SummaryPanel>
+    </SidebarInset>
   );
 }

@@ -5,7 +5,6 @@ import { useState } from "react";
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
-import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
@@ -56,80 +55,73 @@ function ProjectPage() {
   );
 
   return (
-    <>
-      <SidebarInset className="flex-row">
-        <div
-          className={cn(
-            "flex min-w-0 flex-1 flex-col",
-            summaryOpen && "hidden md:flex",
-          )}
-        >
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-            <SidebarTrigger className="mr-1" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/projects">Projects</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {project.emoji && (
-                      <span className="mr-1">{project.emoji}</span>
-                    )}
-                    <span>{project.name}</span>
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-            <div className="flex-1" />
-            <AddActivityButton project={projectId} />
-            <Button
-              variant="outline"
-              onClick={() => setShowSettingsDialog(true)}
-            >
-              <Settings />
-              Edit
+    <SidebarInset className="flex-row">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          summaryOpen && "hidden md:flex",
+        )}
+      >
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/projects">Projects</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {project.emoji && (
+                    <span className="mr-1">{project.emoji}</span>
+                  )}
+                  <span>{project.name}</span>
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex-1" />
+          <AddActivityButton project={projectId} />
+          <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
+            <Settings />
+            Edit
+          </Button>
+
+          {!summaryOpen && (
+            <Button variant="default" onClick={() => setSummaryOpen(true)}>
+              <SquareChartGantt />
+              Summary
+              <ChevronRight />
             </Button>
+          )}
 
-            {!summaryOpen && (
-              <Button variant="default" onClick={() => setSummaryOpen(true)}>
-                <SquareChartGantt />
-                Summary
-                <ChevronRight />
-              </Button>
-            )}
-
-            <ProjectSettingsDialog
-              project={project}
-              open={showSettingsDialog}
-              onOpenChange={setShowSettingsDialog}
-            />
-          </header>
-
-          <ActivitiesTable
-            viewId="project-detail"
-            grouping="period"
-            activities={projectActivities}
-            hideProject={true}
-            activityTypeFilter={activitiesFilters.activityType}
-            categoryFilter={activitiesFilters.category}
-            subcategoryFilter={activitiesFilters.subcategory}
-          />
-        </div>
-
-        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-          <ProjectSummary
+          <ProjectSettingsDialog
             project={project}
-            activitiesFilters={activitiesFilters}
-            onActivitiesFiltersChange={setActivitiesFilters}
+            open={showSettingsDialog}
+            onOpenChange={setShowSettingsDialog}
           />
-        </SummaryPanel>
-      </SidebarInset>
+        </header>
 
-      <Activity />
-    </>
+        <ActivitiesTable
+          viewId="project-detail"
+          grouping="period"
+          activities={projectActivities}
+          hideProject={true}
+          activityTypeFilter={activitiesFilters.activityType}
+          categoryFilter={activitiesFilters.category}
+          subcategoryFilter={activitiesFilters.subcategory}
+        />
+      </div>
+
+      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+        <ProjectSummary
+          project={project}
+          activitiesFilters={activitiesFilters}
+          onActivitiesFiltersChange={setActivitiesFilters}
+        />
+      </SummaryPanel>
+    </SidebarInset>
   );
 }

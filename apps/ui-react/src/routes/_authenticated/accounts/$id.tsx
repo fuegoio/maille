@@ -10,7 +10,7 @@ import {
   SquareChartGantt,
   Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
@@ -23,12 +23,10 @@ import { CounterpartiesTable } from "@/components/accounts/counterparties/counte
 import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { ActivitiesTable } from "@/components/activities/activities-table";
-import { Activity } from "@/components/activities/activity";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
-import { Movement } from "@/components/movements/movement";
 import { MovementsTable } from "@/components/movements/movements-table";
 import { SearchBar } from "@/components/search-bar";
 import {
@@ -74,15 +72,7 @@ function AccountPage() {
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   const activities = useActivities((state) => state.activities);
-  const focusedActivity = useActivities((state) => state.focusedActivity);
   const movements = useMovements((state) => state.movements);
-  const focusedMovement = useMovements((state) => state.focusedMovement);
-
-  useEffect(() => {
-    if (focusedActivity || focusedMovement) {
-      setSummaryOpen(false);
-    }
-  }, [focusedActivity, focusedMovement]);
 
   const viewActivities = activities.filter((a) =>
     a.transactions.some(
@@ -122,18 +112,10 @@ function AccountPage() {
             <div className="flex-1" />
             <SearchBar />
             {!summaryOpen && (
-              <Button
-                variant="secondary"
-                onClick={() => setSummaryOpen(true)}
-                size={focusedActivity || focusedMovement ? "icon" : "default"}
-              >
+              <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
                 <SquareChartGantt />
-                {!(focusedActivity || focusedMovement) && (
-                  <>
-                    Summary
-                    <ChevronRight />
-                  </>
-                )}
+                Summary
+                <ChevronRight />
               </Button>
             )}
             <ShareAccountDialog account={account}>
@@ -250,8 +232,6 @@ function AccountPage() {
         </SummaryPanel>
       </SidebarInset>
 
-      {selectedTab === "activities" && <Activity />}
-      {selectedTab === "movements" && <Movement />}
       {selectedTab === "assets" && <Asset />}
       {selectedTab === "counterparties" && <Counterparty />}
     </>

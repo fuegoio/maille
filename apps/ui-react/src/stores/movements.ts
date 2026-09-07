@@ -10,7 +10,6 @@ import { storage } from "./storage";
 
 interface MovementsState {
   movements: Movement[];
-  focusedMovement: string | null;
 
   getMovementById: (movementId: string) => Movement | undefined;
 
@@ -26,8 +25,6 @@ interface MovementsState {
   ) => void;
   deleteMovement: (movementId: string) => void;
   restoreMovement: (movement: Movement) => void;
-
-  setFocusedMovement: (movementId: string | null) => void;
 
   addMovementActivity: (
     movementId: string,
@@ -52,14 +49,9 @@ export const useMovements = create<MovementsState>()(
   persist(
     (set, get) => ({
       movements: [],
-      focusedMovement: null,
 
       getMovementById: (movementId: string): Movement | undefined => {
         return get().movements.find((m) => m.id === movementId);
-      },
-
-      setFocusedMovement: (movementId: string | null) => {
-        set({ focusedMovement: movementId });
       },
 
       addMovementActivity: (movementId, movementActivity) => {

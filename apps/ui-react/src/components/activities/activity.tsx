@@ -1,6 +1,15 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { ActivityType, type ActivityStatus } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { ChevronRight, Copy, Ellipsis, Scissors, Trash2 } from "lucide-react";
+import { Link, useRouter } from "@tanstack/react-router";
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+  Copy,
+  Ellipsis,
+  Scissors,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -14,6 +23,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -57,8 +74,44 @@ import { ActivitySubcategorySelect } from "./activity-subcategory-select";
 import { ActivityTransactions } from "./activity-transactions";
 import { SplitActivityModal } from "./split-activity-modal";
 
-export function Activity() {
-  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
+const ACTIVITY_STATUS_NAME: Record<ActivityStatus, string> = {
+  scheduled: "Scheduled",
+  incomplete: "To reconciliate",
+  completed: "Reconciled",
+};
+
+const ACTIVITY_STATUS_DESCRIPTION: Record<ActivityStatus, string> = {
+  scheduled: "Dated in the future — no reconciliation expected yet.",
+  incomplete: "Linked movements don't cover this activity's transactions yet.",
+  completed: "Linked movements cover this activity's transactions.",
+};
+
+function ActivityStatusMark({ status }: { status: ActivityStatus }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      {status === "scheduled" ? (
+        <CircleDashed className="size-4 shrink-0 text-muted-foreground" />
+      ) : status === "incomplete" ? (
+        <CircleDotDashed className="size-4 shrink-0 text-orange-300" />
+      ) : (
+        <CircleCheck className="size-4 shrink-0 text-indigo-300" />
+      )}
+      <span className="shrink-0 text-sm font-medium">
+        {ACTIVITY_STATUS_NAME[status]}
+      </span>
+      <span className="truncate text-xs text-muted-foreground">
+        {ACTIVITY_STATUS_DESCRIPTION[status]}
+      </span>
+    </div>
+  );
+}
+
+interface ActivityPageProps {
+  activityId: string;
+}
+
+export function ActivityPage({ activityId }: ActivityPageProps) {
+  const router = useRouter();
   const mutate = useSync((state) => state.mutate);
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -66,10 +119,8 @@ export function Activity() {
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [showSplitModal, setShowSplitModal] = React.useState(false);
 
-  const activity = useActivities((state) => {
-    if (!state.focusedActivity) return null;
-    return state.getActivityById(state.focusedActivity);
-  });
+  const activity = useActivities((state) => state.getActivityById(activityId));
+  const activities = useActivities((state) => state.activities);
 
   const filteredCategories = React.useMemo(() => {
     if (!activity?.type) return categories;
@@ -77,10 +128,6 @@ export function Activity() {
   }, [activity?.type, categories]);
 
   const currencyFormatter = useCurrencyFormatter();
-
-  const close = () => {
-    setFocusedActivity(null);
-  };
 
   const deleteActivity = () => {
     if (!activity) return;
@@ -105,8 +152,8 @@ export function Activity() {
       ],
     });
 
-    close();
     setShowDeleteModal(false);
+    void router.navigate({ to: "/activities" });
   };
 
   const duplicateActivity = () => {
@@ -135,7 +182,10 @@ export function Activity() {
       ],
     });
 
-    setFocusedActivity(duplicatedActivity.id);
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: duplicatedActivity.id },
+    });
   };
 
   const updateActivity = (update: {
@@ -178,28 +228,71 @@ export function Activity() {
     });
   };
 
-  // Hotkey to close with Escape
-  useHotkey(
-    "Escape",
-    () => {
-      close();
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
+  // Hotkeys to navigate between activities (same order as the activities table)
+  const sortedActivities = React.useMemo(() => {
+    return [...activities].sort((a, b) => {
+      if (a.date.getTime() !== b.date.getTime()) {
+        return b.date.getTime() - a.date.getTime();
+      }
+      return b.id.localeCompare(a.id);
+    });
+  }, [activities]);
+
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    if (sortedActivities.length === 0) return;
+
+    const currentIndex = sortedActivities.findIndex((a) => a.id === activityId);
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex - 1 + sortedActivities.length) %
+          sortedActivities.length;
+
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: sortedActivities[nextIndex].id },
+      replace: true,
+    });
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    if (sortedActivities.length === 0) return;
+
+    const currentIndex = sortedActivities.findIndex((a) => a.id === activityId);
+    const nextIndex =
+      currentIndex === -1 ? 0 : (currentIndex + 1) % sortedActivities.length;
+
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: sortedActivities[nextIndex].id },
+      replace: true,
+    });
+  });
 
   if (!activity) return null;
 
   return (
-    <SidebarInset className="xl:max-w-lg">
+    <SidebarInset>
       <div className="flex h-full flex-col">
-        <div className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
-          <SidebarTrigger className="xl:hidden" />
-          <Button variant="ghost" size="icon" onClick={close}>
-            <ChevronRight />
-          </Button>
-          <div className="text-sm font-medium">Activity</div>
+        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
+          <SidebarTrigger />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/activities">Activities</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="max-w-48 truncate">
+                  {activity.name}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
 
           <div className="flex-1" />
 
@@ -251,138 +344,126 @@ export function Activity() {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-        </div>
+        </header>
 
         <div className="flex-1 overflow-y-auto pb-20">
-          <div className="border-b px-4 py-8 sm:px-8">
-            <div className="flex items-center justify-between">
-              <div
-                className={cn(
-                  "flex h-7 w-fit items-center rounded-md border px-3",
-                  {
-                    "bg-muted": activity.status === "scheduled",
-                    "bg-orange-400": activity.status === "incomplete",
-                    "bg-indigo-400": activity.status === "completed",
-                  },
-                )}
-              >
-                <span className="text-sm font-medium text-white capitalize">
-                  {activity.status}
-                </span>
+          <div className="mx-auto w-full max-w-3xl">
+            <div className="border-b px-4 py-8 sm:px-8">
+              <div className="flex items-start justify-between gap-4">
+                <ActivityStatusMark status={activity.status} />
+                <div className="font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
+                  {currencyFormatter.format(activity.amount)}
+                </div>
               </div>
 
-              <div className="pl-4 text-right font-mono text-2xl leading-snug font-semibold whitespace-nowrap text-white">
-                {currencyFormatter.format(activity.amount)}
-              </div>
+              <FieldSet className="mt-8">
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="date">Date</FieldLabel>
+                    <DatePicker
+                      value={activity.date}
+                      id="date"
+                      onChange={(date) => updateActivity({ date })}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="name">Activity name</FieldLabel>
+                    <Input
+                      id="name"
+                      value={activity.name}
+                      onChange={(e) => updateActivity({ name: e.target.value })}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="description">Description</FieldLabel>
+                    <Textarea
+                      id="description"
+                      value={activity.description || ""}
+                      onChange={(e) =>
+                        updateActivity({ description: e.target.value || null })
+                      }
+                      className="resize-none"
+                      placeholder="Add a description ..."
+                      rows={3}
+                    />
+                  </Field>
+                </FieldGroup>
+
+                <FieldGroup className="mt-2 gap-3">
+                  <Field orientation="horizontal">
+                    <FieldLabel htmlFor="type">Activity type</FieldLabel>
+                    <Select
+                      value={activity.type}
+                      onValueChange={(value) =>
+                        updateActivity({
+                          type: value as ActivityType,
+                          category: null,
+                          subcategory: null,
+                        })
+                      }
+                    >
+                      <SelectTrigger id="type">
+                        <SelectValue placeholder="Activity type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(ActivityType).map((activityType) => (
+                          <SelectItem key={activityType} value={activityType}>
+                            <div className="flex items-center py-1">
+                              <div
+                                className={cn(
+                                  "mr-2 h-3 w-3 rounded-full",
+                                  ACTIVITY_TYPES_COLOR[activityType],
+                                )}
+                              />
+                              <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field orientation="horizontal">
+                    <FieldLabel htmlFor="category">Category</FieldLabel>
+                    <ActivityCategorySelect
+                      value={activity.category || null}
+                      onValueChange={(value) =>
+                        updateActivity({ category: value, subcategory: null })
+                      }
+                      type={activity.type}
+                      categories={filteredCategories}
+                      placeholder="Category"
+                    />
+                  </Field>
+                  <Field orientation="horizontal">
+                    <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
+                    <ActivitySubcategorySelect
+                      value={activity.subcategory}
+                      onValueChange={(value) =>
+                        updateActivity({ subcategory: value })
+                      }
+                      categoryId={activity.category}
+                      subcategories={subcategories}
+                    />
+                  </Field>
+                  <Field orientation="horizontal">
+                    <FieldLabel htmlFor="project">Project</FieldLabel>
+                    <ProjectSelect
+                      value={activity.project}
+                      onValueChange={(value) =>
+                        updateActivity({ project: value })
+                      }
+                    />
+                  </Field>
+                </FieldGroup>
+              </FieldSet>
             </div>
 
-            <FieldSet className="mt-8">
-              <FieldGroup>
-                <Field>
-                  <FieldLabel htmlFor="date">Date</FieldLabel>
-                  <DatePicker
-                    value={activity.date}
-                    id="date"
-                    onChange={(date) => updateActivity({ date })}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="name">Activity name</FieldLabel>
-                  <Input
-                    id="name"
-                    value={activity.name}
-                    onChange={(e) => updateActivity({ name: e.target.value })}
-                  />
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="description">Description</FieldLabel>
-                  <Textarea
-                    id="description"
-                    value={activity.description || ""}
-                    onChange={(e) =>
-                      updateActivity({ description: e.target.value || null })
-                    }
-                    className="resize-none"
-                    placeholder="Add a description ..."
-                    rows={3}
-                  />
-                </Field>
-              </FieldGroup>
-
-              <FieldGroup className="mt-2 gap-3">
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="type">Activity type</FieldLabel>
-                  <Select
-                    value={activity.type}
-                    onValueChange={(value) =>
-                      updateActivity({
-                        type: value as ActivityType,
-                        category: null,
-                        subcategory: null,
-                      })
-                    }
-                  >
-                    <SelectTrigger id="type">
-                      <SelectValue placeholder="Activity type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(ActivityType).map((activityType) => (
-                        <SelectItem key={activityType} value={activityType}>
-                          <div className="flex items-center py-1">
-                            <div
-                              className={cn(
-                                "mr-2 h-3 w-3 rounded-full",
-                                ACTIVITY_TYPES_COLOR[activityType],
-                              )}
-                            />
-                            <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="category">Category</FieldLabel>
-                  <ActivityCategorySelect
-                    value={activity.category || null}
-                    onValueChange={(value) =>
-                      updateActivity({ category: value, subcategory: null })
-                    }
-                    type={activity.type}
-                    categories={filteredCategories}
-                    placeholder="Category"
-                  />
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
-                  <ActivitySubcategorySelect
-                    value={activity.subcategory}
-                    onValueChange={(value) =>
-                      updateActivity({ subcategory: value })
-                    }
-                    categoryId={activity.category}
-                    subcategories={subcategories}
-                  />
-                </Field>
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="project">Project</FieldLabel>
-                  <ProjectSelect
-                    value={activity.project}
-                    onValueChange={(value) =>
-                      updateActivity({ project: value })
-                    }
-                  />
-                </Field>
-              </FieldGroup>
-            </FieldSet>
+            <ActivityTransactions activity={activity} />
+            <ActivityMovements activity={activity} />
+            <ActivitySharing activity={activity} />
           </div>
-
-          <ActivityTransactions activity={activity} />
-          <ActivityMovements activity={activity} />
-          <ActivitySharing activity={activity} />
         </div>
       </div>
 

@@ -46,7 +46,6 @@ interface ActivitiesState {
   activities: Activity[];
   activityCategories: ActivityCategory[];
   activitySubcategories: ActivitySubCategory[];
-  focusedActivity: string | null;
   showTransactions: boolean;
 
   getActivityById: (activityId: string) => Activity | undefined;
@@ -54,8 +53,6 @@ interface ActivitiesState {
   getActivitySubcategoryById: (
     subcategoryId: string,
   ) => ActivitySubCategory | undefined;
-
-  setFocusedActivity: (activityId: string | null) => void;
 
   setShowTransactions: (show: boolean) => void;
   addTransaction: (activityId: string, transaction: Transaction) => Transaction;
@@ -138,15 +135,10 @@ export const useActivities = create<ActivitiesState>()(
       activities: [],
       activityCategories: [],
       activitySubcategories: [],
-      focusedActivity: null,
       showTransactions: false,
 
       getActivityById: (activityId: string): Activity | undefined => {
         return get().activities.find((a) => a.id === activityId);
-      },
-
-      setFocusedActivity: (activityId: string | null) => {
-        set({ focusedActivity: activityId });
       },
 
       setShowTransactions: (show: boolean) => {
@@ -732,15 +724,3 @@ export const useActivities = create<ActivitiesState>()(
     },
   ),
 );
-
-// Custom hook to use the activities store
-export function useActivitiesStore() {
-  const state = useActivities.getState();
-  return {
-    activities: state.activities,
-    categories: state.activityCategories,
-    subcategories: state.activitySubcategories,
-    showTransactions: state.showTransactions,
-    focusedActivity: state.focusedActivity,
-  };
-}

@@ -1,6 +1,7 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
@@ -8,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
+import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -25,7 +26,6 @@ interface ActivitiesTableProps {
   subcategoryFilter?: string | null;
   activityTypeFilter?: ActivityType | null;
   hideProject?: boolean;
-  defaultActivityFocused?: string;
 }
 
 export function ActivitiesTable({
@@ -37,31 +37,17 @@ export function ActivitiesTable({
   subcategoryFilter = null,
   activityTypeFilter = null,
   hideProject = false,
-  defaultActivityFocused,
 }: ActivitiesTableProps) {
+  const router = useRouter();
   const currencyFormatter = useCurrencyFormatter();
 
   const activityView = useViews((state) => state.getActivityView(viewId));
-  const focusedActivity = useActivities((state) => state.focusedActivity);
   const search = useSearch((state) => state.search);
-  const setFocusedActivity = useActivities((state) => state.setFocusedActivity);
 
   const [selectedActivities, setSelectedActivities] = React.useState<string[]>(
     [],
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-
-  React.useEffect(() => {
-    if (defaultActivityFocused) {
-      setFocusedActivity(defaultActivityFocused);
-    }
-
-    return () => {
-      if (!defaultActivityFocused) {
-        setFocusedActivity(null);
-      }
-    };
-  }, [setFocusedActivity, defaultActivityFocused]);
 
   const activitiesFiltered = React.useMemo(() => {
     return activities
@@ -206,55 +192,31 @@ export function ActivitiesTable({
   };
 
   const handleActivityClick = (activityId: string) => {
-    if (focusedActivity === activityId) {
-      setFocusedActivity(null);
-    } else {
-      setFocusedActivity(activityId);
-    }
+    void router.navigate({ to: "/activities/$id", params: { id: activityId } });
   };
 
-  // Hotkeys for navigation
+  // Hotkeys: open the first activity of the list, then continue with J/K on
+  // the activity page
   useHotkey("K", (event) => {
     if (event.key !== "k") return;
     if (activitiesSorted.length === 0) return;
 
-    const currentIndex = activitiesSorted.findIndex(
-      (activity) => activity.id === focusedActivity,
-    );
-
-    const nextIndex =
-      currentIndex === -1
-        ? 0
-        : (currentIndex - 1 + activitiesSorted.length) %
-          activitiesSorted.length;
-
-    setFocusedActivity(activitiesSorted[nextIndex].id);
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: activitiesSorted[0].id },
+      replace: true,
+    });
   });
 
   useHotkey("J", (event) => {
     if (event.key !== "j") return;
     if (activitiesSorted.length === 0) return;
 
-    const currentIndex = activitiesSorted.findIndex(
-      (activity) => activity.id === focusedActivity,
-    );
-
-    const nextIndex = (currentIndex + 1) % activitiesSorted.length;
-    setFocusedActivity(activitiesSorted[nextIndex].id);
-  });
-
-  useHotkey("Space", () => {
-    if (focusedActivity === null) return;
-    const activity = activitiesSorted.find(
-      (activity) => activity.id === focusedActivity,
-    );
-    if (activity === undefined) return;
-
-    if (selectedActivities.includes(activity.id)) {
-      setSelectedActivities((prev) => prev.filter((id) => id !== activity.id));
-    } else {
-      setSelectedActivities((prev) => [...prev, activity.id]);
-    }
+    void router.navigate({
+      to: "/activities/$id",
+      params: { id: activitiesSorted[0].id },
+      replace: true,
+    });
   });
 
   useHotkey(
@@ -346,7 +308,6 @@ export function ActivitiesTable({
                         accountFilter={accountFilter}
                         hideProject={hideProject}
                         onClick={handleActivityClick}
-                        selected={focusedActivity === item.id}
                         checked={selectedActivities.includes(item.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
@@ -368,7 +329,6 @@ export function ActivitiesTable({
                     accountFilter={accountFilter}
                     hideProject={hideProject}
                     onClick={handleActivityClick}
-                    selected={focusedActivity === activity.id}
                     checked={selectedActivities.includes(activity.id)}
                     onCheckedChange={(checked) => {
                       if (checked) {

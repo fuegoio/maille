@@ -50,11 +50,7 @@ export function MovementsCommandPalette({
   const accounts = useAccounts((state) => state.accounts);
 
   const selectedMovementIds = React.useMemo(() => {
-    return selectedMovements.length > 0
-      ? selectedMovements
-      : useMovements.getState().focusedMovement
-        ? [useMovements.getState().focusedMovement]
-        : [];
+    return selectedMovements;
   }, [selectedMovements]);
 
   const selectedMovementsData = React.useMemo(() => {
