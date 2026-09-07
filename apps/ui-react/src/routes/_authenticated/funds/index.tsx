@@ -48,6 +48,7 @@ function FundsPage() {
         <div>Fund</div>
         <div className="flex-1" />
         <div className="w-32 text-right">Balance</div>
+        <div className="w-14" aria-hidden="true" />
       </header>
 
       <FundsTable />

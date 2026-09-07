@@ -17,7 +17,7 @@ export function AccountLabel({ accountId }: AccountLabelProps) {
   if (!account) return null;
 
   return (
-    <div className="flex min-w-0 shrink-0 items-center">
+    <div className="flex min-w-0 items-center">
       <div
         className={cn(
           "size-3 shrink-0 rounded-xl",
