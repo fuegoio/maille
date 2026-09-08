@@ -251,7 +251,7 @@ export function FundsTable() {
         className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
         onClick={() => navigate({ to: "/funds/untracked" })}
       >
-        <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex items-center text-muted-foreground">
           <div className="mr-0.5 size-5 shrink-0" aria-hidden="true" />
           <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
           <div className="ml-2 text-sm font-medium">Untracked</div>
