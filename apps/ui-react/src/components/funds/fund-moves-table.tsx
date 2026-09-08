@@ -220,6 +220,9 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                           void router.navigate({
                             to: "/activities/$id",
                             params: { id: item.activity!.id },
+                            search: item.transaction
+                              ? { transaction: item.transaction }
+                              : undefined,
                           })
                       : undefined
                   }

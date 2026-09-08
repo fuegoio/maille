@@ -135,9 +135,14 @@ function ActivityStatusAlert({ status }: { status: ActivityStatus }) {
 
 interface ActivityPageProps {
   activityId: string;
+  /** The transaction to focus, when the route links to one. */
+  focusTransactionId?: string | null;
 }
 
-export function ActivityPage({ activityId }: ActivityPageProps) {
+export function ActivityPage({
+  activityId,
+  focusTransactionId,
+}: ActivityPageProps) {
   const router = useRouter();
   const mutate = useSync((state) => state.mutate);
   const categories = useActivities((state) => state.activityCategories);
@@ -488,7 +493,10 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
               <ActivityStatusAlert status={activity.status} />
             </div>
 
-            <ActivityTransactions activity={activity} />
+            <ActivityTransactions
+              activity={activity}
+              focusTransactionId={focusTransactionId}
+            />
             <ActivityMovements activity={activity} />
             <ActivitySharing activity={activity} />
 
