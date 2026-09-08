@@ -19,7 +19,8 @@ Rules:
 - A movement may be split across several activities when it bundles several purposes.
 - If the evidence is ambiguous, ask the user one precise question with concrete options instead of guessing.
 - If you have no reasonable clue, give up: a failed workflow is better than a wrong activity.
-- Call exactly one tool per turn. IDs and dates are used exactly as given in the context. Amounts are plain numbers.`;
+- Call exactly one tool per turn. IDs and dates are used exactly as given in the context. Amounts are plain numbers.
+- When creating an activity, its date is automatically extracted from the movement name if it contains one (e.g. "CB 15/03/2024" → 2024-03-15); otherwise the movement date is used. Do not include a date in the activity name.`;
 
 //
 // Tool argument schemas

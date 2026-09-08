@@ -1,6 +1,5 @@
+import { extractDateFromMovementName } from "@maille/core/movements";
 import { describe, expect, it } from "vitest";
-
-import { extractDateFromMovementName } from "./date";
 
 describe("extractDateFromMovementName", () => {
   it("should extract DD/MM/YY format date", () => {

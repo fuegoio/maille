@@ -5,6 +5,7 @@ import type { Movement } from "@maille/core/movements";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
+import { extractDateFromMovementName } from "@maille/core/movements";
 import { useRouter } from "@tanstack/react-router";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -30,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { extractDateFromMovementName, getGraphQLDate } from "@/lib/date";
+import { getGraphQLDate } from "@/lib/date";
 import {
   activityCreateHistoryEvent,
   linkMovementHistoryEvent,

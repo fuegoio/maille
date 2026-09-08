@@ -2,6 +2,7 @@ import { db } from "@/database";
 import { accounts, activities } from "@/tables";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
+import { extractDateFromMovementName } from "@maille/core/movements";
 import { AMOUNT_EPSILON, remainingAmount } from "@maille/core/workflows";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -259,7 +260,7 @@ export async function executeTool(
         id: crypto.randomUUID(),
         name: parsed.data.name,
         description: parsed.data.description ?? null,
-        date: state.movement.date,
+        date: extractDateFromMovementName(state.movement.name) ?? state.movement.date,
         type: parsed.data.type,
         category: parsed.data.category ?? null,
         subcategory: parsed.data.subcategory ?? null,
