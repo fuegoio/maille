@@ -6,6 +6,7 @@ import {
   type Activity,
   type Transaction,
 } from "@maille/core/activities";
+import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -322,7 +323,10 @@ export function ActivityTransactions({
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <div>
-          <div className="text-base font-medium">Transactions</div>
+          <div className="flex items-center gap-1.5">
+            <ArrowLeftRight className="size-3.5 text-muted-foreground" />
+            <div className="text-base font-medium">Transactions</div>
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">
             The double-entry legs of this activity, from account to account.
           </div>
