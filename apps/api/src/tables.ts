@@ -15,6 +15,12 @@ import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import type { SerializedHistoryEntry } from "@maille/core/history";
 import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
+import type {
+  WorkflowMessage,
+  WorkflowResult,
+  WorkflowStatus,
+  WorkflowTrigger,
+} from "@maille/core/harness";
 import type { SyncEvent } from "@maille/core/sync";
 import { relations } from "drizzle-orm";
 
@@ -276,6 +282,28 @@ export const movementsActivities = pgTable("movements_activities", {
     .notNull()
     .references(() => movements.id, { onDelete: "cascade" }),
   amount: real("amount").notNull(),
+});
+
+export const movementWorkflows = pgTable("movement_workflows", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  movement: text("movement")
+    .notNull()
+    .references(() => movements.id, { onDelete: "cascade" })
+    .unique(),
+  status: text("status").notNull().$type<WorkflowStatus>(),
+  trigger: text("trigger").notNull().$type<WorkflowTrigger>(),
+  attempts: integer("attempts").notNull().default(0),
+  messages: jsonb("messages").$type<WorkflowMessage[]>().notNull().default([]),
+  result: jsonb("result").$type<WorkflowResult>(),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
 
 export const counterparties = pgTable("counterparties", {

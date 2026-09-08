@@ -1,6 +1,6 @@
 {
-  "id": "44924830-1ac9-4656-9d87-4e040dbab576",
-  "prevId": "9374a30b-6b47-4caa-a7ae-60f5cc9f4cc5",
+  "id": "010fe8d6-1864-4267-b2c2-722ea05f875d",
+  "prevId": "16b80da3-a119-40f9-88e5-ad680d6b2625",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1043,19 +1043,6 @@
           "notNull": true,
           "default": "'#818cf8'"
         },
-        "emoji": {
-          "name": "emoji",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "start_date": {
           "name": "start_date",
           "type": "timestamp",
@@ -1065,6 +1052,12 @@
         "end_date": {
           "name": "end_date",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_fund": {
+          "name": "parent_fund",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -1079,10 +1072,127 @@
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "funds_parent_fund_funds_id_fk": {
+          "name": "funds_parent_fund_funds_id_fk",
+          "tableFrom": "funds",
+          "tableTo": "funds",
+          "columnsFrom": ["parent_fund"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.movement_workflows": {
+      "name": "movement_workflows",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user": {
+          "name": "user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movement": {
+          "name": "movement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "messages": {
+          "name": "messages",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "result": {
+          "name": "result",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "movement_workflows_user_user_id_fk": {
+          "name": "movement_workflows_user_user_id_fk",
+          "tableFrom": "movement_workflows",
+          "tableTo": "user",
+          "columnsFrom": ["user"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "movement_workflows_movement_movements_id_fk": {
+          "name": "movement_workflows_movement_movements_id_fk",
+          "tableFrom": "movement_workflows",
+          "tableTo": "movements",
+          "columnsFrom": ["movement"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "movement_workflows_movement_unique": {
+          "name": "movement_workflows_movement_unique",
+          "nullsNotDistinct": false,
+          "columns": ["movement"]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

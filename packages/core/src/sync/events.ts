@@ -3,6 +3,12 @@ import type { ActivitySharing, ActivityType, Transaction } from "#activities/typ
 import type { ContactUser } from "#contacts/index.ts";
 import type { FundMove } from "#funds/types.ts";
 import type { SerializedHistoryEntry } from "#history/types.ts";
+import type {
+  MovementWorkflow,
+  WorkflowMessage,
+  WorkflowResult,
+  WorkflowStatus,
+} from "#harness/types.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -415,6 +421,31 @@ export interface CreateHistoryEvent extends BaseSyncEvent {
   payload: SerializedHistoryEntry;
 }
 
+/**
+ * Upsert semantics: the client keeps one workflow per movement (unique by
+ * payload.movement); a replayed event overwrites the stored row.
+ */
+export interface CreateWorkflowEvent extends BaseSyncEvent {
+  type: "createWorkflow";
+  payload: MovementWorkflow;
+}
+
+/**
+ * Upsert semantics: the patch carries the full new state of each field
+ * (status, messages, result, error); the client overwrites the stored row.
+ */
+export interface UpdateWorkflowEvent extends BaseSyncEvent {
+  type: "updateWorkflow";
+  payload: {
+    id: string;
+    status?: WorkflowStatus;
+    attempts?: number;
+    messages?: WorkflowMessage[];
+    result?: WorkflowResult | null;
+    error?: string | null;
+  };
+}
+
 export type SyncEvent =
   | CreateActivityEvent
   | UpdateActivityEvent
@@ -457,4 +488,6 @@ export type SyncEvent =
   | DeleteContactEvent
   | CreateUserEvent
   | UpdateUserEvent
-  | CreateHistoryEvent;
+  | CreateHistoryEvent
+  | CreateWorkflowEvent
+  | UpdateWorkflowEvent;

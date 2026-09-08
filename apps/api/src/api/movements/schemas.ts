@@ -1,6 +1,8 @@
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import { builder } from "@/api/builder";
 import { HistoryEntrySchema } from "@/api/history/schemas";
+import { MovementWorkflowSchema } from "@/api/workflows/schemas";
+import { getWorkflowByMovement, serializeWorkflow } from "@/harness/store";
 
 export const MovementSchema = builder.objectRef<Movement>("Movement");
 
@@ -28,6 +30,15 @@ MovementSchema.implement({
     history: t.field({
       type: [HistoryEntrySchema],
       resolve: (parent) => parent.history ?? [],
+    }),
+    workflow: t.field({
+      type: MovementWorkflowSchema,
+      nullable: true,
+      description: "The unique workflow attached to this movement, if any.",
+      resolve: async (parent, args, ctx) => {
+        const row = await getWorkflowByMovement(ctx.user.id, parent.id);
+        return row ? serializeWorkflow(row) : null;
+      },
     }),
   }),
 });

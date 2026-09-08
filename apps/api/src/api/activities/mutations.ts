@@ -51,6 +51,8 @@ import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
+import { cancelWorkflowIfActive } from "@/harness/store";
+import { isHarnessSession } from "@/harness/session";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -347,6 +349,12 @@ export const registerActivitiesMutations = () => {
               .update(movements)
               .set({ history: movementHistoryResult.history })
               .where(eq(movements.id, movementRow.id));
+
+            // AI harness: reconciling by hand cancels the movement's active
+            // workflow. Links made by the harness itself do not.
+            if (!isHarnessSession(ctx.session.id)) {
+              await cancelWorkflowIfActive(ctx.user.id, movementRow.id, ctx.session.id);
+            }
           }
         }
 
