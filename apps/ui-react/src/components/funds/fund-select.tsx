@@ -1,5 +1,3 @@
-import { X } from "lucide-react";
-
 import {
   Select,
   SelectContent,
@@ -56,8 +54,10 @@ export function FundSelect({
 
         {allowEmpty && (
           <SelectItem value="clear" className="text-muted-foreground">
-            <X />
-            {emptyLabel}
+            <div className="flex min-w-0 items-center">
+              <div className="mr-1.5 size-3 shrink-0" />
+              <span className="truncate">{emptyLabel}</span>
+            </div>
           </SelectItem>
         )}
       </SelectContent>
