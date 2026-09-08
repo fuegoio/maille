@@ -1,10 +1,14 @@
 import { getFundAncestors } from "@maille/core/funds";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useNavigate,
+} from "@tanstack/react-router";
 import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
-import { FundDeletedRedirect } from "@/components/funds/fund-deleted-redirect";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
@@ -36,6 +40,17 @@ export const Route = createFileRoute("/_authenticated/funds/$id")({
     return { fund };
   },
 });
+
+// Only reachable when the fund disappears while its page is open (deleted
+// from the settings dialog). Missing funds on direct URLs are handled by the
+// loader's notFound.
+function FundDeletedRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    void navigate({ to: "/funds" });
+  }, [navigate]);
+  return null;
+}
 
 function FundPage() {
   const fundId = Route.useParams().id;

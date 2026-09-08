@@ -15,6 +15,7 @@ export function WorkflowBar() {
   const openWorkflowIds = useWorkflows((state) => state.openWorkflowIds);
   const activeWorkflowId = useWorkflows((state) => state.activeWorkflowId);
   const isMinimized = useWorkflows((state) => state.isMinimized);
+  const unreadWorkflowIds = useWorkflows((state) => state.unreadWorkflowIds);
   const openWorkflow = useWorkflows((state) => state.openWorkflow);
   const closeWorkflow = useWorkflows((state) => state.closeWorkflow);
   const minimize = useWorkflows((state) => state.minimize);
@@ -56,6 +57,7 @@ export function WorkflowBar() {
         {openWorkflows.map((workflow) => {
           const movement = movements.find((m) => m.id === workflow.movement);
           const isActive = workflow.id === activeWorkflowId && !isMinimized;
+          const isUnread = unreadWorkflowIds.includes(workflow.id);
           const statusConfig =
             WORKFLOW_STATUS_CONFIG[workflow.status] ??
             WORKFLOW_STATUS_CONFIG.queued;
@@ -73,13 +75,22 @@ export function WorkflowBar() {
                 isActive ? minimize() : openWorkflow(workflow.id)
               }
             >
-              <span
-                className={cn(
-                  "size-1.5 shrink-0 rounded-full",
-                  statusConfig.dotClass,
-                  workflow.status === "running" && "animate-pulse",
-                )}
-              />
+              {isUnread ? (
+                <span className="inline-flex h-4 items-center gap-1 rounded-full bg-orange-400/15 px-1.5 text-[0.65rem] font-medium text-orange-400">
+                  <span className="size-1.5 rounded-full bg-orange-400" />
+                  Needs input
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    workflow.status === "succeeded"
+                      ? "bg-muted-foreground/40"
+                      : statusConfig.dotClass,
+                    workflow.status === "running" && "animate-pulse",
+                  )}
+                />
+              )}
               <Bot className="size-3.5 shrink-0 text-muted-foreground" />
               <span className="max-w-[140px] truncate">
                 {movement?.name ?? "Workflow"}

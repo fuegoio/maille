@@ -66,6 +66,37 @@ const assistantMessage = (state: RunState, content: string): WorkflowMessage => 
   createdAt: new Date().toISOString(),
 });
 
+/**
+ * Adds a progress message to the conversation and emits a sync event so
+ * the user sees what the agent is doing in real time. Returns false (and
+ * stops the loop) if the workflow was cancelled mid-run.
+ */
+async function addProgressMessage(state: RunState, content: string): Promise<boolean> {
+  const message = assistantMessage(state, content);
+  state.messages = [...state.messages, message];
+  return updateWorkflowIfRunning(state, { messages: state.messages });
+}
+
+/** Human-readable description of a tool call, used when the LLM sent no narration. */
+const describeToolCall = (call: { name: string; args: Record<string, unknown> }): string | null => {
+  switch (call.name) {
+    case "findSimilarMovements":
+      return "Looking for similar movements...";
+    case "searchActivities":
+      return "Searching existing activities...";
+    case "linkMovement":
+      return "Linking to an existing activity...";
+    case "createActivity": {
+      const name = call.args.name;
+      return typeof name === "string"
+        ? `Creating activity '${name}'...`
+        : "Creating a new activity...";
+    }
+    default:
+      return null;
+  }
+};
+
 const activityNames = async (userId: string, ids: string[]): Promise<Map<string, string>> => {
   const names = new Map<string, string>();
   for (const id of ids) {
@@ -516,6 +547,15 @@ async function executeRun(state: RunState): Promise<void> {
     }
 
     const call = response.toolCalls[0]!;
+
+    // Emit the agent's narration (or a tool description) to the conversation
+    // so the user sees what's happening in real time.
+    const progressContent = response.content ?? describeToolCall(call);
+    if (progressContent) {
+      const stillRunning = await addProgressMessage(state, progressContent);
+      if (!stillRunning) return;
+    }
+
     llmMessages.push({
       role: "assistant",
       content: response.content,
@@ -612,9 +652,14 @@ export async function runWorkflow(workflowId: string): Promise<void> {
 
   const remaining = remainingAmount(state.movement.amount, state.linkAmounts);
   if (remaining === 0) {
+    const message = assistantMessage(
+      state,
+      "This movement is already fully reconciled — nothing to do.",
+    );
     await updateWorkflowIfRunning(state, {
       status: "succeeded",
       result: { createdActivities: [], linkedActivities: [] },
+      messages: [...state.messages, message],
     });
     return;
   }

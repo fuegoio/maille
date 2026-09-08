@@ -63,7 +63,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
+  const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
@@ -80,11 +80,11 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             activities,
             funds,
             fundMoves,
-            fundAccounts,
+            fundAllocations,
             startingDate: user.startingDate,
           }
         : null,
-    [user, accounts, activities, funds, fundMoves, fundAccounts],
+    [user, accounts, activities, funds, fundMoves, fundAllocations],
   );
 
   // A real fund's numbers are its subtree's: money that entered the tree
@@ -98,7 +98,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         activities,
         funds,
         fundMoves,
-        fundAccounts,
+        fundAllocations,
         date,
         startingDate: user.startingDate,
       });
@@ -108,7 +108,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
       fundId,
       funds,
       fundMoves,
-      fundAccounts,
+      fundAllocations,
       user.startingDate,
       date,
     );
@@ -141,7 +141,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             (user
               ? getAllocationsLandedBetweenDates(
                   funds,
-                  fundAccounts,
+                  fundAllocations,
                   user.startingDate,
                   thirtyDaysAgo,
                   today,
@@ -152,7 +152,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
           fundId,
           funds,
           fundMoves,
-          fundAccounts,
+          fundAllocations,
           user.startingDate,
           thirtyDaysAgo,
           today,
@@ -169,7 +169,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
   const directBalance =
     fundId === null
       ? null
-      : getFundDirectBalance(fundId, fundMoves, fundAccounts);
+      : getFundDirectBalance(fundId, fundMoves, fundAllocations);
 
   const childBalances = useMemo(
     () =>
@@ -182,14 +182,14 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 child.id,
                 funds,
                 fundMoves,
-                fundAccounts,
+                fundAllocations,
                 user.startingDate,
                 today,
               )
             : 0,
         ]),
       ),
-    [children, funds, fundMoves, fundAccounts, user, today],
+    [children, funds, fundMoves, fundAllocations, user, today],
   );
 
   // Where the money sits: a fund spread across accounts, or Untracked
@@ -267,7 +267,16 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         balance: getFundBalanceAtDate(date),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [days, fundMoves, fundAccounts, fundId, funds, accounts, activities, user],
+    [
+      days,
+      fundMoves,
+      fundAllocations,
+      fundId,
+      funds,
+      accounts,
+      activities,
+      user,
+    ],
   );
 
   const chartConfig = {

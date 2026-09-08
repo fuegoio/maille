@@ -1,18 +1,17 @@
 import { db } from "@/database";
 import { DEFAULT_FUND_COLOR, wouldCreateCycle } from "@maille/core/funds";
-import type { Fund } from "@maille/core/funds";
 import { builder } from "../builder";
-import { FundAccountSchema, FundSchema } from "./schemas";
-import { fundAccounts, funds, fundMoves } from "@/tables";
+import { FundAllocationSchema, FundSchema } from "./schemas";
+import { fundAllocations, funds, fundMoves } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, isNull, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import {
-  getFundAccounts,
+  getFundAllocations,
   getFundEarliestAllocatedTransactionDate,
-  resolveAccountCandidates,
-  validateFundAccounts,
+  resolveAllocationCandidates,
+  validateFundAllocations,
 } from "./allocations";
 
 /**
@@ -53,11 +52,8 @@ const resolveParentFundId = async (userId: string, parentFund: string | null) =>
 };
 
 /** Every fund of a user, as tree-logic input for cycle checks. */
-const getUserFunds = async (userId: string): Promise<Fund[]> =>
-  (await db.select().from(funds).where(eq(funds.user, userId))).map((fund) => ({
-    ...fund,
-    accounts: [],
-  }));
+const getUserFunds = async (userId: string) =>
+  db.select().from(funds).where(eq(funds.user, userId));
 
 /** Fetch a fund by id prefix, or throw when no fund matches. */
 const getFundById = async (userId: string, fundId: string) => {
@@ -74,7 +70,7 @@ const getFundById = async (userId: string, fundId: string) => {
   return fund;
 };
 
-const FundAccountInput = builder.inputType("FundAccountInput", {
+const FundAllocationInput = builder.inputType("FundAllocationInput", {
   fields: (t) => ({
     id: t.field({ type: "String" }),
     account: t.field({ type: "String" }),
@@ -130,7 +126,7 @@ export const registerFundsMutations = () => {
           user: ctx.user.id,
         });
 
-        return { ...created, accounts: [] };
+        return created;
       },
     }),
   );
@@ -176,12 +172,12 @@ export const registerFundsMutations = () => {
               );
             }
           }
-          const existingAccounts = await getFundAccounts(ctx.user.id, fund.id);
-          if (existingAccounts.length > 0) {
-            await validateFundAccounts({
+          const existingAllocations = await getFundAllocations(ctx.user.id, fund.id);
+          if (existingAllocations.length > 0) {
+            await validateFundAllocations({
               userId: ctx.user.id,
               fund: { id: fund.id, startDate: updates.startDate ?? null },
-              accounts: existingAccounts,
+              allocations: existingAllocations,
             });
           }
         }
@@ -192,11 +188,6 @@ export const registerFundsMutations = () => {
         if (!updated) {
           throw new GraphQLError("Failed to update fund");
         }
-
-        const updatedAccounts = await db
-          .select()
-          .from(fundAccounts)
-          .where(eq(fundAccounts.fund, updated.id));
 
         await addEvent({
           type: "updateFund",
@@ -211,7 +202,7 @@ export const registerFundsMutations = () => {
           user: ctx.user.id,
         });
 
-        return { ...updated, accounts: updatedAccounts };
+        return updated;
       },
     }),
   );
@@ -247,7 +238,7 @@ export const registerFundsMutations = () => {
             ),
           );
 
-        await db.delete(fundAccounts).where(eq(fundAccounts.fund, fund.id));
+        await db.delete(fundAllocations).where(eq(fundAllocations.fund, fund.id));
 
         await db.delete(funds).where(eq(funds.id, fund.id));
 
@@ -264,55 +255,55 @@ export const registerFundsMutations = () => {
     }),
   );
 
-  builder.mutationField("setFundAccounts", (t) =>
+  builder.mutationField("setFundAllocations", (t) =>
     t.field({
-      type: [FundAccountSchema],
+      type: [FundAllocationSchema],
       args: {
         fund: t.arg({ type: "String" }),
-        accounts: t.arg({ type: [FundAccountInput] }),
+        allocations: t.arg({ type: [FundAllocationInput] }),
       },
       resolve: async (root, args, ctx) => {
         const fund = await getFundById(ctx.user.id, args.fund);
 
-        const accounts = await resolveAccountCandidates({
+        const allocations = await resolveAllocationCandidates({
           userId: ctx.user.id,
-          accounts: args.accounts,
+          allocations: args.allocations,
         });
 
-        await validateFundAccounts({
+        await validateFundAllocations({
           userId: ctx.user.id,
           fund,
-          accounts,
+          allocations,
         });
 
         // Replace-all semantics: the submitted rows are the fund's whole
         // opening position.
-        await db.delete(fundAccounts).where(eq(fundAccounts.fund, fund.id));
+        await db.delete(fundAllocations).where(eq(fundAllocations.fund, fund.id));
 
         const inserted =
-          accounts.length === 0
+          allocations.length === 0
             ? []
             : await db
-                .insert(fundAccounts)
+                .insert(fundAllocations)
                 .values(
-                  accounts.map((account) => ({
-                    id: account.id,
+                  allocations.map((allocation) => ({
+                    id: allocation.id,
                     user: ctx.user.id,
                     fund: fund.id,
-                    account: account.account,
-                    amount: account.amount,
+                    account: allocation.account,
+                    amount: allocation.amount,
                   })),
                 )
                 .returning();
 
         await addEvent({
-          type: "updateFundAccounts",
+          type: "updateFundAllocations",
           payload: {
             fund: fund.id,
-            accounts: inserted.map((account) => ({
-              id: account.id,
-              account: account.account,
-              amount: account.amount,
+            allocations: inserted.map((allocation) => ({
+              id: allocation.id,
+              account: allocation.account,
+              amount: allocation.amount,
             })),
           },
           createdAt: new Date(),

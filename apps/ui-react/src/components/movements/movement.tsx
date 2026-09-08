@@ -2,7 +2,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
-import { Trash2 } from "lucide-react";
+import { Trash2, Unlink } from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -18,15 +18,22 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { WorkflowSection } from "@/components/workflows/workflow-section";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import {
   movementUpdateHistoryEvent,
   unlinkActivityHistoryEvent,
+  unlinkMovementHistoryEvent,
 } from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import {
+  deleteMovementActivityMutation,
   deleteMovementMutation,
   updateMovementMutation,
 } from "@/mutations/movements";
@@ -147,6 +154,52 @@ export function MovementPage({ movementId }: MovementPageProps) {
           },
         },
         ...(historyEvent ? [historyEvent] : []),
+      ],
+    });
+  };
+
+  const handleUnlinkActivity = (
+    movementActivityId: string,
+    activityId: string,
+    amount: number,
+  ) => {
+    if (!movement) return;
+    const activity = activities.find((a) => a.id === activityId);
+    if (!activity) return;
+
+    const historyEvents = [
+      unlinkMovementHistoryEvent(
+        movement,
+        { id: activity.id, name: activity.name },
+        amount,
+      ),
+      unlinkActivityHistoryEvent(
+        activity,
+        { id: movement.id, name: movement.name },
+        amount,
+      ),
+    ];
+
+    mutate({
+      name: "deleteMovementActivity",
+      mutation: deleteMovementActivityMutation,
+      variables: { id: movementActivityId },
+      rollbackData: {
+        id: movementActivityId,
+        movement: movement.id,
+        activity: activityId,
+        amount,
+      },
+      events: [
+        {
+          type: "deleteMovementActivity",
+          payload: {
+            id: movementActivityId,
+            activity: activityId,
+            movement: movement.id,
+          },
+        },
+        ...historyEvents,
       ],
     });
   };
@@ -295,8 +348,10 @@ export function MovementPage({ movementId }: MovementPageProps) {
                 <div className="text-sm font-medium">Activities linked</div>
                 <div className="flex-1" />
 
-                <LinkActivityButton movement={movement} />
-                <AddActivityButton movement={movement} size="sm" />
+                <div className="flex items-center gap-2">
+                  <LinkActivityButton movement={movement} size="sm" />
+                  <AddActivityButton movement={movement} size="sm" />
+                </div>
               </div>
 
               <div className="mt-4 mb-2 rounded border bg-muted/50">
@@ -309,30 +364,59 @@ export function MovementPage({ movementId }: MovementPageProps) {
                     <div
                       key={movementActivity.id}
                       className={cn(
-                        "flex h-10 cursor-pointer items-center justify-center px-4 text-sm hover:bg-muted",
+                        "group flex h-10 items-center px-4 text-sm hover:bg-muted",
                         index !== movementActivities.length - 1 && "border-b",
                       )}
-                      onClick={() =>
-                        router.navigate({
-                          to: "/activities/$id",
-                          params: { id: movementActivity.activity!.id },
-                        })
-                      }
                     >
-                      <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
-                        {format(movementActivity.activity!.date, "dd/MM/yyyy")}
-                      </div>
-                      <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
-                        {format(movementActivity.activity!.date, "dd/MM")}
-                      </div>
+                      <div
+                        className="flex flex-1 cursor-pointer items-center justify-center"
+                        onClick={() =>
+                          router.navigate({
+                            to: "/activities/$id",
+                            params: { id: movementActivity.activity!.id },
+                          })
+                        }
+                      >
+                        <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
+                          {format(
+                            movementActivity.activity!.date,
+                            "dd/MM/yyyy",
+                          )}
+                        </div>
+                        <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
+                          {format(movementActivity.activity!.date, "dd/MM")}
+                        </div>
 
-                      <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                        {movementActivity.activity!.name}
+                        <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {movementActivity.activity!.name}
+                        </div>
+                        <div className="flex-1" />
+                        <div className="w-20 text-right font-mono whitespace-nowrap">
+                          {currencyFormatter.format(movementActivity.amount)}
+                        </div>
                       </div>
-                      <div className="flex-1" />
-                      <div className="w-20 text-right font-mono whitespace-nowrap">
-                        {currencyFormatter.format(movementActivity.amount)}
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="ml-2 shrink-0 opacity-0 group-hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnlinkActivity(
+                                movementActivity.id,
+                                movementActivity.activity!.id,
+                                movementActivity.amount,
+                              );
+                            }}
+                          >
+                            <Unlink className="size-3.5 text-muted-foreground" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Unlink activity</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   ))
                 )}

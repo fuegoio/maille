@@ -68,7 +68,12 @@ export const useMovements = create<MovementsState>()(
         set((state) => ({
           movements: state.movements.map((movement) => {
             if (movement.id === movementId) {
-              const newActivities = [...movement.activities, movementActivity];
+              const exists = movement.activities.some(
+                (ma) => ma.id === movementActivity.id,
+              );
+              const newActivities = exists
+                ? movement.activities
+                : [...movement.activities, movementActivity];
               return {
                 ...movement,
                 activities: newActivities,

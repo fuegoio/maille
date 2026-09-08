@@ -8,7 +8,7 @@ export type WorkflowStatus =
 
 export type WorkflowTrigger = "auto" | "manual";
 
-export type WorkflowMessageRole = "assistant" | "user";
+export type WorkflowMessageRole = "assistant" | "user" | "separator";
 
 export type WorkflowMessageOption = {
   id: string;

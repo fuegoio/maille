@@ -27,11 +27,13 @@ import { useSync } from "@/stores/sync";
 interface LinkActivityButtonProps {
   movement: Movement;
   className?: string;
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 export function LinkActivityButton({
   movement,
   className,
+  size = "icon",
 }: LinkActivityButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -143,11 +145,12 @@ export function LinkActivityButton({
           <Button
             type="button"
             variant="outline"
-            size="icon"
+            size={size}
             className={className}
             onClick={() => handleOpenChange(true)}
           >
             <Link className="h-4 w-4" />
+            {size !== "icon" && "Link activity"}
           </Button>
         </TooltipTrigger>
         <TooltipContent>

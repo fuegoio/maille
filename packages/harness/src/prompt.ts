@@ -28,12 +28,14 @@ export const taskMessage = (evidence: Evidence, remainingToAllocate: number): Ll
  * chat-completions have no native representation for them.
  */
 export const transcriptToLlmMessages = (messages: WorkflowMessage[]): LlmMessage[] =>
-  messages.map((message) => {
-    if (message.role === "assistant") {
-      const options = message.options?.length
-        ? ` Options: ${message.options.map((option) => option.label).join("; ")}`
-        : "";
-      return { role: "assistant" as const, content: `${message.content}${options}` };
-    }
-    return { role: "user" as const, content: message.content };
-  });
+  messages
+    .filter((message) => message.role !== "separator")
+    .map((message) => {
+      if (message.role === "assistant") {
+        const options = message.options?.length
+          ? ` Options: ${message.options.map((option) => option.label).join("; ")}`
+          : "";
+        return { role: "assistant" as const, content: `${message.content}${options}` };
+      }
+      return { role: "user" as const, content: message.content };
+    });
