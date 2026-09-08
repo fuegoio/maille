@@ -367,7 +367,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
         </header>
 
         <div className="flex-1 overflow-y-auto pb-20">
-          <div className="mx-auto w-full max-w-3xl">
+          <div className="mx-auto w-full max-w-5xl">
             <div className="border-b px-4 py-6 sm:px-8">
               <label htmlFor="date" className="sr-only">
                 Date
