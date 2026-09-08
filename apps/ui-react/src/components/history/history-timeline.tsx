@@ -282,7 +282,7 @@ export function HistoryTimeline({ entityType, history }: HistoryTimelineProps) {
                     "animate-history-in motion-reduce:animate-none",
                 )}
               >
-                <div className="flex flex-col items-center pt-[7px]">
+                <div className="flex flex-col items-center pt-1.25">
                   <div
                     className={cn(
                       "size-1.5 shrink-0 rounded-full",

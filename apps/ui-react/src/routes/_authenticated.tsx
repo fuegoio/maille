@@ -124,9 +124,11 @@ function AuthenticatedLayout() {
   }, [subscribe]);
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <Outlet />
+    <SidebarProvider className="flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1">
+        <AppSidebar />
+        <Outlet />
+      </div>
       <WorkflowBar />
     </SidebarProvider>
   );

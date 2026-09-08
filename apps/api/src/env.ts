@@ -10,7 +10,7 @@ export const env = createEnv({
     // AI harness (movement-to-activity assistant). Absent key = harness disabled.
     MISTRAL_API_KEY: z.string().optional(),
     HARNESS_LLM_BASE_URL: z.string().default("https://api.mistral.ai/v1"),
-    HARNESS_LLM_MODEL: z.string().default("z-ai-glm-5-3"),
+    HARNESS_LLM_MODEL: z.string().default("glm-5-2"),
     HARNESS_MAX_ATTEMPTS: z.coerce.number().default(2),
     HARNESS_TIMEOUT_MS: z.coerce.number().default(120_000),
     HARNESS_RETRY_DELAY_MS: z.coerce.number().default(5_000),

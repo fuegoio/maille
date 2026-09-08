@@ -177,11 +177,18 @@ export const useWorkflows = create<WorkflowsState>()(
         if (!event.result) return;
 
         if (event.name === "triggerWorkflow") {
-          const raw = (event.result as { triggerWorkflow: unknown })
-            .triggerWorkflow as Parameters<typeof deserializeWorkflow>[0];
-          const workflow = deserializeWorkflow(raw);
-          get().upsertWorkflow(workflow);
-          get().openWorkflow(workflow.id);
+          const result = event.result as Record<string, unknown>;
+          const raw = result?.triggerWorkflow as
+            | Parameters<typeof deserializeWorkflow>[0]
+            | undefined;
+          if (!raw) return;
+          try {
+            const workflow = deserializeWorkflow(raw);
+            get().upsertWorkflow(workflow);
+            get().openWorkflow(workflow.id);
+          } catch (e) {
+            console.error("Failed to deserialize workflow", e);
+          }
         }
       },
 

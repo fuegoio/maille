@@ -73,7 +73,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
   };
 
   return (
-    <div className="flex h-full flex-col border-t bg-background">
+    <div className="flex h-full flex-col bg-background">
       {/* Header */}
       <div className="flex h-9 shrink-0 items-center gap-2 border-b px-3">
         <span

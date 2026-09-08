@@ -22,7 +22,7 @@ process.env.GOOGLE_CLIENT_SECRET = "test-secret";
 process.env.LOG_LEVEL = "silent";
 process.env.MISTRAL_API_KEY = "test-key";
 process.env.HARNESS_LLM_BASE_URL = mockMistral.url();
-process.env.HARNESS_LLM_MODEL = "z-ai-glm-5-3";
+process.env.HARNESS_LLM_MODEL = "glm-5-2";
 process.env.HARNESS_MAX_ATTEMPTS = "2";
 process.env.HARNESS_RETRY_DELAY_MS = "30";
 process.env.HARNESS_TIMEOUT_MS = "5000";
@@ -423,7 +423,7 @@ describe("AI harness", () => {
     // The Mistral API was called with the configured model and key, the
     // system prompt, and the tool list.
     expect(mockMistral.requests).toHaveLength(1);
-    expect(mockMistral.requests[0]!.model).toBe("z-ai-glm-5-3");
+    expect(mockMistral.requests[0]!.model).toBe("glm-5-2");
     expect(mockMistral.authorizations[0]).toBe("Bearer test-key");
     const firstMessage = mockMistral.requests[0]!.messages[0]!;
     expect(firstMessage.role).toBe("system");
