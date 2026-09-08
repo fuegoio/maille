@@ -1,10 +1,7 @@
-import { getAllocationDate } from "@maille/core/funds";
 import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
-import { AllocationLine } from "@/components/funds/allocation-line";
-import type { AllocationWithDirection } from "@/components/funds/allocation-line";
 import { FundMoveLine } from "@/components/funds/fund-move-line";
 import type { FundMoveWithActivity } from "@/components/funds/fund-move-line";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,11 +9,10 @@ import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
-import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useSearch } from "@/stores/search";
 
-type FundRow = FundMoveWithActivity | AllocationWithDirection;
+type FundRow = FundMoveWithActivity;
 
 interface FundMovesTableProps {
   /** The fund whose moves to show; null is Untracked (the null side of moves). */
@@ -28,9 +24,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
   const activities = useActivities((state) => state.activities);
-  const user = useAuth((state) => state.user);
   const search = useSearch((state) => state.search);
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
@@ -70,48 +64,19 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
       });
   }, [fundMoves, activities, fundId]);
 
-  // Opening allocations: an inflow on the fund's own page, and on the
-  // Untracked page the mirror outflow into every fund.
-  const allocations = React.useMemo<AllocationWithDirection[]>(() => {
-    if (!user) return [];
-    const fundById = new Map(funds.map((fund) => [fund.id, fund]));
-    return fundAllocations
-      .filter((allocation) =>
-        fundId === null ? true : allocation.fund === fundId,
-      )
-      .map((allocation) => {
-        const fund = fundById.get(allocation.fund);
-        return {
-          kind: "allocation" as const,
-          id: allocation.id,
-          date: getAllocationDate(
-            fund ?? { startDate: null },
-            user.startingDate,
-          ),
-          amount: allocation.amount,
-          direction: fundId === null ? ("out" as const) : ("in" as const),
-          fundId: allocation.fund,
-          account: allocation.account,
-        };
-      });
-  }, [fundAllocations, funds, fundId, user]);
-
   const rows = React.useMemo<FundRow[]>(() => {
-    const all: FundRow[] = [...moves, ...allocations];
-    return all.sort((a, b) => {
+    return [...moves].sort((a, b) => {
       if (a.date.getTime() !== b.date.getTime()) {
         return b.date.getTime() - a.date.getTime();
       }
       return b.id.localeCompare(a.id);
     });
-  }, [moves, allocations]);
+  }, [moves]);
 
   const rowsFiltered = React.useMemo(
     () =>
       rows.filter((row) => {
         if (!search) return true;
-        // Opening allocations carry no activity to match on
-        if (row.kind === "allocation") return false;
         return (
           row.activity !== null && searchCompare(search, row.activity.name)
         );
@@ -241,12 +206,6 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                     </div>
                   )}
                 </div>
-              ) : item.kind === "allocation" ? (
-                <AllocationLine
-                  allocation={item}
-                  funds={funds}
-                  currencyFormatter={currencyFormatter}
-                />
               ) : (
                 <FundMoveLine
                   move={item}
