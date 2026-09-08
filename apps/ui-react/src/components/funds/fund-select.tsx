@@ -31,7 +31,10 @@ export function FundSelect({
 
   return (
     <Select
-      value={value ?? undefined}
+      // null is "Untracked": map it to the clear item's value so the select
+      // stays controlled (an undefined value would fall back to Radix's
+      // internal state and keep showing the previously picked fund).
+      value={allowEmpty ? (value ?? "clear") : (value ?? undefined)}
       onValueChange={(newValue) => {
         onValueChange(newValue === "clear" ? null : newValue);
       }}
