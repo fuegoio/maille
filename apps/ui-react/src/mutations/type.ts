@@ -1,6 +1,14 @@
 import type { VariablesOf, ResultOf } from "@graphql-typed-document-node/core";
 import type { SyncEvent } from "@maille/core/sync";
 
+/**
+ * Omit that distributes over unions, so event types stay discriminated
+ * (a plain Omit merges union members into one object).
+ */
+type DistributiveOmit<T, K extends keyof never> = T extends unknown
+  ? Omit<T, K>
+  : never;
+
 export type MutationType<
   Name extends string,
   Mutation,
@@ -33,5 +41,7 @@ export type MutationType<
    * The expected events from the mutation.
    * This is used to optimistically update the UI before the mutation is actually executed.
    */
-  events: Array<Omit<Events[number], "clientId" | "createdAt" | "user">>;
+  events: Array<
+    DistributiveOmit<Events[number], "clientId" | "createdAt" | "user">
+  >;
 };

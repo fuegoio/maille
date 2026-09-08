@@ -232,9 +232,12 @@ export const useFunds = create<FundsState>()(
         } else if (mutation.name === "deleteFundMove") {
           get().restoreFundMove(mutation.rollbackData);
         } else if (mutation.name === "addTransaction") {
-          mutation.events[0].payload.fundMoves?.forEach((move) => {
-            get().deleteFundMove(move.id);
-          });
+          const addTransactionEvent = mutation.events[0];
+          if (addTransactionEvent.type === "addTransaction") {
+            addTransactionEvent.payload.fundMoves?.forEach((move) => {
+              get().deleteFundMove(move.id);
+            });
+          }
         } else if (mutation.name === "deleteTransaction") {
           mutation.rollbackData.fundMoves?.forEach((move) => {
             get().restoreFundMove(move);

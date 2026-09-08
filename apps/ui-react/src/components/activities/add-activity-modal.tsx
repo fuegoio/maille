@@ -31,6 +31,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { extractDateFromMovementName, getGraphQLDate } from "@/lib/date";
+import {
+  activityCreateHistoryEvent,
+  linkMovementHistoryEvent,
+} from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
@@ -345,6 +349,16 @@ export function AddActivityModal({
           type: "createActivity",
           payload: eventPayload,
         },
+        activityCreateHistoryEvent(newActivity.id),
+        ...(movement
+          ? [
+              linkMovementHistoryEvent(
+                movement,
+                { id: newActivity.id, name: data.name },
+                movement.amount,
+              ),
+            ]
+          : []),
       ],
     });
 
@@ -404,6 +418,7 @@ export function AddActivityModal({
             type: "createActivity",
             payload: newActivity,
           },
+          activityCreateHistoryEvent(newActivity.id),
         ],
       });
     });

@@ -19,6 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import {
+  unlinkActivityHistoryEvent,
+  unlinkMovementHistoryEvent,
+  updateLinkActivityHistoryEvent,
+  updateLinkMovementHistoryEvent,
+} from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import {
   updateMovementActivityMutation,
@@ -58,6 +64,18 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     event: string,
   ) => {
     if (event === "unlink") {
+      const historyEvents = [
+        unlinkMovementHistoryEvent(
+          movementWithLink,
+          { id: activity.id, name: activity.name },
+          movementWithLink.amountLinked,
+        ),
+        unlinkActivityHistoryEvent(
+          activity,
+          { id: movementWithLink.id, name: movementWithLink.name },
+          movementWithLink.amountLinked,
+        ),
+      ];
       mutate({
         name: "deleteMovementActivity",
         mutation: deleteMovementActivityMutation,
@@ -79,9 +97,24 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
               movement: movementWithLink.id,
             },
           },
+          ...historyEvents,
         ],
       });
     } else if (event === "resetAmount") {
+      const historyEvents = [
+        updateLinkMovementHistoryEvent(
+          movementWithLink,
+          { id: activity.id, name: activity.name },
+          movementWithLink.amountLinked,
+          movementWithLink.amount,
+        ),
+        updateLinkActivityHistoryEvent(
+          activity,
+          { id: movementWithLink.id, name: movementWithLink.name },
+          movementWithLink.amountLinked,
+          movementWithLink.amount,
+        ),
+      ].filter((historyEvent) => historyEvent !== null);
       mutate({
         name: "updateMovementActivity",
         mutation: updateMovementActivityMutation,
@@ -105,6 +138,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
               amount: movementWithLink.amount,
             },
           },
+          ...historyEvents,
         ],
       });
     }
@@ -114,6 +148,20 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     movementWithLink: MovementWithLink,
     newAmount: number,
   ) => {
+    const historyEvents = [
+      updateLinkMovementHistoryEvent(
+        movementWithLink,
+        { id: activity.id, name: activity.name },
+        movementWithLink.amountLinked,
+        newAmount,
+      ),
+      updateLinkActivityHistoryEvent(
+        activity,
+        { id: movementWithLink.id, name: movementWithLink.name },
+        movementWithLink.amountLinked,
+        newAmount,
+      ),
+    ].filter((historyEvent) => historyEvent !== null);
     mutate({
       name: "updateMovementActivity",
       mutation: updateMovementActivityMutation,
@@ -137,6 +185,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
             amount: newAmount,
           },
         },
+        ...historyEvents,
       ],
     });
   };

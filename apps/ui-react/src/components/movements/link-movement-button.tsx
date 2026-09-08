@@ -15,6 +15,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import {
+  linkActivityHistoryEvent,
+  linkMovementHistoryEvent,
+} from "@/lib/history-events";
 import { searchCompare } from "@/lib/strings";
 import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
@@ -103,6 +107,10 @@ export function LinkMovementButton({
 
   const linkMovement = async (movement: Movement) => {
     const newId = crypto.randomUUID();
+    const historyEvents = [
+      linkMovementHistoryEvent(movement, activity, movement.amount),
+      linkActivityHistoryEvent(activity, movement, movement.amount),
+    ];
     mutate({
       name: "createMovementActivity",
       mutation: createMovementActivityMutation,
@@ -123,6 +131,7 @@ export function LinkMovementButton({
             amount: movement.amount,
           },
         },
+        ...historyEvents,
       ],
     });
 

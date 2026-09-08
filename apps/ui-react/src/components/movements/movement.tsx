@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { HistoryTimeline } from "@/components/history/history-timeline";
 import { AmountInput } from "@/components/ui/amount-input";
 import {
   Breadcrumb,
@@ -19,6 +20,10 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
+import {
+  movementUpdateHistoryEvent,
+  unlinkActivityHistoryEvent,
+} from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import {
   deleteMovementMutation,
@@ -72,6 +77,23 @@ export function MovementPage({ movementId }: MovementPageProps) {
   const deleteMovement = () => {
     if (!movement) return;
     const movementData = _.cloneDeep(movement);
+
+    // Expected history: unlink entry on every linked activity's timeline
+    const unlinkEvents = movement.activities
+      .map((ma) => {
+        const linkedActivity = useActivities
+          .getState()
+          .getActivityById(ma.activity);
+        return linkedActivity
+          ? unlinkActivityHistoryEvent(
+              linkedActivity,
+              { id: movement.id, name: movement.name },
+              ma.amount,
+            )
+          : null;
+      })
+      .filter((event) => event !== null);
+
     mutate({
       name: "deleteMovement",
       mutation: deleteMovementMutation,
@@ -86,6 +108,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
             id: movement.id,
           },
         },
+        ...unlinkEvents,
       ],
     });
 
@@ -100,6 +123,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
   }) => {
     if (!movement) return;
     const movementData = _.cloneDeep(movement);
+    const historyEvent = movementUpdateHistoryEvent(movement, update);
     mutate({
       name: "updateMovement",
       mutation: updateMovementMutation,
@@ -121,6 +145,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
             date: update.date ? getGraphQLDate(update.date) : undefined,
           },
         },
+        ...(historyEvent ? [historyEvent] : []),
       ],
     });
   };
@@ -312,6 +337,13 @@ export function MovementPage({ movementId }: MovementPageProps) {
                   ))
                 )}
               </div>
+            </div>
+
+            <div className="border-t px-4 py-6 sm:px-8">
+              <HistoryTimeline
+                entityType="movement"
+                history={movement.history}
+              />
             </div>
           </div>
         </div>

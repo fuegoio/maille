@@ -1,3 +1,11 @@
+import type {
+  HistoryAction,
+  HistoryEntityType,
+  HistoryChange,
+  HistorySubject,
+  SerializedHistoryEntry,
+} from "@maille/core/history";
+
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
 
@@ -12,6 +20,34 @@ import { useFunds } from "./stores/funds";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
+
+type SerializedHistoryEntryData = {
+  id: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  subject: string | null;
+  changes: string;
+  createdAt: number;
+  user: string;
+  clientId: string;
+};
+
+const deserializeHistoryEntry = (
+  entry: SerializedHistoryEntryData,
+): SerializedHistoryEntry => ({
+  id: entry.id,
+  entityType: entry.entityType as HistoryEntityType,
+  entityId: entry.entityId,
+  action: entry.action as HistoryAction,
+  subject: entry.subject
+    ? (JSON.parse(entry.subject) as HistorySubject)
+    : undefined,
+  changes: JSON.parse(entry.changes) as HistoryChange[],
+  createdAt: new Date(entry.createdAt * 1000).toISOString(),
+  user: entry.user,
+  clientId: entry.clientId,
+});
 
 const userDataQuery = graphql(/* GraphQL */ `
   query UserData {
@@ -48,6 +84,17 @@ const userDataQuery = graphql(/* GraphQL */ `
           account
           amount
         }
+      }
+      history {
+        id
+        entityType
+        entityId
+        action
+        subject
+        changes
+        createdAt
+        user
+        clientId
       }
     }
 
@@ -92,6 +139,17 @@ const userDataQuery = graphql(/* GraphQL */ `
         amount
       }
       status
+      history {
+        id
+        entityType
+        entityId
+        action
+        subject
+        changes
+        createdAt
+        user
+        clientId
+      }
     }
 
     projects {
@@ -177,6 +235,7 @@ export const fetchUserData = async () => {
     useMovements.getState().addMovement({
       ...movement,
       date: new Date(movement.date),
+      history: movement.history.map(deserializeHistoryEntry),
     });
   });
 
@@ -186,6 +245,7 @@ export const fetchUserData = async () => {
       ...activity,
       date: new Date(activity.date),
       type: activity.type as ActivityType,
+      history: activity.history.map(deserializeHistoryEntry),
     });
   });
 

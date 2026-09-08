@@ -14,12 +14,17 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { getGraphQLDate } from "@/lib/date";
+import {
+  movementUpdateHistoryEvent,
+  unlinkActivityHistoryEvent,
+} from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import {
   deleteMovementMutation,
   updateMovementMutation,
 } from "@/mutations/movements";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
+import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 
@@ -64,7 +69,7 @@ export function MovementsCommandPalette({
       name?: string;
       date?: Date;
       amount?: number;
-      account?: string | null;
+      account?: string;
     }) => {
       selectedMovementIds.forEach((movementId) => {
         const movement = movements.find((m) => m.id === movementId);
@@ -72,6 +77,8 @@ export function MovementsCommandPalette({
 
         // Create a copy of the current movement for rollback
         const oldMovement = { ...movement };
+
+        const historyEvent = movementUpdateHistoryEvent(movement, update);
 
         mutate({
           name: "updateMovement",
@@ -94,6 +101,7 @@ export function MovementsCommandPalette({
                 date: update.date ? getGraphQLDate(update.date) : undefined,
               },
             },
+            ...(historyEvent ? [historyEvent] : []),
           ],
         });
       });
@@ -107,6 +115,21 @@ export function MovementsCommandPalette({
       if (!movement) return;
       // Create a copy of the movement for rollback
       const movementToDelete = { ...movement };
+
+      const unlinkEvents = movement.activities
+        .map((ma) => {
+          const linkedActivity = useActivities
+            .getState()
+            .getActivityById(ma.activity);
+          return linkedActivity
+            ? unlinkActivityHistoryEvent(
+                linkedActivity,
+                { id: movement.id, name: movement.name },
+                ma.amount,
+              )
+            : null;
+        })
+        .filter((event) => event !== null);
 
       mutate({
         name: "deleteMovement",
@@ -122,6 +145,7 @@ export function MovementsCommandPalette({
               id: movement.id,
             },
           },
+          ...unlinkEvents,
         ],
       });
     });

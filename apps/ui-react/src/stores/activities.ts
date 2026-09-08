@@ -1,3 +1,4 @@
+import type { SerializedHistoryEntry } from "@maille/core/history";
 import type { SyncEvent } from "@maille/core/sync";
 
 import {
@@ -74,7 +75,11 @@ interface ActivitiesState {
     activityMovementId: string,
   ) => void;
 
-  addActivity: (activity: Omit<Activity, "amount" | "status">) => Activity;
+  addActivity: (
+    activity: Omit<Activity, "amount" | "status" | "history"> & {
+      history?: SerializedHistoryEntry[];
+    },
+  ) => Activity;
   updateActivity: (
     activityId: string,
     update: {
@@ -86,10 +91,15 @@ interface ActivitiesState {
       subcategory?: string | null;
       project?: string | null;
       sharing?: ActivitySharing[];
+      history?: SerializedHistoryEntry[];
     },
   ) => void;
   deleteActivity: (activityId: string) => void;
   restoreActivity: (activity: Activity) => void;
+  upsertHistoryEntry: (
+    activityId: string,
+    entry: SerializedHistoryEntry,
+  ) => void;
 
   addActivityCategory: (activityCategory: ActivityCategory) => ActivityCategory;
   updateActivityCategory: (
@@ -328,6 +338,7 @@ export const useActivities = create<ActivitiesState>()(
 
         const newActivity: Activity = {
           ...activity,
+          history: activity.history ?? [],
           amount: getActivityTransactionsReconciliationSum(
             activity.type,
             activity.transactions,
@@ -359,6 +370,7 @@ export const useActivities = create<ActivitiesState>()(
           category?: string | null;
           subcategory?: string | null;
           project?: string | null;
+          history?: SerializedHistoryEntry[];
         },
       ) => {
         const filteredUpdate = Object.fromEntries(
@@ -401,6 +413,21 @@ export const useActivities = create<ActivitiesState>()(
       restoreActivity: (activity: Activity) => {
         set((state) => ({
           activities: [...state.activities, activity],
+        }));
+      },
+
+      upsertHistoryEntry: (activityId, entry) => {
+        set((state) => ({
+          activities: state.activities.map((activity) => {
+            if (activity.id !== activityId) return activity;
+            const exists = activity.history.some((e) => e.id === entry.id);
+            return {
+              ...activity,
+              history: exists
+                ? activity.history.map((e) => (e.id === entry.id ? entry : e))
+                : [...activity.history, entry],
+            };
+          }),
         }));
       },
 
@@ -530,7 +557,11 @@ export const useActivities = create<ActivitiesState>()(
       },
 
       handleEvent: (event: SyncEvent) => {
-        if (event.type === "createActivity") {
+        if (event.type === "createHistory") {
+          if (event.payload.entityType === "activity") {
+            get().upsertHistoryEntry(event.payload.entityId, event.payload);
+          }
+        } else if (event.type === "createActivity") {
           get().addActivity({
             ...event.payload,
             date: new Date(event.payload.date),

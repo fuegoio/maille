@@ -1,3 +1,4 @@
+import type { SerializedHistoryEntry } from "@maille/core/history";
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import type { SyncEvent } from "@maille/core/sync";
 
@@ -13,7 +14,11 @@ interface MovementsState {
 
   getMovementById: (movementId: string) => Movement | undefined;
 
-  addMovement: (movement: Omit<Movement, "status">) => Movement;
+  addMovement: (
+    movement: Omit<Movement, "status" | "history"> & {
+      history?: SerializedHistoryEntry[];
+    },
+  ) => Movement;
   updateMovement: (
     movementId: string,
     update: {
@@ -21,10 +26,15 @@ interface MovementsState {
       amount?: number;
       account?: string;
       name?: string;
+      history?: SerializedHistoryEntry[];
     },
   ) => void;
   deleteMovement: (movementId: string) => void;
   restoreMovement: (movement: Movement) => void;
+  upsertHistoryEntry: (
+    movementId: string,
+    entry: SerializedHistoryEntry,
+  ) => void;
 
   addMovementActivity: (
     movementId: string,
@@ -123,6 +133,7 @@ export const useMovements = create<MovementsState>()(
       addMovement: (movement) => {
         const newMovement = {
           ...movement,
+          history: movement.history ?? [],
           status:
             movement.activities.reduce((sum, ma) => sum + ma.amount, 0) ===
             movement.amount
@@ -186,8 +197,27 @@ export const useMovements = create<MovementsState>()(
         }));
       },
 
+      upsertHistoryEntry: (movementId, entry) => {
+        set((state) => ({
+          movements: state.movements.map((movement) => {
+            if (movement.id !== movementId) return movement;
+            const exists = movement.history.some((e) => e.id === entry.id);
+            return {
+              ...movement,
+              history: exists
+                ? movement.history.map((e) => (e.id === entry.id ? entry : e))
+                : [...movement.history, entry],
+            };
+          }),
+        }));
+      },
+
       handleEvent: (event: SyncEvent) => {
-        if (event.type === "createMovement") {
+        if (event.type === "createHistory") {
+          if (event.payload.entityType === "movement") {
+            get().upsertHistoryEntry(event.payload.entityId, event.payload);
+          }
+        } else if (event.type === "createMovement") {
           get().addMovement({
             ...event.payload,
             date: new Date(event.payload.date),
