@@ -9,9 +9,11 @@ import {
   Ellipsis,
   Scissors,
   Trash2,
+  type LucideIcon,
 } from "lucide-react";
 import * as React from "react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,25 +87,42 @@ const ACTIVITY_STATUS_DESCRIPTION: Record<ActivityStatus, string> = {
   completed: "Linked movements cover this activity's transactions.",
 };
 
-function ActivityStatusMark({ status }: { status: ActivityStatus }) {
+const ACTIVITY_STATUS_ALERT: Record<
+  ActivityStatus,
+  { icon: LucideIcon; className: string; descriptionClassName: string }
+> = {
+  scheduled: {
+    icon: CircleDashed,
+    className: "border-border/50 bg-muted/40 text-muted-foreground",
+    descriptionClassName: "text-muted-foreground/70",
+  },
+  incomplete: {
+    icon: CircleDotDashed,
+    className: "border-orange-400/25 bg-orange-400/10 text-orange-300",
+    descriptionClassName: "text-orange-300/70",
+  },
+  completed: {
+    icon: CircleCheck,
+    className: "border-indigo-400/25 bg-indigo-400/10 text-indigo-300",
+    descriptionClassName: "text-indigo-300/70",
+  },
+};
+
+function ActivityStatusAlert({ status }: { status: ActivityStatus }) {
+  const {
+    icon: Icon,
+    className,
+    descriptionClassName,
+  } = ACTIVITY_STATUS_ALERT[status];
+
   return (
-    <div className="flex min-w-0 items-center gap-3">
-      {status === "scheduled" ? (
-        <CircleDashed className="size-5 shrink-0 text-muted-foreground" />
-      ) : status === "incomplete" ? (
-        <CircleDotDashed className="size-5 shrink-0 text-orange-300" />
-      ) : (
-        <CircleCheck className="size-5 shrink-0 text-indigo-300" />
-      )}
-      <div className="min-w-0">
-        <div className="text-sm font-medium">
-          {ACTIVITY_STATUS_NAME[status]}
-        </div>
-        <div className="truncate text-xs text-muted-foreground">
-          {ACTIVITY_STATUS_DESCRIPTION[status]}
-        </div>
-      </div>
-    </div>
+    <Alert className={cn("mt-6", className)}>
+      <Icon />
+      <AlertTitle>{ACTIVITY_STATUS_NAME[status]}</AlertTitle>
+      <AlertDescription className={descriptionClassName}>
+        {ACTIVITY_STATUS_DESCRIPTION[status]}
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -349,7 +368,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
 
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="mx-auto w-full max-w-3xl">
-            <div className="border-b px-4 py-6 sm:px-8">
+            <div className="px-4 py-6 sm:px-8">
               <label htmlFor="date" className="sr-only">
                 Date
               </label>
@@ -361,14 +380,19 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                 className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
               />
 
-              <Input
-                id="name"
-                aria-label="Activity name"
-                value={activity.name}
-                onChange={(e) => updateActivity({ name: e.target.value })}
-                placeholder="Activity name"
-                className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
-              />
+              <div className="mt-1 flex items-baseline justify-between gap-4">
+                <Input
+                  id="name"
+                  aria-label="Activity name"
+                  value={activity.name}
+                  onChange={(e) => updateActivity({ name: e.target.value })}
+                  placeholder="Activity name"
+                  className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                />
+                <div className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
+                  {currencyFormatter.format(activity.amount)}
+                </div>
+              </div>
 
               <Textarea
                 id="description"
@@ -435,12 +459,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                 />
               </div>
 
-              <div className="-mx-4 mt-8 flex items-center justify-between gap-4 border-t px-4 pt-6 sm:-mx-8 sm:px-8">
-                <ActivityStatusMark status={activity.status} />
-                <div className="font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
-                  {currencyFormatter.format(activity.amount)}
-                </div>
-              </div>
+              <ActivityStatusAlert status={activity.status} />
             </div>
 
             <ActivityTransactions activity={activity} />
