@@ -6,6 +6,7 @@ import type { CounterpartyMutation } from "./counterparties";
 import type { FundMutation } from "./funds";
 import type { MovementMutation } from "./movements";
 import type { ProjectMutation } from "./projects";
+import type { WorkflowMutation } from "./workflows";
 
 export type Mutation =
   | ActivityMutation
@@ -15,4 +16,5 @@ export type Mutation =
   | AssetMutation
   | CounterpartyMutation
   | ContactMutation
-  | FundMutation;
+  | FundMutation
+  | WorkflowMutation;

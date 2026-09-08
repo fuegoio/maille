@@ -22,6 +22,7 @@ import { useFunds } from "./funds";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
 import { storage } from "./storage";
+import { useWorkflows } from "./workflows";
 
 interface SyncState {
   lastEventTimestamp: number;
@@ -77,6 +78,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
+            useWorkflows.getState().handleEvent(event);
           });
 
         void get().dequeueMutations();
@@ -137,6 +139,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useWorkflows.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
 
           set({
             mutationsInProcessing: false,
@@ -173,6 +179,7 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleMutationError(mutation);
           useCounterparties.getState().handleMutationError(mutation);
           useContacts.getState().handleMutationError(mutation);
+          useWorkflows.getState().handleMutationError(mutation);
           await get().dequeueMutations();
         }
       },
@@ -212,6 +219,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
+            useWorkflows.getState().handleEvent(event);
           });
       },
 
@@ -268,6 +276,7 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleEvent(event);
           useCounterparties.getState().handleEvent(event);
           useContacts.getState().handleEvent(event);
+          useWorkflows.getState().handleEvent(event);
         }
 
         console.log("Finished subscription");

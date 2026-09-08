@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { AppSidebar } from "@/components/navigation/sidebar";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { WorkflowBar } from "@/components/workflows/workflow-bar";
 import { fetchUserData } from "@/data";
 import { useIsOnline } from "@/hooks/use-is-online";
 import { authClient } from "@/lib/auth";
@@ -126,6 +127,7 @@ function AuthenticatedLayout() {
     <SidebarProvider>
       <AppSidebar />
       <Outlet />
+      <WorkflowBar />
     </SidebarProvider>
   );
 }
