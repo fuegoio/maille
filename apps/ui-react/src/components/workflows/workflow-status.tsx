@@ -30,7 +30,7 @@ export const WORKFLOW_STATUS_CONFIG: Record<
   succeeded: {
     label: "Completed",
     dotClass: "bg-indigo-400",
-    textClass: "text-foreground",
+    textClass: "text-indigo-400",
   },
   failed: {
     label: "Failed",
@@ -47,11 +47,13 @@ export const WORKFLOW_STATUS_CONFIG: Record<
 interface WorkflowStatusBadgeProps {
   status: WorkflowStatus;
   className?: string;
+  colored?: boolean;
 }
 
 export function WorkflowStatusBadge({
   status,
   className,
+  colored = false,
 }: WorkflowStatusBadgeProps) {
   const config =
     WORKFLOW_STATUS_CONFIG[status] ?? WORKFLOW_STATUS_CONFIG.queued;
@@ -60,7 +62,7 @@ export function WorkflowStatusBadge({
     <span
       className={cn(
         "inline-flex h-5 items-center gap-1 rounded-full border px-1.5 text-xs",
-        config.textClass,
+        colored ? config.textClass : "text-foreground",
         "border-current/20",
         className,
       )}
