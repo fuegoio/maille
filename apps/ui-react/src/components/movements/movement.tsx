@@ -199,23 +199,22 @@ export function MovementPage({ movementId }: MovementPageProps) {
       <div className="flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb>
+          <Breadcrumb className="min-w-0 flex-1">
             <BreadcrumbList>
-              <BreadcrumbItem>
+              <BreadcrumbItem className="shrink-0">
                 <BreadcrumbLink asChild>
                   <Link to="/movements">Movements</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="max-w-48 truncate">
+              <BreadcrumbSeparator className="shrink-0" />
+              <BreadcrumbItem className="min-w-0">
+                <BreadcrumbPage className="truncate" title={movement.name}>
                   {movement.name}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="flex-1" />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="icon">
