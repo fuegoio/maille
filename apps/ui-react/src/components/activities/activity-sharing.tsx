@@ -175,9 +175,9 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
         </Dialog>
 
         {!isReconciled ? (
-          <TriangleAlert className="mr-1.5 size-5 text-orange-300" />
+          <TriangleAlert className="size-5 text-orange-300" />
         ) : (
-          <CircleCheck className="mr-1.5 size-5 text-indigo-400" />
+          <CircleCheck className="size-5 text-indigo-400" />
         )}
       </div>
 
