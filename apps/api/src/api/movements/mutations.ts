@@ -20,6 +20,10 @@ import {
 } from "@maille/core/history";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import { ensureWorkflow, cancelWorkflowIfActive } from "@/harness/store";
+import { isHarnessConfigured } from "@/harness/config";
+import { enqueueWorkflow } from "@/harness/queue";
+import { isHarnessSession } from "@/harness/session";
 
 export const registerMovementsMutations = () => {
   builder.mutationField("createMovement", (t) =>
@@ -78,6 +82,15 @@ export const registerMovementsMutations = () => {
           user: ctx.user.id,
         });
         await emitHistoryEvents(ctx, emitted);
+
+        // AI harness: auto-trigger the movement's unique workflow when the
+        // harness is configured. Insert-only (one workflow per movement).
+        if (isHarnessConfigured()) {
+          const workflow = await ensureWorkflow(ctx.user.id, args.id, "auto", ctx.session.id);
+          if (workflow) {
+            enqueueWorkflow(workflow.id, workflow.user);
+          }
+        }
 
         return {
           id: args.id,
@@ -414,6 +427,13 @@ export const registerMovementsMutations = () => {
         });
         await emitHistoryEvents(ctx, movementHistory.emitted);
         await emitHistoryEvents(ctx, activityHistory.emitted);
+
+        // AI harness: a manual link by the user cancels the movement's
+        // active workflow — the assistant never fights the user. Links made
+        // by the harness itself (machine session) do not.
+        if (!isHarnessSession(ctx.session.id)) {
+          await cancelWorkflowIfActive(ctx.user.id, movement.id, ctx.session.id);
+        }
 
         return movementActivity;
       },

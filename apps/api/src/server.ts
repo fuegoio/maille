@@ -2,10 +2,11 @@ import { logger } from "@/logger";
 import { yoga } from "@/api";
 import { auth } from "@/auth";
 
-export const startServer = () => {
+export const startServer = (port?: number) => {
   logger.info("Starting GraphQL server...");
 
   const server = Bun.serve({
+    port,
     idleTimeout: 0,
     fetch: async (request, server) => {
       logger.debug({ url: request.url }, "New request incoming");
@@ -47,4 +48,6 @@ export const startServer = () => {
   });
 
   logger.info(`Server is running on ${`http://${server.hostname}:${server.port}`}/api`);
+
+  return server;
 };
