@@ -118,9 +118,12 @@ export const useWorkflows = create<WorkflowsState>()(
       },
 
       patchWorkflow: (id, patch) => {
+        const definedPatch = Object.fromEntries(
+          Object.entries(patch).filter(([, v]) => v !== undefined),
+        );
         set((state) => ({
           workflows: state.workflows.map((w) =>
-            w.id === id ? { ...w, ...patch } : w,
+            w.id === id ? { ...w, ...definedPatch } : w,
           ),
         }));
       },
