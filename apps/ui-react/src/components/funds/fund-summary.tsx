@@ -1,5 +1,5 @@
 import { AccountType, type Account } from "@maille/core/accounts";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
@@ -67,7 +67,6 @@ export function FundSummary({ fundId }: FundSummaryProps) {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
-  const navigate = useNavigate();
 
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
@@ -373,12 +372,11 @@ export function FundSummary({ fundId }: FundSummaryProps) {
           </div>
           <div className="mt-2">
             {children.map((child) => (
-              <div
+              <Link
                 key={child.id}
+                to="/funds/$id"
+                params={{ id: child.id }}
                 className="flex h-8 cursor-pointer items-center text-sm transition-colors hover:bg-muted/50"
-                onClick={() =>
-                  navigate({ to: "/funds/$id", params: { id: child.id } })
-                }
               >
                 <div
                   className="size-3 shrink-0 rounded-sm"
@@ -389,7 +387,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 <div className="font-mono">
                   {currencyFormatter.format(childBalances.get(child.id) ?? 0)}
                 </div>
-              </div>
+              </Link>
             ))}
             {directBalance !== null && (
               <div className="flex h-8 items-center pl-5 text-sm">
@@ -465,22 +463,18 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                   )}
 
                   {entries.map(({ account, amount }) => (
-                    <div
+                    <Link
                       key={account.id}
+                      to="/accounts/$id"
+                      params={{ id: account.id }}
                       className="flex h-8 cursor-pointer items-center pl-5 text-sm transition-colors hover:bg-muted/50"
-                      onClick={() =>
-                        navigate({
-                          to: "/accounts/$id",
-                          params: { id: account.id },
-                        })
-                      }
                     >
                       <div className="truncate">{account.name}</div>
                       <div className="flex-1" />
                       <div className="font-mono">
                         {currencyFormatter.format(amount)}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ),

@@ -362,18 +362,14 @@ export function MovementPage({ movementId }: MovementPageProps) {
                   </div>
                 ) : (
                   movementActivities.map((movementActivity, index) => (
-                    <div
+                    <Link
                       key={movementActivity.id}
+                      to="/activities/$id"
+                      params={{ id: movementActivity.activity!.id }}
                       className={cn(
                         "group flex h-10 cursor-pointer items-center px-4 text-sm hover:bg-muted",
                         index !== movementActivities.length - 1 && "border-b",
                       )}
-                      onClick={() =>
-                        router.navigate({
-                          to: "/activities/$id",
-                          params: { id: movementActivity.activity!.id },
-                        })
-                      }
                     >
                       <div className="flex flex-1 items-center justify-center">
                         <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
@@ -416,7 +412,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
                           <p>Unlink activity</p>
                         </TooltipContent>
                       </Tooltip>
-                    </div>
+                    </Link>
                   ))
                 )}
               </div>

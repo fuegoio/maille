@@ -1,5 +1,5 @@
 import { AccountType } from "@maille/core/accounts";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
@@ -32,7 +32,6 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
   const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const user = useAuth((state) => state.user!);
-  const navigate = useNavigate();
 
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
@@ -160,36 +159,49 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
               Across funds
             </div>
             <div className="mt-1">
-              {fundSpread.map(({ fund, amount }) => (
-                <div
-                  key={fund?.id ?? "untracked"}
-                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
-                  onClick={() =>
-                    fund
-                      ? navigate({ to: "/funds/$id", params: { id: fund.id } })
-                      : navigate({ to: "/funds/untracked" })
-                  }
-                >
-                  <div
-                    className="size-3 shrink-0 rounded-sm"
-                    style={
-                      fund
-                        ? { backgroundColor: fund.color }
-                        : {
-                            backgroundColor:
-                              "color-mix(in srgb, currentColor 40%, transparent)",
-                          }
-                    }
-                  />
-                  <div className="ml-2 truncate">
-                    {fund ? fund.name : "Untracked"}
-                  </div>
-                  <div className="flex-1" />
-                  <div className="font-mono">
-                    {currencyFormatter.format(amount)}
-                  </div>
-                </div>
-              ))}
+              {fundSpread.map(({ fund, amount }) => {
+                const rowContent = (
+                  <>
+                    <div
+                      className="size-3 shrink-0 rounded-sm"
+                      style={
+                        fund
+                          ? { backgroundColor: fund.color }
+                          : {
+                              backgroundColor:
+                                "color-mix(in srgb, currentColor 40%, transparent)",
+                            }
+                      }
+                    />
+                    <div className="ml-2 truncate">
+                      {fund ? fund.name : "Untracked"}
+                    </div>
+                    <div className="flex-1" />
+                    <div className="font-mono">
+                      {currencyFormatter.format(amount)}
+                    </div>
+                  </>
+                );
+
+                return fund ? (
+                  <Link
+                    key={fund.id}
+                    to="/funds/$id"
+                    params={{ id: fund.id }}
+                    className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
+                  >
+                    {rowContent}
+                  </Link>
+                ) : (
+                  <Link
+                    key="untracked"
+                    to="/funds/untracked"
+                    className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
+                  >
+                    {rowContent}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}

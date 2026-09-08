@@ -1,6 +1,6 @@
 import type { Activity } from "@maille/core/activities";
 
-import { useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
   Calendar,
@@ -37,7 +37,6 @@ interface AccountTransactionsTableProps {
 export function AccountTransactionsTable({
   accountId,
 }: AccountTransactionsTableProps) {
-  const router = useRouter();
   const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
   const search = useSearch((state) => state.search);
@@ -212,13 +211,6 @@ export function AccountTransactionsTable({
                 <TransactionLine
                   transaction={item}
                   currencyFormatter={currencyFormatter}
-                  onClick={() =>
-                    void router.navigate({
-                      to: "/activities/$id",
-                      params: { id: item.activity.id },
-                      search: { transaction: item.id },
-                    })
-                  }
                 />
               )}
             </React.Fragment>
@@ -232,11 +224,9 @@ export function AccountTransactionsTable({
 function TransactionLine({
   transaction,
   currencyFormatter,
-  onClick,
 }: {
   transaction: AccountTransaction;
   currencyFormatter: Intl.NumberFormat;
-  onClick: () => void;
 }) {
   const accounts = useAccounts((state) => state.accounts);
   const isInflow = transaction.direction === "in";
@@ -254,9 +244,11 @@ function TransactionLine({
   };
 
   return (
-    <div
+    <Link
+      to="/activities/$id"
+      params={{ id: transaction.activity.id }}
+      search={{ transaction: transaction.id }}
       className="group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6"
-      onClick={onClick}
     >
       <div
         className={cn(
@@ -300,6 +292,6 @@ function TransactionLine({
       <div className="w-32 shrink-0 text-right font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
       </div>
-    </div>
+    </Link>
   );
 }

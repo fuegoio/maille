@@ -1,5 +1,5 @@
 import { ACCOUNT_TYPES, AccountType } from "@maille/core/accounts";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -20,7 +20,6 @@ export function AccountsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
-  const navigate = useNavigate();
 
   const [groupsFolded, setGroupsFolded] = useState<AccountType[]>([]);
 
@@ -96,15 +95,11 @@ export function AccountsTable() {
             sortedAccounts
               .filter((account) => account.type === accountType)
               .map((account) => (
-                <div
+                <Link
                   key={account.id}
+                  to="/accounts/$id"
+                  params={{ id: account.id }}
                   className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
-                  onClick={() => {
-                    navigate({
-                      to: `/accounts/$id`,
-                      params: { id: account.id },
-                    });
-                  }}
                 >
                   <div className="text-sm font-medium">{account.name}</div>
                   {account.default && (
@@ -126,7 +121,7 @@ export function AccountsTable() {
                   <div className="text-right font-mono text-sm">
                     {currencyFormatter.format(getAccountTotal(account.id))}
                   </div>
-                </div>
+                </Link>
               ))}
         </div>
       ))}
