@@ -9,8 +9,6 @@ import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 import { useWorkflows } from "@/stores/workflows";
 
-import { WorkflowStatusBadge } from "./workflow-status";
-
 interface WorkflowSectionProps {
   movementId: string;
 }
@@ -97,7 +95,6 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
       <div className="mt-3 rounded-lg border">
         {/* Status row */}
         <div className="flex items-center gap-2 border-b px-3 py-2.5">
-          <WorkflowStatusBadge status={workflow.status} colored />
           {workflow.trigger === "manual" && (
             <span className="text-xs text-muted-foreground">manual</span>
           )}
@@ -261,7 +258,7 @@ function SectionHeader() {
   return (
     <div className="flex items-center gap-1.5">
       <Bot className="size-3.5 text-muted-foreground" />
-      <span className="text-sm font-medium">Agentic</span>
+      <span className="text-sm font-medium">Workflow</span>
     </div>
   );
 }

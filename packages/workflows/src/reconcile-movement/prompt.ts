@@ -1,6 +1,6 @@
-import type { WorkflowMessage } from "@maille/core/harness";
+import type { WorkflowMessage } from "@maille/core/workflows";
 import type { Evidence } from "./evidence";
-import type { LlmMessage } from "./llm";
+import type { LlmMessage } from "../llm";
 
 /**
  * Pure prompt construction: shaping evidence and the workflow transcript

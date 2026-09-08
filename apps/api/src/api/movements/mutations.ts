@@ -19,9 +19,9 @@ import {
 } from "@maille/core/history";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { ensureWorkflow } from "@/harness/store";
-import { isHarnessConfigured } from "@/harness/config";
-import { enqueueWorkflow } from "@/harness/queue";
+import { ensureWorkflow } from "@/workflows/store";
+import { isWorkflowsConfigured } from "@/workflows/config";
+import { enqueueWorkflow } from "@/workflows/queue";
 import { linkMovementToActivity } from "@/services/movements";
 
 export const registerMovementsMutations = () => {
@@ -82,9 +82,9 @@ export const registerMovementsMutations = () => {
         });
         await emitHistoryEvents(ctx, emitted);
 
-        // AI harness: auto-trigger the movement's unique workflow when the
-        // harness is configured. Insert-only (one workflow per movement).
-        if (isHarnessConfigured()) {
+        // AI workflows: auto-trigger the movement's unique workflow when the
+        // workflows are configured. Insert-only (one workflow per movement).
+        if (isWorkflowsConfigured()) {
           const workflow = await ensureWorkflow(ctx.user.id, args.id, "auto", ctx.session.id);
           if (workflow) {
             enqueueWorkflow(workflow.id, workflow.user);

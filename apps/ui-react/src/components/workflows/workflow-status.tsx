@@ -1,4 +1,4 @@
-import type { WorkflowStatus } from "@maille/core/harness";
+import type { WorkflowStatus } from "@maille/core/workflows";
 
 import { Bot } from "lucide-react";
 

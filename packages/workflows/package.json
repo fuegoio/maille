@@ -1,11 +1,11 @@
 {
-  "name": "@maille/harness",
+  "name": "@maille/workflows",
   "type": "module",
   "exports": {
     "./llm": "./src/llm.ts",
-    "./tools": "./src/tools.ts",
-    "./prompt": "./src/prompt.ts",
-    "./evidence": "./src/evidence.ts"
+    "./reconcile-movement/tools": "./src/reconcile-movement/tools.ts",
+    "./reconcile-movement/prompt": "./src/reconcile-movement/prompt.ts",
+    "./reconcile-movement/evidence": "./src/reconcile-movement/evidence.ts"
   },
   "scripts": {
     "typecheck": "tsc",

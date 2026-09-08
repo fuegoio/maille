@@ -8,7 +8,7 @@ import type {
   WorkflowMessage,
   WorkflowResult,
   WorkflowStatus,
-} from "#harness/types.ts";
+} from "#workflows/types.ts";
 
 export interface BaseSyncEvent {
   user: string;

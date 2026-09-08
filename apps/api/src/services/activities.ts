@@ -28,7 +28,7 @@ import { computeHistory, emitHistoryEvents } from "@/api/history/history";
 import { getActivitySharings } from "@/services/sharing";
 import { insertTransactionFundMoves, serializeFundMoves } from "@/api/funds/transactions";
 import type { FundMoveInput } from "@/api/funds/types";
-import { cancelWorkflowIfActive, harnessClientId } from "@/harness/store";
+import { cancelWorkflowIfActive, workflowClientId } from "@/workflows/store";
 
 export type TransactionInputArgs = {
   id: string;
@@ -64,7 +64,7 @@ export type CreateActivityArgs = {
 /**
  * Creates an activity with its transactions and optional movement link. The
  * canonical implementation shared by the `createActivity` GraphQL mutation
- * and the AI harness, so both go through the same history, sync events and
+ * and the AI workflows, so both go through the same history, sync events and
  * workflow hooks.
  */
 export async function createActivity(userId: string, clientId: string, args: CreateActivityArgs) {
@@ -274,9 +274,9 @@ export async function createActivity(userId: string, clientId: string, args: Cre
         .set({ history: movementHistoryResult.history })
         .where(eq(movements.id, movementRow.id));
 
-      // AI harness: reconciling by hand cancels the movement's active
-      // workflow. Links made by the harness itself do not.
-      if (clientId !== harnessClientId(userId)) {
+      // AI workflows: reconciling by hand cancels the movement's active
+      // workflow. Links made by the workflow itself do not.
+      if (clientId !== workflowClientId(userId)) {
         await cancelWorkflowIfActive(userId, movementRow.id, clientId);
       }
     }

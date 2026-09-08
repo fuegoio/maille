@@ -1,4 +1,3 @@
-import type { MovementWorkflow } from "@maille/core/harness";
 import type {
   HistoryAction,
   HistoryEntityType,
@@ -6,6 +5,7 @@ import type {
   HistorySubject,
   SerializedHistoryEntry,
 } from "@maille/core/history";
+import type { MovementWorkflow } from "@maille/core/workflows";
 
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";

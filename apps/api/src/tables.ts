@@ -20,7 +20,7 @@ import type {
   WorkflowResult,
   WorkflowStatus,
   WorkflowTrigger,
-} from "@maille/core/harness";
+} from "@maille/core/workflows";
 import type { SyncEvent } from "@maille/core/sync";
 import { relations } from "drizzle-orm";
 

@@ -16,7 +16,7 @@ export type WorkflowMessageOption = {
 };
 
 /**
- * A conversation turn between the harness and the user, stored on the
+ * A conversation turn between the AI assistant and the user, stored on the
  * workflow row and replayed as part of the workflow's sync events.
  */
 export type WorkflowMessage = {

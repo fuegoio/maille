@@ -1,4 +1,4 @@
-import type { MovementWorkflow } from "@maille/core/harness";
+import type { MovementWorkflow } from "@maille/core/workflows";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Minus, Sparkles, X } from "lucide-react";

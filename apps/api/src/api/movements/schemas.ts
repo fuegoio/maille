@@ -2,7 +2,7 @@ import type { Movement, MovementActivity } from "@maille/core/movements";
 import { builder } from "@/api/builder";
 import { HistoryEntrySchema } from "@/api/history/schemas";
 import { MovementWorkflowSchema } from "@/api/workflows/schemas";
-import { getWorkflowByMovement, serializeWorkflow } from "@/harness/store";
+import { getWorkflowByMovement, serializeWorkflow } from "@/workflows/store";
 
 export const MovementSchema = builder.objectRef<Movement>("Movement");
 

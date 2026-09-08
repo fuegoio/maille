@@ -1,5 +1,5 @@
 import { builder } from "@/api/builder";
-import type { MovementWorkflow, WorkflowMessage } from "@maille/core/harness";
+import type { MovementWorkflow, WorkflowMessage } from "@maille/core/workflows";
 
 export const WorkflowMessageOptionSchema = builder.objectRef<{
   id: string;
