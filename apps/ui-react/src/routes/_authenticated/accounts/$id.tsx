@@ -2,10 +2,10 @@ import { AccountType } from "@maille/core/accounts";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
-  BookMarked,
   ChevronRight,
   House,
   Plus,
+  ReceiptText,
   Settings,
   SquareChartGantt,
   Users,
@@ -15,6 +15,7 @@ import { useState } from "react";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
 import { AccountSummary } from "@/components/accounts/account-summary";
+import { AccountTransactionsTable } from "@/components/accounts/account-transactions-table";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
@@ -22,9 +23,7 @@ import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-c
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
-import { ActivitiesTable } from "@/components/activities/activities-table";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
-import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
@@ -44,7 +43,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
-import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
 export const Route = createFileRoute("/_authenticated/accounts/$id")({
@@ -68,17 +66,10 @@ function AccountPage() {
   }
 
   const isMobile = useIsMobile();
-  const [selectedTab, setSelectedTab] = useState("activities");
+  const [selectedTab, setSelectedTab] = useState("transactions");
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
-  const activities = useActivities((state) => state.activities);
   const movements = useMovements((state) => state.movements);
-
-  const viewActivities = activities.filter((a) =>
-    a.transactions.some(
-      (t) => t.fromAccount === account.id || t.toAccount === account.id,
-    ),
-  );
 
   const viewMovements = movements.filter((m) => m.account === account.id);
 
@@ -141,9 +132,9 @@ function AccountPage() {
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
               <TabsList className="ml-5">
-                <TabsTrigger value="activities">
-                  <BookMarked />
-                  Activities
+                <TabsTrigger value="transactions">
+                  <ReceiptText />
+                  Transactions
                 </TabsTrigger>
                 <TabsTrigger value="movements">
                   <ArrowRightLeft />
@@ -164,11 +155,8 @@ function AccountPage() {
               </TabsList>
               <div className="flex-1" />
 
-              {selectedTab === "activities" && (
-                <>
-                  <FilterActivitiesButton viewId={`account-${account.id}`} />
-                  <AddActivityButton size="sm" />
-                </>
+              {selectedTab === "transactions" && (
+                <AddActivityButton size="sm" />
               )}
               {selectedTab === "movements" && (
                 <>
@@ -196,12 +184,8 @@ function AccountPage() {
               )}
             </header>
 
-            <TabsContent value="activities" className="flex h-full">
-              <ActivitiesTable
-                viewId={`account-${account.id}`}
-                activities={viewActivities}
-                grouping="period"
-              />
+            <TabsContent value="transactions" className="flex h-full">
+              <AccountTransactionsTable accountId={account.id} />
             </TabsContent>
 
             <TabsContent value="movements" className="flex h-full">
