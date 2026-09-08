@@ -1,9 +1,10 @@
 import Color from "colorjs.io";
 
-/** Lightness steps of a shade ramp, light to dark. */
-const SHADE_STEPS = [
-  0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35,
-];
+/** Lightness the darkest shade of a ramp reaches. */
+const DARKEST = 0.3;
+
+/** Number of swatches in a ramp: the anchor plus its darker shades. */
+const SHADE_COUNT = 12;
 
 /** Largest chroma up to `chroma` keeping oklch(L, c, hue) inside sRGB. */
 function maxInGamutChroma(L: number, chroma: number, hue: number): number {
@@ -19,31 +20,28 @@ function maxInGamutChroma(L: number, chroma: number, hue: number): number {
 }
 
 /**
- * Shade ramp for a hue anchor: the anchor's OKLCH hue and chroma at fixed
- * lightness steps, chroma reduced where needed to stay in sRGB gamut. The
- * anchor itself replaces the step closest to its lightness, so an existing
- * selection keeps its exact swatch in the ramp.
+ * Shade ramp for a hue anchor: the anchor itself first, then progressively
+ * darker shades of the same OKLCH hue, chroma capped at the anchor's own and
+ * reduced where needed to stay in sRGB gamut.
  */
 export function shadeRamp(anchorHex: string): string[] {
   const anchor = new Color(anchorHex).to("oklch");
   const L = anchor.coords[0] ?? 0;
   const chroma = anchor.coords[1] ?? 0;
   const hue = anchor.coords[2] ?? 0;
-  const shades = SHADE_STEPS.map((step) =>
-    new Color("oklch", [
-      step,
-      maxInGamutChroma(step, chroma, hue),
-      hue,
-    ]).toString({
-      format: "hex",
-    }),
-  );
-  let nearest = 0;
-  for (let i = 1; i < SHADE_STEPS.length; i++) {
-    if (Math.abs(SHADE_STEPS[i] - L) < Math.abs(SHADE_STEPS[nearest] - L))
-      nearest = i;
+  const shades = [anchorHex.toLowerCase()];
+  for (let i = 1; i < SHADE_COUNT; i++) {
+    const step = L - (i * (L - DARKEST)) / (SHADE_COUNT - 1);
+    shades.push(
+      new Color("oklch", [
+        step,
+        maxInGamutChroma(step, chroma, hue),
+        hue,
+      ]).toString({
+        format: "hex",
+      }),
+    );
   }
-  shades[nearest] = anchorHex.toLowerCase();
   return shades;
 }
 

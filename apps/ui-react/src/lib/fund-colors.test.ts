@@ -12,9 +12,10 @@ const hexHueDistance = (a: string, b: string) => {
 };
 
 describe("shadeRamp", () => {
-  it.each(FUND_COLORS)("keeps %s in its own ramp exactly once", (anchor) => {
+  it.each(FUND_COLORS)("places %s first in its own ramp", (anchor) => {
     const ramp = shadeRamp(anchor);
     expect(ramp).toHaveLength(12);
+    expect(ramp[0]).toBe(anchor);
     expect(ramp.filter((c) => c === anchor)).toHaveLength(1);
   });
 
@@ -24,7 +25,7 @@ describe("shadeRamp", () => {
     }
   });
 
-  it.each(FUND_COLORS)("goes light to dark for %s", (anchor) => {
+  it.each(FUND_COLORS)("darkens step by step from %s", (anchor) => {
     const ramp = shadeRamp(anchor);
     for (let i = 1; i < ramp.length; i++) {
       const L = new Color(ramp[i]).to("oklch").coords[0] ?? 0;
@@ -33,9 +34,11 @@ describe("shadeRamp", () => {
     }
   });
 
+  // Shades are generated at the anchor's exact hue; small drifts come from
+  // hex quantization when chroma is clamped at the sRGB gamut boundary.
   it.each(FUND_COLORS)("stays on the hue of %s", (anchor) => {
     for (const shade of shadeRamp(anchor)) {
-      expect(hexHueDistance(shade, anchor)).toBeLessThan(1);
+      expect(hexHueDistance(shade, anchor)).toBeLessThan(2);
     }
   });
 
@@ -47,9 +50,8 @@ describe("shadeRamp", () => {
 });
 
 describe("swatchCheckColor", () => {
-  it("uses a dark check on light shades", () => {
-    const lightest = shadeRamp("#a78bfa")[0];
-    expect(swatchCheckColor(lightest)).toBe("oklch(0.26 0 0)");
+  it("uses a dark check on light anchors", () => {
+    expect(swatchCheckColor(shadeRamp("#fbbf24")[0])).toBe("oklch(0.26 0 0)");
   });
 
   it("uses a white check on dark shades", () => {

@@ -64,6 +64,9 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
     directionRef.current = 1;
     lastHueRef.current = color;
     setHue(color);
+    // Selecting the hue itself is the default; a value already refined
+    // within this hue's ramp keeps its shade.
+    if (!shadeRamp(color).includes(value)) onChange(color);
   };
 
   const goBack = () => {
@@ -103,7 +106,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
           variant="ghost"
           size="icon"
           className="h-8 w-8 hover:bg-muted"
-          aria-label={`${hueName}, shade ${index + 1} of ${shades.length}${
+          aria-label={`${index === 0 ? hueName : `${hueName}, shade ${index + 1} of ${shades.length}`}${
             color === value ? ", selected" : ""
           }`}
           onClick={() => select(color)}
