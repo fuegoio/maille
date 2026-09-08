@@ -8,9 +8,11 @@ import {
   pgEnum,
   real,
   integer,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
+import type { SerializedHistoryEntry } from "@maille/core/history";
 import type { SyncEvent } from "@maille/core/sync";
 import { relations } from "drizzle-orm";
 
@@ -138,6 +140,7 @@ export const activities = pgTable("activities", {
     onDelete: "set null",
   }),
   project: text("project").references(() => projects.id, { onDelete: "set null" }),
+  history: jsonb("history").$type<SerializedHistoryEntry[]>().notNull().default([]),
 });
 
 export const activitiesSharing = pgTable("activities_sharing", {
@@ -259,6 +262,7 @@ export const movements = pgTable("movements", {
     .notNull()
     .references(() => accounts.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  history: jsonb("history").$type<SerializedHistoryEntry[]>().notNull().default([]),
 });
 
 export const movementsActivities = pgTable("movements_activities", {

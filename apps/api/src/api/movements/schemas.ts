@@ -1,5 +1,6 @@
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import { builder } from "@/api/builder";
+import { HistoryEntrySchema } from "@/api/history/schemas";
 
 export const MovementSchema = builder.objectRef<Movement>("Movement");
 
@@ -24,6 +25,10 @@ MovementSchema.implement({
       resolve: (parent) => parent.activities,
     }),
     status: t.exposeString("status"),
+    history: t.field({
+      type: [HistoryEntrySchema],
+      resolve: (parent) => parent.history ?? [],
+    }),
   }),
 });
 

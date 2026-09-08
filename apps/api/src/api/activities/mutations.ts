@@ -5,6 +5,16 @@ import {
   getActivitySharingsReconciliation,
   type ActivityMovement,
 } from "@maille/core/activities";
+import {
+  buildAddTransactionEntry,
+  buildCreateEntry,
+  buildLinkEntry,
+  buildRemoveTransactionEntry,
+  buildUnlinkEntry,
+  buildUpdateTransactionEntry,
+  diffActivity,
+  diffTransaction,
+} from "@maille/core/history";
 import { builder } from "../builder";
 import {
   ActivityCategorySchema,
@@ -33,6 +43,8 @@ import {
 import { db } from "@/database";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
+import { computeHistory, emitHistoryEvents } from "@/api/history/history";
+import { loadHistoryLabels, transactionLeg } from "@/api/history/labels";
 import { getActivitySharings } from "@/services/sharing";
 import {
   getDefaultFund,
@@ -164,6 +176,8 @@ export const registerActivitiesMutations = () => {
             )[0]?.id ?? null)
           : args.project;
 
+        const createHistory = computeHistory(ctx, [], [buildCreateEntry("activity", args.id)]);
+
         await db.insert(activities).values({
           id: args.id,
           user: ctx.user.id,
@@ -174,6 +188,7 @@ export const registerActivitiesMutations = () => {
           category,
           subcategory,
           project,
+          history: createHistory.history,
         });
 
         // Transactions
@@ -300,11 +315,12 @@ export const registerActivitiesMutations = () => {
 
         // Movements
         let newMovements: ActivityMovement[] = [];
+        let movementHistoryResult: ReturnType<typeof computeHistory> | null = null;
         if (args.movement) {
-          const resolvedMovement =
+          const movementRow =
             (
               await db
-                .select({ id: movements.id })
+                .select()
                 .from(movements)
                 .where(
                   and(
@@ -313,7 +329,8 @@ export const registerActivitiesMutations = () => {
                   ),
                 )
                 .limit(1)
-            )[0]?.id ?? args.movement.movement;
+            )[0] ?? null;
+          const resolvedMovement = movementRow?.id ?? args.movement.movement;
           const movementActivity = {
             id: args.movement.id,
             user: ctx.user.id,
@@ -323,6 +340,22 @@ export const registerActivitiesMutations = () => {
           };
           await db.insert(movementsActivities).values(movementActivity);
           newMovements = [movementActivity];
+
+          // History: link entry on the linked movement's timeline.
+          if (movementRow) {
+            movementHistoryResult = computeHistory(ctx, movementRow.history, [
+              buildLinkEntry(
+                "movement",
+                movementRow.id,
+                { type: "activity", id: args.id, label: args.name },
+                args.movement.amount,
+              ),
+            ]);
+            await db
+              .update(movements)
+              .set({ history: movementHistoryResult.history })
+              .where(eq(movements.id, movementRow.id));
+          }
         }
 
         await addEvent({
@@ -353,6 +386,8 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        await emitHistoryEvents(ctx, createHistory.emitted);
+        await emitHistoryEvents(ctx, movementHistoryResult?.emitted ?? []);
 
         const userMovements = await db
           .select()
@@ -371,6 +406,7 @@ export const registerActivitiesMutations = () => {
           project: project ?? null,
           transactions: newTransactions,
           movements: newMovements,
+          history: createHistory.history,
           amount: getActivityTransactionsReconciliationSum(
             activityType,
             newTransactions,
@@ -514,10 +550,66 @@ export const registerActivitiesMutations = () => {
             : args.project;
         }
 
+        // History: derive the diff from the before/after rows.
+        const labels = await loadHistoryLabels(ctx.user.id);
+        const after = { ...activity, ...activityUpdates };
+        const changes = diffActivity(
+          {
+            name: activity.name,
+            description: activity.description,
+            date: activity.date.toISOString(),
+            type: activity.type,
+            category: activity.category
+              ? { id: activity.category, label: labels.category(activity.category) }
+              : null,
+            subcategory: activity.subcategory
+              ? {
+                  id: activity.subcategory,
+                  label: labels.subcategory(activity.subcategory),
+                }
+              : null,
+            project: activity.project
+              ? { id: activity.project, label: labels.project(activity.project) }
+              : null,
+          },
+          {
+            name: after.name,
+            description: after.description,
+            date: after.date.toISOString(),
+            type: after.type,
+            category: after.category
+              ? { id: after.category, label: labels.category(after.category) }
+              : null,
+            subcategory: after.subcategory
+              ? {
+                  id: after.subcategory,
+                  label: labels.subcategory(after.subcategory),
+                }
+              : null,
+            project: after.project
+              ? { id: after.project, label: labels.project(after.project) }
+              : null,
+          },
+        );
+        const historyResult =
+          changes.length > 0
+            ? computeHistory(ctx, activity.history, [
+                {
+                  entityType: "activity",
+                  entityId: activity.id,
+                  action: "update",
+                  changes,
+                },
+              ])
+            : null;
+
         if (Object.keys(activityUpdates).length > 0) {
           const updatedActivities = await db
             .update(activities)
-            .set(activityUpdates)
+            .set({
+              ...activityUpdates,
+              ...(historyResult ? { history: historyResult.history } : {}),
+            })
             .where(eq(activities.id, activity.id))
             .returning();
           activity = updatedActivities[0];
@@ -526,7 +618,7 @@ export const registerActivitiesMutations = () => {
           }
         }
 
-        void addEvent({
+        await addEvent({
           type: "updateActivity",
           payload: {
             id: activity.id,
@@ -537,6 +629,9 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        if (historyResult) {
+          await emitHistoryEvents(ctx, historyResult.emitted);
+        }
 
         const accountsQuery = await db.select().from(accounts);
         const transactionsData = await db
@@ -646,6 +741,33 @@ export const registerActivitiesMutations = () => {
             user: as.user,
           });
         });
+
+        // History: unlink entries on the movements this activity was linked to.
+        const linkedMovements = await db
+          .select({
+            linkAmount: movementsActivities.amount,
+            movement: movements,
+          })
+          .from(movementsActivities)
+          .innerJoin(movements, eq(movementsActivities.movement, movements.id))
+          .where(eq(movementsActivities.activity, activity.id));
+
+        for (const { linkAmount, movement } of linkedMovements) {
+          const { history, emitted } = computeHistory(ctx, movement.history, [
+            buildUnlinkEntry(
+              "movement",
+              movement.id,
+              {
+                type: "activity",
+                id: activity.id,
+                label: activity.name,
+              },
+              linkAmount,
+            ),
+          ]);
+          await db.update(movements).set({ history }).where(eq(movements.id, movement.id));
+          await emitHistoryEvents(ctx, emitted);
+        }
 
         await db.delete(activities).where(eq(activities.id, activity.id));
 
@@ -934,7 +1056,7 @@ export const registerActivitiesMutations = () => {
           defaultFundId: defaultFund?.id ?? null,
         });
 
-        void addEvent({
+        await addEvent({
           type: "addTransaction",
           payload: {
             activityId: activity.id,
@@ -945,6 +1067,35 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+
+        // History: addTransaction entry on the activity timeline.
+        const labels = await loadHistoryLabels(ctx.user.id);
+        const { history: addTransactionHistory, emitted: addTransactionEmitted } = computeHistory(
+          ctx,
+          activity.history,
+          [
+            buildAddTransactionEntry("activity", activity.id, {
+              amount: newTransaction.amount,
+              from: transactionLeg(
+                newTransaction.fromAccount,
+                newTransaction.fromAsset,
+                newTransaction.fromCounterparty,
+                labels,
+              ),
+              to: transactionLeg(
+                newTransaction.toAccount,
+                newTransaction.toAsset,
+                newTransaction.toCounterparty,
+                labels,
+              ),
+            }),
+          ],
+        );
+        await db
+          .update(activities)
+          .set({ history: addTransactionHistory })
+          .where(eq(activities.id, activity.id));
+        await emitHistoryEvents(ctx, addTransactionEmitted);
 
         // Update sharing
         const sharingId = (
@@ -1179,7 +1330,7 @@ export const registerActivitiesMutations = () => {
           }
         }
 
-        void addEvent({
+        await addEvent({
           type: "updateTransaction",
           payload: {
             activityId: transaction.activity,
@@ -1193,6 +1344,53 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+
+        // History: updateTransaction entry on the activity timeline.
+        const labels = await loadHistoryLabels(ctx.user.id);
+        const updateTransactionChanges = diffTransaction(
+          {
+            amount: transaction.amount,
+            from: transactionLeg(
+              transaction.fromAccount,
+              transaction.fromAsset,
+              transaction.fromCounterparty,
+              labels,
+            ),
+            to: transactionLeg(
+              transaction.toAccount,
+              transaction.toAsset,
+              transaction.toCounterparty,
+              labels,
+            ),
+          },
+          {
+            amount: updatedTransaction.amount,
+            from: transactionLeg(
+              updatedTransaction.fromAccount,
+              updatedTransaction.fromAsset,
+              updatedTransaction.fromCounterparty,
+              labels,
+            ),
+            to: transactionLeg(
+              updatedTransaction.toAccount,
+              updatedTransaction.toAsset,
+              updatedTransaction.toCounterparty,
+              labels,
+            ),
+          },
+        );
+        const updateTransactionEntry = buildUpdateTransactionEntry(
+          "activity",
+          activity.id,
+          updateTransactionChanges,
+        );
+        if (updateTransactionEntry) {
+          const { history, emitted } = computeHistory(ctx, activity.history, [
+            updateTransactionEntry,
+          ]);
+          await db.update(activities).set({ history }).where(eq(activities.id, activity.id));
+          await emitHistoryEvents(ctx, emitted);
+        }
 
         // Update sharing
         const sharingId = (
@@ -1280,7 +1478,7 @@ export const registerActivitiesMutations = () => {
 
         await db.delete(transactions).where(eq(transactions.id, transaction.id));
 
-        void addEvent({
+        await addEvent({
           type: "deleteTransaction",
           payload: {
             activityId: transaction.activity,
@@ -1290,6 +1488,28 @@ export const registerActivitiesMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+
+        // History: removeTransaction entry on the activity timeline.
+        const labels = await loadHistoryLabels(ctx.user.id);
+        const { history, emitted } = computeHistory(ctx, activity.history, [
+          buildRemoveTransactionEntry("activity", activity.id, {
+            amount: transaction.amount,
+            from: transactionLeg(
+              transaction.fromAccount,
+              transaction.fromAsset,
+              transaction.fromCounterparty,
+              labels,
+            ),
+            to: transactionLeg(
+              transaction.toAccount,
+              transaction.toAsset,
+              transaction.toCounterparty,
+              labels,
+            ),
+          }),
+        ]);
+        await db.update(activities).set({ history }).where(eq(activities.id, activity.id));
+        await emitHistoryEvents(ctx, emitted);
 
         // Update sharing
         const sharingId = (
