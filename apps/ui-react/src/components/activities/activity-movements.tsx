@@ -158,7 +158,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         )}
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 space-y-2">
         {movementsReconciliatedByAccount.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
             No movement needed for this activity.
@@ -168,9 +168,9 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
             (movementsReconciliatedOfAccount) => (
               <div
                 key={movementsReconciliatedOfAccount.account.toString()}
-                className="-mx-4 mt-4 mb-2 rounded-lg border py-2 first:mt-0 sm:-mx-8"
+                className="rounded-lg bg-muted/30 p-2"
               >
-                <div className="flex items-center px-4 text-sm sm:px-8">
+                <div className="flex items-center text-sm">
                   <AccountLabel
                     accountId={movementsReconciliatedOfAccount.account}
                   />
@@ -199,7 +199,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                 </div>
 
                 {movementsReconciliatedOfAccount.movements.length === 0 ? (
-                  <div className="px-4 py-4 text-sm text-muted-foreground sm:px-8">
+                  <div className="py-3 text-sm text-muted-foreground">
                     No movement added for this account.
                   </div>
                 ) : (
@@ -207,7 +207,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                     <div key={movement.id}>
                       <hr className="my-1 border-t" />
 
-                      <div className="flex items-center px-4 text-sm sm:px-8">
+                      <div className="flex items-center text-sm">
                         <div className="mr-4 hidden w-16 shrink-0 text-muted-foreground sm:block">
                           {movement.date.toLocaleDateString()}
                         </div>
@@ -239,7 +239,11 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              aria-label="Movement actions"
+                            >
                               <Ellipsis />
                             </Button>
                           </DropdownMenuTrigger>

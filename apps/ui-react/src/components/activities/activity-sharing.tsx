@@ -181,7 +181,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
         )}
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 space-y-2">
         {activity.sharing.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
             This activity isn't shared with anyone.
@@ -197,7 +197,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
             )?.contact;
             if (!user) return null;
             return (
-              <div key={sharing.user} className="py-2">
+              <div key={sharing.user} className="rounded-lg bg-muted/30 p-2">
                 <div className="flex items-center">
                   <div className="mr-3 flex items-center">
                     <UserAvatar user={user} className="mr-2 h-6 w-6" />

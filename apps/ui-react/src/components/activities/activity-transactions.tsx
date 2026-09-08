@@ -9,7 +9,6 @@ import {
 import { useState } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { cn } from "@/lib/utils";
 import {
   addTransactionMutation,
   updateTransactionMutation,
@@ -295,7 +294,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(transactionsSum)}
         </div>
-        <div className="-mr-2 flex items-center gap-2">
+        <div className="-mr-1 flex items-center gap-2">
           <TransactionDropdown
             transactions={activity.transactions.map((t) => ({
               fromAccount: t.fromAccount,
@@ -313,7 +312,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 space-y-2">
         {activity.transactions.length === 0 &&
         stagedTransactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
@@ -321,16 +320,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
           </div>
         ) : (
           <>
-            {activity.transactions.map((transaction, index) => (
+            {activity.transactions.map((transaction) => (
               <TransactionComponent
                 key={transaction.id}
                 variant="flat"
-                className={cn(
-                  index !== activity.transactions.length - 1 ||
-                    stagedTransactions.length > 0
-                    ? "border-b"
-                    : "",
-                )}
                 transaction={transaction}
                 onUpdate={(update) =>
                   handleTransactionUpdate(transaction, update)
