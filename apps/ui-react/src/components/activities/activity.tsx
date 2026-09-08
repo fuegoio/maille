@@ -389,7 +389,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                   placeholder="Activity name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
-                <div className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
+                <div className="mr-11 shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
                   {currencyFormatter.format(activity.amount)}
                 </div>
               </div>
