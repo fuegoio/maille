@@ -1,5 +1,5 @@
 import type { Account } from "@maille/core/accounts";
-import type { Fund, FundAccount, FundMove } from "@maille/core/funds";
+import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 import type { Transaction } from "@maille/core/activities";
 
 import { AccountType } from "@maille/core/accounts";
@@ -33,7 +33,6 @@ const fund = (id: string, startDate: Date | null = null): Fund => ({
   startDate,
   endDate: null,
   parentFund: null,
-  accounts: [],
 });
 
 const allocation = (
@@ -41,7 +40,7 @@ const allocation = (
   fundId: string,
   accountId: string,
   amount: number,
-): FundAccount => ({ id, fund: fundId, account: accountId, amount });
+): FundAllocation => ({ id, fund: fundId, account: accountId, amount });
 
 const leg = (id: string, partial: Partial<Omit<FundMove, "id">>): FundMove => ({
   fromFund: null,
@@ -74,7 +73,7 @@ const build = (overrides: Partial<PositionsInput> = {}): PositionsInput => ({
     account("savings", AccountType.BANK_ACCOUNT),
   ],
   funds: [fund("vacation"), fund("house")],
-  fundAccounts: [],
+  fundAllocations: [],
   activities: [],
   startingDate: new Date("2026-01-01"),
   ...overrides,
@@ -162,7 +161,7 @@ describe("fund positions", () => {
             ],
           },
         ],
-        fundAccounts: [allocation("a1", "vacation", "checking", 500)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 500)],
       }),
     );
     // The mix is 500 vacation / 500 untracked, so 250 of each moves over
@@ -183,7 +182,7 @@ describe("fund positions", () => {
   it("pins a transfer's fund with a same-fund leg", () => {
     const positions = computePositions(
       build({
-        fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 800)],
         activities: [
           {
             date: new Date("2026-01-10"),
@@ -213,7 +212,7 @@ describe("fund positions", () => {
   it("relabels a fund in flight with a from-to transfer leg", () => {
     const positions = computePositions(
       build({
-        fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 800)],
         activities: [
           {
             date: new Date("2026-01-10"),
@@ -248,7 +247,7 @@ describe("fund positions", () => {
   it("sends a legged transfer's remainder back to the source mix on both sides", () => {
     const positions = computePositions(
       build({
-        fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 800)],
         activities: [
           {
             date: new Date("2026-01-10"),
@@ -282,7 +281,7 @@ describe("fund positions", () => {
   it("spreads a fund across accounts through unlegged transfers", () => {
     const positions = computePositions(
       build({
-        fundAccounts: [allocation("a1", "vacation", "checking", 1000)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 1000)],
         accounts: [account("checking", AccountType.BANK_ACCOUNT, 1000), account("savings")],
         activities: [
           {
@@ -340,7 +339,7 @@ describe("fund positions", () => {
 
   it("keeps the per-account invariant: positions sum to the account balance", () => {
     const input = build({
-      fundAccounts: [allocation("a1", "vacation", "checking", 300)],
+      fundAllocations: [allocation("a1", "vacation", "checking", 300)],
       activities: [
         {
           date: new Date("2026-01-05"),
@@ -380,9 +379,9 @@ describe("fund positions", () => {
   });
 
   it("keeps the per-fund invariant: positions sum to the fund balance", () => {
-    const fundAccounts = [allocation("a1", "vacation", "checking", 300)];
+    const fundAllocations = [allocation("a1", "vacation", "checking", 300)];
     const input = build({
-      fundAccounts,
+      fundAllocations,
       activities: [
         {
           date: new Date("2026-01-05"),
@@ -419,7 +418,7 @@ describe("fund positions", () => {
         (total, composition) => total + (composition.get(fundId) ?? 0),
         0,
       );
-      expect(positionSum).toBeCloseTo(getFundBalance(fundId, allMoves, fundAccounts), 6);
+      expect(positionSum).toBeCloseTo(getFundBalance(fundId, allMoves, fundAllocations), 6);
     }
   });
 });
@@ -429,7 +428,7 @@ describe("fund opening allocations", () => {
     const positions = computePositions(
       build({
         funds: [fund("vacation", new Date("2026-01-01"))],
-        fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+        fundAllocations: [allocation("a1", "vacation", "checking", 800)],
       }),
     );
     expect(positions.get("checking")).toEqual(
@@ -456,7 +455,7 @@ describe("fund opening allocations", () => {
   it("applies allocations only after the fund's start date", () => {
     const base = {
       funds: [fund("vacation", new Date("2026-02-01"))],
-      fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+      fundAllocations: [allocation("a1", "vacation", "checking", 800)],
     };
     const at = (date: Date) => computePositions(build({ ...base, date })).get("checking");
 
@@ -470,16 +469,16 @@ describe("fund opening allocations", () => {
   });
 
   it("counts allocations in fund balances and the funds total", () => {
-    const fundAccounts = [
+    const fundAllocations = [
       allocation("a1", "vacation", "checking", 800),
       allocation("a2", "house", "savings", 200),
     ];
-    expect(getFundBalance("vacation", [], fundAccounts)).toBe(800);
-    expect(getTotalFundsBalance([], fundAccounts)).toBe(1000);
+    expect(getFundBalance("vacation", [], fundAllocations)).toBe(800);
+    expect(getTotalFundsBalance([], fundAllocations)).toBe(1000);
     // Subtree rollups include the children's allocations
     const parent = fund("goals");
     const child = { ...fund("vacation"), parentFund: "goals" };
-    expect(getFundTreeBalance("goals", [parent, child], [], fundAccounts)).toBe(800);
+    expect(getFundTreeBalance("goals", [parent, child], [], fundAllocations)).toBe(800);
   });
 
   it("lets validation detect an over-allocation through the untracked replay", () => {
@@ -491,7 +490,7 @@ describe("fund opening allocations", () => {
     // sees 200 available for any later allocation
     const withVacation = {
       ...base,
-      fundAccounts: [allocation("a1", "vacation", "checking", 800)],
+      fundAllocations: [allocation("a1", "vacation", "checking", 800)],
     };
     expect(getUntrackedByAccountAtDate(withVacation).get("checking")).toBe(200);
 
@@ -499,7 +498,7 @@ describe("fund opening allocations", () => {
     // negative — exactly what the write path rejects
     const withBoth = {
       ...base,
-      fundAccounts: [
+      fundAllocations: [
         allocation("a1", "vacation", "checking", 800),
         allocation("a2", "house", "checking", 500),
       ],

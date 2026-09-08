@@ -1,4 +1,4 @@
-import type { Fund, FundAccount, FundMove } from "./types";
+import type { Fund, FundAllocation, FundMove } from "./types";
 
 /** Hex colors a fund icon can take, shared by the API default and the UI picker. */
 export const FUND_COLORS = [
@@ -52,28 +52,28 @@ export const getFundInflows = (fundId: string, fundMoves: FundMove[]): number =>
   fundMoves.filter((m) => m.toFund === fundId).reduce((total, m) => total + m.amount, 0);
 
 /** Sum of a fund's opening allocations: the money earmarked at its start. */
-const getFundAllocated = (fundId: string, fundAccounts: FundAccount[]): number =>
-  fundAccounts
+const getFundAllocated = (fundId: string, fundAllocations: FundAllocation[]): number =>
+  fundAllocations
     .filter((allocation) => allocation.fund === fundId)
     .reduce((total, allocation) => total + allocation.amount, 0);
 
 export const getFundBalance = (
   fundId: string,
   fundMoves: FundMove[],
-  fundAccounts: FundAccount[] = [],
+  fundAllocations: FundAllocation[] = [],
 ): number =>
   getFundInflows(fundId, fundMoves) -
   getFundOutflows(fundId, fundMoves) +
-  getFundAllocated(fundId, fundAccounts);
+  getFundAllocated(fundId, fundAllocations);
 
 export const getFundsBalances = (
   funds: Fund[],
   fundMoves: FundMove[],
-  fundAccounts: FundAccount[] = [],
+  fundAllocations: FundAllocation[] = [],
 ) =>
   funds.map((fund) => ({
     fund,
-    balance: getFundBalance(fund.id, fundMoves, fundAccounts),
+    balance: getFundBalance(fund.id, fundMoves, fundAllocations),
   }));
 
 /**
@@ -82,12 +82,12 @@ export const getFundsBalances = (
  */
 export const getTotalFundsBalance = (
   fundMoves: FundMove[],
-  fundAccounts: FundAccount[] = [],
+  fundAllocations: FundAllocation[] = [],
 ): number =>
   fundMoves.reduce(
     (total, m) => total + (m.toFund ? m.amount : 0) - (m.fromFund ? m.amount : 0),
     0,
-  ) + fundAccounts.reduce((total, allocation) => total + allocation.amount, 0);
+  ) + fundAllocations.reduce((total, allocation) => total + allocation.amount, 0);
 
 /** Every fund sitting strictly below the given fund in the tree. */
 export const getFundDescendants = (fundId: string, funds: Fund[]): Set<string> => {
@@ -131,7 +131,7 @@ export const getFundTreeBalance = (
   fundId: string,
   funds: Fund[],
   fundMoves: FundMove[],
-  fundAccounts: FundAccount[] = [],
+  fundAllocations: FundAllocation[] = [],
 ): number => {
   const ids = new Set([fundId, ...getFundDescendants(fundId, funds)]);
   return (
@@ -142,7 +142,7 @@ export const getFundTreeBalance = (
         (m.fromFund && ids.has(m.fromFund) ? m.amount : 0),
       0,
     ) +
-    fundAccounts
+    fundAllocations
       .filter((allocation) => ids.has(allocation.fund))
       .reduce((total, allocation) => total + allocation.amount, 0)
   );

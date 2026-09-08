@@ -1,4 +1,4 @@
-import type { FundAccount } from "@maille/core/funds";
+import type { FundAllocation } from "@maille/core/funds";
 
 import { AccountType } from "@maille/core/accounts";
 import { getAllocationDate } from "@maille/core/funds";
@@ -29,8 +29,8 @@ export interface AllocationRow {
   amount: number;
 }
 
-export const allocationRowsFromFundAccounts = (
-  allocations: FundAccount[],
+export const allocationRowsFromFundAllocations = (
+  allocations: FundAllocation[],
 ): AllocationRow[] =>
   allocations.map((allocation) => ({
     id: allocation.id,
@@ -48,7 +48,7 @@ export const significantAllocationRows = (rows: AllocationRow[]) =>
       amount: row.amount,
     }));
 
-interface FundAccountsEditorProps {
+interface FundAllocationsEditorProps {
   /** The fund's (draft) start date: allocations land on it, or the user's start. */
   startDate: Date | null;
   /** Rows under edit. */
@@ -60,18 +60,18 @@ interface FundAccountsEditorProps {
   onErrorChange?: (error: string | null) => void;
 }
 
-export function FundAccountsEditor({
+export function FundAllocationsEditor({
   startDate,
   rows,
   onChange,
   excludeFund,
   onErrorChange,
-}: FundAccountsEditorProps) {
+}: FundAllocationsEditorProps) {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
+  const fundAllocations = useFunds((state) => state.fundAllocations);
   const user = useAuth((state) => state.user);
 
   // Funds only hold balance-account money, so only those accounts are offered.
@@ -94,9 +94,11 @@ export function FundAccountsEditor({
       activities,
       funds,
       fundMoves,
-      fundAccounts: excludeFund
-        ? fundAccounts.filter((allocation) => allocation.fund !== excludeFund)
-        : fundAccounts,
+      fundAllocations: excludeFund
+        ? fundAllocations.filter(
+            (allocation) => allocation.fund !== excludeFund,
+          )
+        : fundAllocations,
       date: getAllocationDate({ startDate }, user.startingDate),
       startingDate: user.startingDate,
     });
@@ -106,7 +108,7 @@ export function FundAccountsEditor({
     activities,
     funds,
     fundMoves,
-    fundAccounts,
+    fundAllocations,
     excludeFund,
     startDate,
   ]);

@@ -64,6 +64,13 @@ interface WorkflowsState {
   activeWorkflowId: string | null;
   isMinimized: boolean;
 
+  // Workflows that need the user's attention (pending) and haven't been
+  // opened yet. Used to show a notification chip on the tab.
+  unreadWorkflowIds: string[];
+
+  // Movements whose trigger mutation is in flight
+  triggeringMovementIds: string[];
+
   getWorkflowById: (id: string) => MovementWorkflow | undefined;
   getWorkflowByMovement: (movementId: string) => MovementWorkflow | undefined;
 
@@ -79,6 +86,9 @@ interface WorkflowsState {
     },
   ) => void;
   clearWorkflows: () => void;
+
+  setTriggering: (movementId: string) => void;
+  clearTriggering: (movementId: string) => void;
 
   openWorkflow: (workflowId: string) => void;
   closeWorkflow: (workflowId: string) => void;
@@ -97,6 +107,8 @@ export const useWorkflows = create<WorkflowsState>()(
       openWorkflowIds: [],
       activeWorkflowId: null,
       isMinimized: false,
+      unreadWorkflowIds: [],
+      triggeringMovementIds: [],
 
       getWorkflowById: (id) => get().workflows.find((w) => w.id === id),
 
@@ -130,6 +142,25 @@ export const useWorkflows = create<WorkflowsState>()(
 
       clearWorkflows: () => set({ workflows: [] }),
 
+      setTriggering: (movementId) =>
+        set((state) =>
+          state.triggeringMovementIds.includes(movementId)
+            ? state
+            : {
+                triggeringMovementIds: [
+                  ...state.triggeringMovementIds,
+                  movementId,
+                ],
+              },
+        ),
+
+      clearTriggering: (movementId) =>
+        set((state) => ({
+          triggeringMovementIds: state.triggeringMovementIds.filter(
+            (id) => id !== movementId,
+          ),
+        })),
+
       openWorkflow: (workflowId) => {
         set((state) => {
           const openIds = state.openWorkflowIds.includes(workflowId)
@@ -139,6 +170,9 @@ export const useWorkflows = create<WorkflowsState>()(
             openWorkflowIds: openIds,
             activeWorkflowId: workflowId,
             isMinimized: false,
+            unreadWorkflowIds: state.unreadWorkflowIds.filter(
+              (id) => id !== workflowId,
+            ),
           };
         });
       },
@@ -166,36 +200,78 @@ export const useWorkflows = create<WorkflowsState>()(
         if (event.type === "createWorkflow") {
           get().upsertWorkflow(event.payload);
         } else if (event.type === "updateWorkflow") {
-          get().patchWorkflow(event.payload.id, {
-            status: event.payload.status,
-            attempts: event.payload.attempts,
-            messages: event.payload.messages,
-            result: event.payload.result,
-            error: event.payload.error,
+          const payload = event.payload;
+          get().patchWorkflow(payload.id, {
+            status: payload.status,
+            attempts: payload.attempts,
+            messages: payload.messages,
+            result: payload.result,
+            error: payload.error,
           });
+
+          // When a workflow becomes pending, it needs the user's attention:
+          // auto-open the tab and mark as unread so the chip shows.
+          if (payload.status === "pending") {
+            set((state) => {
+              const alreadyUnread = state.unreadWorkflowIds.includes(
+                payload.id,
+              );
+              const alreadyOpen = state.openWorkflowIds.includes(payload.id);
+              return {
+                unreadWorkflowIds: alreadyUnread
+                  ? state.unreadWorkflowIds
+                  : [...state.unreadWorkflowIds, payload.id],
+                openWorkflowIds: alreadyOpen
+                  ? state.openWorkflowIds
+                  : [...state.openWorkflowIds, payload.id],
+              };
+            });
+          }
         }
       },
 
       handleMutationSuccess: (event: Mutation) => {
         if (!event.result) return;
 
-        if (event.name === "triggerWorkflow") {
+        if (
+          event.name === "triggerWorkflow" ||
+          event.name === "answerWorkflow"
+        ) {
           const result = event.result as Record<string, unknown>;
-          const raw = result?.triggerWorkflow as
-            | Parameters<typeof deserializeWorkflow>[0]
-            | undefined;
+          const raw = result?.[
+            event.name === "triggerWorkflow"
+              ? "triggerWorkflow"
+              : "answerWorkflow"
+          ] as Parameters<typeof deserializeWorkflow>[0] | undefined;
           if (!raw) return;
           try {
             const workflow = deserializeWorkflow(raw);
             get().upsertWorkflow(workflow);
-            get().openWorkflow(workflow.id);
+            if (event.name === "triggerWorkflow") {
+              get().openWorkflow(workflow.id);
+            }
           } catch (e) {
             console.error("Failed to deserialize workflow", e);
+          }
+          if (event.name === "triggerWorkflow") {
+            const movementId = (event.variables as { movementId?: string })
+              ?.movementId;
+            if (movementId) {
+              get().clearTriggering(movementId);
+            }
           }
         }
       },
 
-      handleMutationError: (_event: Mutation) => {},
+      handleMutationError: (event: Mutation) => {
+        if (event.name === "triggerWorkflow") {
+          const movementId = (event.variables as { movementId?: string })
+            ?.movementId;
+          if (movementId) {
+            get().clearTriggering(movementId);
+          }
+        }
+      },
     }),
     {
       name: "workflows",

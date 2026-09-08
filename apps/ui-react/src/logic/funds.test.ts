@@ -1,6 +1,6 @@
 import type { Account } from "@maille/core/accounts";
 import type { Activity, Transaction } from "@maille/core/activities";
-import type { Fund, FundAccount, FundMove } from "@maille/core/funds";
+import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 
 import { AccountType } from "@maille/core/accounts";
 import { ActivityType } from "@maille/core/activities";
@@ -25,7 +25,6 @@ const fund = (id: string, parentFund: string | null = null): Fund => ({
   startDate: null,
   endDate: null,
   parentFund,
-  accounts: [],
 });
 
 const move = (partial: Partial<FundMove> & Pick<FundMove, "id">): FundMove => ({
@@ -58,7 +57,7 @@ const allocation = (
   fundId: string,
   accountId: string,
   amount: number,
-): FundAccount => ({ id, fund: fundId, account: accountId, amount });
+): FundAllocation => ({ id, fund: fundId, account: accountId, amount });
 
 const transaction = (
   id: string,
@@ -294,7 +293,7 @@ describe("positions (ui logic)", () => {
     transaction: "t1",
   });
   const fundMoves = [leg];
-  const fundAccounts = [allocation("a1", "house", "checking", 400)];
+  const fundAllocations = [allocation("a1", "house", "checking", 400)];
   const activities = [
     activity("act-1", "2026-01-05", [
       transaction("t1", 300, "checking", "savings", [leg]),
@@ -307,7 +306,7 @@ describe("positions (ui logic)", () => {
     activities,
     funds,
     fundMoves,
-    fundAccounts,
+    fundAllocations,
     startingDate,
   };
 

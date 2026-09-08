@@ -3,8 +3,10 @@ import { ArrowRight, Bot, Sparkles, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { cn } from "@/lib/utils";
+import { useMovements } from "@/stores/movements";
 import { useWorkflows } from "@/stores/workflows";
 
 import { WorkflowStatusBadge } from "./workflow-status";
@@ -17,6 +19,10 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
   const workflow = useWorkflows((state) =>
     state.getWorkflowByMovement(movementId),
   );
+  const movement = useMovements((state) => state.getMovementById(movementId));
+  const isTriggering = useWorkflows((state) =>
+    state.triggeringMovementIds.includes(movementId),
+  );
   const triggerWorkflow = useTriggerWorkflow();
   const openWorkflow = useWorkflows((state) => state.openWorkflow);
 
@@ -28,13 +34,18 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
   const isIdle =
     workflow?.status === "queued" || workflow?.status === "running";
 
-  // Show up to 2 recent messages as preview
+  const isReconciled = movement?.status === "completed";
+
+  // Show only the last non-separator message as preview
   const previewMessages = React.useMemo(() => {
     if (!workflow || workflow.messages.length === 0) return [];
-    return workflow.messages.slice(-2);
+    const real = workflow.messages.filter((m) => m.role !== "separator");
+    return real.slice(-1);
   }, [workflow]);
 
-  const lastMessageTime = workflow?.messages.at(-1)?.createdAt;
+  const lastMessageTime = workflow?.messages
+    .filter((m) => m.role !== "separator")
+    .at(-1)?.createdAt;
 
   const handleTrigger = () => triggerWorkflow(movementId);
   const handleOpen = () => workflow && openWorkflow(workflow.id);
@@ -56,9 +67,22 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
               </div>
             </div>
           </div>
-          <Button size="sm" variant="outline" onClick={handleTrigger}>
-            <Sparkles className="size-3.5" />
-            Create activity
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleTrigger}
+            disabled={isTriggering || isReconciled}
+          >
+            {isTriggering ? (
+              <Spinner className="size-3.5" />
+            ) : (
+              <Sparkles className="size-3.5" />
+            )}
+            {isTriggering
+              ? "Starting..."
+              : isReconciled
+                ? "Already reconciled"
+                : "Create activity"}
           </Button>
         </div>
       </div>
@@ -102,12 +126,19 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
 
           {previewMessages.length === 0 ? (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {isIdle ? (
+              {workflow.status === "queued" && (
                 <>
                   <span className="text-muted-foreground/50">·</span>
                   Waiting to start...
                 </>
-              ) : (
+              )}
+              {workflow.status === "running" && (
+                <>
+                  <span className="size-1.5 animate-pulse rounded-full bg-blue-400" />
+                  Working...
+                </>
+              )}
+              {(workflow.status === "pending" || isTerminal) && (
                 <>
                   <span className="text-muted-foreground/50">·</span>
                   No messages yet
@@ -153,9 +184,13 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
                   </div>
                 );
               })}
-              {workflow.messages.length > 2 && (
+              {workflow.messages.filter((m) => m.role !== "separator").length >
+                1 && (
                 <div className="pt-0.5 text-xs text-muted-foreground">
-                  +{workflow.messages.length - 2} more
+                  +
+                  {workflow.messages.filter((m) => m.role !== "separator")
+                    .length - 1}{" "}
+                  more
                 </div>
               )}
             </div>
@@ -198,10 +233,21 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
                 size="sm"
                 variant="ghost"
                 onClick={handleTrigger}
+                disabled={isTriggering || isReconciled}
                 className="gap-1.5"
               >
-                <Sparkles className="size-3.5" />
-                {workflow.status === "succeeded" ? "Start new" : "Retry"}
+                {isTriggering ? (
+                  <Spinner className="size-3.5" />
+                ) : (
+                  <Sparkles className="size-3.5" />
+                )}
+                {isTriggering
+                  ? "Starting..."
+                  : isReconciled
+                    ? "Already reconciled"
+                    : workflow.status === "succeeded"
+                      ? "Start new"
+                      : "Retry"}
               </Button>
             </>
           )}

@@ -163,7 +163,23 @@ export async function triggerWorkflow(
   }
 
   if (isRetryableWorkflowStatus(existing.status)) {
-    return updateWorkflow(existing.id, { status: "queued", result: null, error: null }, clientId);
+    const messages =
+      existing.messages.length > 0
+        ? [
+            ...existing.messages,
+            {
+              id: crypto.randomUUID(),
+              role: "separator" as const,
+              content: "",
+              createdAt: new Date().toISOString(),
+            },
+          ]
+        : existing.messages;
+    return updateWorkflow(
+      existing.id,
+      { status: "queued", result: null, error: null, messages },
+      clientId,
+    );
   }
 
   return existing;

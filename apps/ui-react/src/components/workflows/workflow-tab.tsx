@@ -1,12 +1,13 @@
 import type { MovementWorkflow } from "@maille/core/harness";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, X } from "lucide-react";
+import { Bot, Minus, Sparkles, X } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { cn } from "@/lib/utils";
 import { answerWorkflowMutation } from "@/mutations/workflows";
 import { useMovements } from "@/stores/movements";
@@ -27,12 +28,21 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
   const mutate = useSync((state) => state.mutate);
   const closeWorkflow = useWorkflows((state) => state.closeWorkflow);
   const minimize = useWorkflows((state) => state.minimize);
+  const triggerWorkflow = useTriggerWorkflow();
+  const isTriggering = useWorkflows((state) =>
+    state.triggeringMovementIds.includes(workflow.movement),
+  );
 
   const [input, setInput] = React.useState("");
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const isPending = workflow.status === "pending";
+  const isTerminal =
+    workflow.status === "succeeded" ||
+    workflow.status === "failed" ||
+    workflow.status === "cancelled";
   const statusConfig = WORKFLOW_STATUS_CONFIG[workflow.status];
+  const isReconciled = movement?.status === "completed";
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
@@ -117,26 +127,56 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
       <ScrollArea ref={scrollRef} className="min-h-0 flex-1">
         <div className="flex flex-col gap-3 p-3">
           <AnimatePresence mode="popLayout">
-            {workflow.messages.map((message) => (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <WorkflowMessageItem
-                  message={message}
-                  isPending={isPending && message === workflow.messages.at(-1)}
-                  onAnswer={handleAnswer}
-                />
-              </motion.div>
-            ))}
+            {workflow.messages.map((message) => {
+              if (message.role === "separator") {
+                return (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center gap-2 py-1"
+                  >
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-[0.65rem] text-muted-foreground">
+                      New session
+                    </span>
+                    <div className="h-px flex-1 bg-border" />
+                  </motion.div>
+                );
+              }
+              return (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <WorkflowMessageItem
+                    message={message}
+                    isPending={
+                      isPending && message === workflow.messages.at(-1)
+                    }
+                    onAnswer={handleAnswer}
+                  />
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
 
           {workflow.error && (
             <div className="rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
               {workflow.error}
+            </div>
+          )}
+
+          {/* Loading / thinking indicators */}
+          {workflow.status === "queued" && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="size-1.5 animate-pulse rounded-full bg-muted-foreground/50" />
+              Waiting to start...
             </div>
           )}
 
@@ -151,36 +191,87 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
               Starting workflow...
             </div>
           )}
+
+          {workflow.status === "running" && workflow.messages.length > 0 && (
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/50">
+                <Bot className="size-3.5 text-muted-foreground" />
+              </div>
+              <div className="flex items-center gap-1">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="size-1.5 rounded-full bg-muted-foreground/60"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </ScrollArea>
 
-      {/* Input */}
+      {/* Input / action bar */}
       <div className="shrink-0 border-t p-2">
-        <div className="flex items-end gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit();
+        {isTerminal ? (
+          <div className="flex items-center justify-center">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => triggerWorkflow(workflow.movement)}
+              disabled={isTriggering || isReconciled}
+              className="gap-1.5"
+            >
+              {isTriggering ? (
+                <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
+              {isTriggering
+                ? "Starting..."
+                : isReconciled
+                  ? "Already reconciled"
+                  : workflow.status === "succeeded"
+                    ? "Start new"
+                    : "Retry"}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-end gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder={
+                isPending
+                  ? "Type your answer..."
+                  : workflow.status === "queued"
+                    ? "Queued..."
+                    : "Working..."
               }
-            }}
-            placeholder={
-              isPending ? "Type your answer..." : "Waiting for workflow..."
-            }
-            disabled={!isPending}
-            className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
-            rows={1}
-          />
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={!isPending || !input.trim()}
-          >
-            Send
-          </Button>
-        </div>
+              disabled={!isPending}
+              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
+              rows={1}
+            />
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={!isPending || !input.trim()}
+            >
+              Send
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
