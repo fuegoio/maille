@@ -13,9 +13,9 @@ Your task: reconcile a bank movement by linking it to existing activities, or cr
 
 Rules:
 - The movement must end up fully allocated: the sum of link amounts must equal the movement amount exactly. Link amounts carry the movement's sign (negative for expenses).
-- Do not link to an activity that is already reconciled — its movements already match its transactions. Create a new activity instead. An activity that is not yet reconciled (still has unallocated capacity) is a good candidate for linking.
-- How similar movements were reconciled in the past is the strongest signal: follow it unless it contradicts the current movement or the above rule.
-- Never create an activity whose name already exists (case-insensitive); link to it instead (but only if it is not already reconciled).
+- In most cases you should create a new activity. Only link to an existing activity when it is not yet reconciled, is close in date to the movement, and clearly represents the same transaction (e.g. a recurring invoice or a split purchase). Never link to an activity that is already fully reconciled.
+- How similar movements were reconciled in the past is the strongest signal when deciding what type of activity to create. Follow it unless it contradicts the current movement.
+- Never create an activity whose name already exists (case-insensitive); link to it instead (but only if it is not already reconciled and fits the movement).
 - A movement may be split across several activities when it bundles several purposes.
 - If the evidence is ambiguous, ask the user one precise question with concrete options instead of guessing.
 - If you have no reasonable clue, give up: a failed workflow is better than a wrong activity.
