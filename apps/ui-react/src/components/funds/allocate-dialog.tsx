@@ -149,7 +149,7 @@ export function AllocateDialog({
               </FieldContent>
             </Field>
 
-            <ArrowRight className="mb-0.5 size-4 self-end text-muted-foreground" />
+            <ArrowRight className="mb-2 size-4 self-end text-muted-foreground" />
 
             <Field className="flex-1">
               <FieldLabel>To</FieldLabel>
