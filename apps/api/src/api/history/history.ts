@@ -2,7 +2,16 @@ import { appendWithCompaction } from "@maille/core/history";
 import type { NewHistoryEntry, SerializedHistoryEntry } from "@maille/core/history";
 
 import { addEvent } from "@/api/events";
-import type { SessionData } from "@/api/auth";
+
+/**
+ * The identity that stamps history entries and events: which user the entry
+ * belongs to, and which client (session, harness worker...) performed the
+ * write. GraphQL resolvers pass their context, which satisfies this shape.
+ */
+export type HistoryWriter = {
+  user: { id: string };
+  session: { id: string };
+};
 
 /**
  * Stamps the derived entries with identity, compacts each one into the
@@ -11,7 +20,7 @@ import type { SessionData } from "@/api/auth";
  * `createHistory` sync events (upsert by id on the receiving end).
  */
 export function computeHistory(
-  ctx: SessionData,
+  writer: HistoryWriter,
   current: SerializedHistoryEntry[],
   entries: NewHistoryEntry[],
 ): { history: SerializedHistoryEntry[]; emitted: SerializedHistoryEntry[] } {
@@ -23,8 +32,8 @@ export function computeHistory(
       ...newEntry,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      user: ctx.user.id,
-      clientId: ctx.session.id,
+      user: writer.user.id,
+      clientId: writer.session.id,
     };
 
     const result = appendWithCompaction(history, entry);
@@ -42,7 +51,7 @@ export function computeHistory(
  * `computeHistory`, after the entity write succeeded.
  */
 export async function emitHistoryEvents(
-  ctx: SessionData,
+  writer: HistoryWriter,
   emitted: SerializedHistoryEntry[],
 ): Promise<void> {
   for (const entry of emitted) {
@@ -50,8 +59,8 @@ export async function emitHistoryEvents(
       type: "createHistory",
       payload: entry,
       createdAt: new Date(),
-      clientId: ctx.session.id,
-      user: ctx.user.id,
+      clientId: writer.session.id,
+      user: writer.user.id,
     });
   }
 }

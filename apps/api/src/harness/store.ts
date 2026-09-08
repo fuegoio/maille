@@ -2,7 +2,6 @@ import { db } from "@/database";
 import { movementWorkflows, movements } from "@/tables";
 import { addEvent } from "@/api/events";
 import { idPattern } from "@/api/idPrefix";
-import { harnessSessionId } from "./session";
 import {
   isRetryableWorkflowStatus,
   type MovementWorkflow,
@@ -224,8 +223,13 @@ export async function cancelWorkflowIfActive(
   return updateWorkflow(workflow.id, { status: "cancelled" }, clientId);
 }
 
-/** Client id used for workflow events emitted by the harness worker itself. */
-export const harnessClientId = (userId: string) => harnessSessionId(userId);
+/**
+ * Stable client id for everything the harness worker writes (sync events,
+ * history entries): deterministic across restarts, so clients can attribute
+ * harness-made changes and the write services can recognize harness calls
+ * (they must not cancel the workflow they are completing).
+ */
+export const harnessClientId = (userId: string) => `harness-${userId}`;
 
 export const workflowStatus = async (workflowId: string): Promise<WorkflowStatus | null> =>
   (await getWorkflow(workflowId))?.status ?? null;

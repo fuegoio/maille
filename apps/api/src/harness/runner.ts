@@ -16,8 +16,9 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { buildEvidence, findSimilarMovements, searchActivities } from "./evidence";
 import { chatCompletion, LlmError, type LlmMessage, type LlmTool } from "./llm";
-import { harnessGraphQL } from "./client";
 import { harnessApiKey } from "./config";
+import { createActivity } from "@/services/activities";
+import { linkMovementToActivity } from "@/services/movements";
 import { getWorkflow, harnessClientId, type WorkflowRow } from "./store";
 
 /**
@@ -27,45 +28,6 @@ import { getWorkflow, harnessClientId, type WorkflowRow } from "./store";
  */
 
 const MAX_STEPS = 10;
-
-/** graphql-scalars' Date only accepts calendar dates: YYYY-MM-DD. */
-const toDateInput = (date: Date) => date.toISOString().slice(0, 10);
-
-const LINK_MOVEMENT_MUTATION = /* GraphQL */ `
-  mutation HarnessLinkMovement($id: String!, $movementId: String!, $activityId: String!, $amount: Float!) {
-    createMovementActivity(id: $id, movementId: $movementId, activityId: $activityId, amount: $amount) {
-      id
-    }
-  }
-`;
-
-const CREATE_ACTIVITY_MUTATION = /* GraphQL */ `
-  mutation HarnessCreateActivity(
-    $id: String!
-    $name: String!
-    $description: String
-    $date: Date!
-    $type: String!
-    $category: String
-    $subcategory: String
-    $transactions: [TransactionInput!]
-    $movement: ActivityMovementInput
-  ) {
-    createActivity(
-      id: $id
-      name: $name
-      description: $description
-      date: $date
-      type: $type
-      category: $category
-      subcategory: $subcategory
-      transactions: $transactions
-      movement: $movement
-    ) {
-      id
-    }
-  }
-`;
 
 const SYSTEM_PROMPT = `You are Maille's AI harness, a precise bookkeeping assistant operating on a strict double-entry ledger.
 Your task: reconcile a bank movement by linking it to existing activities, or creating new ones.
@@ -542,7 +504,7 @@ async function executeTool(
         return { result: toolError(`Activity ${parsed.data.activityId} does not exist`) };
       }
 
-      await harnessGraphQL(state.workflow.user, LINK_MOVEMENT_MUTATION, {
+      await linkMovementToActivity(state.workflow.user, clientId(state), {
         id: crypto.randomUUID(),
         movementId: state.movement.id,
         activityId: activity.id,
@@ -582,41 +544,37 @@ async function executeTool(
         return { result: legs };
       }
 
-      const result = await harnessGraphQL<{ createActivity: { id: string } }>(
-        state.workflow.user,
-        CREATE_ACTIVITY_MUTATION,
-        {
-          id: crypto.randomUUID(),
-          name: parsed.data.name,
-          description: parsed.data.description ?? null,
-          date: toDateInput(state.movement.date),
-          type: parsed.data.type,
-          category: parsed.data.category ?? null,
-          subcategory: parsed.data.subcategory ?? null,
-          transactions: [
-            {
-              id: crypto.randomUUID(),
-              amount: Math.abs(parsed.data.amount),
-              fromAccount: legs.fromAccount,
-              toAccount: legs.toAccount,
-            },
-          ],
-          movement: {
+      const created = await createActivity(state.workflow.user, clientId(state), {
+        id: crypto.randomUUID(),
+        name: parsed.data.name,
+        description: parsed.data.description ?? null,
+        date: state.movement.date,
+        type: parsed.data.type,
+        category: parsed.data.category ?? null,
+        subcategory: parsed.data.subcategory ?? null,
+        transactions: [
+          {
             id: crypto.randomUUID(),
-            movement: state.movement.id,
-            amount: parsed.data.amount,
+            amount: Math.abs(parsed.data.amount),
+            fromAccount: legs.fromAccount,
+            toAccount: legs.toAccount,
           },
+        ],
+        movement: {
+          id: crypto.randomUUID(),
+          movement: state.movement.id,
+          amount: parsed.data.amount,
         },
-      );
+      });
 
       state.linkAmounts.push(parsed.data.amount);
-      state.createdActivities.push(result.createActivity.id);
+      state.createdActivities.push(created.id);
       const remaining = remainingAmount(state.movement.amount, state.linkAmounts);
       if (remaining === 0) {
         return { done: true };
       }
       return {
-        result: { ok: true, created: result.createActivity.id, remainingToAllocate: remaining },
+        result: { ok: true, created: created.id, remainingToAllocate: remaining },
       };
     }
 
