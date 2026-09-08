@@ -1,15 +1,7 @@
 import type { MovementWorkflow } from "@maille/core/harness";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircle2,
-  Loader2,
-  Minus,
-  X,
-  XCircle,
-  Clock,
-  PauseCircle,
-} from "lucide-react";
+import { Minus, X } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -22,46 +14,11 @@ import { useSync } from "@/stores/sync";
 import { useWorkflows } from "@/stores/workflows";
 
 import { WorkflowMessageItem } from "./workflow-message";
+import { WORKFLOW_STATUS_CONFIG } from "./workflow-status";
 
 interface WorkflowTabProps {
   workflow: MovementWorkflow;
 }
-
-const STATUS_CONFIG: Record<
-  MovementWorkflow["status"],
-  { icon: React.ReactNode; label: string; className: string }
-> = {
-  queued: {
-    icon: <Clock className="size-3" />,
-    label: "Queued",
-    className: "text-muted-foreground",
-  },
-  running: {
-    icon: <Loader2 className="size-3 animate-spin" />,
-    label: "Running",
-    className: "text-blue-400",
-  },
-  pending: {
-    icon: <PauseCircle className="size-3" />,
-    label: "Needs input",
-    className: "text-orange-400",
-  },
-  succeeded: {
-    icon: <CheckCircle2 className="size-3" />,
-    label: "Done",
-    className: "text-indigo-400",
-  },
-  failed: {
-    icon: <XCircle className="size-3" />,
-    label: "Failed",
-    className: "text-red-400",
-  },
-  cancelled: {
-    icon: <Minus className="size-3" />,
-    label: "Cancelled",
-    className: "text-muted-foreground",
-  },
-};
 
 export function WorkflowTab({ workflow }: WorkflowTabProps) {
   const movement = useMovements((state) =>
@@ -75,7 +32,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const isPending = workflow.status === "pending";
-  const statusConfig = STATUS_CONFIG[workflow.status];
+  const statusConfig = WORKFLOW_STATUS_CONFIG[workflow.status];
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
@@ -122,10 +79,16 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
         <span
           className={cn(
             "flex items-center gap-1 text-xs",
-            statusConfig.className,
+            statusConfig.textClass,
           )}
         >
-          {statusConfig.icon}
+          <span
+            className={cn(
+              "size-1.5 rounded-full",
+              statusConfig.dotClass,
+              workflow.status === "running" && "animate-pulse",
+            )}
+          />
           {statusConfig.label}
         </span>
         <div className="text-xs text-muted-foreground">
@@ -179,7 +142,12 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
 
           {workflow.status === "running" && workflow.messages.length === 0 && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
+              <span
+                className={cn(
+                  "size-1.5 animate-pulse rounded-full",
+                  statusConfig.dotClass,
+                )}
+              />
               Starting workflow...
             </div>
           )}
