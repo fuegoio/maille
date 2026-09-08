@@ -7,7 +7,7 @@ import { CircleCheck, CircleDotDashed } from "lucide-react";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { WORKFLOW_STATUS_CONFIG } from "@/components/workflows/workflow-status";
+import { WorkflowStatusBadge } from "@/components/workflows/workflow-status";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useWorkflows } from "@/stores/workflows";
@@ -91,30 +91,10 @@ export function MovementLine({
       <div className="flex-1" />
 
       {workflow && (
-        <span
-          className={cn(
-            "flex shrink-0 items-center gap-1 text-xs",
-            (
-              WORKFLOW_STATUS_CONFIG[workflow.status] ??
-              WORKFLOW_STATUS_CONFIG.queued
-            ).textClass,
-          )}
-        >
-          <span
-            className={cn(
-              "size-1.5 rounded-full",
-              (
-                WORKFLOW_STATUS_CONFIG[workflow.status] ??
-                WORKFLOW_STATUS_CONFIG.queued
-              ).dotClass,
-              workflow.status === "running" && "animate-pulse",
-            )}
-          />
-          {(
-            WORKFLOW_STATUS_CONFIG[workflow.status] ??
-            WORKFLOW_STATUS_CONFIG.queued
-          ).label.toLowerCase()}
-        </span>
+        <WorkflowStatusBadge
+          status={workflow.status}
+          className="shrink-0 lowercase sm:mr-1"
+        />
       )}
 
       <div className="text-right font-mono whitespace-nowrap text-white">
