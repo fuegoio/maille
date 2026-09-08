@@ -1,33 +1,15 @@
 import type { MovementWorkflow } from "@maille/core/harness";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircle2,
-  Clock,
-  Loader2,
-  Minus,
-  PauseCircle,
-  Plus,
-  X,
-  XCircle,
-} from "lucide-react";
-import * as React from "react";
+import { Minus, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 import { useWorkflows } from "@/stores/workflows";
 
+import { WORKFLOW_STATUS_CONFIG } from "./workflow-status";
 import { WorkflowTab } from "./workflow-tab";
-
-const TAB_ICON: Record<MovementWorkflow["status"], React.ReactNode> = {
-  queued: <Clock className="size-3" />,
-  running: <Loader2 className="size-3 animate-spin" />,
-  pending: <PauseCircle className="size-3 text-orange-400" />,
-  succeeded: <CheckCircle2 className="size-3 text-indigo-400" />,
-  failed: <XCircle className="size-3 text-red-400" />,
-  cancelled: <X className="size-3" />,
-};
 
 export function WorkflowBar() {
   const workflows = useWorkflows((state) => state.workflows);
@@ -83,7 +65,13 @@ export function WorkflowBar() {
                   isMinimized ? restore() : openWorkflow(workflow.id)
                 }
               >
-                {TAB_ICON[workflow.status]}
+                <span
+                  className={cn(
+                    "size-1.5 shrink-0 rounded-full",
+                    WORKFLOW_STATUS_CONFIG[workflow.status].dotClass,
+                    workflow.status === "running" && "animate-pulse",
+                  )}
+                />
                 <span className="max-w-[120px] truncate">
                   {movement?.name ?? "Workflow"}
                 </span>

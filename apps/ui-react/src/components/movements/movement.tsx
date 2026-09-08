@@ -2,15 +2,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
-import {
-  CheckCircle2,
-  Clock,
-  Loader2,
-  PauseCircle,
-  Sparkles,
-  Trash2,
-  XCircle,
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -26,8 +18,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import { WorkflowSection } from "@/components/workflows/workflow-section";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { getGraphQLDate } from "@/lib/date";
 import {
   movementUpdateHistoryEvent,
@@ -41,7 +33,6 @@ import {
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
-import { useWorkflows } from "@/stores/workflows";
 
 import { AccountSelect } from "../accounts/account-select";
 import {
@@ -73,12 +64,6 @@ export function MovementPage({ movementId }: MovementPageProps) {
   const movements = useMovements((state) => state.movements);
 
   const activities = useActivities((state) => state.activities);
-
-  const triggerWorkflow = useTriggerWorkflow();
-  const openWorkflow = useWorkflows((state) => state.openWorkflow);
-  const workflow = useWorkflows((state) =>
-    state.getWorkflowByMovement(movementId),
-  );
 
   const movementActivities = React.useMemo(() => {
     if (!movement) return [];
@@ -231,47 +216,6 @@ export function MovementPage({ movementId }: MovementPageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {(() => {
-            const renderWorkflowIcon = () => {
-              if (!workflow) return <Sparkles className="size-4" />;
-              switch (workflow.status) {
-                case "queued":
-                  return <Clock className="size-4" />;
-                case "running":
-                  return <Loader2 className="size-4 animate-spin" />;
-                case "pending":
-                  return <PauseCircle className="size-4" />;
-                case "succeeded":
-                  return <CheckCircle2 className="size-4" />;
-                case "failed":
-                  return <XCircle className="size-4" />;
-                case "cancelled":
-                  return <Sparkles className="size-4" />;
-                default:
-                  return <Sparkles className="size-4" />;
-              }
-            };
-
-            const label = workflow
-              ? `Workflow: ${workflow.status}`
-              : "Launch activity creation workflow";
-
-            return (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  workflow
-                    ? openWorkflow(workflow.id)
-                    : triggerWorkflow(movementId)
-                }
-                title={label}
-              >
-                {renderWorkflowIcon()}
-              </Button>
-            );
-          })()}
-
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="icon">
@@ -394,6 +338,8 @@ export function MovementPage({ movementId }: MovementPageProps) {
                 )}
               </div>
             </div>
+
+            <WorkflowSection movementId={movementId} />
 
             {movement.history.length > 0 && (
               <div className="border-t px-4 py-6 sm:px-8">
