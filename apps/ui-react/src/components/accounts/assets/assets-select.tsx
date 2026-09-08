@@ -15,6 +15,8 @@ interface AssetSelectProps {
   onValueChange: (value: string) => void;
   accountId: string;
   className?: string;
+  size?: "sm" | "default";
+  placeholder?: string;
 }
 
 export function AssetSelect({
@@ -22,14 +24,16 @@ export function AssetSelect({
   value,
   onValueChange,
   className,
+  size = "default",
+  placeholder = "Select an asset",
 }: AssetSelectProps) {
   const assets = useAssets((state) => state.assets);
   const accountAssets = assets.filter((a) => a.account === accountId);
 
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
-      <SelectTrigger className={cn("w-full", className)}>
-        <SelectValue placeholder="Select a asset" />
+      <SelectTrigger size={size} className={cn("w-full", className)}>
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>

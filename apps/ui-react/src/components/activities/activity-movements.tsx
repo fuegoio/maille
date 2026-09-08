@@ -158,7 +158,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         )}
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 space-y-3">
         {movementsReconciliatedByAccount.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
             No movement needed for this activity.
@@ -168,7 +168,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
             (movementsReconciliatedOfAccount) => (
               <div
                 key={movementsReconciliatedOfAccount.account.toString()}
-                className="rounded-lg border bg-muted/30 p-2"
+                className="rounded-lg border bg-muted/30 p-3"
               >
                 <div className="flex items-center text-sm">
                   <AccountLabel
@@ -205,7 +205,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                 ) : (
                   movementsReconciliatedOfAccount.movements.map((movement) => (
                     <div key={movement.id}>
-                      <hr className="my-1 border-t" />
+                      <hr className="my-2 border-t" />
 
                       <div className="flex items-center text-sm">
                         <div className="mr-4 hidden w-16 shrink-0 text-muted-foreground sm:block">

@@ -15,6 +15,7 @@ interface FundSelectProps {
   allowEmpty?: boolean;
   emptyLabel?: string;
   className?: string;
+  size?: "sm" | "default";
 }
 
 export function FundSelect({
@@ -24,6 +25,7 @@ export function FundSelect({
   allowEmpty = false,
   emptyLabel = "No fund",
   className,
+  size = "default",
 }: FundSelectProps) {
   const funds = useFunds((state) => state.funds);
 
@@ -39,7 +41,7 @@ export function FundSelect({
         onValueChange(newValue === "clear" ? null : newValue);
       }}
     >
-      <SelectTrigger className={cn("w-full min-w-0", className)}>
+      <SelectTrigger size={size} className={cn("w-full min-w-0", className)}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

@@ -668,7 +668,7 @@ export function AddActivityModal({
               </div>
             </div>
 
-            <div className="space-y-2 pr-1">
+            <div className="space-y-3 pr-1">
               {transactions.map((transaction, index) => (
                 <TransactionComponent
                   key={index}

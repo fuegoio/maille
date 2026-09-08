@@ -294,7 +294,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(transactionsSum)}
         </div>
-        <div className="-mr-1 flex items-center gap-2">
+        {/* Right edge flush with the rows' action column (leg p-3 + border) */}
+        <div className="mr-[13px] flex items-center gap-2">
           <TransactionDropdown
             transactions={activity.transactions.map((t) => ({
               fromAccount: t.fromAccount,
@@ -312,7 +313,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         </div>
       </div>
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 space-y-3">
         {activity.transactions.length === 0 &&
         stagedTransactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">

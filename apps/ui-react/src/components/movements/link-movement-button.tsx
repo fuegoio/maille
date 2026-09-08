@@ -141,7 +141,7 @@ export function LinkMovementButton({
         <TooltipTrigger asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon"
             className={className}
             onClick={openDialog}

@@ -15,6 +15,8 @@ interface CounterpartiesSelectProps {
   onValueChange: (value: string) => void;
   accountId: string;
   className?: string;
+  size?: "sm" | "default";
+  placeholder?: string;
 }
 
 export function CounterpartiesSelect({
@@ -22,6 +24,8 @@ export function CounterpartiesSelect({
   value,
   onValueChange,
   className,
+  size = "default",
+  placeholder = "Select a counterparty",
 }: CounterpartiesSelectProps) {
   const counterparties = useCounterparties((state) => state.counterparties);
   const accountCounterparties = counterparties.filter(
@@ -30,8 +34,8 @@ export function CounterpartiesSelect({
 
   return (
     <Select value={value || undefined} onValueChange={onValueChange}>
-      <SelectTrigger className={cn("w-full", className)}>
-        <SelectValue placeholder="Select a counterparty" />
+      <SelectTrigger size={size} className={cn("w-full", className)}>
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
