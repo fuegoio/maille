@@ -220,6 +220,24 @@ function EntryLine({
 }
 
 export function HistoryTimeline({ entityType, history }: HistoryTimelineProps) {
+  // A new entry appearing in the timeline is the receipt for what the user
+  // just did: it lands at the top with a small entrance so the recording is
+  // visible feedback rather than a silent list mutation. The first render
+  // seeds the set with the entries already there, so loading a page never
+  // choreographs — only entries added while the timeline is on screen
+  // animate, once per entry id.
+  const seenIdsRef = React.useRef<Set<string> | null>(null);
+  if (seenIdsRef.current === null) {
+    seenIdsRef.current = new Set(history.map((entry) => entry.id));
+  }
+  const animatedIdsRef = React.useRef<Set<string>>(new Set());
+  for (const entry of history) {
+    if (!seenIdsRef.current.has(entry.id)) {
+      seenIdsRef.current.add(entry.id);
+      animatedIdsRef.current.add(entry.id);
+    }
+  }
+
   const dayGroups = React.useMemo(() => {
     const sorted = [...history].sort(
       (a, b) =>
@@ -256,7 +274,14 @@ export function HistoryTimeline({ entityType, history }: HistoryTimelineProps) {
 
           <div className="mt-2">
             {entries.map((entry, index) => (
-              <div key={entry.id} className="flex gap-3">
+              <div
+                key={entry.id}
+                className={cn(
+                  "flex gap-3",
+                  animatedIdsRef.current.has(entry.id) &&
+                    "animate-history-in motion-reduce:animate-none",
+                )}
+              >
                 <div className="flex flex-col items-center pt-[7px]">
                   <div
                     className={cn(
