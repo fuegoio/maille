@@ -1,12 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowDownToLine, BookMarked, Settings } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  ArrowDownToLine,
+  ChevronRight,
+  Settings,
+  SquareChartGantt,
+} from "lucide-react";
+import { useState } from "react";
 
-import { ActivitiesTable } from "@/components/activities/activities-table";
-import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { AllocateDialog } from "@/components/funds/allocate-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
+import { FundSummary } from "@/components/funds/fund-summary";
 import { SearchBar } from "@/components/search-bar";
 import {
   Breadcrumb,
@@ -18,8 +22,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useActivities } from "@/stores/activities";
+import { SummaryPanel } from "@/components/ui/summary-panel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { useFunds } from "@/stores/funds";
 
 export const Route = createFileRoute("/_authenticated/funds/$id")({
@@ -42,103 +47,66 @@ function FundPage() {
     throw notFound();
   }
 
-  const [selectedTab, setSelectedTab] = useState("activities");
-
-  const activities = useActivities((state) => state.activities);
-  const fundMoves = useFunds((state) => state.fundMoves);
-
-  // Activities touch this fund through a transaction's fund moves
-  const viewActivities = useMemo(() => {
-    const transactionIds = new Set(
-      fundMoves
-        .filter(
-          (m) =>
-            m.transaction !== null &&
-            (m.fromFund === fundId || m.toFund === fundId),
-        )
-        .map((m) => m.transaction),
-    );
-
-    if (transactionIds.size === 0) return [];
-
-    return activities.filter((a) =>
-      a.transactions.some((t) => transactionIds.has(t.id)),
-    );
-  }, [activities, fundMoves, fundId]);
+  const isMobile = useIsMobile();
+  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   return (
-    <SidebarInset>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
-        <SidebarTrigger className="mr-1" />
-
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/funds">Funds</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>
-                {fund.emoji && <span className="mr-1">{fund.emoji}</span>}
-                <span>{fund.name}</span>
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex-1" />
-        <SearchBar />
-        <AllocateDialog defaultToFund={fund.id}>
-          <Button variant="outline">
-            <ArrowDownToLine />
-            Allocate
-          </Button>
-        </AllocateDialog>
-        {!fund.isDefault && (
-          <FundSettingsDialog fund={fund}>
-            <Button variant="ghost" size="icon" aria-label="Fund settings">
-              <Settings />
-            </Button>
-          </FundSettingsDialog>
+    <SidebarInset className="flex-row">
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          summaryOpen && "hidden md:flex",
         )}
-      </header>
-
-      <Tabs
-        value={selectedTab}
-        onValueChange={setSelectedTab}
-        className="min-h-0 flex-1"
       >
-        <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-          <TabsList className="ml-5">
-            <TabsTrigger value="activities">
-              <BookMarked />
-              Activities
-            </TabsTrigger>
-            <TabsTrigger value="fund-moves">
-              <ArrowDownToLine />
-              Fund moves
-            </TabsTrigger>
-          </TabsList>
-          <div className="flex-1" />
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
 
-          {selectedTab === "activities" && (
-            <FilterActivitiesButton viewId={`fund-${fund.id}`} />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/funds">Funds</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>
+                  {fund.emoji && <span className="mr-1">{fund.emoji}</span>}
+                  <span>{fund.name}</span>
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex-1" />
+          <SearchBar />
+          {!summaryOpen && (
+            <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
+              <SquareChartGantt />
+              Summary
+              <ChevronRight />
+            </Button>
+          )}
+          <AllocateDialog defaultToFund={fund.id}>
+            <Button variant="outline">
+              <ArrowDownToLine />
+              Allocate
+            </Button>
+          </AllocateDialog>
+          {!fund.isDefault && (
+            <FundSettingsDialog fund={fund}>
+              <Button variant="ghost" size="icon" aria-label="Fund settings">
+                <Settings />
+              </Button>
+            </FundSettingsDialog>
           )}
         </header>
 
-        <TabsContent value="activities" className="flex h-full">
-          <ActivitiesTable
-            viewId={`fund-${fund.id}`}
-            activities={viewActivities}
-            grouping="period"
-          />
-        </TabsContent>
+        <FundMovesTable fundId={fund.id} />
+      </div>
 
-        <TabsContent value="fund-moves" className="flex h-full">
-          <FundMovesTable fundId={fund.id} />
-        </TabsContent>
-      </Tabs>
+      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+        <FundSummary fundId={fund.id} />
+      </SummaryPanel>
     </SidebarInset>
   );
 }
