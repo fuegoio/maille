@@ -2,13 +2,14 @@ import type { FundMove } from "@maille/core/funds";
 
 import { useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { Calendar, ChevronDown } from "lucide-react";
+import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
 import { useSearch } from "@/stores/search";
@@ -19,6 +20,8 @@ type FundMoveWithActivity = FundMove & {
   direction: "in" | "out";
   /** The activity holding the transaction, when the move is tied to one. */
   activity: { id: string; name: string } | null;
+  /** The transaction's account movement, when the move is tied to one. */
+  accounts: { from: string; to: string } | null;
 };
 
 interface FundMovesTableProps {
@@ -36,28 +39,37 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
     // A move tied to a transaction belongs to the activity holding it
-    const activityByTransaction = new Map<
+    const transactionsById = new Map<
       string,
-      { id: string; name: string }
+      { activityId: string; activityName: string; from: string; to: string }
     >();
     for (const activity of activities) {
       for (const transaction of activity.transactions) {
-        activityByTransaction.set(transaction.id, {
-          id: activity.id,
-          name: activity.name,
+        transactionsById.set(transaction.id, {
+          activityId: activity.id,
+          activityName: activity.name,
+          from: transaction.fromAccount,
+          to: transaction.toAccount,
         });
       }
     }
 
     return fundMoves
       .filter((m) => m.fromFund === fundId || m.toFund === fundId)
-      .map((m) => ({
-        ...m,
-        direction: m.toFund === fundId ? ("in" as const) : ("out" as const),
-        activity: m.transaction
-          ? (activityByTransaction.get(m.transaction) ?? null)
-          : null,
-      }))
+      .map((m) => {
+        const info = m.transaction
+          ? transactionsById.get(m.transaction)
+          : undefined;
+
+        return {
+          ...m,
+          direction: m.toFund === fundId ? ("in" as const) : ("out" as const),
+          activity: info
+            ? { id: info.activityId, name: info.activityName }
+            : null,
+          accounts: info ? { from: info.from, to: info.to } : null,
+        };
+      })
       .sort((a, b) => {
         if (a.date.getTime() !== b.date.getTime()) {
           return b.date.getTime() - a.date.getTime();
@@ -257,7 +269,7 @@ function FundMoveLine({
   return (
     <div
       className={cn(
-        "group flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent",
+        "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent",
         onClick && "cursor-pointer",
       )}
       onClick={onClick}
@@ -295,6 +307,15 @@ function FundMoveLine({
               </div>
             )}
             <div className="flex-1" />
+
+            {/* The transaction's account movement, when the row is wide */}
+            {move.accounts && (
+              <div className="hidden shrink-0 items-center gap-1.5 text-muted-foreground @3xl:flex">
+                <AccountFlowLabel accountId={move.accounts.from} />
+                <MoveRight className="size-3.5 shrink-0" />
+                <AccountFlowLabel accountId={move.accounts.to} />
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -320,6 +341,28 @@ function FundMoveLine({
       <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
       </div>
+    </div>
+  );
+}
+
+/** An account named with its type swatch, as quiet row metadata. */
+function AccountFlowLabel({ accountId }: { accountId: string }) {
+  const accounts = useAccounts((state) => state.accounts);
+  const account = accounts.find((a) => a.id === accountId);
+
+  if (!account) return null;
+
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <div
+        className={cn(
+          "size-3 shrink-0 rounded-xl",
+          ACCOUNT_TYPES_COLOR[account.type],
+        )}
+      />
+      <span className="max-w-32 truncate text-ellipsis whitespace-nowrap">
+        {account.name}
+      </span>
     </div>
   );
 }
