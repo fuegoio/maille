@@ -25,6 +25,7 @@ import { Route as AuthenticatedProjectsIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMovementsToLinkRouteImport } from './routes/_authenticated/movements/to-link'
 import { Route as AuthenticatedMovementsIdRouteImport } from './routes/_authenticated/movements/$id'
 import { Route as AuthenticatedMonthsMonthRouteImport } from './routes/_authenticated/months/$month'
+import { Route as AuthenticatedFundsIdRouteImport } from './routes/_authenticated/funds/$id'
 import { Route as AuthenticatedActivitiesToReconciliateRouteImport } from './routes/_authenticated/activities/to-reconciliate'
 import { Route as AuthenticatedActivitiesIdRouteImport } from './routes/_authenticated/activities/$id'
 import { Route as AuthenticatedAccountsIdRouteImport } from './routes/_authenticated/accounts/$id'
@@ -119,6 +120,11 @@ const AuthenticatedMonthsMonthRoute =
     path: '/months/$month',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFundsIdRoute = AuthenticatedFundsIdRouteImport.update({
+  id: '/funds/$id',
+  path: '/funds/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedActivitiesToReconciliateRoute =
   AuthenticatedActivitiesToReconciliateRouteImport.update({
     id: '/activities/to-reconciliate',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/accounts/$id': typeof AuthenticatedAccountsIdRoute
   '/activities/$id': typeof AuthenticatedActivitiesIdRoute
   '/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
+  '/funds/$id': typeof AuthenticatedFundsIdRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/accounts/$id': typeof AuthenticatedAccountsIdRoute
   '/activities/$id': typeof AuthenticatedActivitiesIdRoute
   '/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
+  '/funds/$id': typeof AuthenticatedFundsIdRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -203,6 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/accounts/$id': typeof AuthenticatedAccountsIdRoute
   '/_authenticated/activities/$id': typeof AuthenticatedActivitiesIdRoute
   '/_authenticated/activities/to-reconciliate': typeof AuthenticatedActivitiesToReconciliateRoute
+  '/_authenticated/funds/$id': typeof AuthenticatedFundsIdRoute
   '/_authenticated/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/_authenticated/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/_authenticated/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/accounts/$id'
     | '/activities/$id'
     | '/activities/to-reconciliate'
+    | '/funds/$id'
     | '/months/$month'
     | '/movements/$id'
     | '/movements/to-link'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/accounts/$id'
     | '/activities/$id'
     | '/activities/to-reconciliate'
+    | '/funds/$id'
     | '/months/$month'
     | '/movements/$id'
     | '/movements/to-link'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/accounts/$id'
     | '/_authenticated/activities/$id'
     | '/_authenticated/activities/to-reconciliate'
+    | '/_authenticated/funds/$id'
     | '/_authenticated/months/$month'
     | '/_authenticated/movements/$id'
     | '/_authenticated/movements/to-link'
@@ -408,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMonthsMonthRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/funds/$id': {
+      id: '/_authenticated/funds/$id'
+      path: '/funds/$id'
+      fullPath: '/funds/$id'
+      preLoaderRoute: typeof AuthenticatedFundsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/activities/to-reconciliate': {
       id: '/_authenticated/activities/to-reconciliate'
       path: '/activities/to-reconciliate'
@@ -451,6 +470,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAccountsIdRoute: typeof AuthenticatedAccountsIdRoute
   AuthenticatedActivitiesIdRoute: typeof AuthenticatedActivitiesIdRoute
   AuthenticatedActivitiesToReconciliateRoute: typeof AuthenticatedActivitiesToReconciliateRoute
+  AuthenticatedFundsIdRoute: typeof AuthenticatedFundsIdRoute
   AuthenticatedMonthsMonthRoute: typeof AuthenticatedMonthsMonthRoute
   AuthenticatedMovementsIdRoute: typeof AuthenticatedMovementsIdRoute
   AuthenticatedMovementsToLinkRoute: typeof AuthenticatedMovementsToLinkRoute
@@ -472,6 +492,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedActivitiesIdRoute: AuthenticatedActivitiesIdRoute,
   AuthenticatedActivitiesToReconciliateRoute:
     AuthenticatedActivitiesToReconciliateRoute,
+  AuthenticatedFundsIdRoute: AuthenticatedFundsIdRoute,
   AuthenticatedMonthsMonthRoute: AuthenticatedMonthsMonthRoute,
   AuthenticatedMovementsIdRoute: AuthenticatedMovementsIdRoute,
   AuthenticatedMovementsToLinkRoute: AuthenticatedMovementsToLinkRoute,

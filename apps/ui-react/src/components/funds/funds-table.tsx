@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ArrowDownToLine, PiggyBank, SettingsIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -23,6 +24,7 @@ export function FundsTable() {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
   const currencyFormatter = useCurrencyFormatter();
+  const navigate = useNavigate();
 
   const sortedFunds = useMemo(() => {
     return [...funds].sort((a, b) => {
@@ -65,7 +67,10 @@ export function FundsTable() {
       {balances.map(({ fund, balance }) => (
         <div
           key={fund.id}
-          className="group flex h-12 w-full items-center border-b pr-6 pl-6 hover:bg-muted/50"
+          className="group flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
+          onClick={() =>
+            navigate({ to: "/funds/$id", params: { id: fund.id } })
+          }
         >
           <div className="flex items-center gap-2">
             {fund.emoji && <span className="text-xl">{fund.emoji}</span>}
@@ -101,6 +106,7 @@ export function FundsTable() {
                 variant="ghost"
                 size="icon-xs"
                 aria-label={`Allocate to ${fund.name}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 <ArrowDownToLine />
               </Button>
@@ -111,6 +117,7 @@ export function FundsTable() {
                   variant="ghost"
                   size="icon-xs"
                   aria-label={`${fund.name} settings`}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <SettingsIcon />
                 </Button>
