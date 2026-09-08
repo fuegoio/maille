@@ -282,6 +282,10 @@ function FundMoveLine({
             <div className="min-w-0 truncate font-medium">
               {move.activity.name}
             </div>
+            <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+              <span className="text-xs">{isInflow ? "from" : "to"}</span>
+              {renderCounterpart()}
+            </div>
             {move.note && (
               <div
                 className="hidden min-w-0 truncate text-muted-foreground md:block"
@@ -291,10 +295,6 @@ function FundMoveLine({
               </div>
             )}
             <div className="flex-1" />
-            <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-              <span className="text-xs">{isInflow ? "from" : "to"}</span>
-              {renderCounterpart()}
-            </div>
           </>
         ) : (
           <>
