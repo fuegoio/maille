@@ -177,11 +177,23 @@ export async function executeTool(
       }
       return {
         result: {
-          activities: await searchActivities(state.workflow.user, {
-            name: parsed.data.name,
-            fromDate,
-            toDate,
-          }),
+          activities: await searchActivities(
+            state.workflow.user,
+            {
+              name: parsed.data.name,
+              fromDate,
+              toDate,
+            },
+            await db
+              .select({
+                id: accounts.id,
+                name: accounts.name,
+                type: accounts.type,
+                movements: accounts.movements,
+              })
+              .from(accounts)
+              .where(eq(accounts.user, state.workflow.user)),
+          ),
         },
       };
     }
