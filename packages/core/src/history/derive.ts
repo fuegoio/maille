@@ -105,12 +105,7 @@ export function diffActivity(
     valueChange("date", before.date, after.date),
     valueChange("type", before.type, after.type),
     refChange("category", before.category, after.category, "category"),
-    refChange(
-      "subcategory",
-      before.subcategory,
-      after.subcategory,
-      "subcategory",
-    ),
+    refChange("subcategory", before.subcategory, after.subcategory, "subcategory"),
     refChange("project", before.project, after.project, "project"),
   ].filter((change): change is HistoryChange => change !== null);
 }

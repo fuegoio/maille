@@ -66,10 +66,7 @@ function canCompact(
 ): boolean {
   if (last.action !== "update" || entry.action !== "update") return false;
   if (last.user !== entry.user) return false;
-  if (
-    new Date(entry.createdAt).getTime() - new Date(last.createdAt).getTime() >
-    windowMs
-  ) {
+  if (new Date(entry.createdAt).getTime() - new Date(last.createdAt).getTime() > windowMs) {
     return false;
   }
   // Overlapping fields must chain (last.to === entry.from) so that merging
@@ -80,10 +77,7 @@ function canCompact(
   });
 }
 
-function mergeChanges(
-  from: HistoryChange[],
-  to: HistoryChange[],
-): HistoryChange[] {
+function mergeChanges(from: HistoryChange[], to: HistoryChange[]): HistoryChange[] {
   const merged: HistoryChange[] = [];
 
   for (const change of from) {

@@ -9,6 +9,7 @@ import { fetchUserData } from "@/data";
 import { useIsOnline } from "@/hooks/use-is-online";
 import { authClient } from "@/lib/auth";
 import { useAuth } from "@/stores/auth";
+import { migrationFlags } from "@/stores/storage";
 import { useSync } from "@/stores/sync";
 
 const SESSION_REFRESH_INTERVAL = 1000 * 60 * 60;
@@ -56,6 +57,14 @@ export const Route = createFileRoute("/_authenticated")({
       user = res.data.user;
 
       await fetchUserData();
+    } else if (migrationFlags.refetchUserData) {
+      // The persisted stores were migrated from an older schema — refetch so
+      // entities carry the fields the stale local state predates.
+      try {
+        await fetchUserData();
+      } finally {
+        migrationFlags.refetchUserData = false;
+      }
     }
 
     return {

@@ -492,12 +492,14 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
             <ActivityMovements activity={activity} />
             <ActivitySharing activity={activity} />
 
-            <div className="border-b px-4 py-6 sm:px-8">
-              <HistoryTimeline
-                entityType="activity"
-                history={activity.history}
-              />
-            </div>
+            {activity.history.length > 0 && (
+              <div className="px-4 py-6 sm:px-8">
+                <HistoryTimeline
+                  entityType="activity"
+                  history={activity.history}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

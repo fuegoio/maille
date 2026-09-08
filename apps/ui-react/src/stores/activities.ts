@@ -19,7 +19,7 @@ import type { Mutation } from "@/mutations";
 
 import { useAccounts } from "./accounts";
 import { useMovements } from "./movements";
-import { storage } from "./storage";
+import { migrationFlags, storage } from "./storage";
 
 export const ACTIVITY_TYPES_COLOR = {
   [ActivityType.EXPENSE]: "bg-red-400",
@@ -751,7 +751,18 @@ export const useActivities = create<ActivitiesState>()(
     }),
     {
       name: "activities",
+      version: 1,
       storage: storage,
+      migrate: (persisted) => {
+        const state = persisted as { activities?: Activity[] };
+        if (state.activities) {
+          state.activities = state.activities.map((activity) =>
+            activity.history ? activity : { ...activity, history: [] },
+          );
+        }
+        migrationFlags.refetchUserData = true;
+        return state;
+      },
     },
   ),
 );

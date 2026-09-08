@@ -74,46 +74,52 @@ function ChangeValue({
   field,
   value,
   entityRef,
+  className,
 }: {
   field: string;
   value: HistoryValue;
   entityRef?: HistoryRef;
+  className?: string;
 }) {
   const currencyFormatter = useCurrencyFormatter();
 
   if (value === null) {
-    return <span className="text-muted-foreground">—</span>;
+    return <span className={cn("text-muted-foreground/50", className)}>—</span>;
   }
   if (entityRef) {
     return <EntityLink ref={entityRef} label={String(value)} />;
   }
   if (field === "amount") {
     return (
-      <span className="font-mono">
+      <span className={cn("font-mono tabular-nums", className)}>
         {currencyFormatter.format(Number(value))}
       </span>
     );
   }
   if (field === "date") {
-    return <span>{format(new Date(value), "d MMM yyyy")}</span>;
+    return (
+      <span className={className}>{format(new Date(value), "d MMM yyyy")}</span>
+    );
   }
-  return <span>{String(value)}</span>;
+  return <span className={className}>{String(value)}</span>;
 }
 
 function ChangeLine({ change }: { change: HistoryChange }) {
   return (
-    <div className="text-muted-foreground">
-      <span className="text-foreground/80">{fieldLabel(change.field)}: </span>
+    <div className="flex flex-wrap items-baseline gap-x-1 text-muted-foreground">
+      <span className="after:content-[':']">{fieldLabel(change.field)}</span>
       <ChangeValue
         field={change.field}
         value={change.from}
         entityRef={change.fromRef}
+        className="text-muted-foreground/80"
       />
-      {" → "}
+      <span aria-hidden="true">→</span>
       <ChangeValue
         field={change.field}
         value={change.to}
         entityRef={change.toRef}
+        className="text-foreground/80"
       />
     </div>
   );
@@ -191,18 +197,19 @@ function EntryLine({
   return (
     <>
       <div className="flex items-baseline gap-2 text-sm">
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">
-          {format(new Date(entry.createdAt), "HH:mm")}
-        </span>
-        <span>{action}</span>
+        <span className="min-w-0">{action}</span>
         {linkAmount !== null && (
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
             {currencyFormatter.format(Number(linkAmount))}
           </span>
         )}
+        <span className="flex-1" />
+        <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
+          {format(new Date(entry.createdAt), "HH:mm")}
+        </span>
       </div>
       {entry.changes.length > 0 && (
-        <div className="mt-1 space-y-0.5 pl-[3.25rem] text-xs">
+        <div className="mt-1 space-y-0.5 text-xs">
           {entry.changes.map((change, index) => (
             <ChangeLine key={index} change={change} />
           ))}
@@ -236,60 +243,49 @@ export function HistoryTimeline({ entityType, history }: HistoryTimelineProps) {
   if (history.length === 0) return null;
 
   return (
-    <div>
-      <div className="flex items-center">
-        <div>
-          <div className="text-base font-medium">History</div>
-          <div className="text-xs text-muted-foreground">
-            Every change made to this {entityType}, most recent first.
+    <div className="space-y-5">
+      {dayGroups.map(([day, entries]) => (
+        <div key={day}>
+          <div className="text-xs font-medium text-muted-foreground">
+            {isToday(new Date(day))
+              ? "Today"
+              : isYesterday(new Date(day))
+                ? "Yesterday"
+                : format(new Date(day), "d MMMM yyyy")}
           </div>
-        </div>
-      </div>
 
-      <div className="mt-4">
-        {dayGroups.map(([day, entries]) => (
-          <div key={day} className="mb-4 last:mb-0">
-            <div className="text-xs font-medium text-muted-foreground">
-              {isToday(new Date(day))
-                ? "Today"
-                : isYesterday(new Date(day))
-                  ? "Yesterday"
-                  : format(new Date(day), "d MMMM yyyy")}
-            </div>
-
-            <div className="mt-2">
-              {entries.map((entry, index) => (
-                <div key={entry.id} className="flex gap-3">
-                  <div className="flex flex-col items-center pt-1.5">
-                    <div
-                      className={cn(
-                        "size-1.5 shrink-0 rounded-full",
-                        index === 0 && day === new Date().toDateString()
-                          ? "bg-foreground/70"
-                          : "bg-muted-foreground/40",
-                      )}
-                    />
-                    <div
-                      className={cn(
-                        "w-px flex-1 bg-border",
-                        index === entries.length - 1 && "bg-transparent",
-                      )}
-                    />
-                  </div>
+          <div className="mt-2">
+            {entries.map((entry, index) => (
+              <div key={entry.id} className="flex gap-3">
+                <div className="flex flex-col items-center pt-[7px]">
                   <div
                     className={cn(
-                      "min-w-0 flex-1",
-                      index === entries.length - 1 ? "pb-1" : "pb-4",
+                      "size-1.5 shrink-0 rounded-full",
+                      index === 0 && isToday(new Date(day))
+                        ? "bg-foreground/70"
+                        : "bg-muted-foreground/40",
                     )}
-                  >
-                    <EntryLine entry={entry} entityType={entityType} />
-                  </div>
+                  />
+                  <div
+                    className={cn(
+                      "w-px flex-1 bg-border",
+                      index === entries.length - 1 && "bg-transparent",
+                    )}
+                  />
                 </div>
-              ))}
-            </div>
+                <div
+                  className={cn(
+                    "min-w-0 flex-1",
+                    index === entries.length - 1 ? "pb-0.5" : "pb-3.5",
+                  )}
+                >
+                  <EntryLine entry={entry} entityType={entityType} />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

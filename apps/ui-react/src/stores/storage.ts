@@ -13,3 +13,10 @@ export const storage: PersistStorage<unknown> = {
   },
   removeItem: (name) => localStorage.removeItem(name),
 };
+
+/**
+ * Set by store migrations when the persisted schema was behind the running
+ * code. Consumed once by the authenticated layout, which refetches user data
+ * so entities pick up fields the stale local state predates.
+ */
+export const migrationFlags = { refetchUserData: false };

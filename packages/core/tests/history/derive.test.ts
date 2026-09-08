@@ -124,9 +124,7 @@ describe("transaction entries", () => {
   };
 
   it("builds an addTransaction entry from the legs", () => {
-    expect(
-      buildAddTransactionEntry("activity", "a1", transaction),
-    ).toEqual({
+    expect(buildAddTransactionEntry("activity", "a1", transaction)).toEqual({
       entityType: "activity",
       entityId: "a1",
       action: "addTransaction",

@@ -339,12 +339,14 @@ export function MovementPage({ movementId }: MovementPageProps) {
               </div>
             </div>
 
-            <div className="border-t px-4 py-6 sm:px-8">
-              <HistoryTimeline
-                entityType="movement"
-                history={movement.history}
-              />
-            </div>
+            {movement.history.length > 0 && (
+              <div className="border-t px-4 py-6 sm:px-8">
+                <HistoryTimeline
+                  entityType="movement"
+                  history={movement.history}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

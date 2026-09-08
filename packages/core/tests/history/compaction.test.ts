@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  HISTORY_COMPACTION_WINDOW_MS,
-  appendWithCompaction,
-} from "@maille/core/history";
+import { HISTORY_COMPACTION_WINDOW_MS, appendWithCompaction } from "@maille/core/history";
 import type { SerializedHistoryEntry } from "@maille/core/history";
 
 const entry = (
@@ -49,9 +46,7 @@ describe("appendWithCompaction", () => {
     expect(result.history).toHaveLength(1);
     const merged = result.history[0]!;
     expect(merged.id).toBe("h1");
-    expect(merged.changes).toEqual([
-      { field: "name", from: "Lunch", to: "Team lunch" },
-    ]);
+    expect(merged.changes).toEqual([{ field: "name", from: "Lunch", to: "Team lunch" }]);
     expect(merged.createdAt).toBe("2026-09-08T10:04:00.000Z");
     expect(result.emitted?.id).toBe("h1");
   });
@@ -88,9 +83,7 @@ describe("appendWithCompaction", () => {
     const newEntry = entry({
       id: "h2",
       createdAt: new Date(
-        new Date("2026-09-08T10:00:00.000Z").getTime() +
-          HISTORY_COMPACTION_WINDOW_MS +
-          1000,
+        new Date("2026-09-08T10:00:00.000Z").getTime() + HISTORY_COMPACTION_WINDOW_MS + 1000,
       ).toISOString(),
       changes: [{ field: "name", from: "B", to: "C" }],
     });
@@ -172,9 +165,7 @@ describe("appendWithCompaction", () => {
 
     const result = appendWithCompaction(history, revert);
     expect(result.history).toHaveLength(1);
-    expect(result.history[0]!.changes).toEqual([
-      { field: "description", from: null, to: "note" },
-    ]);
+    expect(result.history[0]!.changes).toEqual([{ field: "description", from: null, to: "note" }]);
     expect(result.emitted?.id).toBe("h1");
   });
 });

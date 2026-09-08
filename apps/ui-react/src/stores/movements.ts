@@ -7,7 +7,7 @@ import { persist } from "zustand/middleware";
 
 import type { Mutation } from "@/mutations";
 
-import { storage } from "./storage";
+import { migrationFlags, storage } from "./storage";
 
 interface MovementsState {
   movements: Movement[];
@@ -303,7 +303,18 @@ export const useMovements = create<MovementsState>()(
     }),
     {
       name: "movements",
+      version: 1,
       storage: storage,
+      migrate: (persisted) => {
+        const state = persisted as { movements?: Movement[] };
+        if (state.movements) {
+          state.movements = state.movements.map((movement) =>
+            movement.history ? movement : { ...movement, history: [] },
+          );
+        }
+        migrationFlags.refetchUserData = true;
+        return state;
+      },
     },
   ),
 );
