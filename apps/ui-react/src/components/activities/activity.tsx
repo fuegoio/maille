@@ -87,20 +87,22 @@ const ACTIVITY_STATUS_DESCRIPTION: Record<ActivityStatus, string> = {
 
 function ActivityStatusMark({ status }: { status: ActivityStatus }) {
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 items-center gap-3">
       {status === "scheduled" ? (
-        <CircleDashed className="size-4 shrink-0 text-muted-foreground" />
+        <CircleDashed className="size-5 shrink-0 text-muted-foreground" />
       ) : status === "incomplete" ? (
-        <CircleDotDashed className="size-4 shrink-0 text-orange-300" />
+        <CircleDotDashed className="size-5 shrink-0 text-orange-300" />
       ) : (
-        <CircleCheck className="size-4 shrink-0 text-indigo-300" />
+        <CircleCheck className="size-5 shrink-0 text-indigo-300" />
       )}
-      <span className="shrink-0 text-sm font-medium">
-        {ACTIVITY_STATUS_NAME[status]}
-      </span>
-      <span className="truncate text-xs text-muted-foreground">
-        {ACTIVITY_STATUS_DESCRIPTION[status]}
-      </span>
+      <div className="min-w-0">
+        <div className="text-sm font-medium">
+          {ACTIVITY_STATUS_NAME[status]}
+        </div>
+        <div className="truncate text-xs text-muted-foreground">
+          {ACTIVITY_STATUS_DESCRIPTION[status]}
+        </div>
+      </div>
     </div>
   );
 }
