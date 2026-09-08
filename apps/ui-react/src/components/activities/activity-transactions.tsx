@@ -286,7 +286,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <div>
-          <div className="text-sm font-medium">Transactions</div>
+          <div className="text-base font-medium">Transactions</div>
           <div className="text-xs text-muted-foreground">
             The double-entry legs of this activity, from account to account.
           </div>
@@ -295,7 +295,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(transactionsSum)}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="-mr-2 flex items-center gap-2">
           <TransactionDropdown
             transactions={activity.transactions.map((t) => ({
               fromAccount: t.fromAccount,

@@ -145,7 +145,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <div>
-          <div className="text-sm font-medium">Movements</div>
+          <div className="text-base font-medium">Movements</div>
           <div className="text-xs text-muted-foreground">
             Bank records reconciled with this activity's transactions.
           </div>

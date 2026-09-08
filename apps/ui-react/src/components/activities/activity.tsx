@@ -435,7 +435,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                 />
               </div>
 
-              <div className="-mx-4 mt-6 flex items-center justify-between gap-4 border-t px-4 pt-4 sm:-mx-8 sm:px-8">
+              <div className="-mx-4 mt-8 flex items-center justify-between gap-4 border-t px-4 pt-6 sm:-mx-8 sm:px-8">
                 <ActivityStatusMark status={activity.status} />
                 <div className="font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
                   {currencyFormatter.format(activity.amount)}

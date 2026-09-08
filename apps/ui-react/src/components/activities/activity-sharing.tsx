@@ -135,7 +135,7 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center gap-2">
         <div>
-          <div className="text-sm font-medium">Sharing</div>
+          <div className="text-base font-medium">Sharing</div>
           <div className="text-xs text-muted-foreground">
             People this activity is shared with, and the liability owed to each.
           </div>
