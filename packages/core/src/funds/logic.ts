@@ -19,6 +19,22 @@ export const FUND_COLORS = [
 /** Color assigned to funds created without an explicit choice. */
 export const DEFAULT_FUND_COLOR: string = FUND_COLORS[0];
 
+/** Hue names for the picker, keyed by the anchor hex. */
+export const FUND_COLOR_NAMES: Record<(typeof FUND_COLORS)[number], string> = {
+  "#818cf8": "Indigo",
+  "#60a5fa": "Blue",
+  "#38bdf8": "Sky",
+  "#2dd4bf": "Teal",
+  "#4ade80": "Green",
+  "#a3e635": "Lime",
+  "#fbbf24": "Amber",
+  "#fb923c": "Orange",
+  "#f87171": "Red",
+  "#f472b6": "Pink",
+  "#a78bfa": "Violet",
+  "#e2a4e8": "Plum",
+};
+
 /**
  * Sum of moves leaving a fund (excluding internal balance-sheet flows).
  * fromFund = null means money entered from outside the tracked balance sheet.
