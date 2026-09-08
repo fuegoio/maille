@@ -104,20 +104,16 @@ export const useWorkflows = create<WorkflowsState>()(
         get().workflows.find((w) => w.movement === movementId),
 
       upsertWorkflow: (workflow) => {
-        const safe = {
-          ...workflow,
-          messages: Array.isArray(workflow.messages) ? workflow.messages : [],
-        };
         set((state) => {
-          const existing = state.workflows.find((w) => w.id === safe.id);
+          const existing = state.workflows.find((w) => w.id === workflow.id);
           if (existing) {
             return {
               workflows: state.workflows.map((w) =>
-                w.id === safe.id ? safe : w,
+                w.id === workflow.id ? workflow : w,
               ),
             };
           }
-          return { workflows: [...state.workflows, safe] };
+          return { workflows: [...state.workflows, workflow] };
         });
       },
 
@@ -207,16 +203,6 @@ export const useWorkflows = create<WorkflowsState>()(
       partialize: (state) => ({
         workflows: state.workflows,
       }),
-      migrate: (persisted) => {
-        const state = persisted as { workflows?: MovementWorkflow[] };
-        if (state.workflows) {
-          state.workflows = state.workflows.map((w) => ({
-            ...w,
-            messages: Array.isArray(w.messages) ? w.messages : [],
-          }));
-        }
-        return state;
-      },
     },
   ),
 );
