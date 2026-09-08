@@ -19,6 +19,7 @@ import {
   linkMovementHistoryEvent,
 } from "@/lib/history-events";
 import { searchCompare } from "@/lib/strings";
+import { cn } from "@/lib/utils";
 import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
@@ -37,13 +38,13 @@ export function LinkActivityButton({
 }: LinkActivityButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [filterAmount, setFilterAmount] = React.useState(true);
+  const [filterAmount, setFilterAmount] = React.useState(false);
 
   const handleOpenChange = (open: boolean) => {
     setDialogOpen(open);
     if (open) {
       setSearch("");
-      setFilterAmount(true);
+      setFilterAmount(false);
     }
   };
 
@@ -65,45 +66,48 @@ export function LinkActivityButton({
     [accounts, movement.account],
   );
 
-  const { filteredActivities, hasAmountMatches } = React.useMemo(() => {
-    const baseActivities = activities.filter((activity) => {
-      if (activity.status === "completed") return false;
-      if (activity.movements.some((am) => am.movement === movement.id))
-        return false;
-      if (
-        !activity.transactions.some(
-          (t) =>
-            t.fromAccount === movement.account ||
-            t.toAccount === movement.account,
-        )
-      )
-        return false;
-      return true;
-    });
-
-    const matchesAmount = (activity: Activity) =>
-      _.round(getAccountSum(activity) ?? 0, 2) === _.round(movement.amount, 2);
-
-    const amountMatches = baseActivities.filter(matchesAmount);
-
-    const filtered = _.orderBy(
-      baseActivities.filter((activity) => {
-        if (filterAmount && !matchesAmount(activity)) return false;
-
-        if (search !== "" && !searchCompare(search, activity.name))
+  const { filteredActivities, hasAmountMatches, matchCount } =
+    React.useMemo(() => {
+      const baseActivities = activities.filter((activity) => {
+        if (activity.status === "completed") return false;
+        if (activity.movements.some((am) => am.movement === movement.id))
           return false;
-
+        if (
+          !activity.transactions.some(
+            (t) =>
+              t.fromAccount === movement.account ||
+              t.toAccount === movement.account,
+          )
+        )
+          return false;
         return true;
-      }),
-      ["date"],
-      ["desc"],
-    );
+      });
 
-    return {
-      filteredActivities: filtered,
-      hasAmountMatches: amountMatches.length > 0,
-    };
-  }, [activities, movement, filterAmount, search, getAccountSum]);
+      const matchesAmount = (activity: Activity) =>
+        _.round(getAccountSum(activity) ?? 0, 2) ===
+        _.round(movement.amount, 2);
+
+      const amountMatches = baseActivities.filter(matchesAmount);
+
+      const filtered = _.orderBy(
+        baseActivities.filter((activity) => {
+          if (filterAmount && !matchesAmount(activity)) return false;
+
+          if (search !== "" && !searchCompare(search, activity.name))
+            return false;
+
+          return true;
+        }),
+        [(activity) => matchesAmount(activity), "date"],
+        ["desc", "desc"],
+      );
+
+      return {
+        filteredActivities: filtered,
+        hasAmountMatches: amountMatches.length > 0,
+        matchCount: amountMatches.length,
+      };
+    }, [activities, movement, filterAmount, search, getAccountSum]);
 
   const linkActivity = (activity: Activity) => {
     const newId = crypto.randomUUID();
@@ -159,7 +163,7 @@ export function LinkActivityButton({
       </Tooltip>
 
       <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="flex max-h-[400px] flex-col sm:max-w-2xl">
+        <DialogContent className="flex max-h-[420px] flex-col sm:max-w-2xl">
           <DialogHeader>
             <div className="mb-2 flex">
               <div className="flex h-6 items-center rounded bg-muted px-2.5 text-xs font-medium text-foreground">
@@ -171,7 +175,7 @@ export function LinkActivityButton({
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search for an activity ..."
+                placeholder="Search for an activity..."
                 className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-foreground outline-none"
                 autoFocus
               />
@@ -181,7 +185,10 @@ export function LinkActivityButton({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`transition ${filterAmount ? "opacity-100" : "opacity-50"}`}
+                    className={cn(
+                      "transition-colors",
+                      filterAmount && "bg-primary/10 text-primary",
+                    )}
                     onClick={() => setFilterAmount(!filterAmount)}
                   >
                     <Euro />
@@ -190,10 +197,10 @@ export function LinkActivityButton({
                 <TooltipContent>
                   <p>
                     {filterAmount
-                      ? hasAmountMatches
-                        ? "Filter by amount (active)"
-                        : "No activities match the amount — click to disable filter"
-                      : "Filter by amount (disabled)"}
+                      ? `Amount filter on — showing ${matchCount} matching activit${matchCount === 1 ? "y" : "ies"}`
+                      : hasAmountMatches
+                        ? `Amount filter off — ${matchCount} activit${matchCount === 1 ? "y" : "ies"} match the movement amount`
+                        : "Amount filter off — no activities match the movement amount"}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -201,35 +208,50 @@ export function LinkActivityButton({
           </DialogHeader>
 
           <div className="flex-1 overflow-auto">
-            {filteredActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex h-8 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted"
-                onClick={() => linkActivity(activity)}
-              >
-                <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
-                  {activity.date.toLocaleDateString("fr-FR")}
-                </div>
-                <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
-                  {activity.date.toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                  })}
-                </div>
+            {filteredActivities.map((activity) => {
+              const amountMatches =
+                _.round(getAccountSum(activity) ?? 0, 2) ===
+                _.round(movement.amount, 2);
+              return (
+                <div
+                  key={activity.id}
+                  className="flex h-10 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted"
+                  onClick={() => linkActivity(activity)}
+                >
+                  <div className="hidden w-20 shrink-0 font-mono text-muted-foreground sm:block">
+                    {activity.date.toLocaleDateString("fr-FR")}
+                  </div>
+                  <div className="w-10 shrink-0 font-mono text-muted-foreground sm:hidden">
+                    {activity.date.toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
+                  </div>
 
-                <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-white">
-                  {activity.name}
+                  <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-foreground">
+                    {activity.name}
+                  </div>
+                  {amountMatches && (
+                    <div className="ml-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                  )}
+                  <div className="flex-1" />
+                  <div
+                    className={cn(
+                      "w-20 text-right font-mono whitespace-nowrap",
+                      amountMatches ? "text-primary" : "text-muted-foreground",
+                    )}
+                  >
+                    {currencyFormatter.format(getAccountSum(activity) ?? 0)}
+                  </div>
                 </div>
-                <div className="flex-1" />
-                <div className="w-20 text-right whitespace-nowrap text-white">
-                  {currencyFormatter.format(getAccountSum(activity) ?? 0)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {filteredActivities.length === 0 && (
-              <div className="flex w-full items-center justify-center py-2 text-sm text-muted-foreground">
-                No activity waiting for reconciliation found.
+              <div className="flex w-full items-center justify-center py-6 text-sm text-muted-foreground">
+                {filterAmount
+                  ? "No activities match the movement amount. Turn off the amount filter to see all unreconciled activities."
+                  : "No unreconciled activities found for this account."}
               </div>
             )}
           </div>
