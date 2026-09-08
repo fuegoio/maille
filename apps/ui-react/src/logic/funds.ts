@@ -4,13 +4,29 @@ import type { Fund, FundMove } from "@maille/core/funds";
 
 import { AccountType } from "@maille/core/accounts";
 import { getFundBalance } from "@maille/core/funds";
-import { startOfDay } from "date-fns";
+import { addDays, startOfDay } from "date-fns";
 
 export const getFundsBalances = (funds: Fund[], fundMoves: FundMove[]) =>
   funds.map((fund) => ({
     fund,
     balance: getFundBalance(fund.id, fundMoves),
   }));
+
+/** A fund's balance at the end of the given day. */
+export const getFundBalanceAtDate = (
+  fundId: string,
+  fundMoves: FundMove[],
+  date: Date,
+): number =>
+  fundMoves
+    .filter((m) => m.date.getTime() < addDays(startOfDay(date), 1).getTime())
+    .reduce(
+      (total, m) =>
+        total +
+        (m.toFund === fundId ? m.amount : 0) -
+        (m.fromFund === fundId ? m.amount : 0),
+      0,
+    );
 
 /**
  * Untracked is the complement of the funds: money sitting in balance

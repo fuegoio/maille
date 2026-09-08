@@ -14,6 +14,7 @@ import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
 import { MonthActivitiesSummary } from "@/components/months/month-activities-summary";
+import { MonthFundsSummary } from "@/components/months/month-funds-summary";
 import { MonthSummary } from "@/components/months/month-summary";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
@@ -197,6 +198,7 @@ function MonthPage() {
           <TabsList className="h-12! w-full shrink-0 border-b bg-muted/50 px-4 py-2">
             <TabsTrigger value="activities">Activities</TabsTrigger>
             <TabsTrigger value="accounts">Accounts</TabsTrigger>
+            <TabsTrigger value="funds">Funds</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activities">
@@ -209,6 +211,10 @@ function MonthPage() {
 
           <TabsContent value="accounts">
             <MonthAccountsSummary monthDate={monthDate} />
+          </TabsContent>
+
+          <TabsContent value="funds">
+            <MonthFundsSummary monthDate={monthDate} />
           </TabsContent>
         </Tabs>
       </SummaryPanel>
