@@ -1,8 +1,8 @@
 import { builder } from "../builder";
 import { MovementWorkflowSchema } from "./schemas";
-import { isHarnessConfigured } from "@/harness/config";
-import { enqueueWorkflow } from "@/harness/queue";
-import { answerWorkflow, serializeWorkflow, triggerWorkflow } from "@/harness/store";
+import { isWorkflowsConfigured } from "@/workflows/config";
+import { enqueueWorkflow } from "@/workflows/queue";
+import { answerWorkflow, serializeWorkflow, triggerWorkflow } from "@/workflows/store";
 import { GraphQLError } from "graphql";
 
 export const registerWorkflowsMutations = () => {
@@ -15,8 +15,8 @@ export const registerWorkflowsMutations = () => {
       description:
         "Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise.",
       resolve: async (root, args, ctx) => {
-        if (!isHarnessConfigured()) {
-          throw new GraphQLError("The AI harness is not configured (MISTRAL_API_KEY missing)");
+        if (!isWorkflowsConfigured()) {
+          throw new GraphQLError("The AI workflows are not configured (MISTRAL_API_KEY missing)");
         }
 
         const row = await triggerWorkflow(ctx.user.id, args.movementId, ctx.session.id);

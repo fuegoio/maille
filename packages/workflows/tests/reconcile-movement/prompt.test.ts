@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { taskMessage, transcriptToLlmMessages } from "../src/prompt";
-import type { Evidence } from "../src/evidence";
-import type { WorkflowMessage } from "@maille/core/harness";
+import { taskMessage, transcriptToLlmMessages } from "../../src/reconcile-movement/prompt";
+import type { Evidence } from "../../src/reconcile-movement/evidence";
+import type { WorkflowMessage } from "@maille/core/workflows";
 
 const evidence = (overrides: Partial<Evidence> = {}): Evidence => ({
   movement: {

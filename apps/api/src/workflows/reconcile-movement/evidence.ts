@@ -13,12 +13,16 @@ import {
 } from "@/tables";
 import { and, asc, desc, eq, gte, ilike, lte, ne } from "drizzle-orm";
 import type { Movement } from "@maille/core/movements";
-import type { Evidence, EvidenceActivity, EvidenceSimilarMovement } from "@maille/harness/evidence";
+import type {
+  Evidence,
+  EvidenceActivity,
+  EvidenceSimilarMovement,
+} from "@maille/workflows/reconcile-movement/evidence";
 
 /**
  * The evidence pack queries: deterministic database reads assembled before
  * the first LLM call, so the model starts from grounded history instead of
- * guessing. The data shapes live in @maille/harness.
+ * guessing. The data shapes live in @maille/workflows.
  */
 
 const SIMILAR_MOVEMENTS_LIMIT = 10;

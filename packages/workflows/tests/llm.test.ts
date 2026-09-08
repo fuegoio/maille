@@ -42,7 +42,7 @@ describe("chatCompletion request mapping", () => {
   it("posts an OpenAI-compatible body with model, tools and messages", async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const messages: LlmMessage[] = [
-      { role: "system", content: "You are the harness" },
+      { role: "system", content: "You are the AI assistant" },
       { role: "user", content: "Reconcile this movement" },
     ];
 
@@ -86,7 +86,7 @@ describe("chatCompletion request mapping", () => {
       },
     ]);
     expect(body.messages).toEqual([
-      { role: "system", content: "You are the harness" },
+      { role: "system", content: "You are the AI assistant" },
       { role: "user", content: "Reconcile this movement" },
     ]);
     expect(result.content).toBe("hello");

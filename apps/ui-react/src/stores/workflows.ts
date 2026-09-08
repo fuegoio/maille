@@ -1,10 +1,10 @@
+import type { SyncEvent } from "@maille/core/sync";
 import type {
   MovementWorkflow,
   WorkflowMessage,
   WorkflowStatus,
   WorkflowResult,
-} from "@maille/core/harness";
-import type { SyncEvent } from "@maille/core/sync";
+} from "@maille/core/workflows";
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

@@ -5,7 +5,7 @@ import { db } from "@/database";
 import { logger } from "@/logger";
 import { startServer } from "@/server";
 import { schema } from "@/api";
-import { startHarness } from "@/harness/queue";
+import { startWorkflows } from "@/workflows/queue";
 
 logger.info("Maille API Server");
 
@@ -18,4 +18,4 @@ writeFileSync("./schema.graphql", printSchema(lexicographicSortSchema(schema)));
 logger.info("GraphQL schema compiled successfully");
 
 startServer();
-startHarness();
+startWorkflows();

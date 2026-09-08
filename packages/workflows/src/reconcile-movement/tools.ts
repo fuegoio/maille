@@ -1,13 +1,14 @@
 import { ActivityType } from "@maille/core/activities";
 import { z } from "zod";
-import type { LlmTool } from "./llm";
+import type { LlmTool } from "../llm";
 
 /**
- * The harness's tool contract with the model, plus the argument schemas used
- * to validate tool calls before execution. Pure: no I/O, no state.
+ * The reconcile-movement workflow's tool contract with the model, plus the
+ * argument schemas used to validate tool calls before execution. Pure: no
+ * I/O, no state.
  */
 
-export const SYSTEM_PROMPT = `You are Maille's AI harness, a precise bookkeeping assistant operating on a strict double-entry ledger.
+export const SYSTEM_PROMPT = `You are Maille's AI assistant, a precise bookkeeping assistant operating on a strict double-entry ledger.
 Your task: reconcile a bank movement by linking it to existing activities, or creating new ones.
 
 Rules:
@@ -51,7 +52,7 @@ export const AskUserArgs = z.object({
 
 export const GiveUpArgs = z.object({ reason: z.string().optional() });
 
-export const HARNESS_TOOLS: LlmTool[] = [
+export const RECONCILE_MOVEMENT_TOOLS: LlmTool[] = [
   {
     name: "findSimilarMovements",
     description:

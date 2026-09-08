@@ -6,7 +6,7 @@ import { activities, movements, movementsActivities } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
 import { computeHistory, emitHistoryEvents } from "@/api/history/history";
-import { cancelWorkflowIfActive, harnessClientId } from "@/harness/store";
+import { cancelWorkflowIfActive, workflowClientId } from "@/workflows/store";
 
 export type LinkMovementToActivityArgs = {
   id: string;
@@ -17,7 +17,7 @@ export type LinkMovementToActivityArgs = {
 
 /**
  * Links a movement to an activity. The canonical implementation shared by the
- * `createMovementActivity` GraphQL mutation and the AI harness, so both go
+ * `createMovementActivity` GraphQL mutation and the AI workflows, so both go
  * through the same history, sync events and workflow hooks.
  */
 export async function linkMovementToActivity(
@@ -121,10 +121,10 @@ export async function linkMovementToActivity(
   await emitHistoryEvents(writer, movementHistory.emitted);
   await emitHistoryEvents(writer, activityHistory.emitted);
 
-  // AI harness: a manual link by the user cancels the movement's active
+  // AI workflows: a manual link by the user cancels the movement's active
   // workflow — the assistant never fights the user. Links made by the
-  // harness itself do not.
-  if (clientId !== harnessClientId(userId)) {
+  // the workflow itself do not.
+  if (clientId !== workflowClientId(userId)) {
     await cancelWorkflowIfActive(userId, movement.id, clientId);
   }
 

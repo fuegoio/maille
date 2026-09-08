@@ -2,7 +2,7 @@ import { db } from "@/database";
 import { movementWorkflows } from "@/tables";
 import { env } from "@/env";
 import { logger } from "@/logger";
-import { isHarnessConfigured } from "./config";
+import { isWorkflowsConfigured } from "./config";
 import { asc, eq } from "drizzle-orm";
 import { runWorkflow } from "./runner";
 
@@ -20,7 +20,7 @@ export function enqueueWorkflow(workflowId: string, userId: string): void {
   const run = chain
     .then(() => runWorkflow(workflowId))
     .catch((error) => {
-      logger.error({ workflowId, error }, "Harness workflow crashed");
+      logger.error({ workflowId, error }, "Workflow crashed");
     });
   userChains.set(userId, run);
   run.finally(() => {
@@ -36,19 +36,19 @@ export function enqueueWorkflow(workflowId: string, userId: string): void {
  * a provider error is retryable.
  */
 export function scheduleRetry(workflowId: string, userId: string): void {
-  const timer = setTimeout(() => enqueueWorkflow(workflowId, userId), env.HARNESS_RETRY_DELAY_MS);
+  const timer = setTimeout(() => enqueueWorkflow(workflowId, userId), env.WORKFLOWS_RETRY_DELAY_MS);
   // Do not keep the process alive for a pending retry.
   (timer as unknown as { unref?: () => void }).unref?.();
 }
 
 /**
- * Boots the harness: disabled when no API key is configured, otherwise
+ * Boots the workflows: disabled when no API key is configured, otherwise
  * picks up every workflow still queued (e.g. left over from a previous
  * shutdown or a failed boot).
  */
-export async function startHarness(): Promise<void> {
-  if (!isHarnessConfigured()) {
-    logger.info("AI harness disabled (no MISTRAL_API_KEY)");
+export async function startWorkflows(): Promise<void> {
+  if (!isWorkflowsConfigured()) {
+    logger.info("AI workflows disabled (no MISTRAL_API_KEY)");
     return;
   }
 
@@ -62,5 +62,5 @@ export async function startHarness(): Promise<void> {
     enqueueWorkflow(workflow.id, workflow.user);
   }
 
-  logger.info(`AI harness started (${queued.length} queued workflows)`);
+  logger.info(`AI workflows started (${queued.length} queued workflows)`);
 }

@@ -1,7 +1,7 @@
-import type { MovementWorkflow } from "@maille/core/harness";
+import type { MovementWorkflow } from "@maille/core/workflows";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, X } from "lucide-react";
+import { ArrowRightLeft, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
@@ -51,7 +51,9 @@ export function WorkflowBar() {
       {/* Bottom bar — conversation tabs, right-aligned */}
       <div className="flex h-9 shrink-0 items-center justify-end gap-1 px-3 pb-2">
         {openWorkflows.length === 0 && (
-          <span className="text-xs text-muted-foreground">No workflow</span>
+          <span className="px-4 text-xs text-muted-foreground/30">
+            No workflow open.
+          </span>
         )}
 
         {openWorkflows.map((workflow) => {
@@ -91,7 +93,7 @@ export function WorkflowBar() {
                   )}
                 />
               )}
-              <Bot className="size-3.5 shrink-0 text-muted-foreground" />
+              <ArrowRightLeft className="size-3.5 shrink-0 text-muted-foreground" />
               <span className="max-w-[140px] truncate">
                 {movement?.name ?? "Workflow"}
               </span>

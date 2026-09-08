@@ -8,7 +8,7 @@ import {
   type WorkflowMessage,
   type WorkflowStatus,
   type WorkflowTrigger,
-} from "@maille/core/harness";
+} from "@maille/core/workflows";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
@@ -240,12 +240,12 @@ export async function cancelWorkflowIfActive(
 }
 
 /**
- * Stable client id for everything the harness worker writes (sync events,
+ * Stable client id for everything the workflow worker writes (sync events,
  * history entries): deterministic across restarts, so clients can attribute
- * harness-made changes and the write services can recognize harness calls
+ * workflow-made changes and the write services can recognize workflow calls
  * (they must not cancel the workflow they are completing).
  */
-export const harnessClientId = (userId: string) => `harness-${userId}`;
+export const workflowClientId = (userId: string) => `workflow-${userId}`;
 
 export const workflowStatus = async (workflowId: string): Promise<WorkflowStatus | null> =>
   (await getWorkflow(workflowId))?.status ?? null;

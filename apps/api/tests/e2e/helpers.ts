@@ -2,7 +2,7 @@ import postgres from "postgres";
 
 /**
  * E2E test infrastructure. This module deliberately imports nothing from the
- * application: tests must set the environment (DATABASE_URL, harness
+ * application: tests must set the environment (DATABASE_URL, workflows
  * settings, the mock Mistral URL) BEFORE importing app modules, which are
  * then imported dynamically from the test file.
  */
@@ -12,7 +12,7 @@ export const ADMIN_DATABASE_URL =
 
 /** Creates a fresh test database, dropping any previous one. */
 export async function createTestDatabase(): Promise<string> {
-  const dbName = `maille_harness_test_${crypto.randomUUID().replaceAll("-", "")}`;
+  const dbName = `maille_workflows_test_${crypto.randomUUID().replaceAll("-", "")}`;
   const admin = postgres(ADMIN_DATABASE_URL, { max: 1 });
   try {
     await admin`DROP DATABASE IF EXISTS ${admin(dbName)}`;
@@ -89,7 +89,7 @@ export class MockMistral {
     });
   }
 
-  /** Base URL to configure as HARNESS_LLM_BASE_URL. */
+  /** Base URL to configure as WORKFLOWS_LLM_BASE_URL. */
   url(): string {
     return `http://localhost:${this.server.port}/v1`;
   }

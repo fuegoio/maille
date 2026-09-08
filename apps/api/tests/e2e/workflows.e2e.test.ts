@@ -4,8 +4,8 @@ import { eq } from "drizzle-orm";
 import { MockMistral, createTestDatabase, dropTestDatabase, toolCallResponse } from "./helpers";
 
 /**
- * End-to-end tests for the AI harness: the full API boots against a real
- * Postgres database and only the Mistral API is mocked (HARNESS_LLM_BASE_URL
+ * End-to-end tests for the AI workflows: the full API boots against a real
+ * Postgres database and only the Mistral API is mocked (WORKFLOWS_LLM_BASE_URL
  * points at MockMistral).
  */
 
@@ -21,16 +21,16 @@ process.env.GOOGLE_CLIENT_ID = "test-client-id";
 process.env.GOOGLE_CLIENT_SECRET = "test-secret";
 process.env.LOG_LEVEL = "silent";
 process.env.MISTRAL_API_KEY = "test-key";
-process.env.HARNESS_LLM_BASE_URL = mockMistral.url();
-process.env.HARNESS_LLM_MODEL = "glm-5-2";
-process.env.HARNESS_MAX_ATTEMPTS = "2";
-process.env.HARNESS_RETRY_DELAY_MS = "30";
-process.env.HARNESS_TIMEOUT_MS = "5000";
+process.env.WORKFLOWS_LLM_BASE_URL = mockMistral.url();
+process.env.WORKFLOWS_LLM_MODEL = "glm-5-2";
+process.env.WORKFLOWS_MAX_ATTEMPTS = "2";
+process.env.WORKFLOWS_RETRY_DELAY_MS = "30";
+process.env.WORKFLOWS_TIMEOUT_MS = "5000";
 
 const { migrate } = await import("drizzle-orm/postgres-js/migrator");
 const { db } = await import("@/database");
 const { startServer } = await import("@/server");
-const { startHarness } = await import("@/harness/queue");
+const { startWorkflows } = await import("@/workflows/queue");
 const { movementsActivities, movementWorkflows, movements } = await import("@/tables");
 
 await migrate(db, {
@@ -38,7 +38,7 @@ await migrate(db, {
 });
 const server = startServer(0);
 const baseUrl = `http://localhost:${server.port}`;
-await startHarness();
+await startWorkflows();
 
 afterAll(async () => {
   server.stop(true);
@@ -70,8 +70,8 @@ const signUp = async (): Promise<{ userId: string; token: string }> => {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      name: "Harness Tester",
-      email: `harness-${crypto.randomUUID()}@test.maille.dev`,
+      name: "Workflow Tester",
+      email: `workflow-${crypto.randomUUID()}@test.maille.dev`,
       password: "Password123!",
     }),
   });
@@ -382,7 +382,7 @@ const waitForWorkflowStatus = async (
 // Scenarios
 //
 
-describe("AI harness", () => {
+describe("AI workflows", () => {
   it("auto-triggers a workflow on movement creation and creates an activity", async () => {
     const user = await createUser();
     mockMistral.enqueue(
@@ -438,7 +438,7 @@ describe("AI harness", () => {
     // The workflow lifecycle was published through the sync event stream. The
     // createWorkflow event is emitted on the user's own session (like every
     // create event it is not echoed back to that session), so only the
-    // harness-driven updates are visible here.
+    // workflow-driven updates are visible here.
     const events = await queryEvents(user);
     const workflowEvents = events.events
       .map((event) => ({ ...event, payload: JSON.parse(event.payload) }))
@@ -672,7 +672,7 @@ describe("AI harness", () => {
     expect(mockMistral.requests).toHaveLength(2);
   });
 
-  it("does not create workflows when the harness is not configured", async () => {
+  it("does not create workflows when the workflow is not configured", async () => {
     delete process.env.MISTRAL_API_KEY;
     try {
       const user = await createUser();
@@ -680,7 +680,7 @@ describe("AI harness", () => {
         createMovement: { id: string; workflow: { id: string } | null };
       }>(user.token, CREATE_MOVEMENT, {
         id: crypto.randomUUID(),
-        name: "No harness here",
+        name: "No workflow here",
         date: "2026-09-01",
         amount: -10,
         account: user.bankAccountId,
@@ -730,8 +730,8 @@ describe("AI harness", () => {
       toolCallResponse("createActivity", { name: "Leftover", type: "expense", amount: -42 }),
     );
 
-    const { startHarness } = await import("@/harness/queue");
-    await startHarness();
+    const { startWorkflows } = await import("@/workflows/queue");
+    await startWorkflows();
 
     const queued = await db
       .select()

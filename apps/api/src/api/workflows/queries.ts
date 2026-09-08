@@ -2,9 +2,9 @@ import { db } from "@/database";
 import { movementWorkflows } from "@/tables";
 import { builder } from "../builder";
 import { MovementWorkflowSchema } from "./schemas";
-import { serializeWorkflow } from "@/harness/store";
+import { serializeWorkflow } from "@/workflows/store";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { WorkflowStatus } from "@maille/core/harness";
+import type { WorkflowStatus } from "@maille/core/workflows";
 
 export const registerWorkflowsQueries = () => {
   builder.queryField("workflows", (t) =>

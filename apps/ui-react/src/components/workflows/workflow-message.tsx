@@ -1,7 +1,7 @@
 import type {
   WorkflowMessage,
   WorkflowMessageOption,
-} from "@maille/core/harness";
+} from "@maille/core/workflows";
 
 import { Bot, User } from "lucide-react";
 

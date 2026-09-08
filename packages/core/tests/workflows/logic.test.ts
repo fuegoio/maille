@@ -10,7 +10,7 @@ import {
   isTerminalWorkflowStatus,
   remainingAmount,
   type WorkflowStatus,
-} from "@maille/core/harness";
+} from "@maille/core/workflows";
 
 const ALL_STATUSES: WorkflowStatus[] = [
   "queued",

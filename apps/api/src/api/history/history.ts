@@ -5,7 +5,7 @@ import { addEvent } from "@/api/events";
 
 /**
  * The identity that stamps history entries and events: which user the entry
- * belongs to, and which client (session, harness worker...) performed the
+ * belongs to, and which client (session, workflows worker...) performed the
  * write. GraphQL resolvers pass their context, which satisfies this shape.
  */
 export type HistoryWriter = {

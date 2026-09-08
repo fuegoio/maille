@@ -2,7 +2,7 @@ import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
-import { Trash2, Unlink } from "lucide-react";
+import { BookMarked, Trash2, Unlink } from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
@@ -344,8 +344,9 @@ export function MovementPage({ movementId }: MovementPageProps) {
             </div>
 
             <div className="px-4 py-6 sm:px-8">
-              <div className="flex items-center">
-                <div className="text-sm font-medium">Activities linked</div>
+              <div className="flex items-center gap-1.5">
+                <BookMarked className="size-3.5 text-muted-foreground" />
+                <div className="text-sm font-medium">Activities</div>
                 <div className="flex-1" />
 
                 <div className="flex items-center gap-2">
@@ -364,19 +365,17 @@ export function MovementPage({ movementId }: MovementPageProps) {
                     <div
                       key={movementActivity.id}
                       className={cn(
-                        "group flex h-10 items-center px-4 text-sm hover:bg-muted",
+                        "group flex h-10 cursor-pointer items-center px-4 text-sm hover:bg-muted",
                         index !== movementActivities.length - 1 && "border-b",
                       )}
+                      onClick={() =>
+                        router.navigate({
+                          to: "/activities/$id",
+                          params: { id: movementActivity.activity!.id },
+                        })
+                      }
                     >
-                      <div
-                        className="flex flex-1 cursor-pointer items-center justify-center"
-                        onClick={() =>
-                          router.navigate({
-                            to: "/activities/$id",
-                            params: { id: movementActivity.activity!.id },
-                          })
-                        }
-                      >
+                      <div className="flex flex-1 items-center justify-center">
                         <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
                           {format(
                             movementActivity.activity!.date,
