@@ -118,7 +118,7 @@ export function ActivityCategorySelect({
       onOpenChange={setOpen}
       disabled={disabled || categories.length === 0}
     >
-      <SelectTrigger>
+      <SelectTrigger aria-label="Category">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent

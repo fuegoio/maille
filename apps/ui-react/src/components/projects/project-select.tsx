@@ -27,7 +27,7 @@ export function ProjectSelect({ value, onValueChange }: ProjectSelectProps) {
         onValueChange(value === "clear" ? null : value);
       }}
     >
-      <SelectTrigger>
+      <SelectTrigger aria-label="Project">
         <SelectValue placeholder="Select a project" />
       </SelectTrigger>
       <SelectContent>

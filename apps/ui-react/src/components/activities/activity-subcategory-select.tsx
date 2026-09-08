@@ -114,7 +114,7 @@ export function ActivitySubcategorySelect({
       onOpenChange={setOpen}
       disabled={disabled || !categoryId}
     >
-      <SelectTrigger>
+      <SelectTrigger aria-label="Subcategory">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent

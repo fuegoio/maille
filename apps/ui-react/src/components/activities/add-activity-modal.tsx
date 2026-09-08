@@ -19,12 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -488,158 +483,160 @@ export function AddActivityModal({
         </DialogHeader>
 
         {/* Main content */}
-        <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 space-y-4">
-          <FieldGroup>
-            {/* Date picker */}
-            {!movements && (
-              <Controller
-                name="date"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="date">Date</FieldLabel>
-                    <DatePicker value={field.value} onChange={field.onChange} />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            )}
-            {movements && (
-              <div className="text-primary-400 text-sm">
-                Date of the movement
-              </div>
-            )}
-
-            {/* Name input */}
+        <form onSubmit={handleSubmit(onSubmit)} className="min-w-0">
+          {/* Date picker */}
+          {!movements && (
             <Controller
-              name="name"
+              name="date"
               control={control}
-              render={({ field }) => (
-                <Field data-invalid={!!errors.name}>
-                  <FieldLabel htmlFor="name">Activity name</FieldLabel>
-                  <Input
-                    {...field}
-                    ref={nameInputRef}
-                    id="name"
-                    placeholder="Activity name"
-                    autoFocus
+              render={({ field, fieldState }) => (
+                <>
+                  <label htmlFor="date" className="sr-only">
+                    Date
+                  </label>
+                  <DatePicker
+                    id="date"
+                    showIcon={false}
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
                   />
-                  {errors.name && <FieldError errors={[errors.name]} />}
-                </Field>
-              )}
-            />
-
-            {/* Description */}
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Field data-invalid={!!errors.description}>
-                  <FieldLabel htmlFor="description">Description</FieldLabel>
-                  <Textarea
-                    {...field}
-                    id="description"
-                    className="resize-none"
-                    placeholder="Description (optional)"
-                    rows={3}
-                  />
-                  {errors.description && (
-                    <FieldError errors={[errors.description]} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
                   )}
-                </Field>
+                </>
+              )}
+            />
+          )}
+          {movements && (
+            <div className="py-0.5 text-sm text-muted-foreground">
+              Date of the movement
+            </div>
+          )}
+
+          {/* Name input */}
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <>
+                <Input
+                  {...field}
+                  ref={nameInputRef}
+                  id="name"
+                  aria-label="Activity name"
+                  placeholder="Activity name"
+                  autoFocus
+                  className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-2xl font-semibold md:text-2xl dark:bg-transparent"
+                />
+                {errors.name && <FieldError errors={[errors.name]} />}
+              </>
+            )}
+          />
+
+          {/* Description */}
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                {...field}
+                id="description"
+                aria-label="Description"
+                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
+                placeholder="Add a description ..."
+                rows={1}
+              />
+            )}
+          />
+
+          {/* Type, Category, Subcategory, Project selectors */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value as ActivityType);
+                    setValue("category", ""); // Reset category when type changes
+                    setValue("subcategory", "");
+                    if (transactions.length === 0) {
+                      addTransaction(value as ActivityType);
+                    }
+                  }}
+                  value={field.value || ""}
+                >
+                  <SelectTrigger aria-label="Activity type">
+                    <SelectValue placeholder="Activity type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(ActivityType).map((activityType) => (
+                      <SelectItem key={activityType} value={activityType}>
+                        <div className="flex items-center py-1">
+                          <div
+                            className={cn(
+                              "mr-2 h-3 w-3 rounded-full",
+                              ACTIVITY_TYPES_COLOR[activityType],
+                            )}
+                          />
+                          <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             />
 
-            {/* Type, Category, Subcategory, Project selectors */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value as ActivityType);
-                      setValue("category", ""); // Reset category when type changes
-                      setValue("subcategory", "");
-                      if (transactions.length === 0) {
-                        addTransaction(value as ActivityType);
-                      }
-                    }}
-                    value={field.value || ""}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Activity type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(ActivityType).map((activityType) => (
-                        <SelectItem key={activityType} value={activityType}>
-                          <div className="flex items-center py-1">
-                            <div
-                              className={cn(
-                                "mr-2 h-3 w-3 rounded-full",
-                                ACTIVITY_TYPES_COLOR[activityType],
-                              )}
-                            />
-                            <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <ActivityCategorySelect
+                  value={field.value || null}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    setValue("subcategory", "");
+                  }}
+                  type={type}
+                  categories={filteredCategories}
+                  disabled={!type || filteredCategories.length === 0}
+                  placeholder="Category"
+                />
+              )}
+            />
 
-              <Controller
-                name="category"
-                control={control}
-                render={({ field }) => (
-                  <ActivityCategorySelect
-                    value={field.value || null}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      setValue("subcategory", "");
-                    }}
-                    type={type}
-                    categories={filteredCategories}
-                    disabled={!type || filteredCategories.length === 0}
-                    placeholder="Category"
-                  />
-                )}
-              />
+            <Controller
+              name="subcategory"
+              control={control}
+              render={({ field }) => (
+                <ActivitySubcategorySelect
+                  value={field.value || null}
+                  onValueChange={(val) => field.onChange(val ?? "")}
+                  categoryId={category}
+                  subcategories={subcategories}
+                />
+              )}
+            />
 
-              <Controller
-                name="subcategory"
-                control={control}
-                render={({ field }) => (
-                  <ActivitySubcategorySelect
-                    value={field.value || null}
-                    onValueChange={(val) => field.onChange(val ?? "")}
-                    categoryId={category}
-                    subcategories={subcategories}
-                  />
-                )}
-              />
-
-              {/* Project Select */}
-              <Controller
-                name="project"
-                control={control}
-                render={({ field }) => (
-                  <ProjectSelect
-                    value={field.value || null}
-                    onValueChange={field.onChange}
-                  />
-                )}
-              />
-            </div>
-          </FieldGroup>
+            {/* Project Select */}
+            <Controller
+              name="project"
+              control={control}
+              render={({ field }) => (
+                <ProjectSelect
+                  value={field.value || null}
+                  onValueChange={field.onChange}
+                />
+              )}
+            />
+          </div>
 
           {/* Transactions section */}
-          <div className="border-primary-700 border-t pt-4">
+          <div className="mt-4 border-t pt-4">
             <div className="mb-2 flex items-center justify-between pr-2">
-              <h3 className="text-sm font-medium text-white">Transactions</h3>
+              <h3 className="text-sm font-medium">Transactions</h3>
               <div className="flex items-center gap-2">
                 <span className="mr-2 font-mono text-sm text-muted-foreground">
                   {currencyFormatter.format(transactionsSum)}
@@ -688,7 +685,7 @@ export function AddActivityModal({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>

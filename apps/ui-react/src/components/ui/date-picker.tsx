@@ -18,6 +18,7 @@ interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
   className?: string;
   id?: string;
+  showIcon?: boolean;
 }
 
 export function DatePicker({
@@ -25,6 +26,7 @@ export function DatePicker({
   onChange,
   className,
   id,
+  showIcon = true,
   ...props
 }: Omit<DayPickerProps, "mode" | "selected" | "onSelect"> & DatePickerProps) {
   const [open, setOpen] = useState(false);
@@ -53,7 +55,7 @@ export function DatePicker({
             className,
           )}
         >
-          <CalendarIcon className="h-4 w-4" />
+          {showIcon && <CalendarIcon className="h-4 w-4" />}
           {value ? format(value, "EEEE, PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
