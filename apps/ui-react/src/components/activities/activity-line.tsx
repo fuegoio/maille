@@ -120,10 +120,10 @@ export function ActivityLine({
         />
 
         <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
-          {format(activity.date, "dd EEE")}
+          {format(activity.date, "dd MMM")}
         </div>
         <div className="ml-1 w-8 shrink-0 text-muted-foreground lg:hidden">
-          {format(activity.date, "dd EEEEE")}
+          {format(activity.date, "dd MMM")}
         </div>
 
         {getStatusIcon()}
