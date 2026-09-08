@@ -306,6 +306,14 @@ export function MovementPage({ movementId }: MovementPageProps) {
     });
   });
 
+  useHotkey("Escape", () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      void router.navigate({ to: "/movements" });
+    }
+  });
+
   if (!movement) return null;
 
   return (

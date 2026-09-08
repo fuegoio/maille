@@ -322,6 +322,14 @@ export function ActivityPage({
     });
   });
 
+  useHotkey("Escape", () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      void router.navigate({ to: "/activities" });
+    }
+  });
+
   if (!activity) return null;
 
   return (
