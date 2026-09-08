@@ -1,13 +1,7 @@
 import { flattenFundTree } from "@maille/core/funds";
 import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import {
-  ArrowDownToLine,
-  ChevronRight,
-  PiggyBank,
-  Plus,
-  SettingsIcon,
-} from "lucide-react";
+import { ChevronRight, PiggyBank } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -26,9 +20,7 @@ import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 
-import { AllocateDialog } from "./allocate-dialog";
 import { CreateFundDialog } from "./create-fund-dialog";
-import { FundSettingsDialog } from "./fund-settings-dialog";
 
 /** Collapsed parent ids, kept across sessions. */
 const COLLAPSED_KEY = "maille:funds-tree-collapsed";
@@ -143,14 +135,10 @@ export function FundsTable() {
         return (
           <div
             key={fund.id}
-            className="group flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
-            onClick={(e) => {
-              // Dialogs render in portals; their clicks still bubble through
-              // the React tree back into this row. Only navigate for clicks
-              // that land inside the row's own DOM.
-              if (!e.currentTarget.contains(e.target as Node)) return;
-              navigate({ to: "/funds/$id", params: { id: fund.id } });
-            }}
+            className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
+            onClick={() =>
+              navigate({ to: "/funds/$id", params: { id: fund.id } })
+            }
           >
             <div
               className="flex min-w-0 items-center"
@@ -206,41 +194,8 @@ export function FundsTable() {
 
             <div className="flex-1" />
 
-            <div className="mr-4 flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap">
+            <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap">
               {currencyFormatter.format(balances.get(fund.id) ?? 0)}
-            </div>
-
-            <div className="flex w-20 shrink-0 items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <AllocateDialog defaultToFund={fund.id}>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={`Allocate to ${fund.name}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ArrowDownToLine />
-                </Button>
-              </AllocateDialog>
-              <CreateFundDialog defaultParent={fund.id}>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={`New subfund under ${fund.name}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Plus />
-                </Button>
-              </CreateFundDialog>
-              <FundSettingsDialog fund={fund}>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={`${fund.name} settings`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <SettingsIcon />
-                </Button>
-              </FundSettingsDialog>
             </div>
           </div>
         );
@@ -259,11 +214,9 @@ export function FundsTable() {
 
         <div className="flex-1" />
 
-        <div className="mr-4 flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap text-muted-foreground">
+        <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(untrackedBalance)}
         </div>
-
-        <div className="w-20 shrink-0" aria-hidden="true" />
       </div>
     </div>
   );

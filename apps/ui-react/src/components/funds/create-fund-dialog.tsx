@@ -53,8 +53,6 @@ interface CreateFundDialogProps {
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
   onCreate?: (fundId: string) => void;
-  /** Preselected parent, when the dialog opens from a "new subfund" action. */
-  defaultParent?: string;
 }
 
 export function CreateFundDialog({
@@ -62,7 +60,6 @@ export function CreateFundDialog({
   onOpenChange,
   children,
   onCreate,
-  defaultParent,
 }: CreateFundDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
@@ -78,7 +75,7 @@ export function CreateFundDialog({
     defaultValues: {
       name: "",
       color: DEFAULT_FUND_COLOR,
-      parentFund: defaultParent ?? null,
+      parentFund: null,
       startDate: null,
       endDate: null,
     },
