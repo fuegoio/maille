@@ -19,6 +19,7 @@ interface MonthFundsSummaryProps {
 export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
+  const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
@@ -45,8 +46,26 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
   const variations = nodes.map(({ fund, depth }) => ({
     fund,
     depth,
-    start: getFundTreeBalanceAtDate(fund.id, funds, fundMoves, beforeMonth),
-    end: getFundTreeBalanceAtDate(fund.id, funds, fundMoves, endOfMonth),
+    start: user
+      ? getFundTreeBalanceAtDate(
+          fund.id,
+          funds,
+          fundMoves,
+          fundAllocations,
+          user.startingDate,
+          beforeMonth,
+        )
+      : 0,
+    end: user
+      ? getFundTreeBalanceAtDate(
+          fund.id,
+          funds,
+          fundMoves,
+          fundAllocations,
+          user.startingDate,
+          endOfMonth,
+        )
+      : 0,
   }));
 
   const untracked = user
@@ -54,14 +73,18 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
         start: getUntrackedBalanceAtDate({
           accounts,
           activities,
+          funds,
           fundMoves,
+          fundAllocations,
           date: beforeMonth,
           startingDate: user.startingDate,
         }),
         end: getUntrackedBalanceAtDate({
           accounts,
           activities,
+          funds,
           fundMoves,
+          fundAllocations,
           date: endOfMonth,
           startingDate: user.startingDate,
         }),

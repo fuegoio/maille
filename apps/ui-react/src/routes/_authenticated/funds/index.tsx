@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { AllocateDialog } from "@/components/funds/allocate-dialog";
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
 import { FundsTable } from "@/components/funds/funds-table";
 import {
@@ -30,12 +29,6 @@ function FundsPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex-1" />
-        <AllocateDialog>
-          <Button variant="outline">
-            <Plus />
-            <span>Allocate</span>
-          </Button>
-        </AllocateDialog>
         <CreateFundDialog>
           <Button>
             <Plus />

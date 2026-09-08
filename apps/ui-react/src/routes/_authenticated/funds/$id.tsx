@@ -5,16 +5,9 @@ import {
   notFound,
   useNavigate,
 } from "@tanstack/react-router";
-import {
-  ArrowDownToLine,
-  ChevronRight,
-  Plus,
-  Settings,
-  SquareChartGantt,
-} from "lucide-react";
+import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
-import { AllocateDialog } from "@/components/funds/allocate-dialog";
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
@@ -135,12 +128,6 @@ function FundPage() {
               <ChevronRight />
             </Button>
           )}
-          <AllocateDialog defaultToFund={fund.id}>
-            <Button variant="outline">
-              <ArrowDownToLine />
-              Allocate
-            </Button>
-          </AllocateDialog>
           <CreateFundDialog defaultParent={fund.id}>
             <Button>
               <Plus />

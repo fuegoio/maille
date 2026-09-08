@@ -347,9 +347,30 @@ export const fundMoves = pgTable("fund_moves", {
   amount: real("amount").notNull(),
   date: timestamp("date", { mode: "date" }).notNull(),
   note: text("note"),
-  transaction: text("transaction").references(() => transactions.id, {
-    onDelete: "cascade",
-  }),
+  // Every move is a leg of a transaction: fund money always has an
+  // account-side location through it.
+  transaction: text("transaction")
+    .notNull()
+    .references(() => transactions.id, {
+      onDelete: "cascade",
+    }),
+});
+
+// A fund's opening allocations: at the fund's start date, this much of the
+// account's balance belongs to the fund. The date is derived from the fund
+// (start date, falling back to the user's starting date), never stored.
+export const fundAllocations = pgTable("fund_allocations", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  fund: text("fund")
+    .notNull()
+    .references(() => funds.id, { onDelete: "cascade" }),
+  account: text("account")
+    .notNull()
+    .references(() => accounts.id, { onDelete: "cascade" }),
+  amount: real("amount").notNull(),
 });
 
 export const events = pgTable("events", {

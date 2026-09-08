@@ -109,12 +109,8 @@ export function Transaction({
   const handleFundChange = (side: "from" | "to", fundId: string | null) => {
     const fromFund = side === "from" ? fundId : (trackedFromFund?.id ?? null);
     const toFund = side === "to" ? fundId : (trackedToFund?.id ?? null);
-    // Same fund on both sides is not a fund movement: the money keeps
-    // its purpose, so the transaction stays untracked
-    if (fromFund !== null && fromFund === toFund) {
-      onUpdate?.({ fundMoves: [] });
-      return;
-    }
+    // The same fund pinned on both sides of a transfer is a meaningful pin:
+    // the money keeps its purpose while moving between accounts.
     onUpdate?.({
       fundMoves:
         fromFund !== null || toFund !== null

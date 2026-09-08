@@ -69,6 +69,15 @@ const userDataQuery = graphql(/* GraphQL */ `
         toAccount
         toAsset
         toCounterparty
+        fundMoves {
+          id
+          fromFund
+          toFund
+          amount
+          date
+          note
+          transaction
+        }
       }
       movements {
         id
@@ -169,14 +178,11 @@ const userDataQuery = graphql(/* GraphQL */ `
       parentFund
     }
 
-    fundMoves {
+    fundAllocations {
       id
-      fromFund
-      toFund
+      fund
+      account
       amount
-      date
-      note
-      transaction
     }
 
     assets {
@@ -246,6 +252,13 @@ export const fetchUserData = async () => {
       date: new Date(activity.date),
       type: activity.type as ActivityType,
       history: activity.history.map(deserializeHistoryEntry),
+      transactions: activity.transactions.map((transaction) => ({
+        ...transaction,
+        fundMoves: (transaction.fundMoves ?? []).map((fundMove) => ({
+          ...fundMove,
+          date: new Date(fundMove.date),
+        })),
+      })),
     });
   });
 
@@ -282,13 +295,20 @@ export const fetchUserData = async () => {
     });
   });
 
-  // Populate fund moves
-  userData.fundMoves.forEach((fundMove) => {
-    useFunds.getState().addFundMove({
-      ...fundMove,
-      date: new Date(fundMove.date),
+  // Populate fund moves: transaction legs, nested under their transactions
+  userData.activities.forEach((activity) => {
+    activity.transactions.forEach((transaction) => {
+      transaction.fundMoves?.forEach((fundMove) => {
+        useFunds.getState().addFundMove({
+          ...fundMove,
+          date: new Date(fundMove.date),
+        });
+      });
     });
   });
+
+  // Populate fund allocations
+  useFunds.setState({ fundAllocations: userData.fundAllocations });
 
   // Populate assets
   userData.assets.forEach((asset) => {
@@ -330,5 +350,5 @@ export const clearAllStores = () => {
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useFunds.setState({ funds: [], fundMoves: [] });
+  useFunds.setState({ funds: [], fundMoves: [], fundAllocations: [] });
 };

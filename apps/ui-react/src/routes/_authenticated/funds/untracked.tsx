@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDownToLine, ChevronRight, SquareChartGantt } from "lucide-react";
+import { ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
-import { AllocateDialog } from "@/components/funds/allocate-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSummary } from "@/components/funds/fund-summary";
 import { SearchBar } from "@/components/search-bar";
@@ -65,12 +64,6 @@ function UntrackedFundPage() {
               <ChevronRight />
             </Button>
           )}
-          <AllocateDialog>
-            <Button variant="outline">
-              <ArrowDownToLine />
-              Allocate
-            </Button>
-          </AllocateDialog>
         </header>
 
         <FundMovesTable fundId={null} />

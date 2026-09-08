@@ -1,5 +1,5 @@
 import { builder } from "@/api/builder";
-import type { Fund, FundMove } from "@maille/core/funds";
+import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 
 export const FundSchema = builder.objectRef<Fund>("Fund");
 
@@ -53,10 +53,25 @@ FundMoveSchema.implement({
       resolve: (parent) => parent.date,
     }),
     note: t.exposeString("note", { nullable: true }),
+    // The database column is NOT NULL; the core type keeps null for
+    // UI-staged legs that have no transaction yet.
     transaction: t.field({
       type: "String",
-      resolve: (parent) => parent.transaction,
-      nullable: true,
+      resolve: (parent) => parent.transaction as string,
     }),
+  }),
+});
+
+export const FundAllocationSchema = builder.objectRef<FundAllocation>("FundAllocation");
+
+FundAllocationSchema.implement({
+  fields: (t) => ({
+    id: t.field({
+      type: "String",
+      resolve: (parent) => parent.id,
+    }),
+    fund: t.exposeString("fund"),
+    account: t.exposeString("account"),
+    amount: t.exposeFloat("amount"),
   }),
 });

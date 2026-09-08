@@ -739,6 +739,8 @@ export const registerActivitiesMutations = () => {
           transactionId: newTransaction.id,
           transactionDate: activity.date,
           amount: args.amount,
+          fromAccount: newTransaction.fromAccount,
+          toAccount: newTransaction.toAccount,
           fundMovesInput: args.fundMoves,
         });
 
@@ -1007,6 +1009,8 @@ export const registerActivitiesMutations = () => {
               transactionId: transaction.id,
               transactionDate: activity.date,
               amount: updatedTransaction.amount,
+              fromAccount: updatedTransaction.fromAccount,
+              toAccount: updatedTransaction.toAccount,
               fundMovesInput: args.fundMoves,
             });
           } else if (existingFundMoves.length > 0) {
