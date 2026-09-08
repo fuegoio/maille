@@ -13,17 +13,16 @@ import { computeHistory, emitHistoryEvents } from "@/api/history/history";
 import { loadHistoryLabels } from "@/api/history/labels";
 import {
   buildCreateEntry,
-  buildLinkEntry,
   buildUnlinkEntry,
   buildUpdateLinkEntry,
   diffMovement,
 } from "@maille/core/history";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { ensureWorkflow, cancelWorkflowIfActive } from "@/harness/store";
+import { ensureWorkflow } from "@/harness/store";
 import { isHarnessConfigured } from "@/harness/config";
 import { enqueueWorkflow } from "@/harness/queue";
-import { isHarnessSession } from "@/harness/session";
+import { linkMovementToActivity } from "@/services/movements";
 
 export const registerMovementsMutations = () => {
   builder.mutationField("createMovement", (t) =>
@@ -326,117 +325,7 @@ export const registerMovementsMutations = () => {
         }),
         amount: t.arg.float(),
       },
-      resolve: async (root, args, ctx) => {
-        const movement = (
-          await db
-            .select()
-            .from(movements)
-            .where(
-              and(like(movements.id, idPattern(args.movementId)), eq(movements.user, ctx.user.id)),
-            )
-            .limit(1)
-        )[0];
-        if (!movement) {
-          throw new GraphQLError("Movement not found");
-        }
-
-        const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(
-              and(
-                like(activities.id, idPattern(args.activityId)),
-                eq(activities.user, ctx.user.id),
-              ),
-            )
-            .limit(1)
-        )[0];
-        if (!activity) {
-          throw new GraphQLError("Activity not found");
-        }
-
-        const insertedMovementActivities = await db
-          .insert(movementsActivities)
-          .values({
-            id: args.id,
-            movement: movement.id,
-            activity: activity.id,
-            amount: args.amount,
-          })
-          .onConflictDoNothing()
-          .returning();
-        const movementActivity = insertedMovementActivities[0];
-
-        if (!movementActivity) {
-          // Retry of an already-applied mutation — nothing changed, no history.
-          return {
-            id: args.id,
-            movement: movement.id,
-            activity: activity.id,
-            amount: args.amount,
-          };
-        }
-
-        // History: link entry on both timelines.
-        const movementHistory = computeHistory(ctx, movement.history, [
-          buildLinkEntry(
-            "movement",
-            movement.id,
-            {
-              type: "activity",
-              id: activity.id,
-              label: activity.name,
-            },
-            args.amount,
-          ),
-        ]);
-        const activityHistory = computeHistory(ctx, activity.history, [
-          buildLinkEntry(
-            "activity",
-            activity.id,
-            {
-              type: "movement",
-              id: movement.id,
-              label: movement.name,
-            },
-            args.amount,
-          ),
-        ]);
-
-        await db
-          .update(movements)
-          .set({ history: movementHistory.history })
-          .where(eq(movements.id, movement.id));
-        await db
-          .update(activities)
-          .set({ history: activityHistory.history })
-          .where(eq(activities.id, activity.id));
-
-        await addEvent({
-          type: "createMovementActivity",
-          payload: {
-            id: movementActivity.id,
-            movement: movement.id,
-            activity: activity.id,
-            amount: args.amount,
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-        await emitHistoryEvents(ctx, movementHistory.emitted);
-        await emitHistoryEvents(ctx, activityHistory.emitted);
-
-        // AI harness: a manual link by the user cancels the movement's
-        // active workflow — the assistant never fights the user. Links made
-        // by the harness itself (machine session) do not.
-        if (!isHarnessSession(ctx.session.id)) {
-          await cancelWorkflowIfActive(ctx.user.id, movement.id, ctx.session.id);
-        }
-
-        return movementActivity;
-      },
+      resolve: (root, args, ctx) => linkMovementToActivity(ctx.user.id, ctx.session.id, args),
     }),
   );
 
