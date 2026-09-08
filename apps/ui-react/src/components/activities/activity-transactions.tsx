@@ -283,8 +283,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   };
 
   return (
-    <div className="border-b px-2 py-6 sm:px-6">
-      <div className="flex items-center pl-2">
+    <div className="border-b px-4 py-6 sm:px-8">
+      <div className="flex items-center">
         <div>
           <div className="text-sm font-medium">Transactions</div>
           <div className="text-xs text-muted-foreground">
@@ -313,7 +313,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         </div>
       </div>
 
-      <div className="my-2 space-y-2">
+      <div className="mt-3">
         {activity.transactions.length === 0 &&
         stagedTransactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">
@@ -324,8 +324,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             {activity.transactions.map((transaction, index) => (
               <TransactionComponent
                 key={transaction.id}
+                variant="flat"
                 className={cn(
-                  "pr-1",
                   index !== activity.transactions.length - 1 ||
                     stagedTransactions.length > 0
                     ? "border-b"
@@ -338,13 +338,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 onDelete={() => handleTransactionDelete(transaction)}
               />
             ))}
-            {stagedTransactions.map((transaction, index) => (
+            {stagedTransactions.map((transaction) => (
               <TransactionComponent
                 key={transaction.id}
-                className={cn(
-                  "pr-1",
-                  index !== stagedTransactions.length - 1 ? "border-b" : "",
-                )}
+                variant="flat"
                 transaction={transaction}
                 isStaged
                 onUpdate={(update) =>

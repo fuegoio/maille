@@ -58,7 +58,7 @@ import { useSync } from "@/stores/sync";
 
 import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
+import { Field, FieldLabel } from "../ui/field";
 import {
   Select,
   SelectContent,
@@ -276,7 +276,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
   return (
     <SidebarInset>
       <div className="flex h-full flex-col">
-        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b pr-4 pl-4">
+        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="mr-1" />
           <Breadcrumb>
             <BreadcrumbList>
@@ -348,7 +348,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
 
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="mx-auto w-full max-w-3xl">
-            <div className="border-b px-4 py-8 sm:px-8">
+            <div className="border-b px-4 py-6 sm:px-8">
               <div className="flex items-start justify-between gap-4">
                 <ActivityStatusMark status={activity.status} />
                 <div className="font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
@@ -356,108 +356,103 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                 </div>
               </div>
 
-              <FieldSet className="mt-8">
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor="date">Date</FieldLabel>
-                    <DatePicker
-                      value={activity.date}
-                      id="date"
-                      onChange={(date) => updateActivity({ date })}
-                    />
-                  </Field>
+              <Input
+                id="name"
+                aria-label="Activity name"
+                value={activity.name}
+                onChange={(e) => updateActivity({ name: e.target.value })}
+                placeholder="Activity name"
+                className="mt-4 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-xl font-semibold md:text-xl dark:bg-transparent"
+              />
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Activity name</FieldLabel>
-                    <Input
-                      id="name"
-                      value={activity.name}
-                      onChange={(e) => updateActivity({ name: e.target.value })}
-                    />
-                  </Field>
+              <label htmlFor="date" className="sr-only">
+                Date
+              </label>
+              <DatePicker
+                id="date"
+                value={activity.date}
+                onChange={(date) => updateActivity({ date })}
+                className="mt-2 h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
+              />
 
-                  <Field>
-                    <FieldLabel htmlFor="description">Description</FieldLabel>
-                    <Textarea
-                      id="description"
-                      value={activity.description || ""}
-                      onChange={(e) =>
-                        updateActivity({ description: e.target.value || null })
-                      }
-                      className="resize-none"
-                      placeholder="Add a description ..."
-                      rows={3}
-                    />
-                  </Field>
-                </FieldGroup>
+              <Textarea
+                id="description"
+                aria-label="Description"
+                value={activity.description || ""}
+                onChange={(e) =>
+                  updateActivity({ description: e.target.value || null })
+                }
+                placeholder="Add a description ..."
+                rows={1}
+                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
+              />
 
-                <FieldGroup className="mt-2 gap-3">
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="type">Activity type</FieldLabel>
-                    <Select
-                      value={activity.type}
-                      onValueChange={(value) =>
-                        updateActivity({
-                          type: value as ActivityType,
-                          category: null,
-                          subcategory: null,
-                        })
-                      }
-                    >
-                      <SelectTrigger id="type">
-                        <SelectValue placeholder="Activity type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(ActivityType).map((activityType) => (
-                          <SelectItem key={activityType} value={activityType}>
-                            <div className="flex items-center py-1">
-                              <div
-                                className={cn(
-                                  "mr-2 h-3 w-3 rounded-full",
-                                  ACTIVITY_TYPES_COLOR[activityType],
-                                )}
-                              />
-                              <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="category">Category</FieldLabel>
-                    <ActivityCategorySelect
-                      value={activity.category || null}
-                      onValueChange={(value) =>
-                        updateActivity({ category: value, subcategory: null })
-                      }
-                      type={activity.type}
-                      categories={filteredCategories}
-                      placeholder="Category"
-                    />
-                  </Field>
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
-                    <ActivitySubcategorySelect
-                      value={activity.subcategory}
-                      onValueChange={(value) =>
-                        updateActivity({ subcategory: value })
-                      }
-                      categoryId={activity.category}
-                      subcategories={subcategories}
-                    />
-                  </Field>
-                  <Field orientation="horizontal">
-                    <FieldLabel htmlFor="project">Project</FieldLabel>
-                    <ProjectSelect
-                      value={activity.project}
-                      onValueChange={(value) =>
-                        updateActivity({ project: value })
-                      }
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
+              <div className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="type">Activity type</FieldLabel>
+                  <Select
+                    value={activity.type}
+                    onValueChange={(value) =>
+                      updateActivity({
+                        type: value as ActivityType,
+                        category: null,
+                        subcategory: null,
+                      })
+                    }
+                  >
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Activity type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(ActivityType).map((activityType) => (
+                        <SelectItem key={activityType} value={activityType}>
+                          <div className="flex items-center py-1">
+                            <div
+                              className={cn(
+                                "mr-2 h-3 w-3 rounded-full",
+                                ACTIVITY_TYPES_COLOR[activityType],
+                              )}
+                            />
+                            <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="category">Category</FieldLabel>
+                  <ActivityCategorySelect
+                    value={activity.category || null}
+                    onValueChange={(value) =>
+                      updateActivity({ category: value, subcategory: null })
+                    }
+                    type={activity.type}
+                    categories={filteredCategories}
+                    placeholder="Category"
+                  />
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="subcategory">Subcategory</FieldLabel>
+                  <ActivitySubcategorySelect
+                    value={activity.subcategory}
+                    onValueChange={(value) =>
+                      updateActivity({ subcategory: value })
+                    }
+                    categoryId={activity.category}
+                    subcategories={subcategories}
+                  />
+                </Field>
+                <Field orientation="horizontal">
+                  <FieldLabel htmlFor="project">Project</FieldLabel>
+                  <ProjectSelect
+                    value={activity.project}
+                    onValueChange={(value) =>
+                      updateActivity({ project: value })
+                    }
+                  />
+                </Field>
+              </div>
             </div>
 
             <ActivityTransactions activity={activity} />

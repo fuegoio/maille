@@ -32,6 +32,8 @@ interface TransactionProps {
   transaction: Omit<Transaction, "id">;
   className?: string;
   isStaged?: boolean;
+  /** "card" renders a boxed row (dialogs); "flat" a border-separated row (pages). */
+  variant?: "card" | "flat";
   onUpdate?: (
     updateData: Partial<Transaction> & { fundMoves?: FundMove[] },
   ) => void;
@@ -42,6 +44,7 @@ export function Transaction({
   transaction,
   className,
   isStaged,
+  variant = "card",
   onUpdate,
   onDelete,
 }: TransactionProps) {
@@ -115,8 +118,13 @@ export function Transaction({
   return (
     <div
       className={cn(
-        "@container flex flex-col gap-2 rounded-lg border bg-muted/30 p-2 text-sm shadow-md",
-        isStaged && "border-dashed opacity-70",
+        "@container flex flex-col gap-2 text-sm",
+        variant === "card" && "rounded-lg border bg-muted/30 p-2 shadow-md",
+        variant === "flat" && "py-2.5",
+        isStaged && variant === "card" && "border-dashed opacity-70",
+        isStaged &&
+          variant === "flat" &&
+          "mt-2 rounded-lg border border-dashed bg-muted/30 p-2",
         className,
       )}
     >

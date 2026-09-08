@@ -134,7 +134,12 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
   return (
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center gap-2">
-        <div className="text-sm font-medium">Sharing</div>
+        <div>
+          <div className="text-sm font-medium">Sharing</div>
+          <div className="text-xs text-muted-foreground">
+            People this activity is shared with, and the liability owed to each.
+          </div>
+        </div>
         <div className="flex-1" />
         <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
           <DialogTrigger asChild>
@@ -176,93 +181,102 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
         )}
       </div>
 
-      <div className="my-2">
-        {activity.sharing.map((sharing) => {
-          const currentAmount = currentAmounts[sharing.user] || 0;
-          const userAmountReconciled =
-            Math.abs(currentAmount - sharing.liability) < 0.01;
+      <div className="mt-3">
+        {activity.sharing.length === 0 ? (
+          <div className="py-4 text-sm text-muted-foreground">
+            This activity isn't shared with anyone.
+          </div>
+        ) : (
+          activity.sharing.map((sharing) => {
+            const currentAmount = currentAmounts[sharing.user] || 0;
+            const userAmountReconciled =
+              Math.abs(currentAmount - sharing.liability) < 0.01;
 
-          const user = contacts.find(
-            (u) => u.contact.id === sharing.user,
-          )?.contact;
-          if (!user) return null;
-          return (
-            <div key={sharing.user} className="py-2">
-              <div className="flex items-center">
-                <div className="mr-3 flex items-center">
-                  <UserAvatar user={user} className="mr-2 h-6 w-6" />
-                  <span className="text-sm">{user.name}</span>
-                </div>
-                <div className="flex-1" />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "px-2 font-mono text-sm whitespace-nowrap",
-                        userAmountReconciled
-                          ? "text-indigo-400"
-                          : "text-orange-300",
-                      )}
-                    >
-                      {currencyFormatter.format(currentAmount)}/
-                      {currencyFormatter.format(sharing.liability)}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    This amount is determined by the transactions going to and
-                    from {user.name} liabilities.
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-
-              {/* Account sharing details */}
-              {sharing.accounts.length > 0 && (
-                <div className="ml-8 space-y-1 border-t pl-2">
-                  {sharing.accounts.map((accountSharing) => {
-                    const currentAccountAmount = getCurrentAccountAmount(
-                      accountSharing.account,
-                    );
-                    const accountReconciled =
-                      Math.abs(currentAccountAmount - accountSharing.amount) <
-                      0.01;
-
-                    return (
-                      <div
-                        key={accountSharing.account}
-                        className="flex items-center"
+            const user = contacts.find(
+              (u) => u.contact.id === sharing.user,
+            )?.contact;
+            if (!user) return null;
+            return (
+              <div key={sharing.user} className="py-2">
+                <div className="flex items-center">
+                  <div className="mr-3 flex items-center">
+                    <UserAvatar user={user} className="mr-2 h-6 w-6" />
+                    <span className="text-sm">{user.name}</span>
+                  </div>
+                  <div className="flex-1" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className={cn(
+                          "px-2 font-mono text-sm whitespace-nowrap",
+                          userAmountReconciled
+                            ? "text-indigo-400"
+                            : "text-orange-300",
+                        )}
                       >
-                        <AccountLabel accountId={accountSharing.account} />
-                        <div className="flex-1" />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className={cn(
-                                "px-2 font-mono text-xs whitespace-nowrap",
-                                accountReconciled
-                                  ? "text-indigo-400"
-                                  : "text-orange-300",
-                              )}
-                            >
-                              {currencyFormatter.format(currentAccountAmount)}/
-                              {currencyFormatter.format(accountSharing.amount)}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            This amount is determined by the transactions going
-                            to and from this account which is shared with{" "}
-                            {user.name}.
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    );
-                  })}
+                        {currencyFormatter.format(currentAmount)}/
+                        {currencyFormatter.format(sharing.liability)}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      This amount is determined by the transactions going to and
+                      from {user.name} liabilities.
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
-              )}
-            </div>
-          );
-        })}
+
+                {/* Account sharing details */}
+                {sharing.accounts.length > 0 && (
+                  <div className="ml-8 space-y-1 border-t pl-2">
+                    {sharing.accounts.map((accountSharing) => {
+                      const currentAccountAmount = getCurrentAccountAmount(
+                        accountSharing.account,
+                      );
+                      const accountReconciled =
+                        Math.abs(currentAccountAmount - accountSharing.amount) <
+                        0.01;
+
+                      return (
+                        <div
+                          key={accountSharing.account}
+                          className="flex items-center"
+                        >
+                          <AccountLabel accountId={accountSharing.account} />
+                          <div className="flex-1" />
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className={cn(
+                                  "px-2 font-mono text-xs whitespace-nowrap",
+                                  accountReconciled
+                                    ? "text-indigo-400"
+                                    : "text-orange-300",
+                                )}
+                              >
+                                {currencyFormatter.format(currentAccountAmount)}
+                                /
+                                {currencyFormatter.format(
+                                  accountSharing.amount,
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              This amount is determined by the transactions
+                              going to and from this account which is shared
+                              with {user.name}.
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
