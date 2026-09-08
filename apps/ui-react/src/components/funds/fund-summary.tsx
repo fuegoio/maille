@@ -392,7 +392,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
               </div>
             ))}
             {directBalance !== null && (
-              <div className="flex h-8 items-center text-sm">
+              <div className="flex h-8 items-center pl-5 text-sm">
                 <div className="text-muted-foreground">No subfund</div>
                 <div className="flex-1" />
                 <div className="font-mono text-muted-foreground">
@@ -467,7 +467,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                   {entries.map(({ account, amount }) => (
                     <div
                       key={account.id}
-                      className="flex h-8 cursor-pointer items-center pl-4 text-sm transition-colors hover:bg-muted/50"
+                      className="flex h-8 cursor-pointer items-center pl-5 text-sm transition-colors hover:bg-muted/50"
                       onClick={() =>
                         navigate({
                           to: "/accounts/$id",
