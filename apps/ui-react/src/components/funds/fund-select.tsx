@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+
 import {
   Select,
   SelectContent,
@@ -29,11 +31,6 @@ export function FundSelect({
 }: FundSelectProps) {
   const funds = useFunds((state) => state.funds);
 
-  const allFunds = [
-    ...(allowEmpty ? [{ id: "clear", name: emptyLabel, color: "" }] : []),
-    ...funds,
-  ];
-
   return (
     <Select
       value={value ?? undefined}
@@ -45,19 +42,24 @@ export function FundSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {allFunds.map((fund) => (
+        {funds.map((fund) => (
           <SelectItem key={fund.id} value={fund.id}>
             <div className="flex min-w-0 items-center">
-              {fund.color && (
-                <div
-                  className="mr-1.5 size-3 shrink-0 rounded-sm"
-                  style={{ backgroundColor: fund.color }}
-                />
-              )}
+              <div
+                className="mr-1.5 size-3 shrink-0 rounded-sm"
+                style={{ backgroundColor: fund.color }}
+              />
               <span className="truncate">{fund.name}</span>
             </div>
           </SelectItem>
         ))}
+
+        {allowEmpty && (
+          <SelectItem value="clear" className="text-muted-foreground">
+            <X />
+            {emptyLabel}
+          </SelectItem>
+        )}
       </SelectContent>
     </Select>
   );
