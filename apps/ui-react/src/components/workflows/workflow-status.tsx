@@ -1,7 +1,5 @@
 import type { WorkflowStatus } from "@maille/core/workflows";
 
-import { Bot } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 
 export const WORKFLOW_STATUS_CONFIG: Record<
@@ -61,13 +59,19 @@ export function WorkflowStatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex h-5 items-center gap-1 rounded-full border px-1.5 text-xs",
+        "inline-flex h-5 items-center gap-1.5 rounded-full border px-1.5 text-xs",
         colored ? config.textClass : "text-foreground",
         "border-current/20",
         className,
       )}
     >
-      <Bot className="size-3 shrink-0" />
+      <span
+        className={cn(
+          "size-1.5 rounded-full",
+          config.dotClass,
+          status === "running" && "animate-pulse",
+        )}
+      />
       {config.label}
     </span>
   );
