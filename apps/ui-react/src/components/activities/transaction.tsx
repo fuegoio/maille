@@ -126,132 +126,17 @@ export function Transaction({
         className,
       )}
     >
-      <div className="flex w-full flex-col gap-2 @lg:grid @lg:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)_minmax(0,130px)_104px_28px] @lg:items-center @lg:gap-x-2">
-        <AccountSelect
-          className="w-full min-w-0"
-          value={transaction.fromAccount}
-          onChange={(account) =>
+      {/* The leg's amount and actions, read before the flow */}
+      <div className="flex items-center justify-end gap-1">
+        <AmountInput
+          value={transaction.amount}
+          onChange={(amount) => {
             onUpdate?.({
-              fromAccount: account,
-              fromCounterparty: null,
-              fromAsset: null,
-            })
-          }
+              amount,
+            });
+          }}
+          mode="cell"
         />
-        {fromAccount?.type === AccountType.LIABILITIES && (
-          <div className="flex items-center gap-2 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
-            <CounterpartiesSelect
-              accountId={transaction.fromAccount}
-              value={transaction.fromCounterparty || ""}
-              onValueChange={(counterparty) =>
-                onUpdate?.({
-                  fromCounterparty: counterparty,
-                })
-              }
-            />
-          </div>
-        )}
-        {fromAccount?.type === AccountType.ASSETS && (
-          <div className="flex items-center gap-2 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
-            <AssetSelect
-              accountId={transaction.fromAccount}
-              value={transaction.fromAsset || ""}
-              onValueChange={(asset) =>
-                onUpdate?.({
-                  fromAsset: asset,
-                })
-              }
-            />
-          </div>
-        )}
-
-        <div className="hidden justify-center @lg:block">
-          <MoveRight className="size-4 text-muted-foreground" />
-        </div>
-        <div className="flex justify-center @lg:hidden">
-          <MoveDown className="size-4 text-muted-foreground" />
-        </div>
-
-        <AccountSelect
-          className="w-full min-w-0"
-          value={transaction.toAccount}
-          onChange={(account) =>
-            onUpdate?.({
-              toAccount: account,
-              toCounterparty: null,
-              toAsset: null,
-            })
-          }
-        />
-        {toAccount?.type === AccountType.LIABILITIES && (
-          <div className="flex items-center gap-2 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
-            <CounterpartiesSelect
-              accountId={transaction.toAccount}
-              value={transaction.toCounterparty || ""}
-              onValueChange={(counterparty) =>
-                onUpdate?.({
-                  toCounterparty: counterparty,
-                })
-              }
-            />
-          </div>
-        )}
-        {toAccount?.type === AccountType.ASSETS && (
-          <div className="flex items-center gap-2 pl-2">
-            <CornerDownRight className="size-4 text-muted-foreground" />
-            <AssetSelect
-              accountId={transaction.toAccount}
-              value={transaction.toAsset || ""}
-              onValueChange={(asset) =>
-                onUpdate?.({
-                  toAsset: asset,
-                })
-              }
-            />
-          </div>
-        )}
-
-        {trackFromFund || trackToFund ? (
-          <div className="flex items-center gap-1.5">
-            <PiggyBank className="size-4 shrink-0 text-muted-foreground" />
-            {trackFromFund && (
-              <FundSelect
-                value={trackedFromFund?.id ?? null}
-                onValueChange={handleFromFundChange}
-                placeholder="Fund"
-                allowEmpty
-                emptyLabel="Untracked"
-              />
-            )}
-            {trackToFund && (
-              <FundSelect
-                value={trackedToFund?.id ?? null}
-                onValueChange={handleToFundChange}
-                placeholder="Fund"
-                allowEmpty
-                emptyLabel="Untracked"
-              />
-            )}
-          </div>
-        ) : (
-          <div className="hidden @lg:block" aria-hidden="true" />
-        )}
-
-        <div className="flex items-center justify-end gap-1">
-          <AmountInput
-            value={transaction.amount}
-            onChange={(amount) => {
-              onUpdate?.({
-                amount,
-              });
-            }}
-            mode="cell"
-            className="@lg:w-26"
-          />
-        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -274,6 +159,126 @@ export function Transaction({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* The double-entry flow: sub-selects grow their side downward */}
+      <div className="grid grid-cols-1 gap-2 @lg:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)] @lg:items-center @lg:gap-x-2">
+        <div className="flex min-w-0 flex-col gap-2">
+          <AccountSelect
+            className="w-full min-w-0"
+            value={transaction.fromAccount}
+            onChange={(account) =>
+              onUpdate?.({
+                fromAccount: account,
+                fromCounterparty: null,
+                fromAsset: null,
+              })
+            }
+          />
+          {fromAccount?.type === AccountType.LIABILITIES && (
+            <div className="flex items-center gap-2 pl-2">
+              <CornerDownRight className="size-4 text-muted-foreground" />
+              <CounterpartiesSelect
+                accountId={transaction.fromAccount}
+                value={transaction.fromCounterparty || ""}
+                onValueChange={(counterparty) =>
+                  onUpdate?.({
+                    fromCounterparty: counterparty,
+                  })
+                }
+              />
+            </div>
+          )}
+          {fromAccount?.type === AccountType.ASSETS && (
+            <div className="flex items-center gap-2 pl-2">
+              <CornerDownRight className="size-4 text-muted-foreground" />
+              <AssetSelect
+                accountId={transaction.fromAccount}
+                value={transaction.fromAsset || ""}
+                onValueChange={(asset) =>
+                  onUpdate?.({
+                    fromAsset: asset,
+                  })
+                }
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="hidden justify-center @lg:flex">
+          <MoveRight className="size-4 text-muted-foreground" />
+        </div>
+        <div className="flex justify-center @lg:hidden">
+          <MoveDown className="size-4 text-muted-foreground" />
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-2">
+          <AccountSelect
+            className="w-full min-w-0"
+            value={transaction.toAccount}
+            onChange={(account) =>
+              onUpdate?.({
+                toAccount: account,
+                toCounterparty: null,
+                toAsset: null,
+              })
+            }
+          />
+          {toAccount?.type === AccountType.LIABILITIES && (
+            <div className="flex items-center gap-2 pl-2">
+              <CornerDownRight className="size-4 text-muted-foreground" />
+              <CounterpartiesSelect
+                accountId={transaction.toAccount}
+                value={transaction.toCounterparty || ""}
+                onValueChange={(counterparty) =>
+                  onUpdate?.({
+                    toCounterparty: counterparty,
+                  })
+                }
+              />
+            </div>
+          )}
+          {toAccount?.type === AccountType.ASSETS && (
+            <div className="flex items-center gap-2 pl-2">
+              <CornerDownRight className="size-4 text-muted-foreground" />
+              <AssetSelect
+                accountId={transaction.toAccount}
+                value={transaction.toAsset || ""}
+                onValueChange={(asset) =>
+                  onUpdate?.({
+                    toAsset: asset,
+                  })
+                }
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {trackFromFund || trackToFund ? (
+        <div className="flex items-center gap-1.5 border-t pt-2">
+          <PiggyBank className="size-4 shrink-0 text-muted-foreground" />
+          {trackFromFund && (
+            <FundSelect
+              value={trackedFromFund?.id ?? null}
+              onValueChange={handleFromFundChange}
+              placeholder="Fund"
+              allowEmpty
+              emptyLabel="Untracked"
+              className="w-44"
+            />
+          )}
+          {trackToFund && (
+            <FundSelect
+              value={trackedToFund?.id ?? null}
+              onValueChange={handleToFundChange}
+              placeholder="Fund"
+              allowEmpty
+              emptyLabel="Untracked"
+              className="w-44"
+            />
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
