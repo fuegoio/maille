@@ -2,24 +2,13 @@ import type { Movement } from "@maille/core/movements";
 
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
-import {
-  CheckCircle2,
-  CircleCheck,
-  CircleDotDashed,
-  Clock,
-  Loader2,
-  PauseCircle,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
+import { CircleCheck, CircleDotDashed } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { cn } from "@/lib/utils";
-import { useWorkflows } from "@/stores/workflows";
 
 interface MovementLineProps {
   movement: Movement;
@@ -35,48 +24,6 @@ export function MovementLine({
   onCheckedChange,
 }: MovementLineProps) {
   const currencyFormatter = useCurrencyFormatter();
-  const triggerWorkflow = useTriggerWorkflow();
-  const openWorkflow = useWorkflows((state) => state.openWorkflow);
-  const workflow = useWorkflows((state) =>
-    state.getWorkflowByMovement(movement.id),
-  );
-
-  const handleWorkflowClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (workflow) {
-      openWorkflow(workflow.id);
-    } else {
-      triggerWorkflow(movement.id);
-    }
-  };
-
-  const renderWorkflowIcon = () => {
-    if (!workflow) {
-      return <Sparkles className="size-3.5" />;
-    }
-    switch (workflow.status) {
-      case "queued":
-        return <Clock className="size-3.5" />;
-      case "running":
-        return <Loader2 className="size-3.5 animate-spin text-blue-400" />;
-      case "pending":
-        return <PauseCircle className="size-3.5 text-orange-400" />;
-      case "succeeded":
-        return <CheckCircle2 className="size-3.5 text-indigo-400" />;
-      case "failed":
-        return <XCircle className="size-3.5 text-red-400" />;
-      case "cancelled":
-        return <Sparkles className="size-3.5" />;
-      default:
-        return <Sparkles className="size-3.5" />;
-    }
-  };
-
-  const isWorkflowActive =
-    workflow &&
-    (workflow.status === "queued" ||
-      workflow.status === "running" ||
-      workflow.status === "pending");
 
   return (
     <div
@@ -120,23 +67,6 @@ export function MovementLine({
       ) : (
         <CircleCheck className="size-4 shrink-0 text-indigo-300" />
       )}
-
-      <button
-        onClick={handleWorkflowClick}
-        className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded transition-opacity hover:bg-foreground/10",
-          isWorkflowActive
-            ? "opacity-100"
-            : "opacity-0 group-hover:opacity-100",
-        )}
-        title={
-          workflow
-            ? `Workflow: ${workflow.status}`
-            : "Launch activity creation workflow"
-        }
-      >
-        {renderWorkflowIcon()}
-      </button>
 
       <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
         {movement.name}
