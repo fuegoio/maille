@@ -407,7 +407,7 @@ function FundMoveLine({
   return (
     <div
       className={cn(
-        "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent",
+        "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
         onClick && "cursor-pointer",
       )}
       onClick={onClick}
