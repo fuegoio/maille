@@ -46,6 +46,8 @@ interface TransactionProps {
   isStaged?: boolean;
   /** "card" renders a boxed row (dialogs); "flat" a surface row (pages). */
   variant?: "card" | "flat";
+  /** Hide the fund / counterparty / asset chips for a simpler layout. */
+  showMetadata?: boolean;
   onUpdate?: (
     updateData: Partial<Transaction> & { fundMoves?: FundMove[] },
   ) => void;
@@ -57,6 +59,7 @@ export function Transaction({
   className,
   isStaged,
   variant = "card",
+  showMetadata = true,
   onUpdate,
   onDelete,
 }: TransactionProps) {
@@ -126,8 +129,8 @@ export function Transaction({
     toAccount?.type === AccountType.ASSETS;
   const subRowExists = fromNeedsSub || toNeedsSub;
   const fundRowExists = Boolean(isFromBalance) || Boolean(isToBalance);
-  const fromHasChips = fromNeedsSub || Boolean(isFromBalance);
-  const toHasChips = toNeedsSub || Boolean(isToBalance);
+  const fromHasChips = showMetadata && (fromNeedsSub || Boolean(isFromBalance));
+  const toHasChips = showMetadata && (toNeedsSub || Boolean(isToBalance));
 
   return (
     <div
