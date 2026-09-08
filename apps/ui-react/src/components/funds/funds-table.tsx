@@ -74,7 +74,7 @@ export function FundsTable() {
         >
           <div className="flex items-center gap-2">
             <div
-              className="size-3 shrink-0 rounded-xl"
+              className="size-3 shrink-0 rounded-sm"
               style={{ backgroundColor: fund.color }}
             />
             <div className="text-sm font-medium">{fund.name}</div>

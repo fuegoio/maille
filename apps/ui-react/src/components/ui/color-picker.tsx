@@ -29,7 +29,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
           aria-label="Pick a color"
         >
           <span
-            className="size-5 rounded-md"
+            className="size-5 rounded-sm"
             style={{ backgroundColor: value }}
           />
         </Button>
@@ -49,7 +49,7 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
               }}
             >
               <span
-                className="flex size-5 items-center justify-center rounded-md"
+                className="flex size-5 items-center justify-center rounded-sm"
                 style={{ backgroundColor: color }}
               >
                 {color === value && <Check className="size-3 text-white" />}

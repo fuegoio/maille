@@ -259,7 +259,7 @@ function FundMoveLine({
       {counterpart ? (
         <>
           <div
-            className="mr-1 size-2.5 shrink-0 rounded-xl"
+            className="mr-1 size-2.5 shrink-0 rounded-sm"
             style={{ backgroundColor: counterpart.color }}
           />
           <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">

@@ -72,7 +72,7 @@ function FundPage() {
               <BreadcrumbItem>
                 <BreadcrumbPage>
                   <span
-                    className="mr-1.5 inline-block size-3 rounded-xl align-[-1px]"
+                    className="mr-1.5 inline-block size-3 rounded-sm align-[-1px]"
                     style={{ backgroundColor: fund.color }}
                   />
                   <span>{fund.name}</span>

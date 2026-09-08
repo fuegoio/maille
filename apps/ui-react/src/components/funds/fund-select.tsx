@@ -50,7 +50,7 @@ export function FundSelect({
             <div className="flex min-w-0 items-center">
               {fund.color && (
                 <div
-                  className="mr-1.5 size-3 shrink-0 rounded-xl"
+                  className="mr-1.5 size-3 shrink-0 rounded-sm"
                   style={{ backgroundColor: fund.color }}
                 />
               )}
