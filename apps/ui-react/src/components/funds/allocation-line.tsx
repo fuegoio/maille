@@ -54,29 +54,35 @@ export function AllocationLine({
         </div>
 
         <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="text-muted-foreground">
-            {isInflow ? "from" : "to"}
-          </span>
           {isInflow ? (
-            <span>Untracked</span>
-          ) : fund ? (
             <>
-              <div
-                className="mr-1 size-2.5 shrink-0 rounded-sm"
-                style={{ backgroundColor: fund.color }}
-              />
-              <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-                {fund.name}
-              </span>
+              <span>Untracked</span>
+              <span className="text-muted-foreground">from</span>
             </>
           ) : (
-            <span>Untracked</span>
+            <>
+              <span className="text-muted-foreground">to</span>
+              {fund ? (
+                <>
+                  <div
+                    className="mr-1 size-2.5 shrink-0 rounded-sm"
+                    style={{ backgroundColor: fund.color }}
+                  />
+                  <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+                    {fund.name}
+                  </span>
+                </>
+              ) : (
+                <span>Untracked</span>
+              )}
+            </>
           )}
         </div>
         <div className="min-w-0 truncate font-medium">Opening allocation</div>
-        <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-          <AccountFlowLabel accountId={allocation.account} />
-        </div>
+      </div>
+
+      <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+        <AccountFlowLabel accountId={allocation.account} />
       </div>
 
       <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">
