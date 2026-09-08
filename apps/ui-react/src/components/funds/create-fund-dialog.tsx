@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DEFAULT_FUND_COLOR, type Fund } from "@maille/core/funds";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -53,6 +53,8 @@ interface CreateFundDialogProps {
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
   onCreate?: (fundId: string) => void;
+  /** Preselected parent, when the dialog opens from a fund page. */
+  defaultParent?: string;
 }
 
 export function CreateFundDialog({
@@ -60,9 +62,24 @@ export function CreateFundDialog({
   onOpenChange,
   children,
   onCreate,
+  defaultParent,
 }: CreateFundDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
+
+  // The dialog lives on in the fund page header while the user navigates
+  // between funds via the breadcrumb: resync the form so the preselected
+  // parent follows the focused fund.
+  const formDefaults = useMemo<CreateFundFormValues>(
+    () => ({
+      name: "",
+      color: DEFAULT_FUND_COLOR,
+      parentFund: defaultParent ?? null,
+      startDate: null,
+      endDate: null,
+    }),
+    [defaultParent],
+  );
 
   const {
     control,
@@ -72,20 +89,18 @@ export function CreateFundDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateFundFormValues>({
     resolver: zodResolver(createFundSchema),
-    defaultValues: {
-      name: "",
-      color: DEFAULT_FUND_COLOR,
-      parentFund: null,
-      startDate: null,
-      endDate: null,
-    },
+    defaultValues: formDefaults,
   });
+
+  useEffect(() => {
+    reset(formDefaults);
+  }, [formDefaults, reset]);
 
   const startDate = watch("startDate");
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
-    if (!value) reset();
+    if (!value) reset(formDefaults);
     onOpenChange?.(value);
   };
 

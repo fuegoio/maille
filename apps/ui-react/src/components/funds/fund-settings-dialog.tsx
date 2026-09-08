@@ -2,7 +2,7 @@ import type { Fund } from "@maille/core/funds";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getFundDescendants } from "@maille/core/funds";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -91,6 +91,14 @@ export function FundSettingsDialog({
     return value instanceof Date ? value : new Date(value);
   };
 
+  const fundFormValues = (target: Fund): UpdateFundFormValues => ({
+    name: target.name,
+    color: target.color,
+    parentFund: target.parentFund ?? null,
+    startDate: toDate(target.startDate),
+    endDate: toDate(target.endDate),
+  });
+
   const {
     control,
     handleSubmit,
@@ -100,14 +108,19 @@ export function FundSettingsDialog({
     formState: { errors, isSubmitting },
   } = useForm<UpdateFundFormValues>({
     resolver: zodResolver(updateFundSchema),
-    defaultValues: {
-      name: fund.name,
-      color: fund.color,
-      parentFund: fund.parentFund ?? null,
-      startDate: toDate(fund.startDate),
-      endDate: toDate(fund.endDate),
-    },
+    defaultValues: fundFormValues(fund),
   });
+
+  // The dialog stays mounted while the user navigates between funds via the
+  // breadcrumb: resync the form when the focused fund actually changes. The
+  // fund object identity changes on every store update, so guard on the id
+  // to keep user edits while the dialog is open.
+  const lastFundId = useRef(fund.id);
+  useEffect(() => {
+    if (lastFundId.current === fund.id) return;
+    lastFundId.current = fund.id;
+    reset(fundFormValues(fund));
+  }, [fund, reset]);
 
   const startDate = watch("startDate");
 
