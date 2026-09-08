@@ -2,8 +2,9 @@ import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
-import { FundMoveLine } from "@/components/funds/fund-move-line";
 import type { FundMoveWithActivity } from "@/components/funds/fund-move-line";
+
+import { FundMoveLine } from "@/components/funds/fund-move-line";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";

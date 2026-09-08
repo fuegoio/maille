@@ -267,16 +267,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         balance: getFundBalanceAtDate(date),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      days,
-      fundMoves,
-      fundAccounts,
-      fundId,
-      funds,
-      accounts,
-      activities,
-      user,
-    ],
+    [days, fundMoves, fundAccounts, fundId, funds, accounts, activities, user],
   );
 
   const chartConfig = {
