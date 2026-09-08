@@ -30,7 +30,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
+  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
   const user = useAuth((state) => state.user!);
   const navigate = useNavigate();
 
@@ -93,7 +93,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
       activities,
       funds,
       fundMoves,
-      fundAllocations,
+      fundAccounts,
       accountId,
       startingDate: user.startingDate,
     });
@@ -112,7 +112,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
     activities,
     funds,
     fundMoves,
-    fundAllocations,
+    fundAccounts,
     accountId,
   ]);
 

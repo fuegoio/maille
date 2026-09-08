@@ -37,7 +37,7 @@ const readCollapsed = (): Set<string> => {
 export function FundsTable() {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
+  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
@@ -85,10 +85,10 @@ export function FundsTable() {
       new Map(
         funds.map((fund) => [
           fund.id,
-          getFundTreeBalance(fund.id, funds, fundMoves, fundAllocations),
+          getFundTreeBalance(fund.id, funds, fundMoves, fundAccounts),
         ]),
       ),
-    [funds, fundMoves, fundAllocations],
+    [funds, fundMoves, fundAccounts],
   );
 
   const untrackedBalance = useMemo(
@@ -99,12 +99,12 @@ export function FundsTable() {
             activities,
             funds,
             fundMoves,
-            fundAllocations,
+            fundAccounts,
             date: new Date(),
             startingDate: user.startingDate,
           })
         : 0,
-    [accounts, activities, funds, fundMoves, fundAllocations, user],
+    [accounts, activities, funds, fundMoves, fundAccounts, user],
   );
 
   if (funds.length === 0) {

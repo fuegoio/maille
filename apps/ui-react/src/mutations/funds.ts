@@ -1,8 +1,8 @@
-import type { Fund, FundAllocation } from "@maille/core/funds";
+import type { Fund, FundAccount } from "@maille/core/funds";
 import type {
   CreateFundEvent,
   DeleteFundEvent,
-  UpdateFundAllocationsEvent,
+  UpdateFundAccountsEvent,
   UpdateFundEvent,
 } from "@maille/core/sync";
 
@@ -60,12 +60,12 @@ export const deleteFundMutation = graphql(/* GraphQL */ `
   }
 `);
 
-export const setFundAllocationsMutation = graphql(/* GraphQL */ `
-  mutation SetFundAllocations(
+export const setFundAccountsMutation = graphql(/* GraphQL */ `
+  mutation SetFundAccounts(
     $fund: String!
-    $allocations: [FundAllocationInput!]!
+    $accounts: [FundAccountInput!]!
   ) {
-    setFundAllocations(fund: $fund, allocations: $allocations) {
+    setFundAccounts(fund: $fund, accounts: $accounts) {
       id
     }
   }
@@ -92,15 +92,15 @@ export type DeleteFundMutation = MutationType<
   [DeleteFundEvent]
 >;
 
-export type SetFundAllocationsMutation = MutationType<
-  "setFundAllocations",
-  typeof setFundAllocationsMutation,
-  FundAllocation[],
-  [UpdateFundAllocationsEvent]
+export type SetFundAccountsMutation = MutationType<
+  "setFundAccounts",
+  typeof setFundAccountsMutation,
+  FundAccount[],
+  [UpdateFundAccountsEvent]
 >;
 
 export type FundMutation =
   | CreateFundMutation
   | UpdateFundMutation
   | DeleteFundMutation
-  | SetFundAllocationsMutation;
+  | SetFundAccountsMutation;

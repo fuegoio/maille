@@ -1,5 +1,22 @@
 import { builder } from "@/api/builder";
-import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
+import { db } from "@/database";
+import type { Fund, FundAccount, FundMove } from "@maille/core/funds";
+import { fundAccounts } from "@/tables";
+import { and, eq } from "drizzle-orm";
+
+export const FundAccountSchema = builder.objectRef<FundAccount>("FundAccount");
+
+FundAccountSchema.implement({
+  fields: (t) => ({
+    id: t.field({
+      type: "String",
+      resolve: (parent) => parent.id,
+    }),
+    fund: t.exposeString("fund"),
+    account: t.exposeString("account"),
+    amount: t.exposeFloat("amount"),
+  }),
+});
 
 export const FundSchema = builder.objectRef<Fund>("Fund");
 
@@ -25,6 +42,17 @@ FundSchema.implement({
       type: "String",
       resolve: (parent) => parent.parentFund,
       nullable: true,
+    }),
+    accounts: t.field({
+      type: [FundAccountSchema],
+      resolve: async (parent, _args, ctx) => {
+        if (parent.accounts) return parent.accounts;
+        const rows = await db
+          .select()
+          .from(fundAccounts)
+          .where(and(eq(fundAccounts.fund, parent.id), eq(fundAccounts.user, ctx.user.id)));
+        return rows;
+      },
     }),
   }),
 });
@@ -59,19 +87,5 @@ FundMoveSchema.implement({
       type: "String",
       resolve: (parent) => parent.transaction as string,
     }),
-  }),
-});
-
-export const FundAllocationSchema = builder.objectRef<FundAllocation>("FundAllocation");
-
-FundAllocationSchema.implement({
-  fields: (t) => ({
-    id: t.field({
-      type: "String",
-      resolve: (parent) => parent.id,
-    }),
-    fund: t.exposeString("fund"),
-    account: t.exposeString("account"),
-    amount: t.exposeFloat("amount"),
   }),
 });

@@ -176,13 +176,12 @@ const userDataQuery = graphql(/* GraphQL */ `
       startDate
       endDate
       parentFund
-    }
-
-    fundAllocations {
-      id
-      fund
-      account
-      amount
+      accounts {
+        id
+        fund
+        account
+        amount
+      }
     }
 
     assets {
@@ -307,9 +306,6 @@ export const fetchUserData = async () => {
     });
   });
 
-  // Populate fund allocations
-  useFunds.setState({ fundAllocations: userData.fundAllocations });
-
   // Populate assets
   userData.assets.forEach((asset) => {
     useAssets.getState().addAsset({
@@ -350,5 +346,5 @@ export const clearAllStores = () => {
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useFunds.setState({ funds: [], fundMoves: [], fundAllocations: [] });
+  useFunds.setState({ funds: [], fundMoves: [] });
 };
