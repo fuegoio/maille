@@ -278,16 +278,8 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                   move={item}
                   funds={funds}
                   currencyFormatter={currencyFormatter}
-                  to={
-                    item.activity
-                      ? "/activities/$id"
-                      : undefined
-                  }
-                  params={
-                    item.activity
-                      ? { id: item.activity.id }
-                      : undefined
-                  }
+                  to={item.activity ? "/activities/$id" : undefined}
+                  params={item.activity ? { id: item.activity.id } : undefined}
                   search={
                     item.activity && item.transaction
                       ? { transaction: item.transaction }
