@@ -1,5 +1,6 @@
 import { builder } from "@/api/builder";
 import { FundMoveSchema } from "@/api/funds/schemas";
+import { HistoryEntrySchema } from "@/api/history/schemas";
 import type {
   Activity,
   Transaction,
@@ -54,6 +55,10 @@ ActivitySchema.implement({
     sharing: t.field({
       type: [ActivitySharingSchema],
       resolve: (parent) => parent.sharing,
+    }),
+    history: t.field({
+      type: [HistoryEntrySchema],
+      resolve: (parent) => parent.history ?? [],
     }),
   }),
 });

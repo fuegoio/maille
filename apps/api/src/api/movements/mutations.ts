@@ -9,6 +9,15 @@ import { accounts, activities, movements, movementsActivities } from "@/tables";
 import { db } from "@/database";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
+import { computeHistory, emitHistoryEvents } from "@/api/history/history";
+import { loadHistoryLabels } from "@/api/history/labels";
+import {
+  buildCreateEntry,
+  buildLinkEntry,
+  buildUnlinkEntry,
+  buildUpdateLinkEntry,
+  diffMovement,
+} from "@maille/core/history";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
@@ -39,6 +48,12 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Account not found");
         }
 
+        const { history, emitted } = computeHistory(
+          ctx,
+          [],
+          [buildCreateEntry("movement", args.id)],
+        );
+
         await db.insert(movements).values({
           id: args.id,
           user: ctx.user.id,
@@ -46,6 +61,7 @@ export const registerMovementsMutations = () => {
           date: new Date(args.date),
           amount: args.amount,
           account: account.id,
+          history,
         });
 
         await addEvent({
@@ -61,6 +77,7 @@ export const registerMovementsMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        await emitHistoryEvents(ctx, emitted);
 
         return {
           id: args.id,
@@ -71,6 +88,7 @@ export const registerMovementsMutations = () => {
           account: account.id,
           activities: [],
           status: "incomplete" as "incomplete" | "completed",
+          history,
         };
       },
     }),
@@ -138,9 +156,41 @@ export const registerMovementsMutations = () => {
           updates.account = account.id;
         }
 
+        // History: derive the diff from the before/after rows.
+        const labels = await loadHistoryLabels(ctx.user.id);
+        const after = { ...movement, ...updates };
+        const changes = diffMovement(
+          {
+            name: movement.name,
+            date: movement.date.toISOString(),
+            amount: movement.amount,
+            account: { id: movement.account, label: labels.account(movement.account) },
+          },
+          {
+            name: after.name,
+            date: after.date.toISOString(),
+            amount: after.amount,
+            account: { id: after.account, label: labels.account(after.account) },
+          },
+        );
+        const historyResult =
+          changes.length > 0
+            ? computeHistory(ctx, movement.history, [
+                {
+                  entityType: "movement",
+                  entityId: movement.id,
+                  action: "update",
+                  changes,
+                },
+              ])
+            : null;
+
         const updatedMovements = await db
           .update(movements)
-          .set(updates)
+          .set({
+            ...updates,
+            ...(historyResult ? { history: historyResult.history } : {}),
+          })
           .where(eq(movements.id, movement.id))
           .returning();
         const updatedMovement = updatedMovements[0];
@@ -160,6 +210,9 @@ export const registerMovementsMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        if (historyResult) {
+          await emitHistoryEvents(ctx, historyResult.emitted);
+        }
 
         const activitiesData = await db
           .select()
@@ -196,6 +249,33 @@ export const registerMovementsMutations = () => {
         )[0];
         if (!movement) {
           throw new GraphQLError("Movement not found");
+        }
+
+        // History: unlink entries on the activities this movement was linked to.
+        const linkedActivities = await db
+          .select({
+            linkAmount: movementsActivities.amount,
+            activity: activities,
+          })
+          .from(movementsActivities)
+          .innerJoin(activities, eq(movementsActivities.activity, activities.id))
+          .where(eq(movementsActivities.movement, movement.id));
+
+        for (const { linkAmount, activity } of linkedActivities) {
+          const { history, emitted } = computeHistory(ctx, activity.history, [
+            buildUnlinkEntry(
+              "activity",
+              activity.id,
+              {
+                type: "movement",
+                id: movement.id,
+                label: movement.name,
+              },
+              linkAmount,
+            ),
+          ]);
+          await db.update(activities).set({ history }).where(eq(activities.id, activity.id));
+          await emitHistoryEvents(ctx, emitted);
         }
 
         await db.delete(movements).where(eq(movements.id, movement.id));
@@ -236,7 +316,7 @@ export const registerMovementsMutations = () => {
       resolve: async (root, args, ctx) => {
         const movement = (
           await db
-            .select({ id: movements.id })
+            .select()
             .from(movements)
             .where(
               and(like(movements.id, idPattern(args.movementId)), eq(movements.user, ctx.user.id)),
@@ -249,7 +329,7 @@ export const registerMovementsMutations = () => {
 
         const activity = (
           await db
-            .select({ id: activities.id })
+            .select()
             .from(activities)
             .where(
               and(
@@ -263,17 +343,67 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Activity not found");
         }
 
-        await db.insert(movementsActivities).values({
-          id: args.id,
-          movement: movement.id,
-          activity: activity.id,
-          amount: args.amount,
-        });
+        const insertedMovementActivities = await db
+          .insert(movementsActivities)
+          .values({
+            id: args.id,
+            movement: movement.id,
+            activity: activity.id,
+            amount: args.amount,
+          })
+          .onConflictDoNothing()
+          .returning();
+        const movementActivity = insertedMovementActivities[0];
+
+        if (!movementActivity) {
+          // Retry of an already-applied mutation — nothing changed, no history.
+          return {
+            id: args.id,
+            movement: movement.id,
+            activity: activity.id,
+            amount: args.amount,
+          };
+        }
+
+        // History: link entry on both timelines.
+        const movementHistory = computeHistory(ctx, movement.history, [
+          buildLinkEntry(
+            "movement",
+            movement.id,
+            {
+              type: "activity",
+              id: activity.id,
+              label: activity.name,
+            },
+            args.amount,
+          ),
+        ]);
+        const activityHistory = computeHistory(ctx, activity.history, [
+          buildLinkEntry(
+            "activity",
+            activity.id,
+            {
+              type: "movement",
+              id: movement.id,
+              label: movement.name,
+            },
+            args.amount,
+          ),
+        ]);
+
+        await db
+          .update(movements)
+          .set({ history: movementHistory.history })
+          .where(eq(movements.id, movement.id));
+        await db
+          .update(activities)
+          .set({ history: activityHistory.history })
+          .where(eq(activities.id, activity.id));
 
         await addEvent({
           type: "createMovementActivity",
           payload: {
-            id: args.id,
+            id: movementActivity.id,
             movement: movement.id,
             activity: activity.id,
             amount: args.amount,
@@ -282,13 +412,10 @@ export const registerMovementsMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        await emitHistoryEvents(ctx, movementHistory.emitted);
+        await emitHistoryEvents(ctx, activityHistory.emitted);
 
-        return {
-          id: args.id,
-          movement: movement.id,
-          activity: activity.id,
-          amount: args.amount,
-        };
+        return movementActivity;
       },
     }),
   );
@@ -317,7 +444,7 @@ export const registerMovementsMutations = () => {
 
         const ownedMovement = (
           await db
-            .select({ id: movements.id })
+            .select()
             .from(movements)
             .where(
               and(eq(movements.id, movementActivity.movement), eq(movements.user, ctx.user.id)),
@@ -327,6 +454,14 @@ export const registerMovementsMutations = () => {
         if (!ownedMovement) {
           throw new GraphQLError("MovementActivity not found");
         }
+
+        const linkedActivity = (
+          await db
+            .select()
+            .from(activities)
+            .where(eq(activities.id, movementActivity.activity))
+            .limit(1)
+        )[0];
 
         const updatedFields: Partial<typeof movementActivity> = {};
         if (args.amount !== undefined) updatedFields.amount = args.amount;
@@ -342,6 +477,48 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("Failed to update movement activity");
         }
 
+        // History: amount change of the link, on both timelines.
+        const historyResults = [];
+        if (args.amount !== movementActivity.amount && linkedActivity) {
+          const movementHistory = computeHistory(ctx, ownedMovement.history, [
+            buildUpdateLinkEntry(
+              "movement",
+              ownedMovement.id,
+              {
+                type: "activity",
+                id: linkedActivity.id,
+                label: linkedActivity.name,
+              },
+              movementActivity.amount,
+              args.amount,
+            )!,
+          ]);
+          const activityHistory = computeHistory(ctx, linkedActivity.history, [
+            buildUpdateLinkEntry(
+              "activity",
+              linkedActivity.id,
+              {
+                type: "movement",
+                id: ownedMovement.id,
+                label: ownedMovement.name,
+              },
+              movementActivity.amount,
+              args.amount,
+            )!,
+          ]);
+
+          await db
+            .update(movements)
+            .set({ history: movementHistory.history })
+            .where(eq(movements.id, ownedMovement.id));
+          await db
+            .update(activities)
+            .set({ history: activityHistory.history })
+            .where(eq(activities.id, linkedActivity.id));
+
+          historyResults.push(movementHistory, activityHistory);
+        }
+
         await addEvent({
           type: "updateMovementActivity",
           payload: {
@@ -354,6 +531,9 @@ export const registerMovementsMutations = () => {
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
+        for (const result of historyResults) {
+          await emitHistoryEvents(ctx, result.emitted);
+        }
 
         return updatedMovementActivity;
       },
@@ -383,7 +563,7 @@ export const registerMovementsMutations = () => {
 
         const ownedMovement = (
           await db
-            .select({ id: movements.id })
+            .select()
             .from(movements)
             .where(
               and(eq(movements.id, movementActivity.movement), eq(movements.user, ctx.user.id)),
@@ -394,7 +574,55 @@ export const registerMovementsMutations = () => {
           throw new GraphQLError("MovementActivity not found");
         }
 
+        const linkedActivity = (
+          await db
+            .select()
+            .from(activities)
+            .where(eq(activities.id, movementActivity.activity))
+            .limit(1)
+        )[0];
+
         await db.delete(movementsActivities).where(eq(movementsActivities.id, movementActivity.id));
+
+        // History: unlink entry on both timelines.
+        if (linkedActivity) {
+          const movementHistory = computeHistory(ctx, ownedMovement.history, [
+            buildUnlinkEntry(
+              "movement",
+              ownedMovement.id,
+              {
+                type: "activity",
+                id: linkedActivity.id,
+                label: linkedActivity.name,
+              },
+              movementActivity.amount,
+            ),
+          ]);
+          const activityHistory = computeHistory(ctx, linkedActivity.history, [
+            buildUnlinkEntry(
+              "activity",
+              linkedActivity.id,
+              {
+                type: "movement",
+                id: ownedMovement.id,
+                label: ownedMovement.name,
+              },
+              movementActivity.amount,
+            ),
+          ]);
+
+          await db
+            .update(movements)
+            .set({ history: movementHistory.history })
+            .where(eq(movements.id, ownedMovement.id));
+          await db
+            .update(activities)
+            .set({ history: activityHistory.history })
+            .where(eq(activities.id, linkedActivity.id));
+
+          await emitHistoryEvents(ctx, movementHistory.emitted);
+          await emitHistoryEvents(ctx, activityHistory.emitted);
+        }
 
         await addEvent({
           type: "deleteMovementActivity",
