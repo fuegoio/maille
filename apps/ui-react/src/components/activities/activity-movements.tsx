@@ -168,7 +168,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
             (movementsReconciliatedOfAccount) => (
               <div
                 key={movementsReconciliatedOfAccount.account.toString()}
-                className="rounded-lg bg-muted/30 p-2"
+                className="rounded-lg border bg-muted/30 p-2"
               >
                 <div className="flex items-center text-sm">
                   <AccountLabel

@@ -120,9 +120,9 @@ export function Transaction({
       className={cn(
         "@container flex flex-col gap-2 text-sm",
         variant === "card" && "rounded-lg border bg-muted/30 p-2 shadow-md",
-        variant === "flat" && "rounded-lg bg-muted/30 p-2",
+        variant === "flat" && "rounded-lg border bg-muted/30 p-2",
         isStaged && variant === "card" && "border-dashed opacity-70",
-        isStaged && variant === "flat" && "border border-dashed",
+        isStaged && variant === "flat" && "border-dashed",
         className,
       )}
     >

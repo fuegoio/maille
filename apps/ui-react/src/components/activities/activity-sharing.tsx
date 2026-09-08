@@ -197,7 +197,10 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
             )?.contact;
             if (!user) return null;
             return (
-              <div key={sharing.user} className="rounded-lg bg-muted/30 p-2">
+              <div
+                key={sharing.user}
+                className="rounded-lg border bg-muted/30 p-2"
+              >
                 <div className="flex items-center">
                   <div className="mr-3 flex items-center">
                     <UserAvatar user={user} className="mr-2 h-6 w-6" />
