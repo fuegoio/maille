@@ -25,7 +25,8 @@ type FundMoveWithActivity = FundMove & {
 };
 
 interface FundMovesTableProps {
-  fundId: string;
+  /** The fund whose moves to show; null is Untracked (the null side of moves). */
+  fundId: string | null;
 }
 
 export function FundMovesTable({ fundId }: FundMovesTableProps) {

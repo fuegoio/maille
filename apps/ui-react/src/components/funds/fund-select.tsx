@@ -56,9 +56,11 @@ export function FundSelect({
         ))}
 
         {allowEmpty && (
-          <SelectItem value="clear" className="text-muted-foreground">
-            <div className="flex min-w-0 items-center">
-              <div className="mr-1.5 size-3 shrink-0" />
+          <SelectItem value="clear">
+            {/* Muted inside the item so the trigger shows it muted too —
+                the item's own class doesn't carry over to the trigger. */}
+            <div className="flex min-w-0 items-center text-muted-foreground">
+              <div className="mr-1.5 size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
               <span className="truncate">{emptyLabel}</span>
             </div>
           </SelectItem>

@@ -13,7 +13,10 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { getFundsBalances } from "@/logic/funds";
+import { getFundsBalances, getUntrackedBalanceAtDate } from "@/logic/funds";
+import { useAccounts } from "@/stores/accounts";
+import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 
 import { AllocateDialog } from "./allocate-dialog";
@@ -23,6 +26,9 @@ import { FundSettingsDialog } from "./fund-settings-dialog";
 export function FundsTable() {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
+  const accounts = useAccounts((state) => state.accounts);
+  const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user);
   const currencyFormatter = useCurrencyFormatter();
   const navigate = useNavigate();
 
@@ -33,6 +39,20 @@ export function FundsTable() {
   const balances = useMemo(
     () => getFundsBalances(sortedFunds, fundMoves),
     [sortedFunds, fundMoves],
+  );
+
+  const untrackedBalance = useMemo(
+    () =>
+      user
+        ? getUntrackedBalanceAtDate({
+            accounts,
+            activities,
+            fundMoves,
+            date: new Date(),
+            startingDate: user.startingDate,
+          })
+        : 0,
+    [accounts, activities, fundMoves, user],
   );
 
   if (funds.length === 0) {
@@ -119,6 +139,25 @@ export function FundsTable() {
           </div>
         </div>
       ))}
+
+      {/* Untracked is the complement of every fund: muted, at the bottom. */}
+      <div
+        className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
+        onClick={() => navigate({ to: "/funds/untracked" })}
+      >
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
+          <div className="text-sm font-medium">Untracked</div>
+        </div>
+
+        <div className="flex-1" />
+
+        <div className="mr-4 flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap text-muted-foreground">
+          {currencyFormatter.format(untrackedBalance)}
+        </div>
+
+        <div className="w-14 shrink-0" aria-hidden="true" />
+      </div>
     </div>
   );
 }

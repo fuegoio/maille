@@ -10,19 +10,40 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { getUntrackedBalanceAtDate } from "@/logic/funds";
+import { useAccounts } from "@/stores/accounts";
+import { useActivities } from "@/stores/activities";
+import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 
 interface FundSummaryProps {
-  fundId: string;
+  /** The fund to summarize; null is Untracked (the null side of moves). */
+  fundId: string | null;
 }
 
 export function FundSummary({ fundId }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const fundMoves = useFunds((state) => state.fundMoves);
+  const accounts = useAccounts((state) => state.accounts);
+  const activities = useActivities((state) => state.activities);
+  const user = useAuth((state) => state.user);
 
-  // A fund's balance at a date is the sum of its moves up to that day
-  const getFundBalanceAtDate = (date: Date) =>
-    fundMoves
+  // A fund's balance at a date is the sum of its moves up to that day;
+  // Untracked is the complement: balance accounts' total minus what funds
+  // claim up to that day.
+  const getFundBalanceAtDate = (date: Date) => {
+    if (fundId === null) {
+      if (!user) return 0;
+      return getUntrackedBalanceAtDate({
+        accounts,
+        activities,
+        fundMoves,
+        date,
+        startingDate: user.startingDate,
+      });
+    }
+
+    return fundMoves
       .filter((m) => m.date.getTime() < addDays(startOfDay(date), 1).getTime())
       .reduce(
         (total, m) =>
@@ -31,6 +52,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
           (m.fromFund === fundId ? m.amount : 0),
         0,
       );
+  };
 
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
