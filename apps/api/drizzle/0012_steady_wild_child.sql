@@ -1,0 +1,1 @@
+ALTER TABLE "funds" DROP COLUMN "is_default";

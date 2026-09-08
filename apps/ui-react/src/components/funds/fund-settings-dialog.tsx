@@ -190,18 +190,11 @@ export function FundSettingsDialog({
                       {...field}
                       placeholder="Fund name"
                       className={errors.name ? "border-destructive" : ""}
-                      disabled={fund.isDefault}
-                      autoFocus={!fund.isDefault}
+                      autoFocus
                     />
                   )}
                 />
-                {fund.isDefault ? (
-                  <p className="text-xs text-muted-foreground">
-                    The default fund&apos;s name can&apos;t be changed.
-                  </p>
-                ) : (
-                  <FieldError errors={[errors.name]} />
-                )}
+                <FieldError errors={[errors.name]} />
               </FieldContent>
             </Field>
           </div>
@@ -249,33 +242,31 @@ export function FundSettingsDialog({
           </div>
 
           <DialogFooter>
-            {!fund.isDefault && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="destructive">
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete fund</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this fund? Money will move
+                    back to Untracked. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    variant="destructive"
+                  >
                     Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete fund</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this fund? Money will move
-                      back to the default fund. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      variant="destructive"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <div className="flex-1" />
             <DialogClose asChild>
               <Button type="button" variant="outline">

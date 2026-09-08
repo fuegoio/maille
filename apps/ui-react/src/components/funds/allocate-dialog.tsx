@@ -25,17 +25,21 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { createFundMoveMutation } from "@/mutations/funds";
-import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
 import { FundSelect } from "./fund-select";
 
-const allocateSchema = z.object({
-  fromFund: z.string().min(1, "A source fund is required"),
-  toFund: z.string().min(1, "A destination fund is required"),
-  amount: z.number().positive("Amount must be positive"),
-  date: z.date(),
-});
+const allocateSchema = z
+  .object({
+    fromFund: z.string().nullable(),
+    toFund: z.string().nullable(),
+    amount: z.number().positive("Amount must be positive"),
+    date: z.date(),
+  })
+  .refine((data) => data.fromFund !== data.toFund, {
+    message: "A fund move needs a fund on one of the sides",
+    path: ["toFund"],
+  });
 
 type AllocateFormValues = z.infer<typeof allocateSchema>;
 
@@ -53,8 +57,6 @@ export function AllocateDialog({
   defaultToFund,
 }: AllocateDialogProps) {
   const mutate = useSync((state) => state.mutate);
-  const funds = useFunds((state) => state.funds);
-  const defaultFund = funds.find((f) => f.isDefault);
   const [open, setOpen] = useState(false);
 
   const {
@@ -65,8 +67,10 @@ export function AllocateDialog({
   } = useForm<AllocateFormValues>({
     resolver: zodResolver(allocateSchema),
     defaultValues: {
-      fromFund: defaultFund?.id ?? "",
-      toFund: defaultToFund ?? "",
+      // Untracked is the default fund: allocations draw from it unless
+      // another source is chosen.
+      fromFund: null,
+      toFund: defaultToFund ?? null,
       amount: 0,
       date: new Date(),
     },
@@ -79,8 +83,6 @@ export function AllocateDialog({
   };
 
   const onSubmit = (data: AllocateFormValues) => {
-    if (data.fromFund === data.toFund) return;
-
     const id = crypto.randomUUID();
     const date = data.date.toISOString();
 
@@ -135,9 +137,11 @@ export function AllocateDialog({
                   control={control}
                   render={({ field }) => (
                     <FundSelect
-                      value={field.value || null}
+                      value={field.value ?? null}
                       onValueChange={field.onChange}
-                      placeholder="Source fund"
+                      placeholder="Untracked"
+                      allowEmpty
+                      emptyLabel="Untracked"
                     />
                   )}
                 />
@@ -155,9 +159,11 @@ export function AllocateDialog({
                   control={control}
                   render={({ field }) => (
                     <FundSelect
-                      value={field.value || null}
+                      value={field.value ?? null}
                       onValueChange={field.onChange}
                       placeholder="Destination fund"
+                      allowEmpty
+                      emptyLabel="Untracked"
                     />
                   )}
                 />

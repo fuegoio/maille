@@ -164,7 +164,6 @@ const userDataQuery = graphql(/* GraphQL */ `
       id
       name
       color
-      isDefault
       startDate
       endDate
     }

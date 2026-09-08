@@ -1,7 +1,6 @@
-import { accounts, funds } from "@/tables";
+import { accounts } from "@/tables";
 import { db } from "@/database";
 import { AccountType } from "@maille/core/accounts";
-import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { logger } from "@/logger";
 
 export const createUserAccounts = async (userId: string) => {
@@ -69,15 +68,6 @@ export const createUserAccounts = async (userId: string) => {
       },
     ])
     .returning();
-
-  // Create the default fund
-  await db.insert(funds).values({
-    id: crypto.randomUUID(),
-    user: userId,
-    name: "Liquid",
-    color: DEFAULT_FUND_COLOR,
-    isDefault: true,
-  });
 
   logger.info({ userId }, "User bootstrapped successfully");
 

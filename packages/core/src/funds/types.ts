@@ -2,7 +2,6 @@ export type Fund = {
   id: string;
   name: string;
   color: string;
-  isDefault: boolean;
   startDate: Date | null;
   endDate: Date | null;
 };

@@ -85,6 +85,13 @@
       "when": 1788863257349,
       "tag": "0011_panoramic_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788865007454,
+      "tag": "0012_steady_wild_child",
+      "breakpoints": true
     }
   ]
 }

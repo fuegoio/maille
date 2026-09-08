@@ -97,7 +97,7 @@ export function Transaction({
 
   // Money can carry a fund label while it sits in a balance account:
   // the from side tracks the fund it leaves, the to side the fund it
-  // receives (e.g. an investment purchase can leave "Liquid" and enter
+  // receives (e.g. an investment purchase can leave "Savings" and enter
   // "Investments")
   const isFromBalance =
     fromAccount &&

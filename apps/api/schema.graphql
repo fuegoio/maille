@@ -146,7 +146,6 @@ type Fund {
   color: String!
   endDate: Date
   id: String!
-  isDefault: Boolean!
   name: String!
   startDate: Date
 }

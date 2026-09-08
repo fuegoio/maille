@@ -226,7 +226,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                   <div className="flex-1" />
                   <div
                     className={cn(
-                      "mr-4 ml-3 font-mono text-xs font-medium whitespace-nowrap",
+                      "mr-2 ml-3 font-mono text-xs font-medium whitespace-nowrap",
                       !movementsReconciliatedOfAccount.reconcilied
                         ? "text-orange-300"
                         : "text-indigo-400",

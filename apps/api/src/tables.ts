@@ -298,7 +298,6 @@ export const funds = pgTable("funds", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   color: text("color").notNull().default(DEFAULT_FUND_COLOR),
-  isDefault: boolean("is_default").notNull().default(false),
   startDate: timestamp("start_date", { mode: "date" }),
   endDate: timestamp("end_date", { mode: "date" }),
 });

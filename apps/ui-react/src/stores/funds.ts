@@ -15,7 +15,6 @@ interface FundsState {
   fundMoves: FundMove[];
 
   getFundById: (fundId: string) => Fund | undefined;
-  getDefaultFund: () => Fund | undefined;
 
   addFund: (fund: Fund) => void;
   updateFund: (fundId: string, update: Partial<Omit<Fund, "id">>) => void;
@@ -50,10 +49,6 @@ export const useFunds = create<FundsState>()(
         return get().funds.find((f) => f.id === fundId);
       },
 
-      getDefaultFund: () => {
-        return get().funds.find((f) => f.isDefault);
-      },
-
       addFund: (fund) => {
         set((state) => ({
           funds: [...state.funds.filter((f) => f.id !== fund.id), fund],
@@ -71,10 +66,15 @@ export const useFunds = create<FundsState>()(
       deleteFund: (fundId) => {
         set((state) => ({
           funds: state.funds.filter((fund) => fund.id !== fundId),
-          // Moves referencing the deleted fund are removed server-side by cascade
-          fundMoves: state.fundMoves.filter(
-            (move) => move.fromFund !== fundId && move.toFund !== fundId,
-          ),
+          // The deleted fund's legs go back to Untracked server-side; legs
+          // left with both sides untracked carry no information and go.
+          fundMoves: state.fundMoves
+            .map((move) => ({
+              ...move,
+              fromFund: move.fromFund === fundId ? null : move.fromFund,
+              toFund: move.toFund === fundId ? null : move.toFund,
+            }))
+            .filter((move) => move.fromFund !== null || move.toFund !== null),
         }));
       },
 
@@ -122,7 +122,6 @@ export const useFunds = create<FundsState>()(
             id: event.payload.id,
             name: event.payload.name,
             color: event.payload.color,
-            isDefault: event.payload.isDefault,
             startDate: event.payload.startDate
               ? new Date(event.payload.startDate)
               : null,

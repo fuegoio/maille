@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 
 const FUNDS_QUERY = `
   query {
-    funds { id name color isDefault startDate endDate }
+    funds { id name color startDate endDate }
   }
 `;
 
@@ -28,12 +28,11 @@ fundsCommand
       if (opts.json) { console.log(JSON.stringify(data.funds, null, 2)); return; }
       if (!data.funds.length) { console.log(chalk.yellow("No funds found.")); return; }
       printTable(
-        ["ID", "NAME", "COLOR", "DEFAULT", "START DATE", "END DATE"],
+        ["ID", "NAME", "COLOR", "START DATE", "END DATE"],
         data.funds.map((f) => [
           String(f.id).slice(0, 8),
           String(f.name),
           String(f.color ?? ""),
-          f.isDefault ? "yes" : "",
           f.startDate ? new Date(String(f.startDate)).toLocaleDateString() : "-",
           f.endDate ? new Date(String(f.endDate)).toLocaleDateString() : "-",
         ])

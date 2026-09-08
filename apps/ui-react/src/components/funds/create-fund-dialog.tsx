@@ -106,7 +106,6 @@ export function CreateFundDialog({
             id,
             name: data.name,
             color: data.color,
-            isDefault: false,
             startDate,
             endDate,
           },
@@ -119,7 +118,6 @@ export function CreateFundDialog({
         id,
         name: data.name,
         color: data.color,
-        isDefault: false,
         startDate: null,
         endDate: null,
       };

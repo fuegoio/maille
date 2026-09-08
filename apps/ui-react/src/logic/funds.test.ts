@@ -4,11 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import { getFundsBalances } from "./funds";
 
-const fund = (id: string, isDefault = false): Fund => ({
+const fund = (id: string): Fund => ({
   id,
   name: id,
   color: "#818cf8",
-  isDefault,
   startDate: null,
   endDate: null,
 });
@@ -25,7 +24,7 @@ const move = (partial: Partial<FundMove> & Pick<FundMove, "id">): FundMove => ({
 
 describe("funds balances (ui logic)", () => {
   it("derives balances from standalone allocations and transaction-linked draw-downs", () => {
-    const funds = [fund("liquid", true), fund("house")];
+    const funds = [fund("liquid"), fund("house")];
     const moves = [
       // Allocate 30000 to house work
       move({ id: "1", fromFund: "liquid", toFund: "house", amount: 30000 }),
@@ -45,7 +44,7 @@ describe("funds balances (ui logic)", () => {
   });
 
   it("is unaffected by moves of deleted funds (cascade cleanup)", () => {
-    const funds = [fund("liquid", true)];
+    const funds = [fund("liquid")];
     const moves = [
       move({ id: "1", fromFund: null, toFund: "liquid", amount: 100 }),
     ];

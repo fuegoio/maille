@@ -95,13 +95,11 @@ function FundPage() {
               Allocate
             </Button>
           </AllocateDialog>
-          {!fund.isDefault && (
-            <FundSettingsDialog fund={fund}>
-              <Button variant="ghost" size="icon" aria-label="Fund settings">
-                <Settings />
-              </Button>
-            </FundSettingsDialog>
-          )}
+          <FundSettingsDialog fund={fund}>
+            <Button variant="ghost" size="icon" aria-label="Fund settings">
+              <Settings />
+            </Button>
+          </FundSettingsDialog>
         </header>
 
         <FundMovesTable fundId={fund.id} />

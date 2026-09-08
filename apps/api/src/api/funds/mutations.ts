@@ -5,7 +5,7 @@ import { FundSchema, FundMoveSchema } from "./schemas";
 import { funds, fundMoves } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
-import { and, eq, like } from "drizzle-orm";
+import { and, eq, isNull, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
 /**
@@ -45,7 +45,6 @@ export const registerFundsMutations = () => {
               user: ctx.user.id,
               name: args.name,
               color: args.color ?? DEFAULT_FUND_COLOR,
-              isDefault: false,
               startDate: args.startDate,
               endDate: args.endDate,
             })
@@ -62,7 +61,6 @@ export const registerFundsMutations = () => {
             id: created.id,
             name: created.name,
             color: created.color,
-            isDefault: created.isDefault,
             startDate: created.startDate?.toISOString() ?? null,
             endDate: created.endDate?.toISOString() ?? null,
           },
@@ -96,14 +94,6 @@ export const registerFundsMutations = () => {
         )[0];
         if (!fund) {
           throw new GraphQLError("Fund not found");
-        }
-        if (
-          fund.isDefault &&
-          args.name !== undefined &&
-          args.name !== null &&
-          args.name !== fund.name
-        ) {
-          throw new GraphQLError("The default fund cannot be renamed");
         }
 
         const updates: Partial<typeof fund> = {};
@@ -157,11 +147,22 @@ export const registerFundsMutations = () => {
         if (!fund) {
           throw new GraphQLError("Fund not found");
         }
-        if (fund.isDefault) {
-          throw new GraphQLError("The default fund cannot be deleted");
-        }
 
-        // Fund moves referencing the fund are deleted by cascade
+        // The deleted fund's legs go back to Untracked (a null side), so the
+        // counterpart funds keep their history.
+        await db.update(fundMoves).set({ fromFund: null }).where(eq(fundMoves.fromFund, fund.id));
+        await db.update(fundMoves).set({ toFund: null }).where(eq(fundMoves.toFund, fund.id));
+        // Moves with both sides untracked carry no information: drop them.
+        await db
+          .delete(fundMoves)
+          .where(
+            and(
+              eq(fundMoves.user, ctx.user.id),
+              isNull(fundMoves.fromFund),
+              isNull(fundMoves.toFund),
+            ),
+          );
+
         await db.delete(funds).where(eq(funds.id, fund.id));
 
         await addEvent({

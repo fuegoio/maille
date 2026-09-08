@@ -46,11 +46,7 @@ import { addEvent } from "@/api/events";
 import { computeHistory, emitHistoryEvents } from "@/api/history/history";
 import { loadHistoryLabels, transactionLeg } from "@/api/history/labels";
 import { getActivitySharings } from "@/services/sharing";
-import {
-  getDefaultFund,
-  insertTransactionFundMoves,
-  serializeFundMoves,
-} from "@/api/funds/transactions";
+import { insertTransactionFundMoves, serializeFundMoves } from "@/api/funds/transactions";
 import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
@@ -296,16 +292,12 @@ export const registerActivitiesMutations = () => {
               throw new GraphQLError("Failed to create transaction");
             }
 
-            const defaultFund = transaction.fundMoves?.length
-              ? await getDefaultFund(ctx.user.id)
-              : null;
             const newFundMoves = await insertTransactionFundMoves({
               userId: ctx.user.id,
               transactionId: newTransaction.id,
               transactionDate: new Date(args.date),
               amount: transaction.amount,
               fundMovesInput: transaction.fundMoves,
-              defaultFundId: defaultFund?.id ?? null,
             });
 
             return { ...newTransaction, fundMoves: newFundMoves };
@@ -1046,14 +1038,12 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to create transaction");
         }
 
-        const defaultFund = args.fundMoves?.length ? await getDefaultFund(ctx.user.id) : null;
         const newFundMoves = await insertTransactionFundMoves({
           userId: ctx.user.id,
           transactionId: newTransaction.id,
           transactionDate: activity.date,
           amount: args.amount,
           fundMovesInput: args.fundMoves,
-          defaultFundId: defaultFund?.id ?? null,
         });
 
         await addEvent({
@@ -1316,14 +1306,12 @@ export const registerActivitiesMutations = () => {
           await db.delete(fundMoves).where(eq(fundMoves.transaction, transaction.id));
 
           if (args.fundMoves.length > 0) {
-            const defaultFund = await getDefaultFund(ctx.user.id);
             updatedFundMoves = await insertTransactionFundMoves({
               userId: ctx.user.id,
               transactionId: transaction.id,
               transactionDate: activity.date,
               amount: updatedTransaction.amount,
               fundMovesInput: args.fundMoves,
-              defaultFundId: defaultFund?.id ?? null,
             });
           } else if (existingFundMoves.length > 0) {
             updatedFundMoves = [];

@@ -98,7 +98,6 @@ export interface CreateFundEvent extends BaseSyncEvent {
     id: string;
     name: string;
     color: string;
-    isDefault: boolean;
     startDate: string | null;
     endDate: string | null;
   };

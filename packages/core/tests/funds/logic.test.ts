@@ -4,11 +4,10 @@ import type { Fund, FundMove } from "@maille/core/funds";
 
 import { getFundBalance, getFundsBalances, getTotalFundsBalance } from "@maille/core/funds";
 
-const fund = (id: string, isDefault = false): Fund => ({
+const fund = (id: string): Fund => ({
   id,
   name: id,
   color: "#818cf8",
-  isDefault,
   startDate: null,
   endDate: null,
 });

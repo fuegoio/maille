@@ -11,7 +11,6 @@ FundSchema.implement({
     }),
     name: t.exposeString("name"),
     color: t.exposeString("color"),
-    isDefault: t.exposeBoolean("isDefault"),
     startDate: t.field({
       type: "Date",
       resolve: (parent) => parent.startDate,

@@ -27,10 +27,7 @@ export function FundsTable() {
   const navigate = useNavigate();
 
   const sortedFunds = useMemo(() => {
-    return [...funds].sort((a, b) => {
-      if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
+    return [...funds].sort((a, b) => a.name.localeCompare(b.name));
   }, [funds]);
 
   const balances = useMemo(
@@ -78,11 +75,6 @@ export function FundsTable() {
               style={{ backgroundColor: fund.color }}
             />
             <div className="text-sm font-medium">{fund.name}</div>
-            {fund.isDefault && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                Default
-              </span>
-            )}
           </div>
 
           {(fund.startDate || fund.endDate) && (
@@ -114,18 +106,16 @@ export function FundsTable() {
                 <ArrowDownToLine />
               </Button>
             </AllocateDialog>
-            {!fund.isDefault && (
-              <FundSettingsDialog fund={fund}>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={`${fund.name} settings`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <SettingsIcon />
-                </Button>
-              </FundSettingsDialog>
-            )}
+            <FundSettingsDialog fund={fund}>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label={`${fund.name} settings`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SettingsIcon />
+              </Button>
+            </FundSettingsDialog>
           </div>
         </div>
       ))}
