@@ -8,12 +8,14 @@ import {
 import {
   ArrowDownToLine,
   ChevronRight,
+  Plus,
   Settings,
   SquareChartGantt,
 } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { AllocateDialog } from "@/components/funds/allocate-dialog";
+import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
@@ -139,6 +141,12 @@ function FundPage() {
               Allocate
             </Button>
           </AllocateDialog>
+          <CreateFundDialog defaultParent={fund.id}>
+            <Button>
+              <Plus />
+              New subfund
+            </Button>
+          </CreateFundDialog>
           <FundSettingsDialog fund={fund}>
             <Button variant="ghost" size="icon" aria-label="Fund settings">
               <Settings />

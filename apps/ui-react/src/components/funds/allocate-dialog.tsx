@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -59,6 +59,20 @@ export function AllocateDialog({
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
 
+  // Resync the form when the focused fund changes: the dialog stays mounted
+  // in the fund page header while the user navigates via the breadcrumb.
+  const formDefaults = useMemo<AllocateFormValues>(
+    () => ({
+      // Untracked is the default fund: allocations draw from it unless
+      // another source is chosen.
+      fromFund: null,
+      toFund: defaultToFund ?? null,
+      amount: 0,
+      date: new Date(),
+    }),
+    [defaultToFund],
+  );
+
   const {
     control,
     handleSubmit,
@@ -66,19 +80,16 @@ export function AllocateDialog({
     formState: { errors, isSubmitting },
   } = useForm<AllocateFormValues>({
     resolver: zodResolver(allocateSchema),
-    defaultValues: {
-      // Untracked is the default fund: allocations draw from it unless
-      // another source is chosen.
-      fromFund: null,
-      toFund: defaultToFund ?? null,
-      amount: 0,
-      date: new Date(),
-    },
+    defaultValues: formDefaults,
   });
+
+  useEffect(() => {
+    reset(formDefaults);
+  }, [formDefaults, reset]);
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
-    if (!value) reset();
+    if (!value) reset(formDefaults);
     onOpenChange?.(value);
   };
 
