@@ -1,0 +1,22 @@
+{
+  "name": "@maille/harness",
+  "type": "module",
+  "exports": {
+    "./llm": "./src/llm.ts",
+    "./tools": "./src/tools.ts",
+    "./prompt": "./src/prompt.ts",
+    "./evidence": "./src/evidence.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "test": "bun test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@maille/core": "*",
+    "zod": "^4.3.6"
+  }
+}
