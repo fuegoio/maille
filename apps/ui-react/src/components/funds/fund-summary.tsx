@@ -364,23 +364,14 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         </BarChart>
       </ChartContainer>
 
-      {/* The fund's own money plus its direct subfunds, the subtree split of
-          the balance above. */}
+      {/* Direct subfunds, with the parent's own money closing the list as
+          the residual of the balance above. */}
       {children.length > 0 && (
         <div className="border-b p-6">
           <div className="text-xs font-medium text-muted-foreground">
             Subfunds
           </div>
           <div className="mt-2">
-            {directBalance !== null && (
-              <div className="flex h-8 items-center text-sm">
-                <div className="text-muted-foreground">This fund</div>
-                <div className="flex-1" />
-                <div className="font-mono text-muted-foreground">
-                  {currencyFormatter.format(directBalance)}
-                </div>
-              </div>
-            )}
             {children.map((child) => (
               <div
                 key={child.id}
@@ -400,6 +391,15 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 </div>
               </div>
             ))}
+            {directBalance !== null && (
+              <div className="flex h-8 items-center text-sm">
+                <div className="text-muted-foreground">No subfund</div>
+                <div className="flex-1" />
+                <div className="font-mono text-muted-foreground">
+                  {currencyFormatter.format(directBalance)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
