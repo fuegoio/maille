@@ -8,10 +8,13 @@ COPY apps/api/package.json ./apps/api/
 COPY apps/ui-react/package.json ./apps/ui-react/
 COPY apps/cli/package.json ./apps/cli/
 COPY packages/core/package.json ./packages/core/
+COPY packages/harness/package.json ./packages/harness/
 RUN bun install --frozen-lockfile
 
 COPY packages/core/package.json ./packages/core/
 COPY packages/core/src ./packages/core/src
+COPY packages/harness/package.json ./packages/harness/
+COPY packages/harness/src ./packages/harness/src
 COPY apps/api/package.json ./apps/api/
 COPY apps/api/index.ts ./apps/api/
 COPY apps/api/src ./apps/api/src
