@@ -1,9 +1,10 @@
 import type { Transaction } from "@maille/core/activities";
 import type { FundMove } from "@maille/core/funds";
-import type { ReactNode } from "react";
 
 import { AccountType } from "@maille/core/accounts";
+import { motion, useReducedMotion } from "framer-motion";
 import { Ellipsis, MoveDown, MoveRight, TrashIcon } from "lucide-react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { FundSelect } from "@/components/funds/fund-select";
@@ -44,6 +45,8 @@ interface TransactionProps {
   transaction: Omit<Transaction, "id">;
   className?: string;
   isStaged?: boolean;
+  /** Whether this transaction is the one linked from the current URL. */
+  isFocused?: boolean;
   /** "card" renders a boxed row (dialogs); "flat" a surface row (pages). */
   variant?: "card" | "flat";
   /** Hide the fund / counterparty / asset chips for a simpler layout. */
@@ -58,6 +61,7 @@ export function Transaction({
   transaction,
   className,
   isStaged,
+  isFocused,
   variant = "card",
   showMetadata = true,
   onUpdate,
@@ -65,6 +69,18 @@ export function Transaction({
 }: TransactionProps) {
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  // A focused transaction arrives via a deep link: bring it into view so
+  // the highlight lands where the user is already looking
+  useEffect(() => {
+    if (!isFocused) return;
+    rootRef.current?.scrollIntoView({
+      block: "center",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  }, [isFocused, prefersReducedMotion]);
 
   const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
   const toAccount = accounts.find((a) => a.id === transaction.toAccount);
@@ -134,12 +150,14 @@ export function Transaction({
 
   return (
     <div
+      ref={rootRef}
       className={cn(
-        "@container text-sm",
+        "@container relative text-sm",
         variant === "card" && "rounded-lg border bg-muted/30 p-3 shadow-md",
         variant === "flat" && "rounded-lg border bg-muted/30 p-3",
         isStaged && variant === "card" && "border-dashed opacity-70",
         isStaged && variant === "flat" && "border-dashed",
+        isFocused && "border-primary",
         className,
       )}
     >
@@ -326,6 +344,31 @@ export function Transaction({
           </DropdownMenu>
         </div>
       </div>
+
+      {isFocused && (
+        <>
+          {/* Deep-link focus: the hairline border thickens into a primary
+              ring, drawn as an overlay so the row never shifts */}
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-primary"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+          />
+          {/* A one-shot tint flash settling into the steady ring, so the
+              arrival reads as "you came here for this leg" */}
+          {!prefersReducedMotion && (
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 rounded-lg bg-primary/10"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -27,11 +27,16 @@ import { TransactionDropdown } from "./transaction-dropdown";
 
 interface ActivityTransactionsProps {
   activity: Activity;
+  /** The transaction to highlight, when the route links to one. */
+  focusTransactionId?: string | null;
 }
 
 type StagedTransaction = Omit<Transaction, "id"> & { id: string };
 
-export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
+export function ActivityTransactions({
+  activity,
+  focusTransactionId,
+}: ActivityTransactionsProps) {
   const currencyFormatter = useCurrencyFormatter();
   const mutate = useSync((state) => state.mutate);
   const accounts = useAccounts((state) => state.accounts);
@@ -358,6 +363,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
                 key={transaction.id}
                 variant="flat"
                 transaction={transaction}
+                isFocused={transaction.id === focusTransactionId}
                 onUpdate={(update) =>
                   handleTransactionUpdate(transaction, update)
                 }

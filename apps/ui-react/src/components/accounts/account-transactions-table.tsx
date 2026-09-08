@@ -216,6 +216,7 @@ export function AccountTransactionsTable({
                     void router.navigate({
                       to: "/activities/$id",
                       params: { id: item.activity.id },
+                      search: { transaction: item.id },
                     })
                   }
                 />
