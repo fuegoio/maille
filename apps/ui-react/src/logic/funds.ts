@@ -1,6 +1,6 @@
 import type { Account } from "@maille/core/accounts";
 import type { Activity } from "@maille/core/activities";
-import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
+import type { Fund, FundAccount, FundMove } from "@maille/core/funds";
 import type { PositionsInput } from "@maille/core/funds";
 
 import {
@@ -18,11 +18,11 @@ export { getFundTreeBalance } from "@maille/core/funds";
 export const getFundsBalances = (
   funds: Fund[],
   fundMoves: FundMove[],
-  fundAllocations: FundAllocation[] = [],
+  fundAccounts: FundAccount[] = [],
 ) =>
   funds.map((fund) => ({
     fund,
-    balance: getFundBalance(fund.id, fundMoves, fundAllocations),
+    balance: getFundBalance(fund.id, fundMoves, fundAccounts),
   }));
 
 /** The ids of a fund and every fund below it in the tree. */
@@ -35,12 +35,12 @@ const cutoffOf = (date: Date) => addDays(startOfDay(date), 1).getTime();
 const allocatedBefore = (
   fundIds: Set<string>,
   funds: Fund[],
-  fundAllocations: FundAllocation[],
+  fundAccounts: FundAccount[],
   startingDate: Date,
   cutoff: number,
 ) => {
   const fundById = new Map(funds.map((fund) => [fund.id, fund]));
-  return fundAllocations.reduce((total, allocation) => {
+  return fundAccounts.reduce((total, allocation) => {
     if (!fundIds.has(allocation.fund)) return total;
     const fund = fundById.get(allocation.fund);
     if (!fund) return total;
@@ -60,7 +60,7 @@ export const getFundTreeBalanceAtDate = (
   fundId: string,
   funds: Fund[],
   fundMoves: FundMove[],
-  fundAllocations: FundAllocation[],
+  fundAccounts: FundAccount[],
   startingDate: Date,
   date: Date,
 ): number => {
@@ -75,7 +75,7 @@ export const getFundTreeBalanceAtDate = (
           (m.toFund && ids.has(m.toFund) ? m.amount : 0) -
           (m.fromFund && ids.has(m.fromFund) ? m.amount : 0),
         0,
-      ) + allocatedBefore(ids, funds, fundAllocations, startingDate, cutoff)
+      ) + allocatedBefore(ids, funds, fundAccounts, startingDate, cutoff)
   );
 };
 
@@ -83,8 +83,8 @@ export const getFundTreeBalanceAtDate = (
 export const getFundDirectBalance = (
   fundId: string,
   fundMoves: FundMove[],
-  fundAllocations: FundAllocation[] = [],
-): number => getFundBalance(fundId, fundMoves, fundAllocations);
+  fundAccounts: FundAccount[] = [],
+): number => getFundBalance(fundId, fundMoves, fundAccounts);
 
 /** A fund's direct children, name-sorted. */
 export const getFundChildren = (fundId: string, funds: Fund[]): Fund[] =>
@@ -103,7 +103,7 @@ export const getFundTreeFlowsBetweenDates = (
   fundId: string,
   funds: Fund[],
   fundMoves: FundMove[],
-  fundAllocations: FundAllocation[],
+  fundAccounts: FundAccount[],
   startingDate: Date,
   from: Date,
   to: Date,
@@ -121,8 +121,8 @@ export const getFundTreeFlowsBetweenDates = (
     if (fromInside && !toInside) outflow += m.amount;
   }
   inflow +=
-    allocatedBefore(ids, funds, fundAllocations, startingDate, end) -
-    allocatedBefore(ids, funds, fundAllocations, startingDate, start);
+    allocatedBefore(ids, funds, fundAccounts, startingDate, end) -
+    allocatedBefore(ids, funds, fundAccounts, startingDate, start);
   return { in: inflow, out: outflow };
 };
 
@@ -132,7 +132,7 @@ export const getFundTreeFlowsBetweenDates = (
  */
 export const getAllocationsLandedBetweenDates = (
   funds: Fund[],
-  fundAllocations: FundAllocation[],
+  fundAccounts: FundAccount[],
   startingDate: Date,
   from: Date,
   to: Date,
@@ -142,14 +142,14 @@ export const getAllocationsLandedBetweenDates = (
     allocatedBefore(
       ids,
       funds,
-      fundAllocations,
+      fundAccounts,
       startingDate,
       addDays(startOfDay(to), 1).getTime(),
     ) -
     allocatedBefore(
       ids,
       funds,
-      fundAllocations,
+      fundAccounts,
       startingDate,
       startOfDay(from).getTime(),
     )
@@ -166,7 +166,7 @@ export function toPositionsInput({
   activities,
   funds,
   fundMoves,
-  fundAllocations,
+  fundAccounts,
   startingDate,
   date,
 }: {
@@ -174,7 +174,7 @@ export function toPositionsInput({
   activities: Activity[];
   funds: Fund[];
   fundMoves: FundMove[];
-  fundAllocations: FundAllocation[];
+  fundAccounts: FundAccount[];
   startingDate: Date;
   date?: Date;
 }): PositionsInput {
@@ -189,7 +189,7 @@ export function toPositionsInput({
   return {
     accounts,
     funds,
-    fundAllocations,
+    fundAccounts,
     activities: activities.map((activity) => ({
       date: activity.date,
       transactions: activity.transactions.map((transaction) => ({
@@ -208,7 +208,7 @@ export function getUntrackedByAccountAtDate(input: {
   activities: Activity[];
   funds: Fund[];
   fundMoves: FundMove[];
-  fundAllocations: FundAllocation[];
+  fundAccounts: FundAccount[];
   date: Date;
   startingDate: Date;
 }): Map<string, number> {
@@ -225,7 +225,7 @@ export function getUntrackedBalanceAtDate(input: {
   activities: Activity[];
   funds: Fund[];
   fundMoves: FundMove[];
-  fundAllocations: FundAllocation[];
+  fundAccounts: FundAccount[];
   date: Date;
   startingDate: Date;
 }): number {

@@ -19,7 +19,7 @@ interface MonthFundsSummaryProps {
 export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
+  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
@@ -51,7 +51,7 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
           fund.id,
           funds,
           fundMoves,
-          fundAllocations,
+          fundAccounts,
           user.startingDate,
           beforeMonth,
         )
@@ -61,7 +61,7 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
           fund.id,
           funds,
           fundMoves,
-          fundAllocations,
+          fundAccounts,
           user.startingDate,
           endOfMonth,
         )
@@ -75,7 +75,7 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
           activities,
           funds,
           fundMoves,
-          fundAllocations,
+          fundAccounts,
           date: beforeMonth,
           startingDate: user.startingDate,
         }),
@@ -84,7 +84,7 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
           activities,
           funds,
           fundMoves,
-          fundAllocations,
+          fundAccounts,
           date: endOfMonth,
           startingDate: user.startingDate,
         }),

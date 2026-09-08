@@ -38,15 +38,15 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   deleteFundMutation,
-  setFundAllocationsMutation,
+  setFundAccountsMutation,
   updateFundMutation,
 } from "@/mutations/funds";
 import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
 import {
-  allocationRowsFromFundAllocations,
-  FundAllocationsEditor,
+  allocationRowsFromFundAccounts,
+  FundAccountsEditor,
   significantAllocationRows,
   type AllocationRow,
 } from "./fund-allocations-editor";
@@ -87,11 +87,11 @@ export function FundSettingsDialog({
 }: FundSettingsDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const funds = useFunds((state) => state.funds);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
+  const fundAccounts = useMemo(() => funds.flatMap((f) => f.accounts), [funds]);
   const [open, setOpen] = useState(false);
   const [allocationRows, setAllocationRows] = useState<AllocationRow[]>(() =>
-    allocationRowsFromFundAllocations(
-      fundAllocations.filter((allocation) => allocation.fund === fund.id),
+    allocationRowsFromFundAccounts(
+      fundAccounts.filter((allocation) => allocation.fund === fund.id),
     ),
   );
   const [allocationError, setAllocationError] = useState<string | null>(null);
@@ -138,10 +138,10 @@ export function FundSettingsDialog({
     lastFundId.current = fund.id;
     reset(fundFormValues(fund));
     setAllocationRows(
-      allocationRowsFromFundAllocations(
+      allocationRowsFromFundAccounts(
         useFunds
           .getState()
-          .fundAllocations.filter((allocation) => allocation.fund === fund.id),
+          .funds.find((f) => f.id === fund.id)?.accounts ?? [],
       ),
     );
   }, [fund, reset]);
@@ -190,37 +190,36 @@ export function FundSettingsDialog({
 
     // Replace the fund's whole opening position when it changed: the server
     // replays the ledger and rejects over-claiming.
-    const currentAllocations = useFunds
-      .getState()
-      .fundAllocations.filter((allocation) => allocation.fund === fund.id);
-    const nextAllocations = significantAllocationRows(allocationRows);
+    const currentAccounts =
+      useFunds.getState().funds.find((f) => f.id === fund.id)?.accounts ?? [];
+    const nextAccounts = significantAllocationRows(allocationRows);
     const byAccount = (rows: { account: string; amount: number }[]) =>
       JSON.stringify(
         [...rows].sort((a, b) => a.account.localeCompare(b.account)),
       );
     if (
-      byAccount(nextAllocations) !==
+      byAccount(nextAccounts) !==
       byAccount(
-        currentAllocations.map((allocation) => ({
-          account: allocation.account,
-          amount: allocation.amount,
+        currentAccounts.map((account) => ({
+          account: account.account,
+          amount: account.amount,
         })),
       )
     ) {
       mutate({
-        name: "setFundAllocations",
-        mutation: setFundAllocationsMutation,
-        variables: { fund: fund.id, allocations: nextAllocations },
-        rollbackData: currentAllocations,
+        name: "setFundAccounts",
+        mutation: setFundAccountsMutation,
+        variables: { fund: fund.id, accounts: nextAccounts },
+        rollbackData: currentAccounts,
         events: [
           {
-            type: "updateFundAllocations",
+            type: "updateFundAccounts",
             payload: {
               fund: fund.id,
-              allocations: nextAllocations.map((allocation) => ({
-                id: allocation.id,
-                account: allocation.account,
-                amount: allocation.amount,
+              accounts: nextAccounts.map((account) => ({
+                id: account.id,
+                account: account.account,
+                amount: account.amount,
               })),
             },
           },
@@ -356,7 +355,7 @@ export function FundSettingsDialog({
             </Field>
           </div>
 
-          <FundAllocationsEditor
+          <FundAccountsEditor
             startDate={startDate ?? null}
             rows={allocationRows}
             onChange={setAllocationRows}

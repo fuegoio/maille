@@ -122,14 +122,14 @@ export interface DeleteFundEvent extends BaseSyncEvent {
 }
 
 /**
- * A fund's opening allocations, replaced wholesale: the payload is the
- * fund's full allocation list after the mutation.
+ * A fund's opening accounts, replaced wholesale: the payload is the
+ * fund's full account list after the mutation.
  */
-export interface UpdateFundAllocationsEvent extends BaseSyncEvent {
-  type: "updateFundAllocations";
+export interface UpdateFundAccountsEvent extends BaseSyncEvent {
+  type: "updateFundAccounts";
   payload: {
     fund: string;
-    allocations: {
+    accounts: {
       id: string;
       account: string;
       amount: number;
@@ -468,7 +468,7 @@ export type SyncEvent =
   | CreateFundEvent
   | UpdateFundEvent
   | DeleteFundEvent
-  | UpdateFundAllocationsEvent
+  | UpdateFundAccountsEvent
   | CreateAccountEvent
   | UpdateAccountEvent
   | DeleteAccountEvent

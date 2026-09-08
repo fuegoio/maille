@@ -1,10 +1,10 @@
 import { AccountType } from "@maille/core/accounts";
 import { getAllocationDate, getUntrackedByAccountAtDate } from "@maille/core/funds";
-import type { FundAllocation } from "@maille/core/funds";
+import type { FundAccount } from "@maille/core/funds";
 import type { PositionsInput } from "@maille/core/funds";
 
 import { db } from "@/database";
-import { accounts, activities, fundAllocations, fundMoves, funds, transactions } from "@/tables";
+import { accounts, activities, fundAccounts, fundMoves, funds, transactions } from "@/tables";
 import { user as userTable } from "@/tables";
 
 import { and, eq, or } from "drizzle-orm";
@@ -20,7 +20,7 @@ type FundRow = typeof funds.$inferSelect;
  */
 export const loadPositionsInput = async (
   userId: string,
-  options: { excludeFundAllocationsOf?: string } = {},
+  options: { excludeFundAccountsOf?: string } = {},
 ): Promise<PositionsInput> => {
   const [userRow] = await db
     .select({ startingDate: userTable.startingDate })
@@ -31,7 +31,7 @@ export const loadPositionsInput = async (
   const [accountRows, fundRows, allocationRows, transactionRows, moveRows] = await Promise.all([
     db.select().from(accounts).where(eq(accounts.user, userId)),
     db.select().from(funds).where(eq(funds.user, userId)),
-    db.select().from(fundAllocations).where(eq(fundAllocations.user, userId)),
+    db.select().from(fundAccounts).where(eq(fundAccounts.user, userId)),
     db
       .select({
         id: transactions.id,
@@ -70,18 +70,28 @@ export const loadPositionsInput = async (
     transactionsByActivity.set(row.activity, entry);
   }
 
+  const accountsByFund = new Map<string, FundAccount[]>();
+  for (const row of allocationRows) {
+    const list = accountsByFund.get(row.fund) ?? [];
+    list.push({ id: row.id, fund: row.fund, account: row.account, amount: row.amount });
+    accountsByFund.set(row.fund, list);
+  }
+
   return {
     accounts: accountRows,
-    funds: fundRows,
-    fundAllocations: allocationRows.filter(
-      (allocation) => allocation.fund !== options.excludeFundAllocationsOf,
+    funds: fundRows.map((fund) => ({
+      ...fund,
+      accounts: accountsByFund.get(fund.id) ?? [],
+    })),
+    fundAccounts: allocationRows.filter(
+      (allocation) => allocation.fund !== options.excludeFundAccountsOf,
     ),
     activities: [...transactionsByActivity.values()] as PositionsInput["activities"],
     startingDate: userRow?.startingDate ?? null,
   };
 };
 
-export type AllocationCandidate = {
+export type AccountCandidate = {
   account: string;
   amount: number;
 };
@@ -93,12 +103,12 @@ export type AllocationCandidate = {
  * cover what is being claimed. Over-allocating would push Untracked below
  * zero — more purpose than money.
  */
-export const validateFundAllocations = async (params: {
+export const validateFundAccounts = async (params: {
   userId: string;
   fund: Pick<FundRow, "id" | "startDate">;
-  allocations: AllocationCandidate[];
+  accounts: AccountCandidate[];
 }) => {
-  if (params.allocations.length === 0) return;
+  if (params.accounts.length === 0) return;
 
   const [userRow] = await db
     .select({ startingDate: userTable.startingDate })
@@ -107,7 +117,7 @@ export const validateFundAllocations = async (params: {
     .limit(1);
 
   const input = await loadPositionsInput(params.userId, {
-    excludeFundAllocationsOf: params.fund.id,
+    excludeFundAccountsOf: params.fund.id,
   });
 
   const untracked = getUntrackedByAccountAtDate({
@@ -117,7 +127,7 @@ export const validateFundAllocations = async (params: {
 
   // Sum the claims per account, then check each against its Untracked
   const claimed = new Map<string, number>();
-  for (const allocation of params.allocations) {
+  for (const allocation of params.accounts) {
     claimed.set(allocation.account, (claimed.get(allocation.account) ?? 0) + allocation.amount);
   }
 
@@ -172,9 +182,9 @@ export const getFundEarliestAllocatedTransactionDate = async (params: {
  * account must exist and be a balance account (P&L accounts hold no fund
  * money), and rows on the same account merge.
  */
-export const resolveAllocationCandidates = async (params: {
+export const resolveAccountCandidates = async (params: {
   userId: string;
-  allocations: { id: string; account: string; amount: number }[];
+  accounts: { id: string; account: string; amount: number }[];
 }): Promise<{ id: string; account: string; amount: number }[]> => {
   const accountRows = await db.select().from(accounts).where(eq(accounts.user, params.userId));
   const accountById = new Map<string, AccountRow>(
@@ -182,7 +192,7 @@ export const resolveAllocationCandidates = async (params: {
   );
 
   const merged = new Map<string, { id: string; account: string; amount: number }>();
-  for (const allocation of params.allocations) {
+  for (const allocation of params.accounts) {
     if (allocation.amount <= 0) {
       throw new GraphQLError("An allocation amount must be positive");
     }
@@ -209,11 +219,11 @@ export const resolveAllocationCandidates = async (params: {
 };
 
 /** A fund's current allocations, serialized for a sync event payload. */
-export const getFundAllocations = async (
+export const getFundAccounts = async (
   userId: string,
   fundId: string,
-): Promise<FundAllocation[]> =>
+): Promise<FundAccount[]> =>
   db
     .select()
-    .from(fundAllocations)
-    .where(and(eq(fundAllocations.user, userId), eq(fundAllocations.fund, fundId)));
+    .from(fundAccounts)
+    .where(and(eq(fundAccounts.user, userId), eq(fundAccounts.fund, fundId)));

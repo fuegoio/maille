@@ -356,10 +356,10 @@ export const fundMoves = pgTable("fund_moves", {
     }),
 });
 
-// A fund's opening allocations: at the fund's start date, this much of the
+// A fund's opening accounts: at the fund's start date, this much of the
 // account's balance belongs to the fund. The date is derived from the fund
 // (start date, falling back to the user's starting date), never stored.
-export const fundAllocations = pgTable("fund_allocations", {
+export const fundAccounts = pgTable("fund_accounts", {
   id: text("id").primaryKey(),
   user: text("user")
     .notNull()

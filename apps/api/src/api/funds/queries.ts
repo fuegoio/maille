@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { builder } from "../builder";
-import { FundSchema, FundAllocationSchema } from "./schemas";
-import { funds, fundAllocations } from "@/tables";
+import { FundSchema } from "./schemas";
+import { funds, fundAccounts } from "@/tables";
 import { eq } from "drizzle-orm";
 
 export const registerFundsQueries = () => {
@@ -9,17 +9,22 @@ export const registerFundsQueries = () => {
     t.field({
       type: [FundSchema],
       resolve: async (root, args, ctx) => {
-        return await db.select().from(funds).where(eq(funds.user, ctx.user.id));
-      },
-    }),
-  );
+        const [fundRows, accountRows] = await Promise.all([
+          db.select().from(funds).where(eq(funds.user, ctx.user.id)),
+          db.select().from(fundAccounts).where(eq(fundAccounts.user, ctx.user.id)),
+        ]);
 
-  // Every opening allocation: fund legs are read through their transaction.
-  builder.queryField("fundAllocations", (t) =>
-    t.field({
-      type: [FundAllocationSchema],
-      resolve: async (root, args, ctx) => {
-        return await db.select().from(fundAllocations).where(eq(fundAllocations.user, ctx.user.id));
+        const accountsByFund = new Map<string, typeof accountRows>();
+        for (const row of accountRows) {
+          const list = accountsByFund.get(row.fund) ?? [];
+          list.push(row);
+          accountsByFund.set(row.fund, list);
+        }
+
+        return fundRows.map((fund) => ({
+          ...fund,
+          accounts: accountsByFund.get(fund.id) ?? [],
+        }));
       },
     }),
   );

@@ -3,7 +3,7 @@ import type { Account } from "#accounts/index.ts";
 import type { Transaction } from "#activities/types.ts";
 import { addDays, startOfDay } from "date-fns";
 
-import type { Fund, FundAllocation } from "./types";
+import type { Fund, FundAccount } from "./types";
 
 /**
  * Fund positions: where each account's balance sits across funds.
@@ -30,7 +30,7 @@ export type DatedTransactions = { date: Date; transactions: Transaction[] }[];
 export type PositionsInput = {
   accounts: Pick<Account, "id" | "type" | "startingBalance">[];
   funds: Fund[];
-  fundAllocations: FundAllocation[];
+  fundAccounts: FundAccount[];
   activities: DatedTransactions;
   /** The user's starting date: accounts seed here, earlier activities are ignored. */
   startingDate: Date | null;
@@ -84,7 +84,7 @@ const carryProportionally = (from: FundComposition, to: FundComposition, amount:
 };
 
 type ReplayEvent =
-  | { kind: "allocation"; date: Date; id: string; allocation: FundAllocation }
+  | { kind: "allocation"; date: Date; id: string; allocation: FundAccount }
   | { kind: "transaction"; date: Date; id: string; transaction: Transaction };
 
 /**
@@ -107,7 +107,7 @@ export function computePositions(input: PositionsInput): Map<string, FundComposi
   }
 
   const events: ReplayEvent[] = [];
-  for (const allocation of input.fundAllocations) {
+  for (const allocation of input.fundAccounts) {
     const fund = fundsById.get(allocation.fund);
     if (!fund) continue;
     events.push({

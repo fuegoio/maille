@@ -143,6 +143,7 @@ type Event {
 }
 
 type Fund {
+  accounts: [FundAccount!]!
   color: String!
   endDate: Date
   id: String!
@@ -151,14 +152,14 @@ type Fund {
   startDate: Date
 }
 
-type FundAllocation {
+type FundAccount {
   account: String!
   amount: Float!
   fund: String!
   id: String!
 }
 
-input FundAllocationInput {
+input FundAccountInput {
   account: String!
   amount: Float!
   id: String!
@@ -255,7 +256,7 @@ type Mutation {
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
-  setFundAllocations(allocations: [FundAllocationInput!]!, fund: String!): [FundAllocation!]!
+  setFundAccounts(accounts: [FundAccountInput!]!, fund: String!): [FundAccount!]!
   shareAccount(id: String!, userId: String!): Account!
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
 
@@ -293,7 +294,6 @@ type Query {
   contacts: [Contact!]!
   counterparties: [Counterparty!]!
   events(lastSync: Float!): [Event!]!
-  fundAllocations: [FundAllocation!]!
   funds: [Fund!]!
   movements: [Movement!]!
   projects: [Project!]!

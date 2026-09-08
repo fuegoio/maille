@@ -25,13 +25,13 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   createFundMutation,
-  setFundAllocationsMutation,
+  setFundAccountsMutation,
   updateFundMutation,
 } from "@/mutations/funds";
 import { useSync } from "@/stores/sync";
 
 import {
-  FundAllocationsEditor,
+  FundAccountsEditor,
   significantAllocationRows,
   type AllocationRow,
 } from "./fund-allocations-editor";
@@ -160,6 +160,7 @@ export function CreateFundDialog({
         startDate: null,
         endDate: null,
         parentFund: data.parentFund,
+        accounts: [],
       };
       mutate({
         name: "updateFund",
@@ -176,22 +177,22 @@ export function CreateFundDialog({
     }
 
     // Opening allocations claim money on accounts, once the fund exists.
-    const allocations = significantAllocationRows(allocationRows);
-    if (allocations.length > 0) {
+    const accounts = significantAllocationRows(allocationRows);
+    if (accounts.length > 0) {
       mutate({
-        name: "setFundAllocations",
-        mutation: setFundAllocationsMutation,
-        variables: { fund: id, allocations },
+        name: "setFundAccounts",
+        mutation: setFundAccountsMutation,
+        variables: { fund: id, accounts },
         rollbackData: [],
         events: [
           {
-            type: "updateFundAllocations",
+            type: "updateFundAccounts",
             payload: {
               fund: id,
-              allocations: allocations.map((allocation) => ({
-                id: allocation.id,
-                account: allocation.account,
-                amount: allocation.amount,
+              accounts: accounts.map((account) => ({
+                id: account.id,
+                account: account.account,
+                amount: account.amount,
               })),
             },
           },
@@ -301,7 +302,7 @@ export function CreateFundDialog({
             </Field>
           </div>
 
-          <FundAllocationsEditor
+          <FundAccountsEditor
             startDate={startDate ?? null}
             rows={allocationRows}
             onChange={setAllocationRows}
