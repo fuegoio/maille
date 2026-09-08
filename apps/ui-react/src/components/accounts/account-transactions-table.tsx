@@ -277,8 +277,6 @@ function TransactionLine({
         {transaction.activity.name}
       </div>
 
-      <div className="flex-1" />
-
       <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
         <span className="text-xs">{isInflow ? "from" : "to"}</span>
         {counterpart && (
@@ -295,6 +293,8 @@ function TransactionLine({
           </>
         )}
       </div>
+
+      <div className="flex-1" />
 
       <div className="mr-1 w-32 shrink-0 text-right font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
