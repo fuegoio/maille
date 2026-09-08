@@ -12,11 +12,14 @@ import {
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
+  getAllocationsLandedBetweenDates,
   getFundChildren,
   getFundDirectBalance,
+  getFundSpreadAcrossAccounts,
   getFundTreeBalanceAtDate,
   getFundTreeFlowsBetweenDates,
   getUntrackedBalanceAtDate,
+  getUntrackedByAccountAtDate,
 } from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
@@ -32,6 +35,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
+  const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
@@ -40,29 +44,53 @@ export function FundSummary({ fundId }: FundSummaryProps) {
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
 
+  const positionsInput = useMemo(
+    () =>
+      user
+        ? {
+            accounts,
+            activities,
+            funds,
+            fundMoves,
+            fundAllocations,
+            startingDate: user.startingDate,
+          }
+        : null,
+    [user, accounts, activities, funds, fundMoves, fundAllocations],
+  );
+
   // A real fund's numbers are its subtree's: money that entered the tree
   // minus money that left it. Untracked is the complement: balance accounts'
   // total minus what funds claim.
   const getFundBalanceAtDate = (date: Date) => {
+    if (!user) return 0;
     if (fundId === null) {
-      if (!user) return 0;
       return getUntrackedBalanceAtDate({
         accounts,
         activities,
+        funds,
         fundMoves,
+        fundAllocations,
         date,
         startingDate: user.startingDate,
       });
     }
 
-    return getFundTreeBalanceAtDate(fundId, funds, fundMoves, date);
+    return getFundTreeBalanceAtDate(
+      fundId,
+      funds,
+      fundMoves,
+      fundAllocations,
+      user.startingDate,
+      date,
+    );
   };
 
   const balance = getFundBalanceAtDate(today);
   const balancePrev = getFundBalanceAtDate(thirtyDaysAgo);
 
   const flows =
-    fundId === null
+    fundId === null || !user
       ? {
           in: fundMoves
             .filter(
@@ -72,19 +100,32 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 m.fromFund !== null,
             )
             .reduce((total, m) => total + m.amount, 0),
-          out: fundMoves
-            .filter(
-              (m) =>
-                m.date.getTime() >= thirtyDaysAgo.getTime() &&
-                m.fromFund === null &&
-                m.toFund !== null,
-            )
-            .reduce((total, m) => total + m.amount, 0),
+          // New opening allocations claim money out of Untracked.
+          out:
+            fundMoves
+              .filter(
+                (m) =>
+                  m.date.getTime() >= thirtyDaysAgo.getTime() &&
+                  m.fromFund === null &&
+                  m.toFund !== null,
+              )
+              .reduce((total, m) => total + m.amount, 0) +
+            (user
+              ? getAllocationsLandedBetweenDates(
+                  funds,
+                  fundAllocations,
+                  user.startingDate,
+                  thirtyDaysAgo,
+                  today,
+                )
+              : 0),
         }
       : getFundTreeFlowsBetweenDates(
           fundId,
           funds,
           fundMoves,
+          fundAllocations,
+          user.startingDate,
           thirtyDaysAgo,
           today,
         );
@@ -98,7 +139,9 @@ export function FundSummary({ fundId }: FundSummaryProps) {
     [fundId, funds],
   );
   const directBalance =
-    fundId === null ? null : getFundDirectBalance(fundId, fundMoves);
+    fundId === null
+      ? null
+      : getFundDirectBalance(fundId, fundMoves, fundAllocations);
 
   const childBalances = useMemo(
     () =>
@@ -106,11 +149,53 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         children.map((child) => [
           child.id,
           // A child row carries its own subtree rollup, one level deeper.
-          getFundTreeBalanceAtDate(child.id, funds, fundMoves, today),
+          user
+            ? getFundTreeBalanceAtDate(
+                child.id,
+                funds,
+                fundMoves,
+                fundAllocations,
+                user.startingDate,
+                today,
+              )
+            : 0,
         ]),
       ),
-    [children, funds, fundMoves, today],
+    [children, funds, fundMoves, fundAllocations, user, today],
   );
+
+  // Where the money sits: a fund spread across accounts, or Untracked
+  // spread across accounts — the two questions positions answer.
+  const accountSpread = useMemo(() => {
+    if (!positionsInput) return [];
+    const spread =
+      fundId === null
+        ? [
+            ...getUntrackedByAccountAtDate({
+              ...positionsInput,
+              date: today,
+            }).entries(),
+          ]
+            .filter(([, amount]) => Math.abs(amount) >= 0.01)
+            .map(([accountId, amount]) => [accountId, amount] as const)
+        : [
+            ...getFundSpreadAcrossAccounts({
+              ...positionsInput,
+              fundId,
+            }).entries(),
+          ]
+            .filter(([, amount]) => Math.abs(amount) >= 0.01)
+            .map(([accountId, amount]) => [accountId, amount] as const);
+    return accounts
+      .filter((account) =>
+        spread.some(([accountId]) => accountId === account.id),
+      )
+      .map((account) => ({
+        account,
+        amount:
+          spread.find(([accountId]) => accountId === account.id)?.[1] ?? 0,
+      }));
+  }, [positionsInput, fundId, accounts, today]);
 
   const days = useMemo(
     () => eachDayOfInterval({ start: thirtyDaysAgo, end: today }),
@@ -125,7 +210,16 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         balance: getFundBalanceAtDate(date),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [days, fundMoves, fundId, funds],
+    [
+      days,
+      fundMoves,
+      fundAllocations,
+      fundId,
+      funds,
+      accounts,
+      activities,
+      user,
+    ],
   );
 
   const chartConfig = {
@@ -166,6 +260,27 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
+
+        {accountSpread.length > 0 && (
+          <div className="mt-5">
+            <div className="text-xs font-medium text-muted-foreground">
+              {fundId === null
+                ? "Untracked across accounts"
+                : "Across accounts"}
+            </div>
+            <div className="mt-1">
+              {accountSpread.map(({ account, amount }) => (
+                <div key={account.id} className="flex h-8 items-center text-sm">
+                  <div className="truncate">{account.name}</div>
+                  <div className="flex-1" />
+                  <div className="font-mono">
+                    {currencyFormatter.format(amount)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {children.length > 0 && (
           <div className="mt-5">

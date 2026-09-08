@@ -151,6 +151,19 @@ type Fund {
   startDate: Date
 }
 
+type FundAllocation {
+  account: String!
+  amount: Float!
+  fund: String!
+  id: String!
+}
+
+input FundAllocationInput {
+  account: String!
+  amount: Float!
+  id: String!
+}
+
 type FundMove {
   amount: Float!
   date: Date!
@@ -158,7 +171,7 @@ type FundMove {
   id: String!
   note: String
   toFund: String
-  transaction: String
+  transaction: String!
 }
 
 input FundMoveInput {
@@ -208,7 +221,6 @@ type Mutation {
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
   createFund(color: String, endDate: Date, id: String!, name: String!, parentFund: String, startDate: Date): Fund!
-  createFundMove(amount: Float!, date: Date!, fromFund: String, id: String!, note: String, toFund: String): FundMove!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
@@ -220,11 +232,11 @@ type Mutation {
   deleteContact(id: String!): Boolean!
   deleteCounterparty(id: String!): Boolean!
   deleteFund(id: String!): Boolean!
-  deleteFundMove(id: String!): Boolean!
   deleteMovement(id: String!): DeleteMovementResponse!
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
+  setFundAllocations(allocations: [FundAllocationInput!]!, fund: String!): [FundAllocation!]!
   shareAccount(id: String!, userId: String!): Account!
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
@@ -234,7 +246,6 @@ type Mutation {
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateFund(color: String, endDate: Date, id: String!, name: String, parentFund: String, startDate: Date): Fund!
-  updateFundMove(amount: Float, date: Date, fromFund: String, id: String!, note: String, toFund: String): FundMove!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
@@ -258,7 +269,7 @@ type Query {
   contacts: [Contact!]!
   counterparties: [Counterparty!]!
   events(lastSync: Float!): [Event!]!
-  fundMoves: [FundMove!]!
+  fundAllocations: [FundAllocation!]!
   funds: [Fund!]!
   movements: [Movement!]!
   projects: [Project!]!

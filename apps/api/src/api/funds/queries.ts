@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { builder } from "../builder";
-import { FundSchema, FundMoveSchema } from "./schemas";
-import { funds, fundMoves } from "@/tables";
+import { FundSchema, FundAllocationSchema } from "./schemas";
+import { funds, fundAllocations } from "@/tables";
 import { eq } from "drizzle-orm";
 
 export const registerFundsQueries = () => {
@@ -14,15 +14,12 @@ export const registerFundsQueries = () => {
     }),
   );
 
-  builder.queryField("fundMoves", (t) =>
+  // Every opening allocation: fund legs are read through their transaction.
+  builder.queryField("fundAllocations", (t) =>
     t.field({
-      type: [FundMoveSchema],
+      type: [FundAllocationSchema],
       resolve: async (root, args, ctx) => {
-        const moves = await db.select().from(fundMoves).where(eq(fundMoves.user, ctx.user.id));
-        return moves.map((move) => ({
-          ...move,
-          date: move.date,
-        }));
+        return await db.select().from(fundAllocations).where(eq(fundAllocations.user, ctx.user.id));
       },
     }),
   );

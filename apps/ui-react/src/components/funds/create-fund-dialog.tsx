@@ -23,9 +23,18 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createFundMutation, updateFundMutation } from "@/mutations/funds";
+import {
+  createFundMutation,
+  setFundAllocationsMutation,
+  updateFundMutation,
+} from "@/mutations/funds";
 import { useSync } from "@/stores/sync";
 
+import {
+  FundAllocationsEditor,
+  significantAllocationRows,
+  type AllocationRow,
+} from "./fund-allocations-editor";
 import { FundSelect } from "./fund-select";
 
 const createFundSchema = z
@@ -66,6 +75,8 @@ export function CreateFundDialog({
 }: CreateFundDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
+  const [allocationRows, setAllocationRows] = useState<AllocationRow[]>([]);
+  const [allocationError, setAllocationError] = useState<string | null>(null);
 
   // The dialog lives on in the fund page header while the user navigates
   // between funds via the breadcrumb: resync the form so the preselected
@@ -100,7 +111,10 @@ export function CreateFundDialog({
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
-    if (!value) reset(formDefaults);
+    if (!value) {
+      reset(formDefaults);
+      setAllocationRows([]);
+    }
     onOpenChange?.(value);
   };
 
@@ -156,6 +170,30 @@ export function CreateFundDialog({
           {
             type: "updateFund",
             payload: { id, startDate, endDate },
+          },
+        ],
+      });
+    }
+
+    // Opening allocations claim money on accounts, once the fund exists.
+    const allocations = significantAllocationRows(allocationRows);
+    if (allocations.length > 0) {
+      mutate({
+        name: "setFundAllocations",
+        mutation: setFundAllocationsMutation,
+        variables: { fund: id, allocations },
+        rollbackData: [],
+        events: [
+          {
+            type: "updateFundAllocations",
+            payload: {
+              fund: id,
+              allocations: allocations.map((allocation) => ({
+                id: allocation.id,
+                account: allocation.account,
+                amount: allocation.amount,
+              })),
+            },
           },
         ],
       });
@@ -263,13 +301,23 @@ export function CreateFundDialog({
             </Field>
           </div>
 
+          <FundAllocationsEditor
+            startDate={startDate ?? null}
+            rows={allocationRows}
+            onChange={setAllocationRows}
+            onErrorChange={setAllocationError}
+          />
+
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || allocationError !== null}
+            >
               {isSubmitting ? "Creating..." : "Create fund"}
             </Button>
           </DialogFooter>

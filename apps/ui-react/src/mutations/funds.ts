@@ -1,11 +1,9 @@
-import type { Fund, FundMove } from "@maille/core/funds";
+import type { Fund, FundAllocation } from "@maille/core/funds";
 import type {
   CreateFundEvent,
-  CreateFundMoveEvent,
   DeleteFundEvent,
-  DeleteFundMoveEvent,
+  UpdateFundAllocationsEvent,
   UpdateFundEvent,
-  UpdateFundMoveEvent,
 } from "@maille/core/sync";
 
 import { graphql } from "@/gql";
@@ -62,53 +60,14 @@ export const deleteFundMutation = graphql(/* GraphQL */ `
   }
 `);
 
-export const createFundMoveMutation = graphql(/* GraphQL */ `
-  mutation CreateFundMove(
-    $id: String!
-    $fromFund: String
-    $toFund: String
-    $amount: Float!
-    $date: Date!
-    $note: String
+export const setFundAllocationsMutation = graphql(/* GraphQL */ `
+  mutation SetFundAllocations(
+    $fund: String!
+    $allocations: [FundAllocationInput!]!
   ) {
-    createFundMove(
-      id: $id
-      fromFund: $fromFund
-      toFund: $toFund
-      amount: $amount
-      date: $date
-      note: $note
-    ) {
+    setFundAllocations(fund: $fund, allocations: $allocations) {
       id
     }
-  }
-`);
-
-export const updateFundMoveMutation = graphql(/* GraphQL */ `
-  mutation UpdateFundMove(
-    $id: String!
-    $fromFund: String
-    $toFund: String
-    $amount: Float
-    $date: Date
-    $note: String
-  ) {
-    updateFundMove(
-      id: $id
-      fromFund: $fromFund
-      toFund: $toFund
-      amount: $amount
-      date: $date
-      note: $note
-    ) {
-      id
-    }
-  }
-`);
-
-export const deleteFundMoveMutation = graphql(/* GraphQL */ `
-  mutation DeleteFundMove($id: String!) {
-    deleteFundMove(id: $id)
   }
 `);
 
@@ -133,31 +92,15 @@ export type DeleteFundMutation = MutationType<
   [DeleteFundEvent]
 >;
 
-export type CreateFundMoveMutation = MutationType<
-  "createFundMove",
-  typeof createFundMoveMutation,
-  undefined,
-  [CreateFundMoveEvent]
->;
-
-export type UpdateFundMoveMutation = MutationType<
-  "updateFundMove",
-  typeof updateFundMoveMutation,
-  FundMove,
-  [UpdateFundMoveEvent]
->;
-
-export type DeleteFundMoveMutation = MutationType<
-  "deleteFundMove",
-  typeof deleteFundMoveMutation,
-  FundMove,
-  [DeleteFundMoveEvent]
+export type SetFundAllocationsMutation = MutationType<
+  "setFundAllocations",
+  typeof setFundAllocationsMutation,
+  FundAllocation[],
+  [UpdateFundAllocationsEvent]
 >;
 
 export type FundMutation =
   | CreateFundMutation
   | UpdateFundMutation
   | DeleteFundMutation
-  | CreateFundMoveMutation
-  | UpdateFundMoveMutation
-  | DeleteFundMoveMutation;
+  | SetFundAllocationsMutation;

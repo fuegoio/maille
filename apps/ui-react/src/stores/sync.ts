@@ -1,3 +1,4 @@
+import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
 import type { SyncEvent } from "@maille/core/sync";
 
 import { ClientError } from "graphql-request";
@@ -98,9 +99,15 @@ export const useSync = create<SyncState>()(
         console.log("Dequeueing mutations", mutation);
 
         try {
+          // The queue holds every mutation kind, so the document and its
+          // variables travel together as one union — the request itself is
+          // dispatched per-document at runtime.
           const result = await graphqlClient.request(
-            mutation.mutation,
-            mutation.variables,
+            mutation.mutation as unknown as TypedDocumentNode<
+              unknown,
+              Record<string, unknown>
+            >,
+            mutation.variables as Record<string, unknown>,
           );
           useActivities.getState().handleMutationSuccess({
             ...mutation,

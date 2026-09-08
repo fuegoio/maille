@@ -224,6 +224,8 @@ export async function createActivity(userId: string, clientId: string, args: Cre
         transactionId: newTransaction.id,
         transactionDate: new Date(args.date),
         amount: transaction.amount,
+        fromAccount,
+        toAccount,
         fundMovesInput: transaction.fundMoves,
       });
 

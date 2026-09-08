@@ -36,10 +36,20 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { deleteFundMutation, updateFundMutation } from "@/mutations/funds";
+import {
+  deleteFundMutation,
+  setFundAllocationsMutation,
+  updateFundMutation,
+} from "@/mutations/funds";
 import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
+import {
+  allocationRowsFromFundAllocations,
+  FundAllocationsEditor,
+  significantAllocationRows,
+  type AllocationRow,
+} from "./fund-allocations-editor";
 import { FundSelect } from "./fund-select";
 
 const updateFundSchema = z
@@ -77,7 +87,14 @@ export function FundSettingsDialog({
 }: FundSettingsDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const funds = useFunds((state) => state.funds);
+  const fundAllocations = useFunds((state) => state.fundAllocations);
   const [open, setOpen] = useState(false);
+  const [allocationRows, setAllocationRows] = useState<AllocationRow[]>(() =>
+    allocationRowsFromFundAllocations(
+      fundAllocations.filter((allocation) => allocation.fund === fund.id),
+    ),
+  );
+  const [allocationError, setAllocationError] = useState<string | null>(null);
 
   // The fund cannot become its own descendant's child: exclude itself and
   // its whole subtree from the parent picker.
@@ -120,6 +137,13 @@ export function FundSettingsDialog({
     if (lastFundId.current === fund.id) return;
     lastFundId.current = fund.id;
     reset(fundFormValues(fund));
+    setAllocationRows(
+      allocationRowsFromFundAllocations(
+        useFunds
+          .getState()
+          .fundAllocations.filter((allocation) => allocation.fund === fund.id),
+      ),
+    );
   }, [fund, reset]);
 
   const startDate = watch("startDate");
@@ -163,6 +187,46 @@ export function FundSettingsDialog({
         },
       ],
     });
+
+    // Replace the fund's whole opening position when it changed: the server
+    // replays the ledger and rejects over-claiming.
+    const currentAllocations = useFunds
+      .getState()
+      .fundAllocations.filter((allocation) => allocation.fund === fund.id);
+    const nextAllocations = significantAllocationRows(allocationRows);
+    const byAccount = (rows: { account: string; amount: number }[]) =>
+      JSON.stringify(
+        [...rows].sort((a, b) => a.account.localeCompare(b.account)),
+      );
+    if (
+      byAccount(nextAllocations) !==
+      byAccount(
+        currentAllocations.map((allocation) => ({
+          account: allocation.account,
+          amount: allocation.amount,
+        })),
+      )
+    ) {
+      mutate({
+        name: "setFundAllocations",
+        mutation: setFundAllocationsMutation,
+        variables: { fund: fund.id, allocations: nextAllocations },
+        rollbackData: currentAllocations,
+        events: [
+          {
+            type: "updateFundAllocations",
+            payload: {
+              fund: fund.id,
+              allocations: nextAllocations.map((allocation) => ({
+                id: allocation.id,
+                account: allocation.account,
+                amount: allocation.amount,
+              })),
+            },
+          },
+        ],
+      });
+    }
 
     reset({
       name: data.name,
@@ -292,6 +356,14 @@ export function FundSettingsDialog({
             </Field>
           </div>
 
+          <FundAllocationsEditor
+            startDate={startDate ?? null}
+            rows={allocationRows}
+            onChange={setAllocationRows}
+            excludeFund={fund.id}
+            onErrorChange={setAllocationError}
+          />
+
           <DialogFooter>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -325,7 +397,10 @@ export function FundSettingsDialog({
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || allocationError !== null}
+            >
               {isSubmitting ? "Saving..." : "Save changes"}
             </Button>
           </DialogFooter>

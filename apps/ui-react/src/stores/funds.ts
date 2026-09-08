@@ -1,4 +1,4 @@
-import type { Fund, FundMove } from "@maille/core/funds";
+import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 import type { SerializedFundMove, SyncEvent } from "@maille/core/sync";
 
 import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
@@ -13,6 +13,7 @@ import { migrationFlags, storage } from "./storage";
 interface FundsState {
   funds: Fund[];
   fundMoves: FundMove[];
+  fundAllocations: FundAllocation[];
 
   getFundById: (fundId: string) => Fund | undefined;
 
@@ -29,6 +30,8 @@ interface FundsState {
   deleteFundMove: (fundMoveId: string) => void;
   restoreFundMove: (fundMove: FundMove) => void;
 
+  setFundAllocations: (fundId: string, allocations: FundAllocation[]) => void;
+
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (mutation: Mutation) => void;
   handleMutationError: (mutation: Mutation) => void;
@@ -44,6 +47,7 @@ export const useFunds = create<FundsState>()(
     (set, get) => ({
       funds: [],
       fundMoves: [],
+      fundAllocations: [],
 
       getFundById: (fundId) => {
         return get().funds.find((f) => f.id === fundId);
@@ -85,6 +89,9 @@ export const useFunds = create<FundsState>()(
                 toFund: move.toFund === fundId ? null : move.toFund,
               }))
               .filter((move) => move.fromFund !== null || move.toFund !== null),
+            fundAllocations: state.fundAllocations.filter(
+              (allocation) => allocation.fund !== fundId,
+            ),
           };
         });
       },
@@ -123,6 +130,17 @@ export const useFunds = create<FundsState>()(
           fundMoves: [
             ...state.fundMoves.filter((m) => m.id !== fundMove.id),
             fundMove,
+          ],
+        }));
+      },
+
+      setFundAllocations: (fundId, allocations) => {
+        set((state) => ({
+          fundAllocations: [
+            ...state.fundAllocations.filter(
+              (allocation) => allocation.fund !== fundId,
+            ),
+            ...allocations.filter((allocation) => allocation.fund === fundId),
           ],
         }));
       },
@@ -169,18 +187,14 @@ export const useFunds = create<FundsState>()(
           });
         } else if (event.type === "deleteFund") {
           get().deleteFund(event.payload.id);
-        } else if (event.type === "createFundMove") {
-          get().addFundMove(toFundMove(event.payload));
-        } else if (event.type === "updateFundMove") {
-          const { id, date, ...update } = event.payload;
-          get().updateFundMove(id, {
-            ...update,
-            ...(date !== undefined && date !== null
-              ? { date: new Date(date) }
-              : {}),
-          });
-        } else if (event.type === "deleteFundMove") {
-          get().deleteFundMove(event.payload.id);
+        } else if (event.type === "updateFundAllocations") {
+          get().setFundAllocations(
+            event.payload.fund,
+            event.payload.allocations.map((allocation) => ({
+              ...allocation,
+              fund: event.payload.fund,
+            })),
+          );
         } else if (event.type === "createActivity") {
           event.payload.transactions?.forEach((transaction) => {
             transaction.fundMoves?.forEach((move) => {
@@ -238,14 +252,11 @@ export const useFunds = create<FundsState>()(
           });
         } else if (mutation.name === "deleteFund") {
           get().restoreFund(mutation.rollbackData);
-        } else if (mutation.name === "createFundMove") {
-          get().deleteFundMove(mutation.variables.id);
-        } else if (mutation.name === "updateFundMove") {
-          get().updateFundMove(mutation.variables.id, {
-            ...mutation.rollbackData,
-          });
-        } else if (mutation.name === "deleteFundMove") {
-          get().restoreFundMove(mutation.rollbackData);
+        } else if (mutation.name === "setFundAllocations") {
+          get().setFundAllocations(
+            mutation.variables.fund,
+            mutation.rollbackData,
+          );
         } else if (mutation.name === "addTransaction") {
           const addTransactionEvent = mutation.events[0];
           if (addTransactionEvent.type === "addTransaction") {
@@ -262,10 +273,13 @@ export const useFunds = create<FundsState>()(
     }),
     {
       name: "funds",
-      version: 2,
+      version: 3,
       storage,
-      migrate: (persisted) => {
-        const state = persisted as { funds?: Fund[] };
+      migrate: (persisted, version) => {
+        const state = persisted as {
+          funds?: Fund[];
+          fundAllocations?: FundAllocation[];
+        };
         if (state.funds) {
           state.funds = state.funds.map((fund) => ({
             ...fund,
@@ -273,12 +287,18 @@ export const useFunds = create<FundsState>()(
             parentFund: fund.parentFund ?? null,
           }));
         }
-        migrationFlags.refetchUserData = true;
+        if (version < 3) {
+          // Opening allocations arrive with the positions feature: older
+          // persisted states never saw them, so refetch from the server.
+          state.fundAllocations = [];
+          migrationFlags.refetchUserData = true;
+        }
         return state;
       },
       partialize: (state) => ({
         funds: state.funds,
         fundMoves: state.fundMoves,
+        fundAllocations: state.fundAllocations,
       }),
     },
   ),

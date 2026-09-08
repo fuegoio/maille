@@ -1,12 +1,18 @@
 import { db } from "@/database";
 import { DEFAULT_FUND_COLOR, wouldCreateCycle } from "@maille/core/funds";
 import { builder } from "../builder";
-import { FundSchema, FundMoveSchema } from "./schemas";
-import { funds, fundMoves } from "@/tables";
+import { FundAllocationSchema, FundSchema } from "./schemas";
+import { fundAllocations, funds, fundMoves } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, isNull, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+import {
+  getFundAllocations,
+  getFundEarliestAllocatedTransactionDate,
+  resolveAllocationCandidates,
+  validateFundAllocations,
+} from "./allocations";
 
 /**
  * Resolve a fund id prefix to the full id, defaulting to the input when
@@ -48,6 +54,29 @@ const resolveParentFundId = async (userId: string, parentFund: string | null) =>
 /** Every fund of a user, as tree-logic input for cycle checks. */
 const getUserFunds = async (userId: string) =>
   db.select().from(funds).where(eq(funds.user, userId));
+
+/** Fetch a fund by id prefix, or throw when no fund matches. */
+const getFundById = async (userId: string, fundId: string) => {
+  const fund = (
+    await db
+      .select()
+      .from(funds)
+      .where(and(like(funds.id, idPattern(fundId)), eq(funds.user, userId)))
+      .limit(1)
+  )[0];
+  if (!fund) {
+    throw new GraphQLError("Fund not found");
+  }
+  return fund;
+};
+
+const FundAllocationInput = builder.inputType("FundAllocationInput", {
+  fields: (t) => ({
+    id: t.field({ type: "String" }),
+    account: t.field({ type: "String" }),
+    amount: t.float(),
+  }),
+});
 
 export const registerFundsMutations = () => {
   builder.mutationField("createFund", (t) =>
@@ -114,16 +143,7 @@ export const registerFundsMutations = () => {
         parentFund: t.arg({ type: "String", required: false }),
       },
       resolve: async (root, args, ctx) => {
-        const fund = (
-          await db
-            .select()
-            .from(funds)
-            .where(and(like(funds.id, idPattern(args.id)), eq(funds.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!fund) {
-          throw new GraphQLError("Fund not found");
-        }
+        const fund = await getFundById(ctx.user.id, args.id);
 
         const updates: Partial<typeof fund> = {};
         if (args.name !== undefined && args.name !== null) updates.name = args.name;
@@ -137,6 +157,28 @@ export const registerFundsMutations = () => {
           updates.parentFund = await resolveParentFundId(ctx.user.id, args.parentFund);
           if (wouldCreateCycle(fund.id, updates.parentFund, await getUserFunds(ctx.user.id))) {
             throw new GraphQLError("A fund cannot be nested under itself or one of its children");
+          }
+        }
+
+        if (updates.startDate !== undefined) {
+          if (updates.startDate) {
+            const earliest = await getFundEarliestAllocatedTransactionDate({
+              userId: ctx.user.id,
+              fundId: fund.id,
+            });
+            if (earliest && updates.startDate.getTime() > earliest.getTime()) {
+              throw new GraphQLError(
+                "The fund start date is after transactions already allocated to it",
+              );
+            }
+          }
+          const existingAllocations = await getFundAllocations(ctx.user.id, fund.id);
+          if (existingAllocations.length > 0) {
+            await validateFundAllocations({
+              userId: ctx.user.id,
+              fund: { id: fund.id, startDate: updates.startDate ?? null },
+              allocations: existingAllocations,
+            });
           }
         }
 
@@ -172,16 +214,7 @@ export const registerFundsMutations = () => {
         id: t.arg({ type: "String" }),
       },
       resolve: async (root, args, ctx) => {
-        const fund = (
-          await db
-            .select()
-            .from(funds)
-            .where(and(like(funds.id, idPattern(args.id)), eq(funds.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!fund) {
-          throw new GraphQLError("Fund not found");
-        }
+        const fund = await getFundById(ctx.user.id, args.id);
 
         // Splice: the deleted fund's children are promoted to its own
         // parent — deleting a node never deletes or orphans its subtree.
@@ -205,6 +238,8 @@ export const registerFundsMutations = () => {
             ),
           );
 
+        await db.delete(fundAllocations).where(eq(fundAllocations.fund, fund.id));
+
         await db.delete(funds).where(eq(funds.id, fund.id));
 
         await addEvent({
@@ -220,171 +255,63 @@ export const registerFundsMutations = () => {
     }),
   );
 
-  builder.mutationField("createFundMove", (t) =>
+  builder.mutationField("setFundAllocations", (t) =>
     t.field({
-      type: FundMoveSchema,
+      type: [FundAllocationSchema],
       args: {
-        id: t.arg({ type: "String" }),
-        fromFund: t.arg({ type: "String", required: false }),
-        toFund: t.arg({ type: "String", required: false }),
-        amount: t.arg({ type: "Float" }),
-        date: t.arg({ type: "Date" }),
-        note: t.arg.string({ required: false }),
+        fund: t.arg({ type: "String" }),
+        allocations: t.arg({ type: [FundAllocationInput] }),
       },
       resolve: async (root, args, ctx) => {
-        if (!args.fromFund && !args.toFund) {
-          throw new GraphQLError("A fund move needs a fromFund or a toFund");
-        }
-        if (args.fromFund && args.toFund && args.fromFund === args.toFund) {
-          throw new GraphQLError("A fund move cannot target the same fund");
-        }
-        if (args.amount <= 0) {
-          throw new GraphQLError("A fund move amount must be positive");
-        }
+        const fund = await getFundById(ctx.user.id, args.fund);
 
-        const fromFund = await resolveFundId(ctx.user.id, args.fromFund ?? null);
-        const toFund = await resolveFundId(ctx.user.id, args.toFund ?? null);
+        const allocations = await resolveAllocationCandidates({
+          userId: ctx.user.id,
+          allocations: args.allocations,
+        });
 
-        const created = (
-          await db
-            .insert(fundMoves)
-            .values({
-              id: args.id,
-              user: ctx.user.id,
-              fromFund,
-              toFund,
-              amount: args.amount,
-              date: args.date,
-              note: args.note,
-              transaction: null,
-            })
-            .returning()
-        )[0];
-        if (!created) {
-          throw new GraphQLError("Failed to create fund move");
-        }
+        await validateFundAllocations({
+          userId: ctx.user.id,
+          fund,
+          allocations,
+        });
+
+        // Replace-all semantics: the submitted rows are the fund's whole
+        // opening position.
+        await db.delete(fundAllocations).where(eq(fundAllocations.fund, fund.id));
+
+        const inserted =
+          allocations.length === 0
+            ? []
+            : await db
+                .insert(fundAllocations)
+                .values(
+                  allocations.map((allocation) => ({
+                    id: allocation.id,
+                    user: ctx.user.id,
+                    fund: fund.id,
+                    account: allocation.account,
+                    amount: allocation.amount,
+                  })),
+                )
+                .returning();
 
         await addEvent({
-          type: "createFundMove",
+          type: "updateFundAllocations",
           payload: {
-            ...created,
-            date: created.date.toISOString(),
+            fund: fund.id,
+            allocations: inserted.map((allocation) => ({
+              id: allocation.id,
+              account: allocation.account,
+              amount: allocation.amount,
+            })),
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
           user: ctx.user.id,
         });
 
-        return created;
-      },
-    }),
-  );
-
-  builder.mutationField("updateFundMove", (t) =>
-    t.field({
-      type: FundMoveSchema,
-      args: {
-        id: t.arg({ type: "String" }),
-        fromFund: t.arg({ type: "String", required: false }),
-        toFund: t.arg({ type: "String", required: false }),
-        amount: t.arg({ type: "Float", required: false }),
-        date: t.arg({ type: "Date", required: false }),
-        note: t.arg.string({ required: false }),
-      },
-      resolve: async (root, args, ctx) => {
-        const move = (
-          await db
-            .select()
-            .from(fundMoves)
-            .where(and(like(fundMoves.id, idPattern(args.id)), eq(fundMoves.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!move) {
-          throw new GraphQLError("Fund move not found");
-        }
-        if (move.transaction) {
-          throw new GraphQLError("Fund moves linked to a transaction cannot be updated");
-        }
-
-        const updates: Partial<typeof move> = {};
-        if (args.fromFund !== undefined) {
-          updates.fromFund = await resolveFundId(ctx.user.id, args.fromFund);
-        }
-        if (args.toFund !== undefined) {
-          updates.toFund = await resolveFundId(ctx.user.id, args.toFund);
-        }
-        if (args.amount !== undefined && args.amount !== null) updates.amount = args.amount;
-        if (args.date !== undefined && args.date !== null) updates.date = args.date;
-        if (args.note !== undefined) updates.note = args.note;
-
-        if (updates.amount !== undefined && updates.amount <= 0) {
-          throw new GraphQLError("A fund move amount must be positive");
-        }
-        const newFrom = updates.fromFund ?? move.fromFund;
-        const newTo = updates.toFund ?? move.toFund;
-        if (newFrom && newTo && newFrom === newTo) {
-          throw new GraphQLError("A fund move cannot target the same fund");
-        }
-        if (!newFrom && !newTo) {
-          throw new GraphQLError("A fund move needs a fromFund or a toFund");
-        }
-
-        const updated = (
-          await db.update(fundMoves).set(updates).where(eq(fundMoves.id, move.id)).returning()
-        )[0];
-        if (!updated) {
-          throw new GraphQLError("Failed to update fund move");
-        }
-
-        await addEvent({
-          type: "updateFundMove",
-          payload: {
-            id: updated.id,
-            ...updates,
-            date: updates.date === null ? null : updates.date?.toISOString(),
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-
-        return updated;
-      },
-    }),
-  );
-
-  builder.mutationField("deleteFundMove", (t) =>
-    t.field({
-      type: "Boolean",
-      args: {
-        id: t.arg({ type: "String" }),
-      },
-      resolve: async (root, args, ctx) => {
-        const move = (
-          await db
-            .select()
-            .from(fundMoves)
-            .where(and(like(fundMoves.id, idPattern(args.id)), eq(fundMoves.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!move) {
-          throw new GraphQLError("Fund move not found");
-        }
-        if (move.transaction) {
-          throw new GraphQLError("Fund moves linked to a transaction cannot be deleted");
-        }
-
-        await db.delete(fundMoves).where(eq(fundMoves.id, move.id));
-
-        await addEvent({
-          type: "deleteFundMove",
-          payload: { id: move.id },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-
-        return true;
+        return inserted;
       },
     }),
   );
