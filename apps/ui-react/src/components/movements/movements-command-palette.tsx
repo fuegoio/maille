@@ -1,6 +1,13 @@
 import type { Movement } from "@maille/core/movements";
 
-import { Calendar, DollarSign, Tag, TextCursor, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  DollarSign,
+  Sparkles,
+  Tag,
+  TextCursor,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -13,6 +20,7 @@ import {
   CommandList,
   CommandShortcut,
 } from "@/components/ui/command";
+import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { getGraphQLDate } from "@/lib/date";
 import {
   movementUpdateHistoryEvent,
@@ -27,6 +35,7 @@ import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
+import { useWorkflows } from "@/stores/workflows";
 
 interface MovementsCommandPaletteProps {
   selectedMovements: string[];
@@ -53,6 +62,10 @@ export function MovementsCommandPalette({
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);
+  const triggerWorkflow = useTriggerWorkflow();
+  const triggeringMovementIds = useWorkflows(
+    (state) => state.triggeringMovementIds,
+  );
 
   const selectedMovementIds = React.useMemo(() => {
     return selectedMovements;
@@ -151,9 +164,33 @@ export function MovementsCommandPalette({
     });
   }, [selectedMovementIds, movements, mutate]);
 
+  const isTriggering = selectedMovementsData.some((m) =>
+    triggeringMovementIds.includes(m.id),
+  );
+  const isReconciled = selectedMovementsData.every(
+    (m) => m.status === "completed",
+  );
+
   // Action definitions
   const actionDefinitions = React.useMemo(() => {
     const actions = [
+      {
+        value: "create-activity",
+        label: isReconciled
+          ? "Already reconciled"
+          : isTriggering
+            ? "Starting..."
+            : "Create activity (workflow)",
+        icon: <Sparkles />,
+        type: null,
+        shortcut: "W",
+        disabled: isTriggering || isReconciled,
+        action: () => {
+          selectedMovementIds.forEach((movementId) => {
+            triggerWorkflow(movementId);
+          });
+        },
+      },
       {
         value: "name",
         label: "Set new name",
@@ -251,6 +288,9 @@ export function MovementsCommandPalette({
     updateMovements,
     deleteMovements,
     onClearSelection,
+    triggerWorkflow,
+    isTriggering,
+    isReconciled,
   ]);
 
   const filteredActions = React.useMemo(() => {
@@ -278,6 +318,7 @@ export function MovementsCommandPalette({
   const handleActionSelect = (actionValue: string) => {
     const action = actionDefinitions.find((a) => a.value === actionValue);
     if (action) {
+      if (action.disabled) return;
       if (action.type === "input") {
         setSelectedAction(actionValue);
         setStep("input");
@@ -357,6 +398,7 @@ export function MovementsCommandPalette({
                     key={action.value}
                     value={action.value}
                     onSelect={() => handleActionSelect(action.value)}
+                    disabled={action.disabled}
                   >
                     {action.icon}
                     {action.label}
