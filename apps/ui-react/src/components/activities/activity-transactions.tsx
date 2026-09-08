@@ -285,8 +285,8 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <div>
-          <div className="text-base font-medium">Transactions</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xl font-medium">Transactions</div>
+          <div className="mt-1 text-xs text-muted-foreground">
             The double-entry legs of this activity, from account to account.
           </div>
         </div>

@@ -368,7 +368,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
 
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="mx-auto w-full max-w-3xl">
-            <div className="px-4 py-6 sm:px-8">
+            <div className="border-b px-4 py-6 sm:px-8">
               <label htmlFor="date" className="sr-only">
                 Date
               </label>
@@ -389,7 +389,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                   placeholder="Activity name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
-                <div className="mr-11 shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
+                <div className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
                   {currencyFormatter.format(activity.amount)}
                 </div>
               </div>
