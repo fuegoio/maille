@@ -82,7 +82,7 @@ export const canTransitionWorkflow = (from: WorkflowStatus, to: WorkflowStatus):
   WORKFLOW_TRANSITIONS[from].includes(to);
 
 /** Statuses on which a manual trigger resets the workflow to `queued`. */
-export const RETRYABLE_WORKFLOW_STATUSES = ["failed", "cancelled"] as const;
+export const RETRYABLE_WORKFLOW_STATUSES = ["succeeded", "failed", "cancelled"] as const;
 
 export const isRetryableWorkflowStatus = (status: WorkflowStatus): boolean =>
   (RETRYABLE_WORKFLOW_STATUSES as readonly string[]).includes(status);

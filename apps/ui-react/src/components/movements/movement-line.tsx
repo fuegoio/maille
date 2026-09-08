@@ -7,8 +7,10 @@ import { CircleCheck, CircleDotDashed } from "lucide-react";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { WORKFLOW_STATUS_CONFIG } from "@/components/workflows/workflow-status";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { useWorkflows } from "@/stores/workflows";
 
 interface MovementLineProps {
   movement: Movement;
@@ -24,6 +26,9 @@ export function MovementLine({
   onCheckedChange,
 }: MovementLineProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const workflow = useWorkflows((state) =>
+    state.getWorkflowByMovement(movement.id),
+  );
 
   return (
     <div
@@ -68,21 +73,50 @@ export function MovementLine({
         <CircleCheck className="size-4 shrink-0 text-indigo-300" />
       )}
 
-      <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
-        {movement.name}
-      </div>
-
-      <div className="flex-1" />
       <Badge
         variant="outline"
         asChild
-        className="h-6 sm:mr-3 [a]:hover:bg-border/50"
+        className="h-6 shrink-0 sm:mr-1 [a]:hover:bg-border/50"
         onClick={(e) => e.stopPropagation()}
       >
         <Link to={`/accounts/$id`} params={{ id: movement.account }}>
           <AccountLabel accountId={movement.account} />
         </Link>
       </Badge>
+
+      <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
+        {movement.name}
+      </div>
+
+      <div className="flex-1" />
+
+      {workflow && (
+        <span
+          className={cn(
+            "flex shrink-0 items-center gap-1 text-xs",
+            (
+              WORKFLOW_STATUS_CONFIG[workflow.status] ??
+              WORKFLOW_STATUS_CONFIG.queued
+            ).textClass,
+          )}
+        >
+          <span
+            className={cn(
+              "size-1.5 rounded-full",
+              (
+                WORKFLOW_STATUS_CONFIG[workflow.status] ??
+                WORKFLOW_STATUS_CONFIG.queued
+              ).dotClass,
+              workflow.status === "running" && "animate-pulse",
+            )}
+          />
+          {(
+            WORKFLOW_STATUS_CONFIG[workflow.status] ??
+            WORKFLOW_STATUS_CONFIG.queued
+          ).label.toLowerCase()}
+        </span>
+      )}
+
       <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(movement.amount)}
       </div>
