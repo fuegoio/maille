@@ -239,6 +239,21 @@ function FundMoveLine({
   const counterpartId = isInflow ? move.fromFund : move.toFund;
   const counterpart = funds.find((f) => f.id === counterpartId);
 
+  const renderCounterpart = () => (
+    <>
+      {counterpart ? (
+        <>
+          {counterpart.emoji && <span>{counterpart.emoji}</span>}
+          <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+            {counterpart.name}
+          </span>
+        </>
+      ) : (
+        <span>Untracked</span>
+      )}
+    </>
+  );
+
   return (
     <div
       className={cn(
@@ -263,38 +278,43 @@ function FundMoveLine({
         </div>
 
         {move.activity ? (
-          <div className="min-w-0 truncate font-medium">
-            {move.activity.name}
-          </div>
+          <>
+            <div className="min-w-0 truncate font-medium">
+              {move.activity.name}
+            </div>
+            {move.note && (
+              <div
+                className="hidden min-w-0 truncate text-muted-foreground md:block"
+                title={move.note}
+              >
+                {move.note}
+              </div>
+            )}
+            <div className="flex-1" />
+            <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+              <span className="text-xs">{isInflow ? "from" : "to"}</span>
+              {renderCounterpart()}
+            </div>
+          </>
         ) : (
-          <div className="min-w-0 truncate text-muted-foreground">
-            Allocation
-          </div>
-        )}
-        {move.note && (
-          <div
-            className="hidden min-w-0 truncate text-muted-foreground md:block"
-            title={move.note}
-          >
-            {move.note}
-          </div>
-        )}
-
-        <div className="flex-1" />
-
-        <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-          <span className="text-xs">{isInflow ? "from" : "to"}</span>
-          {counterpart ? (
-            <>
-              {counterpart.emoji && <span>{counterpart.emoji}</span>}
-              <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-                {counterpart.name}
+          <>
+            <div className="flex min-w-0 items-center gap-1.5 font-medium">
+              <span className="text-muted-foreground">
+                {isInflow ? "from" : "to"}
               </span>
-            </>
-          ) : (
-            <span>Untracked</span>
-          )}
-        </div>
+              {renderCounterpart()}
+            </div>
+            {move.note && (
+              <div
+                className="hidden min-w-0 truncate text-muted-foreground md:block"
+                title={move.note}
+              >
+                {move.note}
+              </div>
+            )}
+            <div className="flex-1" />
+          </>
+        )}
       </div>
 
       <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">

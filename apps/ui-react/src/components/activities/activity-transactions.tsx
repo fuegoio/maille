@@ -54,6 +54,22 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
       ...transaction,
       ...updateFields,
     });
+
+    // Amount changes carry over to the transaction's fund moves so fund
+    // balances stay in sync (same behavior as the create-activity modal)
+    const updatedAmount = updateFields.amount;
+    const effectiveFundMoves =
+      fundMoves !== undefined
+        ? fundMoves
+        : updatedAmount !== undefined &&
+            transaction.fundMoves &&
+            transaction.fundMoves.length > 0
+          ? transaction.fundMoves.map((move) => ({
+              ...move,
+              amount: updatedAmount,
+            }))
+          : undefined;
+
     mutate({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
@@ -61,9 +77,9 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
         activityId: activity.id,
         id: transaction.id,
         ...updateFields,
-        ...(fundMoves !== undefined
+        ...(effectiveFundMoves !== undefined
           ? {
-              fundMoves: fundMoves.map((move) => ({
+              fundMoves: effectiveFundMoves.map((move) => ({
                 id: move.id,
                 fromFund: move.fromFund,
                 toFund: move.toFund,
@@ -81,10 +97,12 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             activityId: activity.id,
             id: transaction.id,
             ...updateFields,
-            ...(fundMoves !== undefined
+            ...(effectiveFundMoves !== undefined
               ? {
-                  fundMoves: fundMoves.map((move) => ({
+                  fundMoves: effectiveFundMoves.map((move) => ({
                     ...move,
+                    // The move belongs to the transaction being updated
+                    transaction: transaction.id,
                     date: move.date.toISOString(),
                   })),
                 }
