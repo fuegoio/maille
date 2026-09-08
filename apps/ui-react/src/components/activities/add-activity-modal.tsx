@@ -688,6 +688,7 @@ export function AddActivityModal({
                 <TransactionComponent
                   key={index}
                   transaction={transaction}
+                  showMetadata={false}
                   className={
                     index !== transactions.length - 1 ? "border-b" : ""
                   }
