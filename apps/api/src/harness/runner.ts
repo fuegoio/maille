@@ -442,14 +442,6 @@ async function executeTool(
       if (!allocation.ok) {
         return { result: allocation };
       }
-      const collision = await nameCollision(state.workflow.user, parsed.data.name);
-      if (collision) {
-        return {
-          result: toolError(
-            `An activity named '${parsed.data.name}' already exists (id ${collision}). Use linkMovement to link to it, or askUser.`,
-          ),
-        };
-      }
       const legs = await buildTransactionLegs(state, parsed.data);
       if (!legs.ok) {
         return { result: legs };
