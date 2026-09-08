@@ -203,6 +203,9 @@ type Movement {
   id: String!
   name: String!
   status: String!
+
+  """The unique workflow attached to this movement, if any."""
+  workflow: MovementWorkflow
 }
 
 type MovementActivity {
@@ -211,8 +214,24 @@ type MovementActivity {
   id: String!
 }
 
+type MovementWorkflow {
+  attempts: Int!
+  createdAt: Float!
+  error: String
+  id: String!
+  messages: [WorkflowMessage!]!
+  movement: String!
+  result: String
+  status: String!
+  trigger: String!
+  updatedAt: Float!
+}
+
 type Mutation {
   addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromAsset: String, fromCounterparty: String, fundMoves: [FundMoveInput!], id: String!, toAccount: String!, toAsset: String, toCounterparty: String): Transaction!
+
+  """Answers the workflow's pending question and resumes the run."""
+  answerWorkflow(content: String!, id: String!, optionId: String): MovementWorkflow!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!): Account!
   createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!): Activity!
   createActivityCategory(emoji: String, id: String!, name: String!, type: String!): ActivityCategory!
@@ -239,6 +258,11 @@ type Mutation {
   setFundAllocations(allocations: [FundAllocationInput!]!, fund: String!): [FundAllocation!]!
   shareAccount(id: String!, userId: String!): Account!
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
+
+  """
+  Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise.
+  """
+  triggerWorkflow(movementId: String!): MovementWorkflow!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
@@ -273,6 +297,7 @@ type Query {
   funds: [Fund!]!
   movements: [Movement!]!
   projects: [Project!]!
+  workflows(statuses: [String!]): [MovementWorkflow!]!
 }
 
 type Subscription {
@@ -302,4 +327,18 @@ input TransactionInput {
   toAccount: String!
   toAsset: String
   toCounterparty: String
+}
+
+type WorkflowMessage {
+  content: String!
+  createdAt: Float!
+  id: String!
+  optionId: String
+  options: [WorkflowMessageOption!]
+  role: String!
+}
+
+type WorkflowMessageOption {
+  id: String!
+  label: String!
 }

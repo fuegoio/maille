@@ -218,6 +218,8 @@ export type Movement = {
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   status: Scalars['String']['output'];
+  /** The unique workflow attached to this movement, if any. */
+  workflow: Maybe<MovementWorkflow>;
 };
 
 export type MovementActivity = {
@@ -226,8 +228,23 @@ export type MovementActivity = {
   id: Scalars['String']['output'];
 };
 
+export type MovementWorkflow = {
+  attempts: Scalars['Int']['output'];
+  createdAt: Scalars['Float']['output'];
+  error: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  messages: Array<WorkflowMessage>;
+  movement: Scalars['String']['output'];
+  result: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  trigger: Scalars['String']['output'];
+  updatedAt: Scalars['Float']['output'];
+};
+
 export type Mutation = {
   addTransaction: Transaction;
+  /** Answers the workflow's pending question and resumes the run. */
+  answerWorkflow: MovementWorkflow;
   createAccount: Account;
   createActivity: Activity;
   createActivityCategory: ActivityCategory;
@@ -254,6 +271,8 @@ export type Mutation = {
   setFundAllocations: Array<FundAllocation>;
   shareAccount: Account;
   shareActivity: Array<ActivitySharing>;
+  /** Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise. */
+  triggerWorkflow: MovementWorkflow;
   updateAccount: Account;
   updateActivity: Activity;
   updateActivityCategory: ActivityCategory;
@@ -279,6 +298,13 @@ export type MutationAddTransactionArgs = {
   toAccount: Scalars['String']['input'];
   toAsset?: InputMaybe<Scalars['String']['input']>;
   toCounterparty?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationAnswerWorkflowArgs = {
+  content: Scalars['String']['input'];
+  id: Scalars['String']['input'];
+  optionId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -460,6 +486,11 @@ export type MutationShareActivityArgs = {
 };
 
 
+export type MutationTriggerWorkflowArgs = {
+  movementId: Scalars['String']['input'];
+};
+
+
 export type MutationUpdateAccountArgs = {
   id: Scalars['String']['input'];
   movements?: InputMaybe<Scalars['Boolean']['input']>;
@@ -581,11 +612,17 @@ export type Query = {
   funds: Array<Fund>;
   movements: Array<Movement>;
   projects: Array<Project>;
+  workflows: Array<MovementWorkflow>;
 };
 
 
 export type QueryEventsArgs = {
   lastSync: Scalars['Float']['input'];
+};
+
+
+export type QueryWorkflowsArgs = {
+  statuses?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export type Subscription = {
@@ -615,6 +652,20 @@ export type TransactionInput = {
   toAccount: Scalars['String']['input'];
   toAsset?: InputMaybe<Scalars['String']['input']>;
   toCounterparty?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type WorkflowMessage = {
+  content: Scalars['String']['output'];
+  createdAt: Scalars['Float']['output'];
+  id: Scalars['String']['output'];
+  optionId: Maybe<Scalars['String']['output']>;
+  options: Maybe<Array<WorkflowMessageOption>>;
+  role: Scalars['String']['output'];
+};
+
+export type WorkflowMessageOption = {
+  id: Scalars['String']['output'];
+  label: Scalars['String']['output'];
 };
 
 export type CreateContactMutationVariables = Exact<{
