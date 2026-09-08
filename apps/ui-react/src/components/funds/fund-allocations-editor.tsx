@@ -95,9 +95,7 @@ export function FundAccountsEditor({
       funds,
       fundMoves,
       fundAccounts: excludeFund
-        ? fundAccounts.filter(
-            (allocation) => allocation.fund !== excludeFund,
-          )
+        ? fundAccounts.filter((allocation) => allocation.fund !== excludeFund)
         : fundAccounts,
       date: getAllocationDate({ startDate }, user.startingDate),
       startingDate: user.startingDate,

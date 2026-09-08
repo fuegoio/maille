@@ -219,10 +219,7 @@ export const resolveAccountCandidates = async (params: {
 };
 
 /** A fund's current allocations, serialized for a sync event payload. */
-export const getFundAccounts = async (
-  userId: string,
-  fundId: string,
-): Promise<FundAccount[]> =>
+export const getFundAccounts = async (userId: string, fundId: string): Promise<FundAccount[]> =>
   db
     .select()
     .from(fundAccounts)

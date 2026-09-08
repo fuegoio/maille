@@ -61,10 +61,7 @@ export const deleteFundMutation = graphql(/* GraphQL */ `
 `);
 
 export const setFundAccountsMutation = graphql(/* GraphQL */ `
-  mutation SetFundAccounts(
-    $fund: String!
-    $accounts: [FundAccountInput!]!
-  ) {
+  mutation SetFundAccounts($fund: String!, $accounts: [FundAccountInput!]!) {
     setFundAccounts(fund: $fund, accounts: $accounts) {
       id
     }

@@ -1,9 +1,5 @@
 import { getFundAncestors } from "@maille/core/funds";
-import {
-  createFileRoute,
-  Link,
-  notFound,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 

@@ -246,10 +246,7 @@ export const useFunds = create<FundsState>()(
         } else if (mutation.name === "deleteFund") {
           get().restoreFund(mutation.rollbackData);
         } else if (mutation.name === "setFundAccounts") {
-          get().setFundAccounts(
-            mutation.variables.fund,
-            mutation.rollbackData,
-          );
+          get().setFundAccounts(mutation.variables.fund, mutation.rollbackData);
         } else if (mutation.name === "addTransaction") {
           const addTransactionEvent = mutation.events[0];
           if (addTransactionEvent.type === "addTransaction") {

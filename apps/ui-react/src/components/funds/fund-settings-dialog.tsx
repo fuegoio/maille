@@ -139,9 +139,7 @@ export function FundSettingsDialog({
     reset(fundFormValues(fund));
     setAllocationRows(
       allocationRowsFromFundAccounts(
-        useFunds
-          .getState()
-          .funds.find((f) => f.id === fund.id)?.accounts ?? [],
+        useFunds.getState().funds.find((f) => f.id === fund.id)?.accounts ?? [],
       ),
     );
   }, [fund, reset]);
