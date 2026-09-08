@@ -93,7 +93,7 @@ export function MovementLine({
       {workflow && (
         <WorkflowStatusBadge
           status={workflow.status}
-          className="shrink-0 lowercase sm:mr-1"
+          className="shrink-0 sm:mr-1"
         />
       )}
 
