@@ -157,6 +157,7 @@ export function FundsTable() {
                   aria-expanded={!isCollapsed}
                   className="mr-0.5 size-5 text-muted-foreground"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     toggleCollapsed(fund.id);
                   }}

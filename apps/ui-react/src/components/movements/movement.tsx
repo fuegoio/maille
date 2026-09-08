@@ -557,6 +557,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
                               size="icon-sm"
                               className="ml-2 shrink-0"
                               onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 handleUnlinkActivity(
                                   movementActivity.id,

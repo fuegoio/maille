@@ -105,7 +105,10 @@ export function ActivityLine({
           onCheckedChange={(checked) =>
             checked != "indeterminate" && onCheckedChange(checked)
           }
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           className={cn(
             "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
             checked && "opacity-100",
