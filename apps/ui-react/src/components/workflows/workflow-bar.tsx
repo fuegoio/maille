@@ -48,7 +48,7 @@ export function WorkflowBar() {
       </AnimatePresence>
 
       {/* Bottom bar — conversation tabs, right-aligned */}
-      <div className="flex h-9 shrink-0 items-center justify-end gap-1 px-3">
+      <div className="flex h-9 shrink-0 items-center justify-end gap-1 px-3 pb-2">
         {openWorkflows.length === 0 && (
           <span className="text-xs text-muted-foreground">No workflow</span>
         )}
