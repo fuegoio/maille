@@ -297,7 +297,7 @@ function TransactionLine({
 
       <div className="flex-1" />
 
-      <div className="mr-1 w-32 shrink-0 text-right font-mono whitespace-nowrap">
+      <div className="w-32 shrink-0 text-right font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
       </div>
     </div>
