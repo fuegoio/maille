@@ -194,17 +194,15 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
                 View conversation
                 <ArrowRight className="size-3.5" />
               </Button>
-              {workflow.status !== "succeeded" && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleTrigger}
-                  className="gap-1.5"
-                >
-                  <Sparkles className="size-3.5" />
-                  Retry
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleTrigger}
+                className="gap-1.5"
+              >
+                <Sparkles className="size-3.5" />
+                {workflow.status === "succeeded" ? "Start new" : "Retry"}
+              </Button>
             </>
           )}
         </div>
