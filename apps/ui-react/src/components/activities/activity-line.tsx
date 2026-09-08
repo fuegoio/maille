@@ -108,6 +108,7 @@ export function ActivityLine({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            onCheckedChange(!checked);
           }}
           className={cn(
             "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
