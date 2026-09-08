@@ -78,6 +78,7 @@ describe("date filters on activity", () => {
       movements: [],
       sharing: [],
       status: "completed",
+      history: [],
     };
 
     test(`${testCase.activityDate} ${testCase.operator} ${testCase.value} of ${testCase.date} should be ${testCase.expected}`, () => {

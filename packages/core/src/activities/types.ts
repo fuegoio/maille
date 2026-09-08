@@ -1,4 +1,5 @@
 import type { FundMove } from "../funds/types";
+import type { SerializedHistoryEntry } from "../history/types";
 
 export type Transaction = {
   id: string;
@@ -69,6 +70,8 @@ export type Activity = BaseActivity & {
   amount: number;
   sharing: ActivitySharing[];
   status: ActivityStatus;
+  // Append-only change history, displayed as a timeline on the activity page
+  history: SerializedHistoryEntry[];
 };
 
 //

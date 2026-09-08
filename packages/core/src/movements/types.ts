@@ -5,6 +5,7 @@ import type {
   ActivityFilterMultipleOperators,
   ActivityFilterNameDescriptionOperators,
 } from "../activities/types";
+import type { SerializedHistoryEntry } from "../history/types";
 
 export type MovementStatus = "incomplete" | "completed";
 
@@ -16,6 +17,8 @@ export type Movement = {
   name: string;
   activities: MovementActivity[];
   status: MovementStatus;
+  // Append-only change history, displayed as a timeline on the movement page
+  history: SerializedHistoryEntry[];
 };
 
 export type MovementActivity = {

@@ -2,6 +2,7 @@ import type { Account, AccountSharing, AccountType } from "#accounts/index.ts";
 import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
 import type { ContactUser } from "#contacts/index.ts";
 import type { FundMove } from "#funds/types.ts";
+import type { SerializedHistoryEntry } from "#history/types.ts";
 
 export interface BaseSyncEvent {
   user: string;
@@ -403,6 +404,16 @@ export interface UpdateUserEvent extends BaseSyncEvent {
   };
 }
 
+/**
+ * Upsert semantics: when the payload id matches an existing entry on the
+ * entity's history, the existing entry is replaced (write-time compaction);
+ * otherwise the entry is appended.
+ */
+export interface CreateHistoryEvent extends BaseSyncEvent {
+  type: "createHistory";
+  payload: SerializedHistoryEntry;
+}
+
 export type SyncEvent =
   | CreateActivityEvent
   | UpdateActivityEvent
@@ -444,4 +455,5 @@ export type SyncEvent =
   | CreateContactEvent
   | DeleteContactEvent
   | CreateUserEvent
-  | UpdateUserEvent;
+  | UpdateUserEvent
+  | CreateHistoryEvent;
