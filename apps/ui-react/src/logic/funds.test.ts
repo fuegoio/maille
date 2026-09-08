@@ -7,7 +7,7 @@ import { getFundsBalances } from "./funds";
 const fund = (id: string, isDefault = false): Fund => ({
   id,
   name: id,
-  emoji: null,
+  color: "#818cf8",
   isDefault,
   startDate: null,
   endDate: null,

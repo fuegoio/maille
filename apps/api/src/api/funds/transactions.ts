@@ -1,4 +1,5 @@
 import { db } from "@/database";
+import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { fundMoves, funds } from "@/tables";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
@@ -24,7 +25,7 @@ export const getDefaultFund = async (userId: string) => {
         id: crypto.randomUUID(),
         user: userId,
         name: "Liquid",
-        emoji: null,
+        color: DEFAULT_FUND_COLOR,
         isDefault: true,
       })
       .returning()

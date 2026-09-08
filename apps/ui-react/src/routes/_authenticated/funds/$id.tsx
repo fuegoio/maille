@@ -71,7 +71,10 @@ function FundPage() {
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>
-                  {fund.emoji && <span className="mr-1">{fund.emoji}</span>}
+                  <span
+                    className="mr-1.5 inline-block size-3 rounded-xl align-[-1px]"
+                    style={{ backgroundColor: fund.color }}
+                  />
                   <span>{fund.name}</span>
                 </BreadcrumbPage>
               </BreadcrumbItem>

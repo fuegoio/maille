@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
@@ -27,7 +28,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -41,7 +41,7 @@ import { useSync } from "@/stores/sync";
 const updateFundSchema = z
   .object({
     name: z.string().min(1, "Fund name is required"),
-    emoji: z.string().nullable().optional(),
+    color: z.string(),
     startDate: z.date().nullable().optional(),
     endDate: z.date().nullable().optional(),
   })
@@ -89,7 +89,7 @@ export function FundSettingsDialog({
     resolver: zodResolver(updateFundSchema),
     defaultValues: {
       name: fund.name,
-      emoji: fund.emoji,
+      color: fund.color,
       startDate: toDate(fund.startDate),
       endDate: toDate(fund.endDate),
     },
@@ -116,7 +116,7 @@ export function FundSettingsDialog({
       variables: {
         id: fund.id,
         name: data.name,
-        emoji: data.emoji,
+        color: data.color,
         startDate,
         endDate,
       },
@@ -127,7 +127,7 @@ export function FundSettingsDialog({
           payload: {
             id: fund.id,
             name: data.name,
-            emoji: data.emoji,
+            color: data.color,
             startDate,
             endDate,
           },
@@ -137,7 +137,7 @@ export function FundSettingsDialog({
 
     reset({
       name: data.name,
-      emoji: data.emoji,
+      color: data.color,
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
     });
@@ -173,13 +173,10 @@ export function FundSettingsDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex items-end gap-2">
             <Controller
-              name="emoji"
+              name="color"
               control={control}
               render={({ field }) => (
-                <EmojiPicker
-                  value={field.value || null}
-                  onChange={field.onChange}
-                />
+                <ColorPicker value={field.value} onChange={field.onChange} />
               )}
             />
             <Field>

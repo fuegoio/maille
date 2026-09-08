@@ -143,7 +143,7 @@ type Event {
 }
 
 type Fund {
-  emoji: String
+  color: String!
   endDate: Date
   id: String!
   isDefault: Boolean!
@@ -207,7 +207,7 @@ type Mutation {
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
-  createFund(emoji: String, endDate: Date, id: String!, name: String!, startDate: Date): Fund!
+  createFund(color: String, endDate: Date, id: String!, name: String!, startDate: Date): Fund!
   createFundMove(amount: Float!, date: Date!, fromFund: String, id: String!, note: String, toFund: String): FundMove!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
@@ -233,7 +233,7 @@ type Mutation {
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
-  updateFund(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Fund!
+  updateFund(color: String, endDate: Date, id: String!, name: String, startDate: Date): Fund!
   updateFundMove(amount: Float, date: Date, fromFund: String, id: String!, note: String, toFund: String): FundMove!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!

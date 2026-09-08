@@ -73,7 +73,10 @@ export function FundsTable() {
           }
         >
           <div className="flex items-center gap-2">
-            {fund.emoji && <span className="text-xl">{fund.emoji}</span>}
+            <div
+              className="size-3 shrink-0 rounded-xl"
+              style={{ backgroundColor: fund.color }}
+            />
             <div className="text-sm font-medium">{fund.name}</div>
             {fund.isDefault && (
               <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">

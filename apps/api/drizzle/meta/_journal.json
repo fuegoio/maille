@@ -71,6 +71,20 @@
       "when": 1788855454640,
       "tag": "0009_stale_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788863251064,
+      "tag": "0010_fat_eternals",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788863257349,
+      "tag": "0011_panoramic_kingpin",
+      "breakpoints": true
     }
   ]
 }

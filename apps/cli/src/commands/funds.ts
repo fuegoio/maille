@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 
 const FUNDS_QUERY = `
   query {
-    funds { id name emoji isDefault startDate endDate }
+    funds { id name color isDefault startDate endDate }
   }
 `;
 
@@ -28,11 +28,11 @@ fundsCommand
       if (opts.json) { console.log(JSON.stringify(data.funds, null, 2)); return; }
       if (!data.funds.length) { console.log(chalk.yellow("No funds found.")); return; }
       printTable(
-        ["ID", "NAME", "EMOJI", "DEFAULT", "START DATE", "END DATE"],
+        ["ID", "NAME", "COLOR", "DEFAULT", "START DATE", "END DATE"],
         data.funds.map((f) => [
           String(f.id).slice(0, 8),
           String(f.name),
-          String(f.emoji ?? ""),
+          String(f.color ?? ""),
           f.isDefault ? "yes" : "",
           f.startDate ? new Date(String(f.startDate)).toLocaleDateString() : "-",
           f.endDate ? new Date(String(f.endDate)).toLocaleDateString() : "-",
@@ -49,20 +49,20 @@ fundsCommand
   .command("create")
   .description("Create a fund")
   .requiredOption("--name <name>", "Fund name")
-  .option("--emoji <emoji>", "Emoji")
+  .option("--color <color>", "Color (hex, e.g. #818cf8)")
   .option("--start-date <date>", "Start date (YYYY-MM-DD)")
   .option("--end-date <date>", "End date (YYYY-MM-DD)")
   .action(async (opts) => {
     const spinner = ora("Creating fund...").start();
     try {
       const data = await gql<{ createFund: { id: string; name: string } }>(
-        `mutation CreateFund($id: String!, $name: String!, $emoji: String, $startDate: Date, $endDate: Date) {
-          createFund(id: $id, name: $name, emoji: $emoji, startDate: $startDate, endDate: $endDate) { id name }
+        `mutation CreateFund($id: String!, $name: String!, $color: String, $startDate: Date, $endDate: Date) {
+          createFund(id: $id, name: $name, color: $color, startDate: $startDate, endDate: $endDate) { id name }
         }`,
         {
           id: randomUUID(),
           name: opts.name,
-          emoji: opts.emoji ?? null,
+          color: opts.color ?? null,
           startDate: opts.startDate ?? null,
           endDate: opts.endDate ?? null,
         }
@@ -79,7 +79,7 @@ fundsCommand
   .command("update <id>")
   .description("Update a fund")
   .option("--name <name>", "New name")
-  .option("--emoji <emoji>", "New emoji")
+  .option("--color <color>", "New color (hex, e.g. #818cf8)")
   .option("--start-date <date>", "New start date (YYYY-MM-DD)")
   .option("--end-date <date>", "New end date (YYYY-MM-DD)")
   .action(async (id, opts) => {
@@ -87,12 +87,12 @@ fundsCommand
     try {
       const variables: Record<string, unknown> = { id };
       if (opts.name) variables.name = opts.name;
-      if (opts.emoji) variables.emoji = opts.emoji;
+      if (opts.color) variables.color = opts.color;
       if (opts.startDate) variables.startDate = opts.startDate;
       if (opts.endDate) variables.endDate = opts.endDate;
       await gql(
-        `mutation UpdateFund($id: String!, $name: String, $emoji: String, $startDate: Date, $endDate: Date) {
-          updateFund(id: $id, name: $name, emoji: $emoji, startDate: $startDate, endDate: $endDate) { id name }
+        `mutation UpdateFund($id: String!, $name: String, $color: String, $startDate: Date, $endDate: Date) {
+          updateFund(id: $id, name: $name, color: $color, startDate: $startDate, endDate: $endDate) { id name }
         }`,
         variables
       );

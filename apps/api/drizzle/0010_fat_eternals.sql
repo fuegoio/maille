@@ -1,0 +1,1 @@
+ALTER TABLE "funds" ADD COLUMN "color" text DEFAULT '#818cf8' NOT NULL;

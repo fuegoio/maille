@@ -1,4 +1,5 @@
 import { db } from "@/database";
+import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { builder } from "../builder";
 import { FundSchema, FundMoveSchema } from "./schemas";
 import { funds, fundMoves } from "@/tables";
@@ -31,7 +32,7 @@ export const registerFundsMutations = () => {
       args: {
         id: t.arg({ type: "String" }),
         name: t.arg.string(),
-        emoji: t.arg.string({ required: false }),
+        color: t.arg.string({ required: false }),
         startDate: t.arg({ type: "Date", required: false }),
         endDate: t.arg({ type: "Date", required: false }),
       },
@@ -43,7 +44,7 @@ export const registerFundsMutations = () => {
               id: args.id,
               user: ctx.user.id,
               name: args.name,
-              emoji: args.emoji,
+              color: args.color ?? DEFAULT_FUND_COLOR,
               isDefault: false,
               startDate: args.startDate,
               endDate: args.endDate,
@@ -60,7 +61,7 @@ export const registerFundsMutations = () => {
           payload: {
             id: created.id,
             name: created.name,
-            emoji: created.emoji,
+            color: created.color,
             isDefault: created.isDefault,
             startDate: created.startDate?.toISOString() ?? null,
             endDate: created.endDate?.toISOString() ?? null,
@@ -81,7 +82,7 @@ export const registerFundsMutations = () => {
       args: {
         id: t.arg({ type: "String" }),
         name: t.arg.string({ required: false }),
-        emoji: t.arg.string({ required: false }),
+        color: t.arg.string({ required: false }),
         startDate: t.arg({ type: "Date", required: false }),
         endDate: t.arg({ type: "Date", required: false }),
       },
@@ -107,7 +108,7 @@ export const registerFundsMutations = () => {
 
         const updates: Partial<typeof fund> = {};
         if (args.name !== undefined && args.name !== null) updates.name = args.name;
-        if (args.emoji !== undefined) updates.emoji = args.emoji;
+        if (args.color !== undefined && args.color !== null) updates.color = args.color;
         if (args.startDate !== undefined) {
           updates.startDate = args.startDate;
           if (args.startDate === null) updates.endDate = null;

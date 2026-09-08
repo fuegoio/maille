@@ -1,11 +1,11 @@
-import type { Fund } from "@maille/core/funds";
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DEFAULT_FUND_COLOR, type Fund } from "@maille/core/funds";
 import { type ReactNode, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
@@ -16,7 +16,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 import {
   Field,
   FieldContent,
@@ -30,7 +29,7 @@ import { useSync } from "@/stores/sync";
 const createFundSchema = z
   .object({
     name: z.string().min(1, "Fund name is required"),
-    emoji: z.string().nullable().optional(),
+    color: z.string(),
     startDate: z.date().nullable().optional(),
     endDate: z.date().nullable().optional(),
   })
@@ -72,7 +71,7 @@ export function CreateFundDialog({
     resolver: zodResolver(createFundSchema),
     defaultValues: {
       name: "",
-      emoji: null,
+      color: DEFAULT_FUND_COLOR,
       startDate: null,
       endDate: null,
     },
@@ -98,7 +97,7 @@ export function CreateFundDialog({
     mutate({
       name: "createFund",
       mutation: createFundMutation,
-      variables: { id, name: data.name, emoji: data.emoji ?? null },
+      variables: { id, name: data.name, color: data.color },
       rollbackData: undefined,
       events: [
         {
@@ -106,7 +105,7 @@ export function CreateFundDialog({
           payload: {
             id,
             name: data.name,
-            emoji: data.emoji ?? null,
+            color: data.color,
             isDefault: false,
             startDate,
             endDate,
@@ -119,7 +118,7 @@ export function CreateFundDialog({
       const rollbackFund: Fund = {
         id,
         name: data.name,
-        emoji: data.emoji ?? null,
+        color: data.color,
         isDefault: false,
         startDate: null,
         endDate: null,
@@ -156,13 +155,10 @@ export function CreateFundDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex items-end gap-2">
             <Controller
-              name="emoji"
+              name="color"
               control={control}
               render={({ field }) => (
-                <EmojiPicker
-                  value={field.value || null}
-                  onChange={field.onChange}
-                />
+                <ColorPicker value={field.value} onChange={field.onChange} />
               )}
             />
             <Field>

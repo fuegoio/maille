@@ -16,14 +16,14 @@ export const createFundMutation = graphql(/* GraphQL */ `
   mutation CreateFund(
     $id: String!
     $name: String!
-    $emoji: String
+    $color: String
     $startDate: Date
     $endDate: Date
   ) {
     createFund(
       id: $id
       name: $name
-      emoji: $emoji
+      color: $color
       startDate: $startDate
       endDate: $endDate
     ) {
@@ -36,14 +36,14 @@ export const updateFundMutation = graphql(/* GraphQL */ `
   mutation UpdateFund(
     $id: String!
     $name: String
-    $emoji: String
+    $color: String
     $startDate: Date
     $endDate: Date
   ) {
     updateFund(
       id: $id
       name: $name
-      emoji: $emoji
+      color: $color
       startDate: $startDate
       endDate: $endDate
     ) {

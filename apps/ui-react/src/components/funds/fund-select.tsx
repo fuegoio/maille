@@ -30,7 +30,7 @@ export function FundSelect({
   const funds = useFunds((state) => state.funds);
 
   const allFunds = [
-    ...(allowEmpty ? [{ id: "clear", name: emptyLabel, emoji: null }] : []),
+    ...(allowEmpty ? [{ id: "clear", name: emptyLabel, color: "" }] : []),
     ...funds,
   ];
 
@@ -48,7 +48,12 @@ export function FundSelect({
         {allFunds.map((fund) => (
           <SelectItem key={fund.id} value={fund.id}>
             <div className="flex min-w-0 items-center">
-              {fund.emoji && <span className="w-6 shrink-0">{fund.emoji}</span>}
+              {fund.color && (
+                <div
+                  className="mr-1.5 size-3 shrink-0 rounded-xl"
+                  style={{ backgroundColor: fund.color }}
+                />
+              )}
               <span className="truncate">{fund.name}</span>
             </div>
           </SelectItem>

@@ -10,7 +10,7 @@ FundSchema.implement({
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),
-    emoji: t.exposeString("emoji", { nullable: true }),
+    color: t.exposeString("color"),
     isDefault: t.exposeBoolean("isDefault"),
     startDate: t.field({
       type: "Date",

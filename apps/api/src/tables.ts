@@ -13,6 +13,7 @@ import {
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import type { SerializedHistoryEntry } from "@maille/core/history";
+import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import type { SyncEvent } from "@maille/core/sync";
 import { relations } from "drizzle-orm";
 
@@ -296,7 +297,7 @@ export const funds = pgTable("funds", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  emoji: text("emoji"),
+  color: text("color").notNull().default(DEFAULT_FUND_COLOR),
   isDefault: boolean("is_default").notNull().default(false),
   startDate: timestamp("start_date", { mode: "date" }),
   endDate: timestamp("end_date", { mode: "date" }),

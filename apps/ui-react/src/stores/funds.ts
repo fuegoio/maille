@@ -1,13 +1,14 @@
 import type { Fund, FundMove } from "@maille/core/funds";
 import type { SerializedFundMove, SyncEvent } from "@maille/core/sync";
 
+import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import type { Mutation } from "@/mutations";
 
 import { useActivities } from "./activities";
-import { storage } from "./storage";
+import { migrationFlags, storage } from "./storage";
 
 interface FundsState {
   funds: Fund[];
@@ -120,7 +121,7 @@ export const useFunds = create<FundsState>()(
           get().addFund({
             id: event.payload.id,
             name: event.payload.name,
-            emoji: event.payload.emoji,
+            color: event.payload.color,
             isDefault: event.payload.isDefault,
             startDate: event.payload.startDate
               ? new Date(event.payload.startDate)
@@ -134,8 +135,8 @@ export const useFunds = create<FundsState>()(
             ...(event.payload.name !== undefined
               ? { name: event.payload.name }
               : {}),
-            ...(event.payload.emoji !== undefined
-              ? { emoji: event.payload.emoji }
+            ...(event.payload.color !== undefined
+              ? { color: event.payload.color }
               : {}),
             ...(event.payload.startDate !== undefined
               ? {
@@ -247,7 +248,18 @@ export const useFunds = create<FundsState>()(
     }),
     {
       name: "funds",
+      version: 1,
       storage,
+      migrate: (persisted) => {
+        const state = persisted as { funds?: Fund[] };
+        if (state.funds) {
+          state.funds = state.funds.map((fund) =>
+            fund.color ? fund : { ...fund, color: DEFAULT_FUND_COLOR },
+          );
+        }
+        migrationFlags.refetchUserData = true;
+        return state;
+      },
       partialize: (state) => ({
         funds: state.funds,
         fundMoves: state.fundMoves,

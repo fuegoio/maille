@@ -163,7 +163,7 @@ const userDataQuery = graphql(/* GraphQL */ `
     funds {
       id
       name
-      emoji
+      color
       isDefault
       startDate
       endDate

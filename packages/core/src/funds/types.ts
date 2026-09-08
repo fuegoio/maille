@@ -1,7 +1,7 @@
 export type Fund = {
   id: string;
   name: string;
-  emoji: string | null;
+  color: string;
   isDefault: boolean;
   startDate: Date | null;
   endDate: Date | null;

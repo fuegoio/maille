@@ -97,7 +97,7 @@ export interface CreateFundEvent extends BaseSyncEvent {
   payload: {
     id: string;
     name: string;
-    emoji: string | null;
+    color: string;
     isDefault: boolean;
     startDate: string | null;
     endDate: string | null;
@@ -109,7 +109,7 @@ export interface UpdateFundEvent extends BaseSyncEvent {
   payload: {
     id: string;
     name?: string;
-    emoji?: string | null;
+    color?: string;
     startDate?: string | null;
     endDate?: string | null;
   };

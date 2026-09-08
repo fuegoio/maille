@@ -77,6 +77,11 @@ const data = {
       icon: Folder,
     },
     {
+      title: "Funds",
+      url: "/funds",
+      icon: PiggyBank,
+    },
+    {
       title: "Categories",
       url: "/categories",
       icon: Tag,
@@ -85,11 +90,6 @@ const data = {
       title: "Projects",
       url: "/projects",
       icon: TentTree,
-    },
-    {
-      title: "Funds",
-      url: "/funds",
-      icon: PiggyBank,
     },
   ],
 };

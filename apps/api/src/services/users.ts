@@ -1,6 +1,7 @@
 import { accounts, funds } from "@/tables";
 import { db } from "@/database";
 import { AccountType } from "@maille/core/accounts";
+import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { logger } from "@/logger";
 
 export const createUserAccounts = async (userId: string) => {
@@ -74,7 +75,7 @@ export const createUserAccounts = async (userId: string) => {
     id: crypto.randomUUID(),
     user: userId,
     name: "Liquid",
-    emoji: null,
+    color: DEFAULT_FUND_COLOR,
     isDefault: true,
   });
 
