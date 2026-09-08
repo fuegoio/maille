@@ -350,7 +350,7 @@ export function ActivityTransactions({
         </div>
       </div>
 
-      <div className="mt-3 space-y-3">
+      <div className="mt-5 space-y-3">
         {activity.transactions.length === 0 &&
         stagedTransactions.length === 0 ? (
           <div className="py-4 text-sm text-muted-foreground">

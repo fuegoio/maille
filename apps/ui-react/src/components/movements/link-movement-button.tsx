@@ -151,7 +151,7 @@ export function LinkMovementButton({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
+            size="icon-xs"
             className={className}
             onClick={openDialog}
           >
