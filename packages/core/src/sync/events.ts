@@ -90,14 +90,6 @@ export interface DeleteTransactionEvent extends BaseSyncEvent {
   };
 }
 
-export interface UpdateFundMoveEvent extends BaseSyncEvent {
-  type: "updateFundMove";
-  payload: Partial<Omit<FundMove, "id" | "date">> & {
-    id: string;
-    date?: string | null;
-  };
-}
-
 export interface CreateFundEvent extends BaseSyncEvent {
   type: "createFund";
   payload: {
@@ -129,15 +121,19 @@ export interface DeleteFundEvent extends BaseSyncEvent {
   };
 }
 
-export interface CreateFundMoveEvent extends BaseSyncEvent {
-  type: "createFundMove";
-  payload: SerializedFundMove;
-}
-
-export interface DeleteFundMoveEvent extends BaseSyncEvent {
-  type: "deleteFundMove";
+/**
+ * A fund's opening allocations, replaced wholesale: the payload is the
+ * fund's full allocation list after the mutation.
+ */
+export interface UpdateFundAllocationsEvent extends BaseSyncEvent {
+  type: "updateFundAllocations";
   payload: {
-    id: string;
+    fund: string;
+    allocations: {
+      id: string;
+      account: string;
+      amount: number;
+    }[];
   };
 }
 
@@ -472,9 +468,7 @@ export type SyncEvent =
   | CreateFundEvent
   | UpdateFundEvent
   | DeleteFundEvent
-  | CreateFundMoveEvent
-  | UpdateFundMoveEvent
-  | DeleteFundMoveEvent
+  | UpdateFundAllocationsEvent
   | CreateAccountEvent
   | UpdateAccountEvent
   | DeleteAccountEvent

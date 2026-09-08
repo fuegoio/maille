@@ -1,4 +1,4 @@
-import type { Fund, FundMove } from "./types";
+import type { Fund, FundAllocation, FundMove } from "./types";
 
 /** Hex colors a fund icon can take, shared by the API default and the UI picker. */
 export const FUND_COLORS = [
@@ -51,20 +51,43 @@ export const getFundOutflows = (fundId: string, fundMoves: FundMove[]): number =
 export const getFundInflows = (fundId: string, fundMoves: FundMove[]): number =>
   fundMoves.filter((m) => m.toFund === fundId).reduce((total, m) => total + m.amount, 0);
 
-export const getFundBalance = (fundId: string, fundMoves: FundMove[]): number =>
-  getFundInflows(fundId, fundMoves) - getFundOutflows(fundId, fundMoves);
+/** Sum of a fund's opening allocations: the money earmarked at its start. */
+const getFundAllocated = (fundId: string, fundAllocations: FundAllocation[]): number =>
+  fundAllocations
+    .filter((allocation) => allocation.fund === fundId)
+    .reduce((total, allocation) => total + allocation.amount, 0);
 
-export const getFundsBalances = (funds: Fund[], fundMoves: FundMove[]) =>
+export const getFundBalance = (
+  fundId: string,
+  fundMoves: FundMove[],
+  fundAllocations: FundAllocation[] = [],
+): number =>
+  getFundInflows(fundId, fundMoves) -
+  getFundOutflows(fundId, fundMoves) +
+  getFundAllocated(fundId, fundAllocations);
+
+export const getFundsBalances = (
+  funds: Fund[],
+  fundMoves: FundMove[],
+  fundAllocations: FundAllocation[] = [],
+) =>
   funds.map((fund) => ({
     fund,
-    balance: getFundBalance(fund.id, fundMoves),
+    balance: getFundBalance(fund.id, fundMoves, fundAllocations),
   }));
 
-export const getTotalFundsBalance = (fundMoves: FundMove[]): number =>
+/**
+ * The total held by funds. Allocations cross the boundary from Untracked
+ * into a fund, so they count like an inflow from a null side.
+ */
+export const getTotalFundsBalance = (
+  fundMoves: FundMove[],
+  fundAllocations: FundAllocation[] = [],
+): number =>
   fundMoves.reduce(
     (total, m) => total + (m.toFund ? m.amount : 0) - (m.fromFund ? m.amount : 0),
     0,
-  );
+  ) + fundAllocations.reduce((total, allocation) => total + allocation.amount, 0);
 
 /** Every fund sitting strictly below the given fund in the tree. */
 export const getFundDescendants = (fundId: string, funds: Fund[]): Set<string> => {
@@ -101,20 +124,27 @@ export const wouldCreateCycle = (
  * A subtree's balance is the money that entered it minus the money that left
  * it. Summing the members' own balances yields exactly that: a move between
  * two funds inside the subtree cancels out, while a move crossing the subtree
- * boundary counts once on the inside side.
+ * boundary counts once on the inside side. Opening allocations of the
+ * subtree's funds count as money entering it.
  */
 export const getFundTreeBalance = (
   fundId: string,
   funds: Fund[],
   fundMoves: FundMove[],
+  fundAllocations: FundAllocation[] = [],
 ): number => {
   const ids = new Set([fundId, ...getFundDescendants(fundId, funds)]);
-  return fundMoves.reduce(
-    (total, m) =>
-      total +
-      (m.toFund && ids.has(m.toFund) ? m.amount : 0) -
-      (m.fromFund && ids.has(m.fromFund) ? m.amount : 0),
-    0,
+  return (
+    fundMoves.reduce(
+      (total, m) =>
+        total +
+        (m.toFund && ids.has(m.toFund) ? m.amount : 0) -
+        (m.fromFund && ids.has(m.fromFund) ? m.amount : 0),
+      0,
+    ) +
+    fundAllocations
+      .filter((allocation) => ids.has(allocation.fund))
+      .reduce((total, allocation) => total + allocation.amount, 0)
   );
 };
 
