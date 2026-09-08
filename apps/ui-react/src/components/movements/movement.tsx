@@ -5,7 +5,9 @@ import { format } from "date-fns";
 import _ from "lodash";
 import {
   BookMarked,
+  ChevronRight,
   CircleCheck,
+  CircleDashed,
   CircleDotDashed,
   Trash2,
   Unlink,
@@ -46,8 +48,9 @@ import {
   deleteMovementMutation,
   updateMovementMutation,
 } from "@/mutations/movements";
-import { useActivities } from "@/stores/activities";
+import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
+import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
 
 import { AccountSelect } from "../accounts/account-select";
@@ -62,6 +65,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { LinkActivityButton } from "./link-activity-button";
@@ -124,6 +128,9 @@ export function MovementPage({ movementId }: MovementPageProps) {
   const movements = useMovements((state) => state.movements);
 
   const activities = useActivities((state) => state.activities);
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
+  const getProjectById = useProjects((state) => state.getProjectById);
 
   const movementActivities = React.useMemo(() => {
     if (!movement) return [];
@@ -350,7 +357,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
         </header>
 
         <div className="flex-1 overflow-y-auto pb-20">
-          <div className="mx-auto w-full max-w-3xl">
+          <div className="mx-auto w-full max-w-5xl">
             <div className="border-b px-4 py-6 sm:px-8">
               <label htmlFor="date" className="sr-only">
                 Date
@@ -413,59 +420,161 @@ export function MovementPage({ movementId }: MovementPageProps) {
                     No activity linked to this movement yet.
                   </div>
                 ) : (
-                  movementActivities.map((movementActivity, index) => (
-                    <Link
-                      key={movementActivity.id}
-                      to="/activities/$id"
-                      params={{ id: movementActivity.activity!.id }}
-                      className={cn(
-                        "group flex h-10 cursor-pointer items-center px-4 text-sm hover:bg-muted",
-                        index !== movementActivities.length - 1 && "border-b",
-                      )}
-                    >
-                      <div className="flex flex-1 items-center justify-center">
-                        <div className="hidden w-20 shrink-0 text-muted-foreground sm:block">
-                          {format(
-                            movementActivity.activity!.date,
-                            "dd/MM/yyyy",
+                  movementActivities.map((movementActivity, index) => {
+                    const activity = movementActivity.activity!;
+                    const category = activity.category
+                      ? categories.find((c) => c.id === activity.category)
+                      : null;
+                    const subcategory = activity.subcategory
+                      ? subcategories.find((c) => c.id === activity.subcategory)
+                      : null;
+                    const project = activity.project
+                      ? getProjectById(activity.project)
+                      : null;
+
+                    return (
+                      <Link
+                        key={movementActivity.id}
+                        to="/activities/$id"
+                        params={{ id: activity.id }}
+                        className={cn(
+                          "group flex h-10 cursor-pointer items-center gap-2 px-4 text-sm hover:bg-muted",
+                          index !== movementActivities.length - 1 && "border-b",
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "size-2 shrink-0 rounded-lg",
+                            ACTIVITY_TYPES_COLOR[activity.type],
                           )}
+                        />
+
+                        <div className="hidden w-12 shrink-0 text-muted-foreground lg:block">
+                          {format(activity.date, "dd MMM")}
                         </div>
-                        <div className="w-10 shrink-0 text-muted-foreground sm:hidden">
-                          {format(movementActivity.activity!.date, "dd/MM")}
+                        <div className="w-8 shrink-0 text-muted-foreground lg:hidden">
+                          {format(activity.date, "dd MMM")}
                         </div>
 
-                        <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
-                          {movementActivity.activity!.name}
+                        {activity.status === "scheduled" ? (
+                          <CircleDashed className="size-4 shrink-0 text-muted-foreground" />
+                        ) : activity.status === "incomplete" ? (
+                          <CircleDotDashed className="size-4 shrink-0 text-orange-300" />
+                        ) : (
+                          <CircleCheck className="size-4 shrink-0 text-indigo-300" />
+                        )}
+
+                        <div className="mr-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {activity.name}
                         </div>
+
                         <div className="flex-1" />
-                        <div className="w-20 text-right font-mono whitespace-nowrap">
+
+                        <div className="mr-2 flex min-w-0 items-center">
+                          {category && (
+                            <Badge
+                              variant="outline"
+                              asChild
+                              className="h-6 [a]:hover:bg-border/50"
+                            >
+                              <Link
+                                to={`/categories/$id`}
+                                params={{ id: category.id }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {category.emoji && (
+                                  <span className="sm:mr-0.5">
+                                    {category.emoji}
+                                  </span>
+                                )}
+                                <span className="hidden sm:inline">
+                                  {category.name}
+                                </span>
+                              </Link>
+                            </Badge>
+                          )}
+
+                          {subcategory && (
+                            <>
+                              <ChevronRight className="mx-1 size-4 text-muted-foreground" />
+                              <Badge
+                                variant="outline"
+                                asChild
+                                className="h-6 [a]:hover:bg-border/50"
+                              >
+                                <Link
+                                  to={`/categories/$id/subcategories/$subcategoryId`}
+                                  params={{
+                                    id: category!.id,
+                                    subcategoryId: subcategory.id,
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {subcategory.emoji && (
+                                    <span className="sm:mr-0.5">
+                                      {subcategory.emoji}
+                                    </span>
+                                  )}
+                                  <span className="hidden sm:inline">
+                                    {subcategory.name}
+                                  </span>
+                                </Link>
+                              </Badge>
+                            </>
+                          )}
+
+                          {project && (
+                            <>
+                              <div className="mx-3 h-4 w-px bg-muted-foreground" />
+                              <Badge
+                                variant="secondary"
+                                asChild
+                                className="h-6 [a]:hover:bg-border/50"
+                              >
+                                <Link
+                                  to={`/projects/$id`}
+                                  params={{ id: project.id }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span>{project.emoji}</span>
+                                  <span className="hidden truncate sm:inline">
+                                    {project.name}
+                                  </span>
+                                </Link>
+                              </Badge>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="text-right font-mono font-medium whitespace-nowrap sm:min-w-16">
                           {currencyFormatter.format(movementActivity.amount)}
                         </div>
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="ml-2 shrink-0 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUnlinkActivity(
-                                movementActivity.id,
-                                movementActivity.activity!.id,
-                                movementActivity.amount,
-                              );
-                            }}
-                          >
-                            <Unlink className="size-3.5 text-muted-foreground" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Unlink activity</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </Link>
-                  ))
+
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="ml-2 shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUnlinkActivity(
+                                  movementActivity.id,
+                                  activity.id,
+                                  movementActivity.amount,
+                                );
+                              }}
+                            >
+                              <Unlink className="size-3.5 text-muted-foreground" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Unlink activity</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </Link>
+                    );
+                  })
                 )}
               </div>
             </div>
