@@ -403,7 +403,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
                 }
                 placeholder="Add a description ..."
                 rows={1}
-                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
+                className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
               />
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
