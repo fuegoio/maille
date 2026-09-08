@@ -384,7 +384,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             {children.map((child) => (
               <div
                 key={child.id}
-                className="flex h-8 cursor-pointer items-center rounded pr-3 text-sm transition-colors hover:bg-muted/50"
+                className="flex h-8 cursor-pointer items-center text-sm transition-colors hover:bg-muted/50"
                 onClick={() =>
                   navigate({ to: "/funds/$id", params: { id: child.id } })
                 }
@@ -467,7 +467,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                   {entries.map(({ account, amount }) => (
                     <div
                       key={account.id}
-                      className="flex h-8 cursor-pointer items-center rounded pr-3 pl-4 text-sm transition-colors hover:bg-muted/50"
+                      className="flex h-8 cursor-pointer items-center pl-4 text-sm transition-colors hover:bg-muted/50"
                       onClick={() =>
                         navigate({
                           to: "/accounts/$id",
