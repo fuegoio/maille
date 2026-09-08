@@ -1,9 +1,8 @@
 import type { MovementWorkflow } from "@maille/core/harness";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, Plus, X } from "lucide-react";
+import { Bot, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 import { useWorkflows } from "@/stores/workflows";
@@ -18,7 +17,6 @@ export function WorkflowBar() {
   const isMinimized = useWorkflows((state) => state.isMinimized);
   const openWorkflow = useWorkflows((state) => state.openWorkflow);
   const closeWorkflow = useWorkflows((state) => state.closeWorkflow);
-  const restore = useWorkflows((state) => state.restore);
   const minimize = useWorkflows((state) => state.minimize);
 
   const movements = useMovements((state) => state.movements);
@@ -31,15 +29,33 @@ export function WorkflowBar() {
     ? workflows.find((w) => w.id === activeWorkflowId)
     : null;
 
-  if (openWorkflows.length === 0) return null;
-
   return (
-    <div className="shrink-0 border-t bg-background">
-      {/* Tab strip */}
-      <div className="flex h-9 items-center gap-0.5 px-1">
+    <>
+      {/* Conversation panel — floats above everything */}
+      <AnimatePresence>
+        {!isMinimized && activeWorkflow && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed right-4 bottom-10 z-50 flex flex-col overflow-hidden rounded-lg border bg-background shadow-xl"
+            style={{ width: "min(480px, calc(100vw - 2rem))", height: 400 }}
+          >
+            <WorkflowTab workflow={activeWorkflow} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom bar — conversation tabs, right-aligned */}
+      <div className="flex h-9 shrink-0 items-center justify-end gap-1 px-3">
+        {openWorkflows.length === 0 && (
+          <span className="text-xs text-muted-foreground">No workflow</span>
+        )}
+
         {openWorkflows.map((workflow) => {
           const movement = movements.find((m) => m.id === workflow.movement);
-          const isActive = workflow.id === activeWorkflowId;
+          const isActive = workflow.id === activeWorkflowId && !isMinimized;
           const statusConfig =
             WORKFLOW_STATUS_CONFIG[workflow.status] ??
             WORKFLOW_STATUS_CONFIG.queued;
@@ -48,13 +64,13 @@ export function WorkflowBar() {
             <div
               key={workflow.id}
               className={cn(
-                "group flex h-7 cursor-pointer items-center gap-1.5 rounded px-2 text-xs transition-colors",
+                "group flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs transition-colors",
                 isActive
                   ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted/50",
+                  : "text-muted-foreground hover:text-foreground",
               )}
               onClick={() =>
-                isMinimized ? restore() : openWorkflow(workflow.id)
+                isActive ? minimize() : openWorkflow(workflow.id)
               }
             >
               <span
@@ -64,6 +80,7 @@ export function WorkflowBar() {
                   workflow.status === "running" && "animate-pulse",
                 )}
               />
+              <Bot className="size-3.5 shrink-0 text-muted-foreground" />
               <span className="max-w-[140px] truncate">
                 {movement?.name ?? "Workflow"}
               </span>
@@ -74,37 +91,12 @@ export function WorkflowBar() {
                   closeWorkflow(workflow.id);
                 }}
               >
-                <X className="size-2.5" />
+                <X className="size-3" />
               </button>
             </div>
           );
         })}
-        <div className="flex-1" />
-        {isMinimized ? (
-          <Button variant="ghost" size="icon-sm" onClick={restore}>
-            <Plus className="size-3.5" />
-          </Button>
-        ) : (
-          <Button variant="ghost" size="icon-sm" onClick={minimize}>
-            <Minus className="size-3.5" />
-          </Button>
-        )}
       </div>
-
-      {/* Conversation panel */}
-      <AnimatePresence initial={false}>
-        {!isMinimized && activeWorkflow && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: "320px" }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
-            className="overflow-hidden"
-          >
-            <WorkflowTab workflow={activeWorkflow} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    </>
   );
 }
