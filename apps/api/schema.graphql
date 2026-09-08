@@ -20,6 +20,7 @@ type Activity {
   category: String
   date: Date!
   description: String
+  history: [HistoryEntry!]!
   id: String!
   movements: [ActivityMovement!]!
   name: String!
@@ -168,11 +169,24 @@ input FundMoveInput {
   toFund: String
 }
 
+type HistoryEntry {
+  action: String!
+  changes: String!
+  clientId: String!
+  createdAt: Float!
+  entityId: String!
+  entityType: String!
+  id: String!
+  subject: String
+  user: String!
+}
+
 type Movement {
   account: String!
   activities: [MovementActivity!]!
   amount: Float!
   date: Date!
+  history: [HistoryEntry!]!
   id: String!
   name: String!
   status: String!

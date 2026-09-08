@@ -9,6 +9,7 @@ import type {
   CreateActivityCategoryEvent,
   CreateActivityEvent,
   CreateActivitySubCategoryEvent,
+  CreateHistoryEvent,
   DeleteActivityCategoryEvent,
   DeleteActivityEvent,
   DeleteActivitySubCategoryEvent,
@@ -92,7 +93,7 @@ export type CreateActivityMutation = MutationType<
   "createActivity",
   typeof createActivityMutation,
   undefined,
-  [CreateActivityEvent]
+  [CreateActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export type UpdateActivityMutation = MutationType<
@@ -108,14 +109,14 @@ export type UpdateActivityMutation = MutationType<
     subcategory: string | null;
     project: string | null;
   },
-  [UpdateActivityEvent]
+  [UpdateActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export type DeleteActivityMutation = MutationType<
   "deleteActivity",
   typeof deleteActivityMutation,
   Activity,
-  [DeleteActivityEvent]
+  [DeleteActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export const shareActivityMutation = graphql(/* GraphQL */ `
@@ -210,7 +211,7 @@ export type AddTransactionMutation = MutationType<
   "addTransaction",
   typeof addTransactionMutation,
   undefined,
-  [AddTransactionEvent]
+  [AddTransactionEvent, ...CreateHistoryEvent[]]
 >;
 
 export type UpdateTransactionMutation = MutationType<
@@ -222,14 +223,14 @@ export type UpdateTransactionMutation = MutationType<
     fromAccount: string;
     toAccount: string;
   },
-  [UpdateTransactionEvent]
+  [UpdateTransactionEvent, ...CreateHistoryEvent[]]
 >;
 
 export type DeleteTransactionMutation = MutationType<
   "deleteTransaction",
   typeof deleteTransactionMutation,
   Transaction,
-  [DeleteTransactionEvent]
+  [DeleteTransactionEvent, ...CreateHistoryEvent[]]
 >;
 
 export const createActivityCategoryMutation = graphql(/* GraphQL */ `

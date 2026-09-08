@@ -27,6 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getGraphQLDate } from "@/lib/date";
+import { movementCreateHistoryEvent } from "@/lib/history-events";
 import { createMovementMutation } from "@/mutations/movements";
 import { useSync } from "@/stores/sync";
 
@@ -95,6 +96,7 @@ export function AddMovementButton({ className, size }: AddMovementButtonProps) {
           type: "createMovement",
           payload: movement,
         },
+        movementCreateHistoryEvent(movement.id),
       ],
     });
 

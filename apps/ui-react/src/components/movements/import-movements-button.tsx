@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/select";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { getGraphQLDate } from "@/lib/date";
+import { movementCreateHistoryEvent } from "@/lib/history-events";
 import { createMovementMutation } from "@/mutations/movements";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
@@ -206,6 +207,7 @@ export function ImportMovementsButton({
               type: "createMovement",
               payload: movement,
             },
+            movementCreateHistoryEvent(movement.id),
           ],
         });
       }

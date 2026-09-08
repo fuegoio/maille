@@ -44,6 +44,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
+import {
+  activityCreateHistoryEvent,
+  activityUpdateHistoryEvent,
+  unlinkMovementHistoryEvent,
+} from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import { duplicateActivities } from "@/logic/activities";
 import {
@@ -56,8 +61,10 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
+import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 
+import { HistoryTimeline } from "../history/history-timeline";
 import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
 import {
@@ -155,6 +162,20 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
     // Create a copy of the activity for rollback
     const activityToDelete = { ...activity };
 
+    // Expected history: unlink entry on every linked movement's timeline
+    const unlinkEvents = activity.movements
+      .map((am) => {
+        const movement = useMovements.getState().getMovementById(am.movement);
+        return movement
+          ? unlinkMovementHistoryEvent(
+              movement,
+              { id: activity.id, name: activity.name },
+              am.amount,
+            )
+          : null;
+      })
+      .filter((event) => event !== null);
+
     mutate({
       name: "deleteActivity",
       mutation: deleteActivityMutation,
@@ -169,6 +190,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
             id: activity.id,
           },
         },
+        ...unlinkEvents,
       ],
     });
 
@@ -199,6 +221,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
             date: getGraphQLDate(duplicatedActivity.date),
           },
         },
+        activityCreateHistoryEvent(duplicatedActivity.id),
       ],
     });
 
@@ -223,6 +246,8 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
     // Create a copy of the current activity for rollback
     const oldActivity = { ...activity };
 
+    const historyEvent = activityUpdateHistoryEvent(activity, update);
+
     mutate({
       name: "updateActivity",
       mutation: updateActivityMutation,
@@ -244,6 +269,7 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
             date: update.date ? getGraphQLDate(update.date) : undefined,
           },
         },
+        ...(historyEvent ? [historyEvent] : []),
       ],
     });
   };
@@ -465,6 +491,13 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
             <ActivityTransactions activity={activity} />
             <ActivityMovements activity={activity} />
             <ActivitySharing activity={activity} />
+
+            <div className="border-b px-4 py-6 sm:px-8">
+              <HistoryTimeline
+                entityType="activity"
+                history={activity.history}
+              />
+            </div>
           </div>
         </div>
       </div>

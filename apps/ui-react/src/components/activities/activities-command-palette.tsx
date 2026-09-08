@@ -21,6 +21,11 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { getGraphQLDate } from "@/lib/date";
+import {
+  activityCreateHistoryEvent,
+  activityUpdateHistoryEvent,
+  unlinkMovementHistoryEvent,
+} from "@/lib/history-events";
 import { duplicateActivities } from "@/logic/activities";
 import {
   createActivityMutation,
@@ -32,6 +37,7 @@ import {
   ACTIVITY_TYPES_NAME,
   useActivities,
 } from "@/stores/activities";
+import { useMovements } from "@/stores/movements";
 import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
 
@@ -102,6 +108,8 @@ export function ActivitiesCommandPalette({
         // Create a copy of the current activity for rollback
         const oldActivity = { ...activity };
 
+        const historyEvent = activityUpdateHistoryEvent(activity, update);
+
         mutate({
           name: "updateActivity",
           mutation: updateActivityMutation,
@@ -123,6 +131,7 @@ export function ActivitiesCommandPalette({
                 date: update.date ? getGraphQLDate(update.date) : undefined,
               },
             },
+            ...(historyEvent ? [historyEvent] : []),
           ],
         });
       });
@@ -152,6 +161,7 @@ export function ActivitiesCommandPalette({
               date: getGraphQLDate(duplicatedActivity.date),
             },
           },
+          activityCreateHistoryEvent(duplicatedActivity.id),
         ],
       });
     });
@@ -163,6 +173,19 @@ export function ActivitiesCommandPalette({
       if (!activity) return;
       // Create a copy of the activity for rollback
       const activityToDelete = { ...activity };
+
+      const unlinkEvents = activity.movements
+        .map((am) => {
+          const movement = useMovements.getState().getMovementById(am.movement);
+          return movement
+            ? unlinkMovementHistoryEvent(
+                movement,
+                { id: activity.id, name: activity.name },
+                am.amount,
+              )
+            : null;
+        })
+        .filter((event) => event !== null);
 
       mutate({
         name: "deleteActivity",
@@ -178,6 +201,7 @@ export function ActivitiesCommandPalette({
               id: activity.id,
             },
           },
+          ...unlinkEvents,
         ],
       });
     });

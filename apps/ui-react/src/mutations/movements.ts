@@ -1,5 +1,6 @@
 import type { Movement, MovementActivity } from "@maille/core/movements";
 import type {
+  CreateHistoryEvent,
   CreateMovementActivityEvent,
   CreateMovementEvent,
   DeleteMovementActivityEvent,
@@ -64,7 +65,7 @@ export type CreateMovementMutation = MutationType<
   "createMovement",
   typeof createMovementMutation,
   undefined,
-  [CreateMovementEvent]
+  [CreateMovementEvent, ...CreateHistoryEvent[]]
 >;
 
 export type UpdateMovementMutation = MutationType<
@@ -75,14 +76,14 @@ export type UpdateMovementMutation = MutationType<
     date: string;
     amount: number;
   },
-  [UpdateMovementEvent]
+  [UpdateMovementEvent, ...CreateHistoryEvent[]]
 >;
 
 export type DeleteMovementMutation = MutationType<
   "deleteMovement",
   typeof deleteMovementMutation,
   Movement,
-  [DeleteMovementEvent]
+  [DeleteMovementEvent, ...CreateHistoryEvent[]]
 >;
 
 export const createMovementActivityMutation = graphql(/* GraphQL */ `
@@ -123,7 +124,7 @@ export type CreateMovementActivityMutation = MutationType<
   "createMovementActivity",
   typeof createMovementActivityMutation,
   undefined,
-  [CreateMovementActivityEvent]
+  [CreateMovementActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export type UpdateMovementActivityMutation = MutationType<
@@ -135,14 +136,14 @@ export type UpdateMovementActivityMutation = MutationType<
     movement: string;
     amount: number;
   },
-  [UpdateMovementActivityEvent]
+  [UpdateMovementActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export type DeleteMovementActivityMutation = MutationType<
   "deleteMovementActivity",
   typeof deleteMovementActivityMutation,
   MovementActivity & { movement: string },
-  [DeleteMovementActivityEvent]
+  [DeleteMovementActivityEvent, ...CreateHistoryEvent[]]
 >;
 
 export type MovementMutation =

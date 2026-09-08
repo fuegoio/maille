@@ -43,6 +43,7 @@ const makeActivity = (
   movements: [],
   sharing: [],
   status: "completed" as const,
+  history: [],
   ...overrides,
 });
 

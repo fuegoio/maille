@@ -10,6 +10,11 @@ import { useState } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
+  addTransactionHistoryEvent,
+  removeTransactionHistoryEvent,
+  updateTransactionHistoryEvent,
+} from "@/lib/history-events";
+import {
   addTransactionMutation,
   updateTransactionMutation,
   deleteTransactionMutation,
@@ -45,6 +50,10 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
   ) => {
     const { fundMoves, ...updateFields } = updateData;
     const oldTransaction = { ...transaction };
+    const historyEvent = updateTransactionHistoryEvent(activity, transaction, {
+      ...transaction,
+      ...updateFields,
+    });
     mutate({
       name: "updateTransaction",
       mutation: updateTransactionMutation,
@@ -82,6 +91,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
               : {}),
           },
         },
+        ...(historyEvent ? [historyEvent] : []),
       ],
     });
   };
@@ -103,6 +113,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             id: transaction.id,
           },
         },
+        removeTransactionHistoryEvent(activity, transaction),
       ],
     });
   };
@@ -145,6 +156,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
               toCounterparty: transaction.toCounterparty || null,
             },
           },
+          addTransactionHistoryEvent(activity, transaction),
         ],
       });
     });
@@ -211,6 +223,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             toCounterparty: transaction.toCounterparty || null,
           },
         },
+        addTransactionHistoryEvent(activity, transaction),
       ],
     });
   };
@@ -277,6 +290,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
             })),
           },
         },
+        addTransactionHistoryEvent(activity, transaction),
       ],
     });
   };
