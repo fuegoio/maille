@@ -11,6 +11,7 @@ export type EvidenceActivity = {
   date: string;
   category: string | null;
   subcategory: string | null;
+  reconciled: boolean;
   transactions: { id: string; amount: number; fromAccount: string; toAccount: string }[];
   linkedMovements: { id: string; name: string; amount: number }[];
 };

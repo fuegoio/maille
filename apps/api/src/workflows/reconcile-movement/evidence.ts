@@ -13,6 +13,7 @@ import {
 } from "@/tables";
 import { and, asc, desc, eq, gte, ilike, lte, ne } from "drizzle-orm";
 import type { Movement } from "@maille/core/movements";
+import { getActivityMovementsReconciliated } from "@maille/core/activities";
 import type {
   Evidence,
   EvidenceActivity,
@@ -89,6 +90,8 @@ export async function findSimilarMovements(
   return [...byMovement.values()].slice(0, SIMILAR_MOVEMENTS_LIMIT);
 }
 
+type SimpleAccount = { id: string; type: string; movements: boolean };
+
 /**
  * Activities matching an optional name pattern and/or date window, with
  * their transactions and linked movements.
@@ -96,6 +99,7 @@ export async function findSimilarMovements(
 export async function searchActivities(
   userId: string,
   filters: { name?: string; fromDate?: Date; toDate?: Date; limit?: number },
+  allAccounts: SimpleAccount[],
 ): Promise<EvidenceActivity[]> {
   const conditions = [eq(activities.user, userId)];
   if (filters.name) {
@@ -124,7 +128,7 @@ export async function searchActivities(
     .orderBy(desc(activities.date))
     .limit(filters.limit ?? DATE_WINDOW_ACTIVITIES_LIMIT);
 
-  return Promise.all(activityRows.map((row) => hydrateActivity(userId, row)));
+  return Promise.all(activityRows.map((row) => hydrateActivity(userId, row, allAccounts)));
 }
 
 const hydrateActivity = async (
@@ -137,14 +141,16 @@ const hydrateActivity = async (
     category: string | null;
     subcategory: string | null;
   },
+  allAccounts: SimpleAccount[],
 ): Promise<EvidenceActivity> => {
   const [transactionRows, linkRows] = await Promise.all([
     db
       .select({
         id: transactions.id,
         amount: transactions.amount,
-        fromAccount: accounts.name,
-        toAccount: transactions.toAccount,
+        fromAccountId: transactions.fromAccount,
+        fromAccountName: accounts.name,
+        toAccountId: transactions.toAccount,
       })
       .from(transactions)
       .leftJoin(accounts, eq(accounts.id, transactions.fromAccount))
@@ -154,6 +160,7 @@ const hydrateActivity = async (
         id: movements.id,
         name: movements.name,
         amount: movementsActivities.amount,
+        movementAccount: movements.account,
       })
       .from(movementsActivities)
       .innerJoin(movements, eq(movements.id, movementsActivities.movement))
@@ -166,6 +173,23 @@ const hydrateActivity = async (
     .where(eq(accounts.user, userId));
   const toAccountName = (id: string) => toAccountNames.find((a) => a.id === id)?.name ?? id;
 
+  // Compute reconciliation: are the linked movements already matching the
+  // transactions for every movements-enabled account?
+  const movementById = new Map(linkRows.map((r) => [r.id, { account: r.movementAccount }]));
+  const activityMovements = linkRows.map((r) => ({ id: r.id, movement: r.id, amount: r.amount }));
+  const activityTransactions = transactionRows.map((t) => ({
+    id: t.id,
+    amount: t.amount,
+    fromAccount: t.fromAccountId,
+    toAccount: t.toAccountId,
+  }));
+  const reconciled = getActivityMovementsReconciliated(
+    activityTransactions,
+    activityMovements,
+    allAccounts.map((a) => ({ id: a.id, type: a.type as never, movements: a.movements })),
+    (id) => movementById.get(id) as Movement | undefined,
+  );
+
   return {
     id: row.id,
     name: row.name,
@@ -173,11 +197,12 @@ const hydrateActivity = async (
     date: row.date.toISOString(),
     category: row.category,
     subcategory: row.subcategory,
+    reconciled,
     transactions: transactionRows.map((transaction) => ({
       id: transaction.id,
       amount: transaction.amount,
-      fromAccount: transaction.fromAccount ?? transaction.id,
-      toAccount: toAccountName(transaction.toAccount),
+      fromAccount: transaction.fromAccountName ?? transaction.id,
+      toAccount: toAccountName(transaction.toAccountId),
     })),
     linkedMovements: linkRows,
   };
@@ -188,6 +213,19 @@ export async function buildEvidence(userId: string, movement: Movement): Promise
     await db.select().from(accounts).where(eq(accounts.id, movement.account)).limit(1)
   )[0];
 
+  // Fetch accounts first — needed to compute the `reconciled` flag on
+  // each activity in searchActivities.
+  const accountRows = await db
+    .select({
+      id: accounts.id,
+      name: accounts.name,
+      type: accounts.type,
+      movements: accounts.movements,
+    })
+    .from(accounts)
+    .where(eq(accounts.user, userId));
+  const simpleAccounts: SimpleAccount[] = accountRows;
+
   const dateWindowStart = new Date(movement.date);
   dateWindowStart.setDate(dateWindowStart.getDate() - DATE_WINDOW_DAYS);
   const dateWindowEnd = new Date(movement.date);
@@ -197,7 +235,6 @@ export async function buildEvidence(userId: string, movement: Movement): Promise
     similarMovements,
     activitiesByDateWindow,
     activitiesByName,
-    accountRows,
     categoryRows,
     subcategoryRows,
     projectRows,
@@ -205,14 +242,14 @@ export async function buildEvidence(userId: string, movement: Movement): Promise
     counterpartyRows,
   ] = await Promise.all([
     findSimilarMovements(userId, movement.name, movement.id),
-    searchActivities(userId, { fromDate: dateWindowStart, toDate: dateWindowEnd }),
+    searchActivities(userId, { fromDate: dateWindowStart, toDate: dateWindowEnd }, simpleAccounts),
     movement.name
-      ? searchActivities(userId, { name: movement.name, limit: ACTIVITY_NAME_MATCHES_LIMIT })
+      ? searchActivities(
+          userId,
+          { name: movement.name, limit: ACTIVITY_NAME_MATCHES_LIMIT },
+          simpleAccounts,
+        )
       : Promise.resolve([]),
-    db
-      .select({ id: accounts.id, name: accounts.name, type: accounts.type })
-      .from(accounts)
-      .where(eq(accounts.user, userId)),
     db
       .select({
         id: activityCategories.id,
@@ -262,7 +299,7 @@ export async function buildEvidence(userId: string, movement: Movement): Promise
     activitiesByDateWindow,
     activitiesByName,
     vocabulary: {
-      accounts: accountRows,
+      accounts: accountRows.map(({ id, name, type }) => ({ id, name, type })),
       categories: categoryRows,
       subcategories: subcategoryRows,
       projects: projectRows,
