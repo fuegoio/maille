@@ -52,6 +52,15 @@ export async function startWorkflows(): Promise<void> {
     return;
   }
 
+  // Reclaim workflows stuck in "running" from a crash or redeployment.
+  // They have no live process driving them, so reset them to "queued".
+  const stuck = await db
+    .update(movementWorkflows)
+    .set({ status: "queued" })
+    .where(eq(movementWorkflows.status, "running"))
+    .returning({ id: movementWorkflows.id, user: movementWorkflows.user });
+
+  // Pick up everything that needs to run.
   const queued = await db
     .select({ id: movementWorkflows.id, user: movementWorkflows.user })
     .from(movementWorkflows)
@@ -62,5 +71,7 @@ export async function startWorkflows(): Promise<void> {
     enqueueWorkflow(workflow.id, workflow.user);
   }
 
-  logger.info(`AI workflows started (${queued.length} queued workflows)`);
+  logger.info(
+    `AI workflows started (${queued.length} queued, ${stuck.length} recovered from stuck running)`,
+  );
 }
