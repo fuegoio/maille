@@ -1,5 +1,4 @@
 import { AccountType } from "@maille/core/accounts";
-import Color from "colorjs.io";
 import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
 
@@ -9,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { getAccountTypeShadeColor } from "@/lib/account-progress-color";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
 import {
@@ -69,24 +69,6 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
     }, 0);
 
     return { start: startBalance, end: endBalance };
-  };
-
-  const getProgressBarColor = (index: number, accountType: AccountType) => {
-    const baseColors = {
-      [AccountType.BANK_ACCOUNT]: "#818cf8",
-      [AccountType.INVESTMENT_ACCOUNT]: "#fb923c",
-      [AccountType.CASH]: "#a1a1aa",
-      [AccountType.LIABILITIES]: "#38bdf8",
-      [AccountType.EXPENSE]: "#fca5a5",
-      [AccountType.REVENUE]: "#4ade80",
-      [AccountType.ASSETS]: "#a78bfa",
-    };
-
-    const color = new Color(baseColors[accountType]);
-    color.lch.l =
-      70 +
-      (index / accounts.filter((a) => a.type === accountType).length) * -30;
-    return color;
   };
 
   const accountTypes = useMemo(
@@ -150,7 +132,11 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
                     );
                     const percentage = (accountBalance / variation.end) * 100;
 
-                    const color = getProgressBarColor(index, accountType);
+                    const color = getAccountTypeShadeColor(
+                      accountType,
+                      index,
+                      accountsOfType.length,
+                    );
 
                     return (
                       <Tooltip key={account.id}>
