@@ -276,8 +276,8 @@ export function ActivityPage({ activityId }: ActivityPageProps) {
   return (
     <SidebarInset>
       <div className="flex h-full flex-col">
-        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-6">
-          <SidebarTrigger />
+        <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b pr-4 pl-4">
+          <SidebarTrigger className="mr-1" />
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
