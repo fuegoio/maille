@@ -13,57 +13,18 @@ import {
 } from "@/tables";
 import { and, asc, desc, eq, gte, ilike, lte, ne } from "drizzle-orm";
 import type { Movement } from "@maille/core/movements";
+import type { Evidence, EvidenceActivity, EvidenceSimilarMovement } from "@maille/harness/evidence";
 
 /**
- * The evidence pack: deterministic database queries assembled before the
- * first LLM call, so the model starts from grounded history instead of
- * guessing.
+ * The evidence pack queries: deterministic database reads assembled before
+ * the first LLM call, so the model starts from grounded history instead of
+ * guessing. The data shapes live in @maille/harness.
  */
 
 const SIMILAR_MOVEMENTS_LIMIT = 10;
 const ACTIVITY_NAME_MATCHES_LIMIT = 5;
 const DATE_WINDOW_ACTIVITIES_LIMIT = 10;
 const DATE_WINDOW_DAYS = 7;
-
-export type EvidenceActivity = {
-  id: string;
-  name: string;
-  type: string;
-  date: string;
-  category: string | null;
-  subcategory: string | null;
-  transactions: { id: string; amount: number; fromAccount: string; toAccount: string }[];
-  linkedMovements: { id: string; name: string; amount: number }[];
-};
-
-export type EvidenceSimilarMovement = {
-  id: string;
-  name: string;
-  amount: number;
-  date: string;
-  links: { activityId: string; activityName: string; activityType: string; amount: number }[];
-};
-
-export type Evidence = {
-  movement: {
-    id: string;
-    name: string;
-    amount: number;
-    date: string;
-    account: { id: string; name: string; type: string };
-  };
-  similarMovements: EvidenceSimilarMovement[];
-  activitiesByDateWindow: EvidenceActivity[];
-  activitiesByName: EvidenceActivity[];
-  vocabulary: {
-    accounts: { id: string; name: string; type: string }[];
-    categories: { id: string; name: string; type: string }[];
-    subcategories: { id: string; name: string; category: string | null }[];
-    projects: { id: string; name: string }[];
-    funds: { id: string; name: string; parentFund: string | null }[];
-    counterparties: { id: string; name: string }[];
-  };
-};
 
 /**
  * Movements with a name matching `name` (case-insensitive substring),

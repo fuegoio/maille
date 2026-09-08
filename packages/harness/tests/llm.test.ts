@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { chatCompletion, LlmError, type LlmMessage, type LlmTool } from "@/harness/llm";
+import { chatCompletion, LlmError, type LlmMessage, type LlmTool } from "../src/llm";
 
 const TOOLS: LlmTool[] = [
   {
