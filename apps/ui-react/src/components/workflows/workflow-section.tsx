@@ -214,7 +214,7 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
 function SectionHeader() {
   return (
     <div className="flex items-center gap-1.5">
-      <Sparkles className="size-3.5 text-muted-foreground" />
+      <Bot className="size-3.5 text-muted-foreground" />
       <span className="text-sm font-medium">Agentic</span>
     </div>
   );
