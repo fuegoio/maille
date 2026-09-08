@@ -295,7 +295,7 @@ export function ActivityTransactions({ activity }: ActivityTransactionsProps) {
           {currencyFormatter.format(transactionsSum)}
         </div>
         {/* Right edge flush with the rows' action column (leg p-3 + border) */}
-        <div className="mr-[13px] flex items-center gap-2">
+        <div className="mr-1 flex items-center gap-2">
           <TransactionDropdown
             transactions={activity.transactions.map((t) => ({
               fromAccount: t.fromAccount,
