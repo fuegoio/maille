@@ -1,11 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { getFundAncestors } from "@maille/core/funds";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useNavigate,
+} from "@tanstack/react-router";
 import {
   ArrowDownToLine,
   ChevronRight,
   Settings,
   SquareChartGantt,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { AllocateDialog } from "@/components/funds/allocate-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
@@ -40,15 +46,33 @@ export const Route = createFileRoute("/_authenticated/funds/$id")({
   },
 });
 
+// Only reachable when the fund disappears while its page is open (deleted
+// from the settings dialog). Missing funds on direct URLs are handled by the
+// loader's notFound.
+function FundDeletedRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    void navigate({ to: "/funds" });
+  }, [navigate]);
+  return null;
+}
+
 function FundPage() {
   const fundId = Route.useParams().id;
+  const funds = useFunds((state) => state.funds);
   const fund = useFunds((state) => state.getFundById(fundId));
-  if (!fund) {
-    throw notFound();
-  }
-
+  // Derived in a memo, not in the selector: a fresh array per snapshot would
+  // trip zustand's getSnapshot caching and re-render forever.
+  const ancestors = useMemo(
+    () => getFundAncestors(fundId, funds),
+    [fundId, funds],
+  );
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+
+  if (!fund) {
+    return <FundDeletedRedirect />;
+  }
 
   return (
     <SidebarInset className="flex-row">
@@ -68,6 +92,26 @@ function FundPage() {
                   <Link to="/funds">Funds</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
+              {ancestors.map((ancestor) => (
+                <Fragment key={ancestor.id}>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link
+                        to="/funds/$id"
+                        params={{ id: ancestor.id }}
+                        className="flex items-center gap-1.5"
+                      >
+                        <span
+                          className="inline-block size-3 rounded-sm align-[-1px]"
+                          style={{ backgroundColor: ancestor.color }}
+                        />
+                        <span>{ancestor.name}</span>
+                      </Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                </Fragment>
+              ))}
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage>

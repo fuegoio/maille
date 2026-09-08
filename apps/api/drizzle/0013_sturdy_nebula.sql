@@ -1,0 +1,2 @@
+ALTER TABLE "funds" ADD COLUMN "parent_fund" text;--> statement-breakpoint
+ALTER TABLE "funds" ADD CONSTRAINT "funds_parent_fund_funds_id_fk" FOREIGN KEY ("parent_fund") REFERENCES "public"."funds"("id") ON DELETE set null ON UPDATE no action;

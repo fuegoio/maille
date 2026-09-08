@@ -21,6 +21,11 @@ FundSchema.implement({
       resolve: (parent) => parent.endDate,
       nullable: true,
     }),
+    parentFund: t.field({
+      type: "String",
+      resolve: (parent) => parent.parentFund,
+      nullable: true,
+    }),
   }),
 });
 

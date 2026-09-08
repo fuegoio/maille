@@ -19,6 +19,7 @@ export const createFundMutation = graphql(/* GraphQL */ `
     $color: String
     $startDate: Date
     $endDate: Date
+    $parentFund: String
   ) {
     createFund(
       id: $id
@@ -26,6 +27,7 @@ export const createFundMutation = graphql(/* GraphQL */ `
       color: $color
       startDate: $startDate
       endDate: $endDate
+      parentFund: $parentFund
     ) {
       id
     }
@@ -39,6 +41,7 @@ export const updateFundMutation = graphql(/* GraphQL */ `
     $color: String
     $startDate: Date
     $endDate: Date
+    $parentFund: String
   ) {
     updateFund(
       id: $id
@@ -46,6 +49,7 @@ export const updateFundMutation = graphql(/* GraphQL */ `
       color: $color
       startDate: $startDate
       endDate: $endDate
+      parentFund: $parentFund
     ) {
       id
     }

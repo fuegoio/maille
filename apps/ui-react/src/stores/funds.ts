@@ -64,18 +64,29 @@ export const useFunds = create<FundsState>()(
       },
 
       deleteFund: (fundId) => {
-        set((state) => ({
-          funds: state.funds.filter((fund) => fund.id !== fundId),
-          // The deleted fund's legs go back to Untracked server-side; legs
-          // left with both sides untracked carry no information and go.
-          fundMoves: state.fundMoves
-            .map((move) => ({
-              ...move,
-              fromFund: move.fromFund === fundId ? null : move.fromFund,
-              toFund: move.toFund === fundId ? null : move.toFund,
-            }))
-            .filter((move) => move.fromFund !== null || move.toFund !== null),
-        }));
+        set((state) => {
+          const deleted = state.funds.find((fund) => fund.id === fundId);
+          return {
+            funds: state.funds
+              .filter((fund) => fund.id !== fundId)
+              // Splice, mirroring the server: the deleted fund's children
+              // are promoted to its own parent.
+              .map((fund) =>
+                fund.parentFund === fundId
+                  ? { ...fund, parentFund: deleted?.parentFund ?? null }
+                  : fund,
+              ),
+            // The deleted fund's legs go back to Untracked server-side; legs
+            // left with both sides untracked carry no information and go.
+            fundMoves: state.fundMoves
+              .map((move) => ({
+                ...move,
+                fromFund: move.fromFund === fundId ? null : move.fromFund,
+                toFund: move.toFund === fundId ? null : move.toFund,
+              }))
+              .filter((move) => move.fromFund !== null || move.toFund !== null),
+          };
+        });
       },
 
       restoreFund: (fund) => {
@@ -128,6 +139,7 @@ export const useFunds = create<FundsState>()(
             endDate: event.payload.endDate
               ? new Date(event.payload.endDate)
               : null,
+            parentFund: event.payload.parentFund,
           });
         } else if (event.type === "updateFund") {
           get().updateFund(event.payload.id, {
@@ -150,6 +162,9 @@ export const useFunds = create<FundsState>()(
                     ? new Date(event.payload.endDate)
                     : null,
                 }
+              : {}),
+            ...(event.payload.parentFund !== undefined
+              ? { parentFund: event.payload.parentFund }
               : {}),
           });
         } else if (event.type === "deleteFund") {
@@ -247,14 +262,16 @@ export const useFunds = create<FundsState>()(
     }),
     {
       name: "funds",
-      version: 1,
+      version: 2,
       storage,
       migrate: (persisted) => {
         const state = persisted as { funds?: Fund[] };
         if (state.funds) {
-          state.funds = state.funds.map((fund) =>
-            fund.color ? fund : { ...fund, color: DEFAULT_FUND_COLOR },
-          );
+          state.funds = state.funds.map((fund) => ({
+            ...fund,
+            color: fund.color ?? DEFAULT_FUND_COLOR,
+            parentFund: fund.parentFund ?? null,
+          }));
         }
         migrationFlags.refetchUserData = true;
         return state;

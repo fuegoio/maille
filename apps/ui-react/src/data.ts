@@ -166,6 +166,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       color
       startDate
       endDate
+      parentFund
     }
 
     fundMoves {
