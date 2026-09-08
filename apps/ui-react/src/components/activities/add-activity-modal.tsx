@@ -611,7 +611,7 @@ export function AddActivityModal({
                 <ActivityCategorySelect
                   value={field.value || null}
                   onValueChange={(value) => {
-                    field.onChange(value);
+                    field.onChange(value ?? "");
                     setValue("subcategory", "");
                   }}
                   type={type}
@@ -642,7 +642,7 @@ export function AddActivityModal({
               render={({ field }) => (
                 <ProjectSelect
                   value={field.value || null}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(value ?? "")}
                 />
               )}
             />
