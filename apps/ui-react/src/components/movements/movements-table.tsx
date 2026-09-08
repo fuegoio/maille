@@ -124,10 +124,6 @@ export function MovementsTable({
     });
   };
 
-  const handleMovementClick = (movementId: string) => {
-    void router.navigate({ to: "/movements/$id", params: { id: movementId } });
-  };
-
   const selectMovement = (movementId: string) => {
     setSelectedMovements((prev) =>
       prev.includes(movementId)
@@ -222,7 +218,6 @@ export function MovementsTable({
                         movement={item}
                         checked={selectedMovements.includes(item.id)}
                         onCheckedChange={() => selectMovement(item.id)}
-                        onClick={() => handleMovementClick(item.id)}
                       />
                     )}
                   </React.Fragment>
@@ -233,7 +228,6 @@ export function MovementsTable({
                     movement={movement}
                     checked={selectedMovements.includes(movement.id)}
                     onCheckedChange={() => selectMovement(movement.id)}
-                    onClick={() => handleMovementClick(movement.id)}
                   />
                 ))}
           </ScrollArea>

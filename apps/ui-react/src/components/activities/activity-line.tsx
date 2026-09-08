@@ -19,7 +19,6 @@ import { Checkbox } from "../ui/checkbox";
 
 interface ActivityLineProps {
   activity: Activity;
-  onClick?: (activityId: string) => void;
   onCheckedChange: (checked: boolean) => void;
   checked?: boolean;
   accountFilter?: string | null;
@@ -28,7 +27,6 @@ interface ActivityLineProps {
 
 export function ActivityLine({
   activity,
-  onClick,
   onCheckedChange,
   checked = false,
   accountFilter = null,
@@ -45,13 +43,6 @@ export function ActivityLine({
       ? t.fromAccount === accountFilter || t.toAccount === accountFilter
       : true,
   );
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (onClick) {
-      e.preventDefault();
-      onClick(activity.id);
-    }
-  };
 
   const getStatusIcon = () => {
     if (activity.status === "scheduled") {
@@ -93,7 +84,9 @@ export function ActivityLine({
   };
 
   return (
-    <div
+    <Link
+      to="/activities/$id"
+      params={{ id: activity.id }}
       className={cn(
         "group block shrink border-b border-l-4 border-l-transparent pl-1 transition-colors hover:bg-accent",
         {
@@ -105,7 +98,6 @@ export function ActivityLine({
           ? `${40 * (1 + transactions.length)}px`
           : "40px",
       }}
-      onClick={handleClick}
     >
       <div className="flex h-10 items-center gap-2 pr-2 pl-4.5 text-sm lg:pr-6">
         <Checkbox
@@ -238,6 +230,6 @@ export function ActivityLine({
           ))}
         </div>
       )}
-    </div>
+    </Link>
   );
 }

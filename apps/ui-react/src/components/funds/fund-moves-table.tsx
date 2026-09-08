@@ -1,7 +1,7 @@
 import type { FundMove } from "@maille/core/funds";
 
 import { getAllocationDate } from "@maille/core/funds";
-import { useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
@@ -51,7 +51,6 @@ interface FundMovesTableProps {
 }
 
 export function FundMovesTable({ fundId }: FundMovesTableProps) {
-  const router = useRouter();
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
@@ -279,16 +278,19 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                   move={item}
                   funds={funds}
                   currencyFormatter={currencyFormatter}
-                  onClick={
+                  to={
                     item.activity
-                      ? () =>
-                          void router.navigate({
-                            to: "/activities/$id",
-                            params: { id: item.activity!.id },
-                            search: item.transaction
-                              ? { transaction: item.transaction }
-                              : undefined,
-                          })
+                      ? "/activities/$id"
+                      : undefined
+                  }
+                  params={
+                    item.activity
+                      ? { id: item.activity.id }
+                      : undefined
+                  }
+                  search={
+                    item.activity && item.transaction
+                      ? { transaction: item.transaction }
                       : undefined
                   }
                 />
@@ -372,12 +374,16 @@ function FundMoveLine({
   move,
   funds,
   currencyFormatter,
-  onClick,
+  to,
+  params,
+  search,
 }: {
   move: FundMoveWithActivity;
   funds: { id: string; name: string; color: string }[];
   currencyFormatter: Intl.NumberFormat;
-  onClick?: () => void;
+  to?: string;
+  params?: Record<string, string>;
+  search?: Record<string, string>;
 }) {
   const isInflow = move.direction === "in";
   const amount = isInflow ? move.amount : -move.amount;
@@ -404,14 +410,13 @@ function FundMoveLine({
     </>
   );
 
-  return (
-    <div
-      className={cn(
-        "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
-        onClick && "cursor-pointer",
-      )}
-      onClick={onClick}
-    >
+  const className = cn(
+    "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+    to && "cursor-pointer",
+  );
+
+  const content = (
+    <>
       <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
         <div
           className={cn(
@@ -479,8 +484,23 @@ function FundMoveLine({
       <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
       </div>
-    </div>
+    </>
   );
+
+  if (to) {
+    return (
+      <Link
+        to={to as never}
+        params={params as never}
+        search={search as never}
+        className={className}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 /** An account named with its type swatch, as quiet row metadata. */

@@ -1,5 +1,5 @@
 import { flattenFundTree } from "@maille/core/funds";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ChevronRight, PiggyBank } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -42,7 +42,6 @@ export function FundsTable() {
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
   const currencyFormatter = useCurrencyFormatter();
-  const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState<Set<string>>(readCollapsed);
 
@@ -136,12 +135,11 @@ export function FundsTable() {
       {visibleNodes.map(({ fund, depth, hasChildren }) => {
         const isCollapsed = collapsed.has(fund.id);
         return (
-          <div
+          <Link
             key={fund.id}
+            to="/funds/$id"
+            params={{ id: fund.id }}
             className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
-            onClick={() =>
-              navigate({ to: "/funds/$id", params: { id: fund.id } })
-            }
           >
             <div
               className="flex min-w-0 items-center"
@@ -200,14 +198,14 @@ export function FundsTable() {
             <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap">
               {currencyFormatter.format(balances.get(fund.id) ?? 0)}
             </div>
-          </div>
+          </Link>
         );
       })}
 
       {/* Untracked is the complement of every fund: muted, at the bottom. */}
-      <div
+      <Link
+        to="/funds/untracked"
         className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
-        onClick={() => navigate({ to: "/funds/untracked" })}
       >
         <div className="flex items-center text-muted-foreground">
           <div className="mr-0.5 size-5 shrink-0" aria-hidden="true" />
@@ -220,7 +218,7 @@ export function FundsTable() {
         <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap text-muted-foreground">
           {currencyFormatter.format(untrackedBalance)}
         </div>
-      </div>
+      </Link>
     </div>
   );
 }

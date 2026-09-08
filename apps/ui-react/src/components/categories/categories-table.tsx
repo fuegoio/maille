@@ -1,5 +1,5 @@
 import { ActivityType } from "@maille/core/activities";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -14,7 +14,6 @@ import {
 export function CategoriesTable() {
   const activityCategories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);
-  const navigate = useNavigate();
   const currencyFormatter = useCurrencyFormatter();
 
   const [groupsFolded, setGroupsFolded] = useState<ActivityType[]>([]);
@@ -88,15 +87,11 @@ export function CategoriesTable() {
             sortedCategories
               .filter((category) => category.type === activityType)
               .map((category) => (
-                <div
+                <Link
                   key={category.id}
+                  to="/categories/$id"
+                  params={{ id: category.id }}
                   className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
-                  onClick={() => {
-                    navigate({
-                      to: `/categories/$id`,
-                      params: { id: category.id },
-                    });
-                  }}
                 >
                   <div className="flex items-center gap-2">
                     {category.emoji && (
@@ -114,7 +109,7 @@ export function CategoriesTable() {
                   <div className="font-mono text-sm">
                     {currencyFormatter.format(getTotalOfCategory(category.id))}
                   </div>
-                </div>
+                </Link>
               ))}
         </div>
       ))}

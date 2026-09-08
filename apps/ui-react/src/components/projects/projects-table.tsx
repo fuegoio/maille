@@ -1,5 +1,5 @@
 import { ActivityType } from "@maille/core/activities";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { TentTree } from "lucide-react";
 import { useMemo } from "react";
 
@@ -23,7 +23,6 @@ import { CreateProjectDialog } from "./create-project-dialog";
 export function ProjectsTable() {
   const projects = useProjects((state) => state.projects);
   const activities = useActivities((state) => state.activities);
-  const navigate = useNavigate();
   const currencyFormatter = useCurrencyFormatter();
 
   const sortedProjects = useMemo(() => {
@@ -35,15 +34,11 @@ export function ProjectsTable() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       {sortedProjects.map((project) => (
-        <div
+        <Link
           key={project.id}
+          to="/projects/$id"
+          params={{ id: project.id }}
           className="group flex h-12 w-full items-center border-b pr-6 pl-6 hover:bg-muted/50"
-          onClick={() => {
-            navigate({
-              to: `/projects/$id`,
-              params: { id: project.id },
-            });
-          }}
         >
           <div className="flex items-center gap-2">
             {project.emoji && <span className="text-xl">{project.emoji}</span>}
@@ -153,7 +148,7 @@ export function ProjectsTable() {
               )}
             </div>
           </div>
-        </div>
+        </Link>
       ))}
 
       {projects.length === 0 && (

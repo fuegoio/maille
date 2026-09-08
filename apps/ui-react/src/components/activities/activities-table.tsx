@@ -191,10 +191,6 @@ export function ActivitiesTable({
     });
   };
 
-  const handleActivityClick = (activityId: string) => {
-    void router.navigate({ to: "/activities/$id", params: { id: activityId } });
-  };
-
   // Hotkeys: open the first activity of the list, then continue with J/K on
   // the activity page
   useHotkey("K", (event) => {
@@ -307,7 +303,6 @@ export function ActivitiesTable({
                         activity={item}
                         accountFilter={accountFilter}
                         hideProject={hideProject}
-                        onClick={handleActivityClick}
                         checked={selectedActivities.includes(item.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
@@ -328,7 +323,6 @@ export function ActivitiesTable({
                     activity={activity}
                     accountFilter={accountFilter}
                     hideProject={hideProject}
-                    onClick={handleActivityClick}
                     checked={selectedActivities.includes(activity.id)}
                     onCheckedChange={(checked) => {
                       if (checked) {

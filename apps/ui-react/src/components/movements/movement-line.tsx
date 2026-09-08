@@ -15,14 +15,12 @@ import { useWorkflows } from "@/stores/workflows";
 interface MovementLineProps {
   movement: Movement;
   checked: boolean;
-  onClick: () => void;
   onCheckedChange: (checked: boolean) => void;
 }
 
 export function MovementLine({
   movement,
   checked,
-  onClick,
   onCheckedChange,
 }: MovementLineProps) {
   const currencyFormatter = useCurrencyFormatter();
@@ -31,15 +29,16 @@ export function MovementLine({
   );
 
   return (
-    <div
+    <Link
       key={movement.id}
+      to="/movements/$id"
+      params={{ id: movement.id }}
       className={cn(
         "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b border-l-4 border-l-transparent pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
         {
           "bg-primary/30 hover:bg-primary/40": checked,
         },
       )}
-      onClick={onClick}
     >
       <Checkbox
         checked={checked}
@@ -100,6 +99,6 @@ export function MovementLine({
       <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(movement.amount)}
       </div>
-    </div>
+    </Link>
   );
 }
