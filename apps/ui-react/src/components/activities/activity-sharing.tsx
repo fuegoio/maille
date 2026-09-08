@@ -1,5 +1,5 @@
 import { type Activity } from "@maille/core/activities";
-import { CircleCheck, Plus, TriangleAlert } from "lucide-react";
+import { CircleCheck, Plus, TriangleAlert, Users } from "lucide-react";
 import { useState } from "react";
 
 import { UserAvatar } from "@/components/users/user-avatar";
@@ -135,7 +135,10 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center gap-2">
         <div>
-          <div className="text-base font-medium">Sharing</div>
+          <div className="flex items-center gap-1.5">
+            <Users className="size-3.5 text-muted-foreground" />
+            <div className="text-base font-medium">Sharing</div>
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">
             People this activity is shared with, and the liability owed to each.
           </div>

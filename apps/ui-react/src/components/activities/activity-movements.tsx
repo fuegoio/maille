@@ -5,7 +5,7 @@ import {
   getActivityMovementsReconciliated,
   getActivityMovementsReconciliatedByAccount,
 } from "@maille/core/activities";
-import { CircleCheck, Ellipsis, TriangleAlert } from "lucide-react";
+import { CircleCheck, Ellipsis, Landmark, TriangleAlert } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -194,7 +194,10 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
     <div className="border-b px-4 py-6 sm:px-8">
       <div className="flex items-center">
         <div>
-          <div className="text-base font-medium">Movements</div>
+          <div className="flex items-center gap-1.5">
+            <Landmark className="size-3.5 text-muted-foreground" />
+            <div className="text-base font-medium">Movements</div>
+          </div>
           <div className="mt-1 text-xs text-muted-foreground">
             Bank records reconciled with this activity's transactions.
           </div>

@@ -1,12 +1,21 @@
+import { type MovementStatus } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
-import { BookMarked, Trash2, Unlink } from "lucide-react";
+import {
+  BookMarked,
+  CircleCheck,
+  CircleDotDashed,
+  Trash2,
+  Unlink,
+  type LucideIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { HistoryTimeline } from "@/components/history/history-timeline";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AmountInput } from "@/components/ui/amount-input";
 import {
   Breadcrumb,
@@ -53,10 +62,54 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "../ui/field";
 import { Input } from "../ui/input";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { LinkActivityButton } from "./link-activity-button";
+
+const MOVEMENT_STATUS_NAME: Record<MovementStatus, string> = {
+  incomplete: "To reconciliate",
+  completed: "Reconciled",
+};
+
+const MOVEMENT_STATUS_DESCRIPTION: Record<MovementStatus, string> = {
+  incomplete:
+    "This movement is not yet linked to an activity covering its full amount.",
+  completed: "This movement is fully linked to activities covering its amount.",
+};
+
+const MOVEMENT_STATUS_ALERT: Record<
+  MovementStatus,
+  { icon: LucideIcon; className: string; descriptionClassName: string }
+> = {
+  incomplete: {
+    icon: CircleDotDashed,
+    className: "border-orange-400/25 bg-orange-400/10 text-orange-300",
+    descriptionClassName: "text-orange-300/70",
+  },
+  completed: {
+    icon: CircleCheck,
+    className: "border-indigo-400/25 bg-indigo-400/10 text-indigo-300",
+    descriptionClassName: "text-indigo-300/70",
+  },
+};
+
+function MovementStatusAlert({ status }: { status: MovementStatus }) {
+  const {
+    icon: Icon,
+    className,
+    descriptionClassName,
+  } = MOVEMENT_STATUS_ALERT[status];
+
+  return (
+    <Alert className={cn("mt-6", className)}>
+      <Icon />
+      <AlertTitle>{MOVEMENT_STATUS_NAME[status]}</AlertTitle>
+      <AlertDescription className={descriptionClassName}>
+        {MOVEMENT_STATUS_DESCRIPTION[status]}
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 interface MovementPageProps {
   movementId: string;
@@ -298,49 +351,48 @@ export function MovementPage({ movementId }: MovementPageProps) {
 
         <div className="flex-1 overflow-y-auto pb-20">
           <div className="mx-auto w-full max-w-3xl">
-            <div className="border-b px-4 py-8 sm:px-8">
-              <FieldSet>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor="date">Date</FieldLabel>
-                    <DatePicker
-                      value={movement.date}
-                      id="date"
-                      onChange={(date) => handleUpdateMovement({ date })}
-                    />
-                  </Field>
+            <div className="border-b px-4 py-6 sm:px-8">
+              <label htmlFor="date" className="sr-only">
+                Date
+              </label>
+              <DatePicker
+                id="date"
+                showIcon={false}
+                value={movement.date}
+                onChange={(date) => handleUpdateMovement({ date })}
+                className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
+              />
 
-                  <Field>
-                    <FieldLabel htmlFor="name">Movement name</FieldLabel>
-                    <Input
-                      id="name"
-                      value={movement.name}
-                      onChange={(e) =>
-                        handleUpdateMovement({ name: e.target.value })
-                      }
-                    />
-                  </Field>
+              <div className="mt-1 flex items-baseline justify-between gap-4">
+                <Input
+                  id="name"
+                  aria-label="Movement name"
+                  value={movement.name}
+                  onChange={(e) =>
+                    handleUpdateMovement({ name: e.target.value })
+                  }
+                  placeholder="Movement name"
+                  className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                />
+                <AmountInput
+                  value={movement.amount}
+                  onChange={(amount) => handleUpdateMovement({ amount })}
+                  mode="field"
+                  className="h-auto shrink-0 border-0 bg-transparent px-0 py-0.5 text-2xl leading-snug font-semibold dark:bg-transparent dark:hover:bg-transparent"
+                />
+              </div>
 
-                  <Field>
-                    <FieldLabel htmlFor="account">Account</FieldLabel>
-                    <AccountSelect
-                      id="account"
-                      value={movement.account}
-                      onChange={(account) => handleUpdateMovement({ account })}
-                      movementsOnly
-                    />
-                  </Field>
+              <div className="mt-3 flex items-center gap-2">
+                <AccountSelect
+                  id="account"
+                  value={movement.account}
+                  onChange={(account) => handleUpdateMovement({ account })}
+                  movementsOnly
+                  className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
+                />
+              </div>
 
-                  <Field>
-                    <FieldLabel htmlFor="amount">Amount</FieldLabel>
-                    <AmountInput
-                      value={movement.amount}
-                      onChange={(amount) => handleUpdateMovement({ amount })}
-                      mode="field"
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
+              <MovementStatusAlert status={movement.status} />
             </div>
 
             <div className="px-4 py-6 sm:px-8">
