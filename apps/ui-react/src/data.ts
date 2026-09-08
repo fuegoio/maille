@@ -1,3 +1,4 @@
+import type { MovementWorkflow } from "@maille/core/harness";
 import type {
   HistoryAction,
   HistoryEntityType,
@@ -20,6 +21,7 @@ import { useFunds } from "./stores/funds";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
+import { useWorkflows } from "./stores/workflows";
 
 type SerializedHistoryEntryData = {
   id: string;
@@ -211,6 +213,29 @@ const userDataQuery = graphql(/* GraphQL */ `
       }
       createdAt
     }
+
+    workflows {
+      id
+      movement
+      status
+      trigger
+      attempts
+      messages {
+        id
+        role
+        content
+        options {
+          id
+          label
+        }
+        optionId
+        createdAt
+      }
+      result
+      error
+      createdAt
+      updatedAt
+    }
   }
 `);
 
@@ -328,6 +353,31 @@ export const fetchUserData = async () => {
     });
   });
 
+  // Populate workflows
+  userData.workflows.forEach((workflow) => {
+    useWorkflows.getState().upsertWorkflow({
+      id: workflow.id,
+      movement: workflow.movement,
+      status: workflow.status as MovementWorkflow["status"],
+      trigger: workflow.trigger as MovementWorkflow["trigger"],
+      attempts: workflow.attempts,
+      messages: workflow.messages.map((msg) => ({
+        id: msg.id,
+        role: msg.role as MovementWorkflow["messages"][number]["role"],
+        content: msg.content,
+        options: msg.options ?? undefined,
+        optionId: msg.optionId ?? undefined,
+        createdAt: new Date(msg.createdAt * 1000).toISOString(),
+      })),
+      result: workflow.result
+        ? (JSON.parse(workflow.result) as MovementWorkflow["result"])
+        : null,
+      error: workflow.error,
+      createdAt: new Date(workflow.createdAt * 1000).toISOString(),
+      updatedAt: new Date(workflow.updatedAt * 1000).toISOString(),
+    });
+  });
+
   return userData;
 };
 
@@ -347,4 +397,5 @@ export const clearAllStores = () => {
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
   useFunds.setState({ funds: [], fundMoves: [] });
+  useWorkflows.setState({ workflows: [] });
 };
