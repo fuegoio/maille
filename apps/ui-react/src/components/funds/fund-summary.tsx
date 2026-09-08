@@ -317,91 +317,6 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
-
-        {accountSpreadByType.length > 0 && (
-          <div className="mt-5">
-            <div className="text-xs font-medium text-muted-foreground">
-              {fundId === null
-                ? "Untracked across accounts"
-                : "Across accounts"}
-            </div>
-            <div className="mt-2 space-y-3">
-              {accountSpreadByType.map(
-                ({ type, entries, total, positiveTotal }) => (
-                  <div key={type}>
-                    <div className="flex h-8 items-center">
-                      <div
-                        className={cn(
-                          "mr-2 size-3 shrink-0 rounded-full",
-                          ACCOUNT_TYPES_COLOR[type],
-                        )}
-                      />
-                      <div className="text-sm font-medium">
-                        {ACCOUNT_TYPES_NAME[type]}
-                      </div>
-                      <div className="flex-1" />
-                      <div className="font-mono text-sm">
-                        {currencyFormatter.format(total)}
-                      </div>
-                    </div>
-
-                    {positiveTotal > 0 && (
-                      <div className="my-1 px-0.5">
-                        <div className="flex h-2 w-full items-center overflow-hidden rounded-md bg-muted transition-all hover:h-4">
-                          {entries.map((entry, index) => {
-                            const amount = Math.max(0, entry.amount);
-                            if (amount < 0.01) return null;
-                            const percentage = (amount / positiveTotal) * 100;
-                            return (
-                              <Tooltip key={entry.account.id}>
-                                <TooltipTrigger asChild>
-                                  <div
-                                    className="h-full transition-all hover:opacity-50"
-                                    style={{
-                                      background: getAccountTypeShadeColor(
-                                        type,
-                                        index,
-                                        entries.length,
-                                      ).toString(),
-                                      width: `${percentage}%`,
-                                    }}
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  {entry.account.name} (
-                                  {Math.round(percentage * 100) / 100}%)
-                                </TooltipContent>
-                              </Tooltip>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {entries.map(({ account, amount }) => (
-                      <div
-                        key={account.id}
-                        className="flex h-8 cursor-pointer items-center rounded pr-3 pl-4 text-sm transition-colors hover:bg-muted/50"
-                        onClick={() =>
-                          navigate({
-                            to: "/accounts/$id",
-                            params: { id: account.id },
-                          })
-                        }
-                      >
-                        <div className="truncate">{account.name}</div>
-                        <div className="flex-1" />
-                        <div className="font-mono">
-                          {currencyFormatter.format(amount)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <ChartContainer
@@ -485,6 +400,91 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Where the money sits: the fund's (or Untracked's) positions grouped
+          by account type, like the periods accounts summary. */}
+      {accountSpreadByType.length > 0 && (
+        <div className="border-b p-6">
+          <div className="text-xs font-medium text-muted-foreground">
+            {fundId === null ? "Untracked across accounts" : "Across accounts"}
+          </div>
+          <div className="mt-2 space-y-3">
+            {accountSpreadByType.map(
+              ({ type, entries, total, positiveTotal }) => (
+                <div key={type}>
+                  <div className="flex h-8 items-center">
+                    <div
+                      className={cn(
+                        "mr-2 size-3 shrink-0 rounded-full",
+                        ACCOUNT_TYPES_COLOR[type],
+                      )}
+                    />
+                    <div className="text-sm font-medium">
+                      {ACCOUNT_TYPES_NAME[type]}
+                    </div>
+                    <div className="flex-1" />
+                    <div className="font-mono text-sm">
+                      {currencyFormatter.format(total)}
+                    </div>
+                  </div>
+
+                  {positiveTotal > 0 && (
+                    <div className="my-1 px-0.5">
+                      <div className="flex h-2 w-full items-center overflow-hidden rounded-md bg-muted transition-all hover:h-4">
+                        {entries.map((entry, index) => {
+                          const amount = Math.max(0, entry.amount);
+                          if (amount < 0.01) return null;
+                          const percentage = (amount / positiveTotal) * 100;
+                          return (
+                            <Tooltip key={entry.account.id}>
+                              <TooltipTrigger asChild>
+                                <div
+                                  className="h-full transition-all hover:opacity-50"
+                                  style={{
+                                    background: getAccountTypeShadeColor(
+                                      type,
+                                      index,
+                                      entries.length,
+                                    ).toString(),
+                                    width: `${percentage}%`,
+                                  }}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {entry.account.name} (
+                                {Math.round(percentage * 100) / 100}%)
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {entries.map(({ account, amount }) => (
+                    <div
+                      key={account.id}
+                      className="flex h-8 cursor-pointer items-center rounded pr-3 pl-4 text-sm transition-colors hover:bg-muted/50"
+                      onClick={() =>
+                        navigate({
+                          to: "/accounts/$id",
+                          params: { id: account.id },
+                        })
+                      }
+                    >
+                      <div className="truncate">{account.name}</div>
+                      <div className="flex-1" />
+                      <div className="font-mono">
+                        {currencyFormatter.format(amount)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ),
+            )}
           </div>
         </div>
       )}
