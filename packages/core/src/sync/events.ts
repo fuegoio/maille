@@ -100,6 +100,7 @@ export interface CreateFundEvent extends BaseSyncEvent {
     color: string;
     startDate: string | null;
     endDate: string | null;
+    parentFund: string | null;
   };
 }
 
@@ -111,6 +112,7 @@ export interface UpdateFundEvent extends BaseSyncEvent {
     color?: string;
     startDate?: string | null;
     endDate?: string | null;
+    parentFund?: string | null;
   };
 }
 

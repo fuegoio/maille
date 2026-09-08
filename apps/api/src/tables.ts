@@ -9,6 +9,7 @@ import {
   real,
   integer,
   jsonb,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
@@ -300,6 +301,12 @@ export const funds = pgTable("funds", {
   color: text("color").notNull().default(DEFAULT_FUND_COLOR),
   startDate: timestamp("start_date", { mode: "date" }),
   endDate: timestamp("end_date", { mode: "date" }),
+  // Self-reference: null is a root fund. Cycles are prevented at the
+  // mutation layer; the FK is a set-null backstop, never a cascade (deleting
+  // a parent must not delete its children).
+  parentFund: text("parent_fund").references((): AnyPgColumn => funds.id, {
+    onDelete: "set null",
+  }),
 });
 
 export const fundMoves = pgTable("fund_moves", {

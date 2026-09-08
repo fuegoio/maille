@@ -1,4 +1,5 @@
-import { addDays, eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import { useNavigate } from "@tanstack/react-router";
+import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -10,7 +11,13 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { getUntrackedBalanceAtDate } from "@/logic/funds";
+import {
+  getFundChildren,
+  getFundDirectBalance,
+  getFundTreeBalanceAtDate,
+  getFundTreeFlowsBetweenDates,
+  getUntrackedBalanceAtDate,
+} from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -23,14 +30,19 @@ interface FundSummaryProps {
 
 export function FundSummary({ fundId }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
+  const navigate = useNavigate();
 
-  // A fund's balance at a date is the sum of its moves up to that day;
-  // Untracked is the complement: balance accounts' total minus what funds
-  // claim up to that day.
+  const today = startOfDay(new Date());
+  const thirtyDaysAgo = subDays(today, 29);
+
+  // A real fund's numbers are its subtree's: money that entered the tree
+  // minus money that left it. Untracked is the complement: balance accounts'
+  // total minus what funds claim.
   const getFundBalanceAtDate = (date: Date) => {
     if (fundId === null) {
       if (!user) return 0;
@@ -43,35 +55,61 @@ export function FundSummary({ fundId }: FundSummaryProps) {
       });
     }
 
-    return fundMoves
-      .filter((m) => m.date.getTime() < addDays(startOfDay(date), 1).getTime())
-      .reduce(
-        (total, m) =>
-          total +
-          (m.toFund === fundId ? m.amount : 0) -
-          (m.fromFund === fundId ? m.amount : 0),
-        0,
-      );
+    return getFundTreeBalanceAtDate(fundId, funds, fundMoves, date);
   };
-
-  const today = startOfDay(new Date());
-  const thirtyDaysAgo = subDays(today, 29);
 
   const balance = getFundBalanceAtDate(today);
   const balancePrev = getFundBalanceAtDate(thirtyDaysAgo);
 
-  const last30Moves = fundMoves.filter(
-    (m) =>
-      m.date.getTime() >= thirtyDaysAgo.getTime() &&
-      (m.fromFund === fundId || m.toFund === fundId),
+  const flows =
+    fundId === null
+      ? {
+          in: fundMoves
+            .filter(
+              (m) =>
+                m.date.getTime() >= thirtyDaysAgo.getTime() &&
+                m.toFund === null &&
+                m.fromFund !== null,
+            )
+            .reduce((total, m) => total + m.amount, 0),
+          out: fundMoves
+            .filter(
+              (m) =>
+                m.date.getTime() >= thirtyDaysAgo.getTime() &&
+                m.fromFund === null &&
+                m.toFund !== null,
+            )
+            .reduce((total, m) => total + m.amount, 0),
+        }
+      : getFundTreeFlowsBetweenDates(
+          fundId,
+          funds,
+          fundMoves,
+          thirtyDaysAgo,
+          today,
+        );
+  const last30In = flows.in;
+  const last30Out = flows.out;
+
+  // The breakdown splits a parent's rollup into its own money and its
+  // children's subtrees.
+  const children = useMemo(
+    () => (fundId === null ? [] : getFundChildren(fundId, funds)),
+    [fundId, funds],
   );
-  const last30In = last30Moves
-    .filter((m) => m.toFund === fundId)
-    .reduce((total, m) => total + m.amount, 0);
-  const last30Out = Math.abs(
-    last30Moves
-      .filter((m) => m.fromFund === fundId)
-      .reduce((total, m) => total + m.amount, 0),
+  const directBalance =
+    fundId === null ? null : getFundDirectBalance(fundId, fundMoves);
+
+  const childBalances = useMemo(
+    () =>
+      new Map(
+        children.map((child) => [
+          child.id,
+          // A child row carries its own subtree rollup, one level deeper.
+          getFundTreeBalanceAtDate(child.id, funds, fundMoves, today),
+        ]),
+      ),
+    [children, funds, fundMoves, today],
   );
 
   const days = useMemo(
@@ -87,7 +125,7 @@ export function FundSummary({ fundId }: FundSummaryProps) {
         balance: getFundBalanceAtDate(date),
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [days, fundMoves, fundId],
+    [days, fundMoves, fundId, funds],
   );
 
   const chartConfig = {
@@ -128,6 +166,44 @@ export function FundSummary({ fundId }: FundSummaryProps) {
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
+
+        {children.length > 0 && (
+          <div className="mt-5">
+            <div className="text-xs font-medium text-muted-foreground">
+              Breakdown
+            </div>
+            <div className="mt-1">
+              {directBalance !== null && (
+                <div className="flex h-8 items-center text-sm">
+                  <div className="text-muted-foreground">This fund</div>
+                  <div className="flex-1" />
+                  <div className="font-mono text-muted-foreground">
+                    {currencyFormatter.format(directBalance)}
+                  </div>
+                </div>
+              )}
+              {children.map((child) => (
+                <div
+                  key={child.id}
+                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
+                  onClick={() =>
+                    navigate({ to: "/funds/$id", params: { id: child.id } })
+                  }
+                >
+                  <div
+                    className="size-3 shrink-0 rounded-sm"
+                    style={{ backgroundColor: child.color }}
+                  />
+                  <div className="ml-2 truncate">{child.name}</div>
+                  <div className="flex-1" />
+                  <div className="font-mono">
+                    {currencyFormatter.format(childBalances.get(child.id) ?? 0)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <ChartContainer

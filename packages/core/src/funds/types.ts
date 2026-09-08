@@ -4,6 +4,8 @@ export type Fund = {
   color: string;
   startDate: Date | null;
   endDate: Date | null;
+  /** Parent fund; null is a root. Parent chains must never form a cycle. */
+  parentFund: string | null;
 };
 
 export type FundMove = {

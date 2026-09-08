@@ -26,10 +26,13 @@ import { Input } from "@/components/ui/input";
 import { createFundMutation, updateFundMutation } from "@/mutations/funds";
 import { useSync } from "@/stores/sync";
 
+import { FundSelect } from "./fund-select";
+
 const createFundSchema = z
   .object({
     name: z.string().min(1, "Fund name is required"),
     color: z.string(),
+    parentFund: z.string().nullable(),
     startDate: z.date().nullable().optional(),
     endDate: z.date().nullable().optional(),
   })
@@ -50,6 +53,8 @@ interface CreateFundDialogProps {
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
   onCreate?: (fundId: string) => void;
+  /** Preselected parent, when the dialog opens from a "new subfund" action. */
+  defaultParent?: string;
 }
 
 export function CreateFundDialog({
@@ -57,6 +62,7 @@ export function CreateFundDialog({
   onOpenChange,
   children,
   onCreate,
+  defaultParent,
 }: CreateFundDialogProps) {
   const mutate = useSync((state) => state.mutate);
   const [open, setOpen] = useState(false);
@@ -72,6 +78,7 @@ export function CreateFundDialog({
     defaultValues: {
       name: "",
       color: DEFAULT_FUND_COLOR,
+      parentFund: defaultParent ?? null,
       startDate: null,
       endDate: null,
     },
@@ -97,7 +104,12 @@ export function CreateFundDialog({
     mutate({
       name: "createFund",
       mutation: createFundMutation,
-      variables: { id, name: data.name, color: data.color },
+      variables: {
+        id,
+        name: data.name,
+        color: data.color,
+        parentFund: data.parentFund,
+      },
       rollbackData: undefined,
       events: [
         {
@@ -108,6 +120,7 @@ export function CreateFundDialog({
             color: data.color,
             startDate,
             endDate,
+            parentFund: data.parentFund,
           },
         },
       ],
@@ -120,6 +133,7 @@ export function CreateFundDialog({
         color: data.color,
         startDate: null,
         endDate: null,
+        parentFund: data.parentFund,
       };
       mutate({
         name: "updateFund",
@@ -178,6 +192,25 @@ export function CreateFundDialog({
               </FieldContent>
             </Field>
           </div>
+
+          <Field>
+            <FieldLabel>Parent</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="parentFund"
+                control={control}
+                render={({ field }) => (
+                  <FundSelect
+                    value={field.value ?? null}
+                    onValueChange={field.onChange}
+                    placeholder="No parent"
+                    allowEmpty
+                    emptyLabel="No parent"
+                  />
+                )}
+              />
+            </FieldContent>
+          </Field>
 
           <div className="flex gap-4">
             <Field className="flex-1">

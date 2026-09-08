@@ -1,3 +1,5 @@
+import { flattenFundTree } from "@maille/core/funds";
+
 import {
   Select,
   SelectContent,
@@ -16,6 +18,8 @@ interface FundSelectProps {
   emptyLabel?: string;
   className?: string;
   size?: "sm" | "default";
+  /** Ids to leave out (used by parent pickers to exclude the fund itself and its descendants). */
+  excludeIds?: string[];
 }
 
 export function FundSelect({
@@ -26,8 +30,13 @@ export function FundSelect({
   emptyLabel = "No fund",
   className,
   size = "default",
+  excludeIds = [],
 }: FundSelectProps) {
   const funds = useFunds((state) => state.funds);
+
+  const nodes = flattenFundTree(funds).filter(
+    (node) => !excludeIds.includes(node.fund.id),
+  );
 
   return (
     <Select
@@ -43,9 +52,12 @@ export function FundSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {funds.map((fund) => (
+        {nodes.map(({ fund, depth }) => (
           <SelectItem key={fund.id} value={fund.id}>
-            <div className="flex min-w-0 items-center">
+            <div
+              className="flex min-w-0 items-center"
+              style={depth > 0 ? { paddingLeft: `${depth * 12}px` } : undefined}
+            >
               <div
                 className="mr-1.5 size-3 shrink-0 rounded-sm"
                 style={{ backgroundColor: fund.color }}

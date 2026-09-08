@@ -1,7 +1,8 @@
 import type { Fund } from "@maille/core/funds";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode, useState } from "react";
+import { getFundDescendants } from "@maille/core/funds";
+import { type ReactNode, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -36,12 +37,16 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { deleteFundMutation, updateFundMutation } from "@/mutations/funds";
+import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
+
+import { FundSelect } from "./fund-select";
 
 const updateFundSchema = z
   .object({
     name: z.string().min(1, "Fund name is required"),
     color: z.string(),
+    parentFund: z.string().nullable(),
     startDate: z.date().nullable().optional(),
     endDate: z.date().nullable().optional(),
   })
@@ -71,7 +76,15 @@ export function FundSettingsDialog({
   children,
 }: FundSettingsDialogProps) {
   const mutate = useSync((state) => state.mutate);
+  const funds = useFunds((state) => state.funds);
   const [open, setOpen] = useState(false);
+
+  // The fund cannot become its own descendant's child: exclude itself and
+  // its whole subtree from the parent picker.
+  const excludedFromParent = useMemo(
+    () => [fund.id, ...getFundDescendants(fund.id, funds)],
+    [fund.id, funds],
+  );
 
   const toDate = (value: Date | string | null | undefined): Date | null => {
     if (!value) return null;
@@ -90,6 +103,7 @@ export function FundSettingsDialog({
     defaultValues: {
       name: fund.name,
       color: fund.color,
+      parentFund: fund.parentFund ?? null,
       startDate: toDate(fund.startDate),
       endDate: toDate(fund.endDate),
     },
@@ -117,6 +131,7 @@ export function FundSettingsDialog({
         id: fund.id,
         name: data.name,
         color: data.color,
+        parentFund: data.parentFund,
         startDate,
         endDate,
       },
@@ -130,6 +145,7 @@ export function FundSettingsDialog({
             color: data.color,
             startDate,
             endDate,
+            parentFund: data.parentFund,
           },
         },
       ],
@@ -138,6 +154,7 @@ export function FundSettingsDialog({
     reset({
       name: data.name,
       color: data.color,
+      parentFund: data.parentFund,
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
     });
@@ -157,6 +174,7 @@ export function FundSettingsDialog({
         },
       ],
     });
+    handleOpenChange(false);
   };
 
   return (
@@ -198,6 +216,26 @@ export function FundSettingsDialog({
               </FieldContent>
             </Field>
           </div>
+
+          <Field>
+            <FieldLabel>Parent</FieldLabel>
+            <FieldContent>
+              <Controller
+                name="parentFund"
+                control={control}
+                render={({ field }) => (
+                  <FundSelect
+                    value={field.value ?? null}
+                    onValueChange={field.onChange}
+                    placeholder="No parent"
+                    allowEmpty
+                    emptyLabel="No parent"
+                    excludeIds={excludedFromParent}
+                  />
+                )}
+              />
+            </FieldContent>
+          </Field>
 
           <div className="flex gap-4">
             <Field className="flex-1">
@@ -252,8 +290,9 @@ export function FundSettingsDialog({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete fund</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this fund? Money will move
-                    back to Untracked. This action cannot be undone.
+                    Are you sure you want to delete this fund? Money allocated
+                    to it moves back to Untracked and its subfunds move up one
+                    level. This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
