@@ -3,7 +3,7 @@ import type { Movement } from "@maille/core/movements";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse/browser/esm/sync";
 import { parse, format, isSameDay } from "date-fns";
-import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Upload } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -117,7 +117,10 @@ export function ImportMovementsButton({
   const [delimiter, setDelimiter] = React.useState<DelimiterOption>("auto");
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
   const [previewRows, setPreviewRows] = React.useState<PreviewRow[]>([]);
+  const [importing, setImporting] = React.useState(false);
+  const [importedCount, setImportedCount] = React.useState(0);
   const mutate = useSync((state) => state.mutate);
+  const mutationsQueueLength = useSync((state) => state.mutationsQueue.length);
   const movements = useMovements((state) => state.movements);
   const currencyFormatter = useCurrencyFormatter();
 
@@ -255,38 +258,63 @@ export function ImportMovementsButton({
   const skipCount = previewRows.filter((r) => r.skip).length;
   const duplicateCount = previewRows.filter((r) => r.isDuplicate).length;
 
+  const toImport = previewRows.filter((r) => !r.skip);
+
+  const initialQueueLength = React.useRef(0);
+  const importTarget = React.useRef(0);
+
   const processImport = () => {
     const { account } = getValues();
 
-    previewRows
-      .filter((r) => !r.skip)
-      .forEach((row) => {
-        const movement = {
-          id: crypto.randomUUID(),
-          name: row.name,
-          date: getGraphQLDate(row.date),
-          account,
-          amount: row.amount,
-        };
+    setImporting(true);
+    setImportedCount(0);
+    importTarget.current = toImport.length;
 
-        mutate({
-          name: "createMovement",
-          mutation: createMovementMutation,
-          variables: movement,
-          rollbackData: undefined,
-          events: [
-            {
-              type: "createMovement",
-              payload: movement,
-            },
-            movementCreateHistoryEvent(movement.id),
-          ],
-        });
+    // Capture the queue length BEFORE adding mutations so we can detect
+    // when our N mutations have drained
+    const queueBefore = useSync.getState().mutationsQueue.length;
+    initialQueueLength.current = queueBefore;
+
+    toImport.forEach((row) => {
+      const movement = {
+        id: crypto.randomUUID(),
+        name: row.name,
+        date: getGraphQLDate(row.date),
+        account,
+        amount: row.amount,
+      };
+
+      mutate({
+        name: "createMovement",
+        mutation: createMovementMutation,
+        variables: movement,
+        rollbackData: undefined,
+        events: [
+          {
+            type: "createMovement",
+            payload: movement,
+          },
+          movementCreateHistoryEvent(movement.id),
+        ],
       });
-
-    if (onImported) onImported();
-    resetDialog();
+    });
   };
+
+  React.useEffect(() => {
+    if (!importing) return;
+
+    const completed = initialQueueLength.current - mutationsQueueLength;
+    const target = importTarget.current;
+    setImportedCount(Math.max(0, Math.min(completed, target)));
+
+    if (mutationsQueueLength <= initialQueueLength.current - target) {
+      setImporting(false);
+      setImportedCount(target);
+      if (onImported) onImported();
+      const timer = setTimeout(() => resetDialog(), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [importing, mutationsQueueLength]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetDialog = () => {
     setDialogOpen(false);
@@ -295,6 +323,10 @@ export function ImportMovementsButton({
     setDelimiter("auto");
     setRecords([]);
     setPreviewRows([]);
+    setImporting(false);
+    setImportedCount(0);
+    initialQueueLength.current = 0;
+    importTarget.current = 0;
     reset({
       account: "",
       mapping: {
@@ -323,8 +355,8 @@ export function ImportMovementsButton({
       <Dialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          if (!open) resetDialog();
-          else setDialogOpen(true);
+          if (!open && !importing) resetDialog();
+          else if (open) setDialogOpen(true);
         }}
       >
         <DialogContent
@@ -337,7 +369,7 @@ export function ImportMovementsButton({
             <DialogTitle>Import movements from a CSV</DialogTitle>
           </DialogHeader>
 
-          <div className="flex shrink-0 items-center gap-1.5 px-1 text-xs text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-1.5 border-b px-1 pb-4 text-xs text-muted-foreground">
             {stepLabels.map((label, i) => {
               const isActive = step === i;
               return (
@@ -367,7 +399,7 @@ export function ImportMovementsButton({
               onSubmit={handleSubmit(goToPreview)}
               className="flex min-h-0 min-w-0 flex-1 flex-col"
             >
-              <div className="min-h-0 flex-1 overflow-y-auto px-1">
+              <div className="min-h-0 flex-1 overflow-y-auto pb-4">
                 <FieldGroup>
                   <Controller
                     name="account"
@@ -386,8 +418,6 @@ export function ImportMovementsButton({
                       </Field>
                     )}
                   />
-
-                  <Separator />
 
                   <Field>
                     <FieldLabel htmlFor="delimiter">Separator</FieldLabel>
@@ -423,6 +453,34 @@ export function ImportMovementsButton({
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select name field" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {headers.map((header) => (
+                              <SelectItem key={header} value={header}>
+                                {header}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+
+                  <Controller
+                    name="mapping.date"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="date-field">Date field</FieldLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select date field" />
                           </SelectTrigger>
                           <SelectContent>
                             {headers.map((header) => (
@@ -507,34 +565,6 @@ export function ImportMovementsButton({
                       )}
                     />
                   </div>
-
-                  <Controller
-                    name="mapping.date"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="date-field">Date field</FieldLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select date field" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {headers.map((header) => (
-                              <SelectItem key={header} value={header}>
-                                {header}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
                 </FieldGroup>
               </div>
 
@@ -582,6 +612,7 @@ export function ImportMovementsButton({
                                   ? true
                                   : "indeterminate"
                           }
+                          disabled={importing}
                           onCheckedChange={(checked) => {
                             if (checked !== "indeterminate") toggleAll();
                           }}
@@ -602,38 +633,61 @@ export function ImportMovementsButton({
                     </tr>
                   </thead>
                   <tbody>
-                    {previewRows.map((row) => (
-                      <tr
-                        key={row.index}
-                        className={cn(
-                          "group border-b transition-colors hover:bg-muted/50",
-                          row.skip && "opacity-45",
-                        )}
-                      >
-                        <td className="h-10 px-3">
-                          <Checkbox
-                            checked={!row.skip}
-                            onCheckedChange={() => toggleRow(row.index)}
-                          />
-                        </td>
-                        <td className="h-10 max-w-[200px] truncate px-2 text-sm">
-                          {row.name}
-                        </td>
-                        <td className="h-10 px-2 text-sm whitespace-nowrap text-muted-foreground">
-                          {format(row.date, "dd MMM yyyy")}
-                        </td>
-                        <td className="h-10 px-2 text-right font-mono text-sm whitespace-nowrap">
-                          {currencyFormatter.format(row.amount)}
-                        </td>
-                        <td className="h-10 px-3 text-right">
-                          {row.isDuplicate && (
-                            <span className="text-xs text-muted-foreground">
-                              Duplicate
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {(() => {
+                      let importIdx = 0;
+                      return previewRows.map((row) => {
+                        const isImportingRow = !row.skip;
+                        const rowImportIdx = isImportingRow ? importIdx++ : -1;
+                        const rowDone =
+                          importing && rowImportIdx < importedCount;
+                        const rowPending =
+                          importing && isImportingRow && !rowDone;
+
+                        return (
+                          <tr
+                            key={row.index}
+                            className={cn(
+                              "group border-b transition-colors hover:bg-muted/50",
+                              row.skip && "opacity-45",
+                            )}
+                          >
+                            <td className="h-10 px-3">
+                              <Checkbox
+                                checked={!row.skip}
+                                disabled={importing}
+                                onCheckedChange={() => toggleRow(row.index)}
+                              />
+                            </td>
+                            <td className="h-10 max-w-[200px] truncate px-2 text-sm">
+                              {row.name}
+                            </td>
+                            <td className="h-10 px-2 text-sm whitespace-nowrap text-muted-foreground">
+                              {format(row.date, "dd MMM yyyy")}
+                            </td>
+                            <td className="h-10 px-2 text-right font-mono text-sm whitespace-nowrap">
+                              {currencyFormatter.format(row.amount)}
+                            </td>
+                            <td className="h-10 px-3 text-right">
+                              {rowDone ? (
+                                <span className="inline-flex items-center gap-1 text-xs text-foreground">
+                                  <Check className="size-3" />
+                                  Imported
+                                </span>
+                              ) : rowPending ? (
+                                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Loader2 className="size-3 animate-spin" />
+                                  Importing
+                                </span>
+                              ) : row.isDuplicate ? (
+                                <span className="text-xs text-muted-foreground">
+                                  Duplicate
+                                </span>
+                              ) : null}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -642,6 +696,7 @@ export function ImportMovementsButton({
                 <Button
                   variant="outline"
                   type="button"
+                  disabled={importing}
                   onClick={() => setStep(1)}
                 >
                   <ArrowLeft />
@@ -650,11 +705,20 @@ export function ImportMovementsButton({
                 <Button
                   type="button"
                   className="ml-2"
-                  disabled={importCount === 0}
+                  disabled={importCount === 0 || importing}
                   onClick={processImport}
                 >
-                  Import {importCount}{" "}
-                  {importCount === 1 ? "movement" : "movements"}
+                  {importing ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Importing {importedCount}/{toImport.length}
+                    </>
+                  ) : (
+                    <>
+                      Import {importCount}{" "}
+                      {importCount === 1 ? "movement" : "movements"}
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </div>
