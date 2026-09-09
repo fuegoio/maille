@@ -40,6 +40,11 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
@@ -136,10 +141,26 @@ function AccountPage() {
                   <ReceiptText />
                   Transactions
                 </TabsTrigger>
-                <TabsTrigger value="movements">
-                  <ArrowRightLeft />
-                  Movements
-                </TabsTrigger>
+                {account.movements ? (
+                  <TabsTrigger value="movements">
+                    <ArrowRightLeft />
+                    Movements
+                  </TabsTrigger>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <TabsTrigger value="movements" disabled>
+                          <ArrowRightLeft />
+                          Movements
+                        </TabsTrigger>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Movements are not enabled for this account
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 {account.type === AccountType.ASSETS && (
                   <TabsTrigger value="assets">
                     <House />
