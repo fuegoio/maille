@@ -1,13 +1,16 @@
+import type { Movement } from "@maille/core/movements";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse/browser/esm/sync";
-import { parse } from "date-fns";
-import { Upload } from "lucide-react";
+import { parse, format, isSameDay } from "date-fns";
+import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -43,8 +46,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UploadDropZone } from "@/components/upload-drop-zone";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import { movementCreateHistoryEvent } from "@/lib/history-events";
+import { cn } from "@/lib/utils";
 import { createMovementMutation } from "@/mutations/movements";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
@@ -74,7 +79,6 @@ function parseRecords(
   }) as Record<string, string>[];
 }
 
-// Form schema using zod
 const formSchema = z.object({
   account: z.string().min(1, "Account is required"),
   mapping: z.object({
@@ -88,6 +92,15 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+type PreviewRow = {
+  index: number;
+  name: string;
+  date: Date;
+  amount: number;
+  isDuplicate: boolean;
+  skip: boolean;
+};
 
 interface ImportMovementsButtonProps {
   className?: string;
@@ -103,8 +116,10 @@ export function ImportMovementsButton({
   const [rawText, setRawText] = React.useState("");
   const [delimiter, setDelimiter] = React.useState<DelimiterOption>("auto");
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
+  const [previewRows, setPreviewRows] = React.useState<PreviewRow[]>([]);
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
+  const currencyFormatter = useCurrencyFormatter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -119,7 +134,7 @@ export function ImportMovementsButton({
     },
   });
 
-  const { control, handleSubmit, reset } = form;
+  const { control, handleSubmit, reset, getValues } = form;
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
@@ -145,7 +160,6 @@ export function ImportMovementsButton({
     setDelimiter(value);
     const parsedRecords = parseRecords(rawText, value);
     setRecords(parsedRecords);
-    // Column names may have changed, so reset the mapping
     reset({
       account: form.getValues("account"),
       mapping: { date: "", amounts: [], name: "" },
@@ -153,48 +167,106 @@ export function ImportMovementsButton({
     });
   };
 
-  const processFile = (data: FormValues) => {
+  const parseDate = (dateString: string): Date => {
+    const formats = ["dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"];
+    let movementDate = new Date(dateString);
+
+    for (const fmt of formats) {
+      const parsedDate = parse(dateString, fmt, new Date());
+      if (!isNaN(parsedDate.getTime())) {
+        movementDate = parsedDate;
+        break;
+      }
+    }
+    return movementDate;
+  };
+
+  const parseAmount = (
+    record: Record<string, string>,
+    amountColumns: string[],
+    ratio: number,
+  ): number => {
+    return (
+      amountColumns.reduce((sum, column) => {
+        const raw = record[column];
+        if (!raw) return sum;
+        const parsed = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
+        return sum + (isNaN(parsed) ? 0 : parsed);
+      }, 0) *
+      (ratio / 100)
+    );
+  };
+
+  const checkDuplicate = (
+    account: string,
+    name: string,
+    date: Date,
+    amount: number,
+    existing: Movement[],
+  ): boolean => {
+    return existing.some(
+      (m) =>
+        m.account === account &&
+        isSameDay(m.date, date) &&
+        m.amount === amount &&
+        m.name.toLowerCase() === name.toLowerCase(),
+    );
+  };
+
+  const buildPreviewRows = (data: FormValues): PreviewRow[] => {
     const { account, mapping, ratio } = data;
 
-    records.forEach((record) => {
-      const movementName = record[mapping.name];
+    return records.map((record, index) => {
+      const name = record[mapping.name] ?? "";
+      const date = parseDate(record[mapping.date] ?? "");
+      const amount = parseAmount(record, mapping.amounts, ratio);
+      const dup = checkDuplicate(account, name, date, amount, movements);
 
-      const dateString = record[mapping.date];
-      const formats = ["dd/MM/yyyy", "d/M/yyyy", "yyyy-MM-dd"];
-      let movementDate = new Date(dateString);
+      return {
+        index,
+        name,
+        date,
+        amount,
+        isDuplicate: dup,
+        skip: dup,
+      };
+    });
+  };
 
-      for (const format of formats) {
-        const parsedDate = parse(dateString, format, new Date());
-        if (!isNaN(parsedDate.getTime())) {
-          movementDate = parsedDate;
-          break;
-        }
-      }
+  const goToPreview = (data: FormValues) => {
+    setPreviewRows(buildPreviewRows(data));
+    setStep(2);
+  };
 
-      const movementAmount =
-        mapping.amounts.reduce((sum, column) => {
-          const raw = record[column];
-          if (!raw) return sum;
-          const parsed = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
-          return sum + (isNaN(parsed) ? 0 : parsed);
-        }, 0) *
-        (ratio / 100);
+  const toggleRow = (index: number) => {
+    setPreviewRows((rows) =>
+      rows.map((r) => (r.index === index ? { ...r, skip: !r.skip } : r)),
+    );
+  };
 
-      const existingMovement = movements.find(
-        (m) =>
-          m.account === account &&
-          m.date.getTime() === movementDate.getTime() &&
-          m.amount === movementAmount &&
-          m.name.toLowerCase() === movementName.toLowerCase(),
-      );
+  const allSkipped = previewRows.length > 0 && previewRows.every((r) => r.skip);
+  const noneSkipped = previewRows.every((r) => !r.skip);
 
-      if (!existingMovement) {
+  const toggleAll = () => {
+    setPreviewRows((rows) => rows.map((r) => ({ ...r, skip: !allSkipped })));
+  };
+
+  const importCount = previewRows.filter((r) => !r.skip).length;
+  const skipCount = previewRows.filter((r) => r.skip).length;
+  const duplicateCount = previewRows.filter((r) => r.isDuplicate).length;
+
+  const processImport = () => {
+    const { account } = getValues();
+
+    previewRows
+      .filter((r) => !r.skip)
+      .forEach((row) => {
         const movement = {
           id: crypto.randomUUID(),
-          name: movementName,
-          date: getGraphQLDate(movementDate),
+          name: row.name,
+          date: getGraphQLDate(row.date),
           account,
-          amount: movementAmount,
+          amount: row.amount,
         };
 
         mutate({
@@ -210,8 +282,7 @@ export function ImportMovementsButton({
             movementCreateHistoryEvent(movement.id),
           ],
         });
-      }
-    });
+      });
 
     if (onImported) onImported();
     resetDialog();
@@ -223,6 +294,7 @@ export function ImportMovementsButton({
     setRawText("");
     setDelimiter("auto");
     setRecords([]);
+    setPreviewRows([]);
     reset({
       account: "",
       mapping: {
@@ -233,6 +305,8 @@ export function ImportMovementsButton({
       ratio: 100,
     });
   };
+
+  const stepLabels = ["Upload", "Map fields", "Preview & import"];
 
   return (
     <>
@@ -246,214 +320,322 @@ export function ImportMovementsButton({
         Import movements
       </Button>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-xl">
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          if (!open) resetDialog();
+          else setDialogOpen(true);
+        }}
+      >
+        <DialogContent
+          className={cn(
+            "max-h-[85vh] overflow-hidden sm:max-w-2xl",
+            step === 2 && "sm:max-w-3xl",
+          )}
+        >
           <DialogHeader>
             <DialogTitle>Import movements from a CSV</DialogTitle>
+            {step > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {stepLabels.slice(1).map((label, i) => {
+                  const stepNum = i + 1;
+                  const isActive = step === stepNum;
+                  return (
+                    <React.Fragment key={label}>
+                      {i > 0 && (
+                        <ArrowRight className="size-3 text-muted-foreground/50" />
+                      )}
+                      <span
+                        className={cn(
+                          "font-medium",
+                          isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {label}
+                      </span>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            )}
           </DialogHeader>
 
           {step === 0 ? (
             <div className="pt-1 pb-4">
               <UploadDropZone onFile={handleInputFile} />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit(processFile)} className="min-w-0">
-              <FieldGroup>
-                <Controller
-                  name="account"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="account">Account</FieldLabel>
-                      <AccountSelect
-                        value={field.value}
-                        onChange={field.onChange}
-                        movementsOnly
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Separator />
-
-                <Field>
-                  <FieldLabel htmlFor="delimiter">Separator</FieldLabel>
-                  <Select
-                    value={delimiter}
-                    onValueChange={(value) =>
-                      handleDelimiterChange(value as DelimiterOption)
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select separator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="semicolon">Semicolon (;)</SelectItem>
-                      <SelectItem value="comma">Comma (,)</SelectItem>
-                      <SelectItem value="tab">Tab</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Separator />
-
-                <Controller
-                  name="mapping.name"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="name-field">Name field</FieldLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select name field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {headers.map((header) => (
-                            <SelectItem key={header} value={header}>
-                              {header}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <div className="flex items-start gap-4">
+          ) : step === 1 ? (
+            <form
+              onSubmit={handleSubmit(goToPreview)}
+              className="flex min-w-0 flex-col"
+            >
+              <div className="overflow-y-auto px-1">
+                <FieldGroup>
                   <Controller
-                    name="mapping.amounts"
+                    name="account"
                     control={control}
                     render={({ field, fieldState }) => (
-                      <Field
-                        className="min-w-0 flex-1"
-                        data-invalid={fieldState.invalid}
-                      >
-                        <FieldLabel htmlFor="amount-field">
-                          Value columns
-                        </FieldLabel>
-                        <MultiSelect
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="account">Account</FieldLabel>
+                        <AccountSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          movementsOnly
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+
+                  <Separator />
+
+                  <Field>
+                    <FieldLabel htmlFor="delimiter">Separator</FieldLabel>
+                    <Select
+                      value={delimiter}
+                      onValueChange={(value) =>
+                        handleDelimiterChange(value as DelimiterOption)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select separator" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="semicolon">Semicolon (;)</SelectItem>
+                        <SelectItem value="comma">Comma (,)</SelectItem>
+                        <SelectItem value="tab">Tab</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Separator />
+
+                  <Controller
+                    name="mapping.name"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="name-field">Name field</FieldLabel>
+                        <Select
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <MultiSelectTrigger className="w-full">
-                            <MultiSelectValue placeholder="Select value column(s)" />
-                          </MultiSelectTrigger>
-                          <MultiSelectContent className="w-fit">
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select name field" />
+                          </SelectTrigger>
+                          <SelectContent>
                             {headers.map((header) => (
-                              <MultiSelectItem key={header} value={header}>
+                              <SelectItem key={header} value={header}>
                                 {header}
-                              </MultiSelectItem>
+                              </SelectItem>
                             ))}
-                          </MultiSelectContent>
-                        </MultiSelect>
+                          </SelectContent>
+                        </Select>
                         {fieldState.invalid && (
                           <FieldError errors={[fieldState.error]} />
                         )}
                       </Field>
                     )}
                   />
+
+                  <div className="flex items-start gap-4">
+                    <Controller
+                      name="mapping.amounts"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <Field
+                          className="min-w-0 flex-1"
+                          data-invalid={fieldState.invalid}
+                        >
+                          <FieldLabel htmlFor="amount-field">
+                            Value columns
+                          </FieldLabel>
+                          <MultiSelect
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <MultiSelectTrigger className="w-full">
+                              <MultiSelectValue placeholder="Select value column(s)" />
+                            </MultiSelectTrigger>
+                            <MultiSelectContent className="w-fit">
+                              {headers.map((header) => (
+                                <MultiSelectItem key={header} value={header}>
+                                  {header}
+                                </MultiSelectItem>
+                              ))}
+                            </MultiSelectContent>
+                          </MultiSelect>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+
+                    <Controller
+                      name="ratio"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <Field
+                          className="w-32 shrink-0"
+                          data-invalid={fieldState.invalid}
+                        >
+                          <FieldLabel htmlFor="ratio">Ratio</FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput
+                              id="ratio"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={field.value}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                            />
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupText>%</InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          <FieldDescription>
+                            Use 50 for a shared account (50%).
+                          </FieldDescription>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                  </div>
 
                   <Controller
-                    name="ratio"
+                    name="mapping.date"
                     control={control}
                     render={({ field, fieldState }) => (
-                      <Field
-                        className="w-32 shrink-0"
-                        data-invalid={fieldState.invalid}
-                      >
-                        <FieldLabel htmlFor="ratio">Ratio</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id="ratio"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={field.value}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                          />
-                          <InputGroupAddon align="inline-end">
-                            <InputGroupText>%</InputGroupText>
-                          </InputGroupAddon>
-                        </InputGroup>
-                        <FieldDescription>
-                          Use 50 for a shared account (50%).
-                        </FieldDescription>
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="date-field">Date field</FieldLabel>
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select date field" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {headers.map((header) => (
+                              <SelectItem key={header} value={header}>
+                                {header}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {fieldState.invalid && (
                           <FieldError errors={[fieldState.error]} />
                         )}
                       </Field>
                     )}
                   />
-                </div>
+                </FieldGroup>
+              </div>
 
-                <Controller
-                  name="mapping.date"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="date-field">Date field</FieldLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select date field" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {headers.map((header) => (
-                            <SelectItem key={header} value={header}>
-                              {header}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
+              <DialogFooter className="border-t pt-4">
+                <Button variant="outline" type="button" onClick={resetDialog}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="ml-2">
+                  Preview
+                  <ArrowRight />
+                </Button>
+              </DialogFooter>
+            </form>
+          ) : (
+            <div className="flex min-w-0 flex-col">
+              <div className="flex items-center gap-3 border-b px-1 pb-3 text-sm">
+                <span className="font-medium text-foreground">
+                  {importCount} to import
+                </span>
+                {skipCount > 0 && (
+                  <span className="text-muted-foreground">
+                    · {skipCount} skipped
+                  </span>
+                )}
+                {duplicateCount > 0 && (
+                  <span className="text-muted-foreground">
+                    · {duplicateCount} duplicate{duplicateCount > 1 ? "s" : ""}{" "}
+                    detected
+                  </span>
+                )}
+              </div>
 
-              <Separator className="mt-4" />
-              <div className="mt-4 mb-2 px-0 text-sm">CSV data</div>
-              <div className="max-h-44 w-full max-w-full overflow-auto px-0 py-4">
+              <div className="max-h-[45vh] overflow-auto">
                 <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      {headers.map((header) => (
-                        <th
-                          key={header}
-                          className="h-10 border border-white px-6 text-sm text-white"
-                        >
-                          {header}
-                        </th>
-                      ))}
+                  <thead className="sticky top-0 z-10 bg-background">
+                    <tr className="border-b">
+                      <th className="h-9 w-10 px-3 text-left">
+                        <Checkbox
+                          checked={
+                            previewRows.length === 0
+                              ? false
+                              : allSkipped
+                                ? false
+                                : noneSkipped
+                                  ? true
+                                  : "indeterminate"
+                          }
+                          onCheckedChange={(checked) => {
+                            if (checked !== "indeterminate") toggleAll();
+                          }}
+                        />
+                      </th>
+                      <th className="h-9 px-2 text-left text-xs font-medium text-muted-foreground">
+                        Name
+                      </th>
+                      <th className="h-9 px-2 text-left text-xs font-medium text-muted-foreground">
+                        Date
+                      </th>
+                      <th className="h-9 px-2 text-right text-xs font-medium text-muted-foreground">
+                        Amount
+                      </th>
+                      <th className="h-9 px-3 text-right text-xs font-medium text-muted-foreground">
+                        Status
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {records.map((record, index) => (
-                      <tr key={index}>
-                        {headers.map((header) => (
-                          <td
-                            key={header}
-                            className="text-primary-100 h-10 border border-white px-6 text-sm whitespace-nowrap"
-                          >
-                            {record[header]}
-                          </td>
-                        ))}
+                    {previewRows.map((row) => (
+                      <tr
+                        key={row.index}
+                        className={cn(
+                          "group border-b transition-colors hover:bg-muted/50",
+                          row.skip && "opacity-45",
+                        )}
+                      >
+                        <td className="h-10 px-3">
+                          <Checkbox
+                            checked={!row.skip}
+                            onCheckedChange={() => toggleRow(row.index)}
+                          />
+                        </td>
+                        <td className="h-10 max-w-[200px] truncate px-2 text-sm">
+                          {row.name}
+                        </td>
+                        <td className="h-10 px-2 text-sm whitespace-nowrap text-muted-foreground">
+                          {format(row.date, "dd MMM yyyy")}
+                        </td>
+                        <td className="h-10 px-2 text-right font-mono text-sm whitespace-nowrap">
+                          {currencyFormatter.format(row.amount)}
+                        </td>
+                        <td className="h-10 px-3 text-right">
+                          {row.isDuplicate && (
+                            <span className="text-xs text-muted-foreground">
+                              Duplicate
+                            </span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -461,14 +643,25 @@ export function ImportMovementsButton({
               </div>
 
               <DialogFooter className="border-t pt-4">
-                <Button variant="outline" onClick={resetDialog}>
-                  Cancel
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setStep(1)}
+                >
+                  <ArrowLeft />
+                  Back
                 </Button>
-                <Button type="submit" className="ml-2">
-                  Import movements
+                <Button
+                  type="button"
+                  className="ml-2"
+                  disabled={importCount === 0}
+                  onClick={processImport}
+                >
+                  Import {importCount}{" "}
+                  {importCount === 1 ? "movement" : "movements"}
                 </Button>
               </DialogFooter>
-            </form>
+            </div>
           )}
         </DialogContent>
       </Dialog>
