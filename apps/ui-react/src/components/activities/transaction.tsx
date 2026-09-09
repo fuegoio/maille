@@ -11,6 +11,12 @@ import { FundSelect } from "@/components/funds/fund-select";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -145,226 +151,240 @@ export function Transaction({
   const toHasChips = showMetadata && (toNeedsSub || Boolean(isToBalance));
 
   return (
-    <div
-      ref={rootRef}
-      className={cn(
-        "@container relative text-sm",
-        variant === "card" && "rounded-lg border bg-muted/30 p-3 shadow-md",
-        variant === "flat" && "rounded-lg border bg-muted/30 p-3",
-        isStaged && variant === "card" && "border-dashed opacity-70",
-        isStaged && variant === "flat" && "border-dashed",
-        isFocused && "border-primary",
-        className,
-      )}
-    >
-      <div className="grid grid-cols-1 gap-2 @lg:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)_auto] @lg:items-start @lg:gap-x-3">
-        {/* From side: its account, and its metadata grouped under it */}
-        <div className="flex min-w-0 flex-col gap-2">
-          <AccountSelect
-            className="w-full min-w-0"
-            value={transaction.fromAccount}
-            onChange={(account) =>
-              onUpdate?.({
-                fromAccount: account,
-                fromCounterparty: null,
-                fromAsset: null,
-              })
-            }
-          />
-          {fromHasChips && (
-            <div className="ml-[17px] flex flex-col gap-1.5 border-l pl-3">
-              {subRowExists &&
-                (fromAccount?.type === AccountType.LIABILITIES ? (
-                  <MetadataChip label="Counterparty">
-                    <CounterpartiesSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      accountId={transaction.fromAccount}
-                      value={transaction.fromCounterparty || ""}
-                      onValueChange={(counterparty) =>
-                        onUpdate?.({
-                          fromCounterparty: counterparty,
-                        })
-                      }
-                      placeholder="None"
-                    />
-                  </MetadataChip>
-                ) : fromAccount?.type === AccountType.ASSETS ? (
-                  <MetadataChip label="Asset">
-                    <AssetSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      accountId={transaction.fromAccount}
-                      value={transaction.fromAsset || ""}
-                      onValueChange={(asset) =>
-                        onUpdate?.({
-                          fromAsset: asset,
-                        })
-                      }
-                      placeholder="None"
-                    />
-                  </MetadataChip>
-                ) : (
-                  <div className="h-7" aria-hidden="true" />
-                ))}
-              {fundRowExists &&
-                (isFromBalance ? (
-                  <MetadataChip label="Fund">
-                    <FundSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      value={trackedFromFund?.id ?? null}
-                      onValueChange={(fundId) =>
-                        handleFundChange("from", fundId)
-                      }
-                      placeholder="Untracked"
-                      allowEmpty
-                      emptyLabel="Untracked"
-                    />
-                  </MetadataChip>
-                ) : (
-                  <div className="h-7" aria-hidden="true" />
-                ))}
-            </div>
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          ref={rootRef}
+          className={cn(
+            "@container relative text-sm",
+            variant === "card" && "rounded-lg border bg-muted/30 p-3 shadow-md",
+            variant === "flat" && "rounded-lg border bg-muted/30 p-3",
+            isStaged && variant === "card" && "border-dashed opacity-70",
+            isStaged && variant === "flat" && "border-dashed",
+            isFocused && "border-primary",
+            className,
           )}
-        </div>
-
-        <div className="hidden h-8 items-center justify-center @lg:flex">
-          <MoveRight className="size-4 text-muted-foreground" />
-        </div>
-        <div className="flex justify-center @lg:hidden">
-          <MoveDown className="size-4 text-muted-foreground" />
-        </div>
-
-        {/* To side: its account, and its metadata grouped under it */}
-        <div className="flex min-w-0 flex-col gap-2">
-          <AccountSelect
-            className="w-full min-w-0"
-            value={transaction.toAccount}
-            onChange={(account) =>
-              onUpdate?.({
-                toAccount: account,
-                toCounterparty: null,
-                toAsset: null,
-              })
-            }
-          />
-          {toHasChips && (
-            <div className="ml-[17px] flex flex-col gap-1.5 border-l pl-3">
-              {subRowExists &&
-                (toAccount?.type === AccountType.LIABILITIES ? (
-                  <MetadataChip label="Counterparty">
-                    <CounterpartiesSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      accountId={transaction.toAccount}
-                      value={transaction.toCounterparty || ""}
-                      onValueChange={(counterparty) =>
-                        onUpdate?.({
-                          toCounterparty: counterparty,
-                        })
-                      }
-                      placeholder="None"
-                    />
-                  </MetadataChip>
-                ) : toAccount?.type === AccountType.ASSETS ? (
-                  <MetadataChip label="Asset">
-                    <AssetSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      accountId={transaction.toAccount}
-                      value={transaction.toAsset || ""}
-                      onValueChange={(asset) =>
-                        onUpdate?.({
-                          toAsset: asset,
-                        })
-                      }
-                      placeholder="None"
-                    />
-                  </MetadataChip>
-                ) : (
-                  <div className="h-7" aria-hidden="true" />
-                ))}
-              {fundRowExists &&
-                (isToBalance ? (
-                  <MetadataChip label="Fund">
-                    <FundSelect
-                      size="sm"
-                      className="w-fit text-xs"
-                      value={trackedToFund?.id ?? null}
-                      onValueChange={(fundId) => handleFundChange("to", fundId)}
-                      placeholder="Untracked"
-                      allowEmpty
-                      emptyLabel="Untracked"
-                    />
-                  </MetadataChip>
-                ) : (
-                  <div className="h-7" aria-hidden="true" />
-                ))}
+        >
+          <div className="grid grid-cols-1 gap-2 @lg:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)_auto] @lg:items-start @lg:gap-x-3">
+            {/* From side: its account, and its metadata grouped under it */}
+            <div className="flex min-w-0 flex-col gap-2">
+              <AccountSelect
+                className="w-full min-w-0"
+                value={transaction.fromAccount}
+                onChange={(account) =>
+                  onUpdate?.({
+                    fromAccount: account,
+                    fromCounterparty: null,
+                    fromAsset: null,
+                  })
+                }
+              />
+              {fromHasChips && (
+                <div className="ml-[17px] flex flex-col gap-1.5 border-l pl-3">
+                  {subRowExists &&
+                    (fromAccount?.type === AccountType.LIABILITIES ? (
+                      <MetadataChip label="Counterparty">
+                        <CounterpartiesSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          accountId={transaction.fromAccount}
+                          value={transaction.fromCounterparty || ""}
+                          onValueChange={(counterparty) =>
+                            onUpdate?.({
+                              fromCounterparty: counterparty,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : fromAccount?.type === AccountType.ASSETS ? (
+                      <MetadataChip label="Asset">
+                        <AssetSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          accountId={transaction.fromAccount}
+                          value={transaction.fromAsset || ""}
+                          onValueChange={(asset) =>
+                            onUpdate?.({
+                              fromAsset: asset,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : (
+                      <div className="h-7" aria-hidden="true" />
+                    ))}
+                  {fundRowExists &&
+                    (isFromBalance ? (
+                      <MetadataChip label="Fund">
+                        <FundSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          value={trackedFromFund?.id ?? null}
+                          onValueChange={(fundId) =>
+                            handleFundChange("from", fundId)
+                          }
+                          placeholder="Untracked"
+                          allowEmpty
+                          emptyLabel="Untracked"
+                        />
+                      </MetadataChip>
+                    ) : (
+                      <div className="h-7" aria-hidden="true" />
+                    ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* The leg's amount and actions, on the flow line */}
-        <div className="flex shrink-0 items-center justify-end gap-1">
-          <AmountInput
-            value={transaction.amount}
-            onChange={(amount) => {
-              onUpdate?.({
-                amount,
-              });
-            }}
-            mode="cell"
-            className="w-26"
-          />
+            <div className="hidden h-8 items-center justify-center @lg:flex">
+              <MoveRight className="size-4 text-muted-foreground" />
+            </div>
+            <div className="flex justify-center @lg:hidden">
+              <MoveDown className="size-4 text-muted-foreground" />
+            </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                aria-label="Transaction actions"
-              >
-                <Ellipsis />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => onDelete?.()}
-              >
-                <TrashIcon />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+            {/* To side: its account, and its metadata grouped under it */}
+            <div className="flex min-w-0 flex-col gap-2">
+              <AccountSelect
+                className="w-full min-w-0"
+                value={transaction.toAccount}
+                onChange={(account) =>
+                  onUpdate?.({
+                    toAccount: account,
+                    toCounterparty: null,
+                    toAsset: null,
+                  })
+                }
+              />
+              {toHasChips && (
+                <div className="ml-[17px] flex flex-col gap-1.5 border-l pl-3">
+                  {subRowExists &&
+                    (toAccount?.type === AccountType.LIABILITIES ? (
+                      <MetadataChip label="Counterparty">
+                        <CounterpartiesSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          accountId={transaction.toAccount}
+                          value={transaction.toCounterparty || ""}
+                          onValueChange={(counterparty) =>
+                            onUpdate?.({
+                              toCounterparty: counterparty,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : toAccount?.type === AccountType.ASSETS ? (
+                      <MetadataChip label="Asset">
+                        <AssetSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          accountId={transaction.toAccount}
+                          value={transaction.toAsset || ""}
+                          onValueChange={(asset) =>
+                            onUpdate?.({
+                              toAsset: asset,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : (
+                      <div className="h-7" aria-hidden="true" />
+                    ))}
+                  {fundRowExists &&
+                    (isToBalance ? (
+                      <MetadataChip label="Fund">
+                        <FundSelect
+                          size="sm"
+                          className="w-fit text-xs"
+                          value={trackedToFund?.id ?? null}
+                          onValueChange={(fundId) =>
+                            handleFundChange("to", fundId)
+                          }
+                          placeholder="Untracked"
+                          allowEmpty
+                          emptyLabel="Untracked"
+                        />
+                      </MetadataChip>
+                    ) : (
+                      <div className="h-7" aria-hidden="true" />
+                    ))}
+                </div>
+              )}
+            </div>
 
-      {isFocused && (
-        <>
-          {/* Deep-link focus: the hairline border thickens into a primary
+            {/* The leg's amount and actions, on the flow line */}
+            <div className="flex shrink-0 items-center justify-end gap-1">
+              <AmountInput
+                value={transaction.amount}
+                onChange={(amount) => {
+                  onUpdate?.({
+                    amount,
+                  });
+                }}
+                mode="cell"
+                className="w-26"
+              />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Transaction actions"
+                  >
+                    <Ellipsis />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onDelete?.()}
+                  >
+                    <TrashIcon />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {isFocused && (
+            <>
+              {/* Deep-link focus: the hairline border thickens into a primary
               ring, drawn as an overlay so the row never shifts */}
-          <motion.div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-primary"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-          />
-          {/* A one-shot tint flash settling into the steady ring, so the
+              <motion.div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-lg ring-2 ring-primary"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+              />
+              {/* A one-shot tint flash settling into the steady ring, so the
               arrival reads as "you came here for this leg" */}
-          {!prefersReducedMotion && (
-            <motion.div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 rounded-lg bg-primary/10"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            />
+              {!prefersReducedMotion && (
+                <motion.div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 rounded-lg bg-primary/10"
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                />
+              )}
+            </>
           )}
-        </>
+        </div>
+      </ContextMenuTrigger>
+      {onDelete && (
+        <ContextMenuContent>
+          <ContextMenuItem variant="destructive" onClick={() => onDelete()}>
+            <TrashIcon />
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
       )}
-    </div>
+    </ContextMenu>
   );
 }
