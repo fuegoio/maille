@@ -240,7 +240,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
       </ChartContainer>
 
       {fundSpread.length > 1 && (
-        <div className="border-t px-6 pb-6">
+        <div className="border-t p-6">
           <div className="text-xs font-medium text-muted-foreground">
             Across funds
           </div>
