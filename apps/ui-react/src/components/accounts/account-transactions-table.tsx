@@ -15,6 +15,7 @@ import * as React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
@@ -44,6 +45,9 @@ export function AccountTransactionsTable({
   const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
   const search = useSearch((state) => state.search);
+  const scrollRef = useScrollRestoration<HTMLDivElement>(
+    `transactions:${accountId}`,
+  );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
   const [selectedTransactions, setSelectedTransactions] = React.useState<
     string[]
@@ -205,7 +209,7 @@ export function AccountTransactionsTable({
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <ScrollArea className="flex-1 pb-40">
+        <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
           {transactionsWithGroups.map((item) => (
             <React.Fragment key={item.id}>
               {item.itemType === "group" ? (
