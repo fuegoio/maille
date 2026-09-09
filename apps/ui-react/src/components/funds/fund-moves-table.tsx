@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
+import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -18,6 +19,7 @@ import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useSearch } from "@/stores/search";
 
+import { useFundMovesBulkActions } from "./fund-moves-bulk-actions";
 import { FundMovesSelection } from "./fund-moves-selection";
 
 /** A fund move as seen from one fund: which activity, which side, how much. */
@@ -65,6 +67,10 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
   const [selectedFundMoves, setSelectedFundMoves] = React.useState<string[]>(
     [],
+  );
+
+  const bulkActions = useFundMovesBulkActions(selectedFundMoves, () =>
+    setSelectedFundMoves([]),
   );
 
   const selectFundMove = (fundMoveId: string) => {
@@ -312,20 +318,35 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                   currencyFormatter={currencyFormatter}
                 />
               ) : (
-                <FundMoveLine
-                  move={item}
-                  funds={funds}
-                  currencyFormatter={currencyFormatter}
-                  to={item.activity ? "/activities/$id" : undefined}
-                  params={item.activity ? { id: item.activity.id } : undefined}
-                  search={
-                    item.activity && item.transaction
-                      ? { transaction: item.transaction }
-                      : undefined
-                  }
-                  checked={selectedFundMoves.includes(item.id)}
-                  onCheckedChange={() => selectFundMove(item.id)}
-                />
+                <BulkActionsContextMenu
+                  actions={bulkActions}
+                  onActionComplete={() => setSelectedFundMoves([])}
+                >
+                  <div
+                    onContextMenu={() => {
+                      if (!selectedFundMoves.includes(item.id)) {
+                        setSelectedFundMoves([item.id]);
+                      }
+                    }}
+                  >
+                    <FundMoveLine
+                      move={item}
+                      funds={funds}
+                      currencyFormatter={currencyFormatter}
+                      to={item.activity ? "/activities/$id" : undefined}
+                      params={
+                        item.activity ? { id: item.activity.id } : undefined
+                      }
+                      search={
+                        item.activity && item.transaction
+                          ? { transaction: item.transaction }
+                          : undefined
+                      }
+                      checked={selectedFundMoves.includes(item.id)}
+                      onCheckedChange={() => selectFundMove(item.id)}
+                    />
+                  </div>
+                </BulkActionsContextMenu>
               )}
             </React.Fragment>
           ))}

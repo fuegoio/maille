@@ -6,6 +6,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
@@ -15,6 +16,7 @@ import { useViews } from "@/stores/views";
 
 import { MovementsFilters } from "./filters/movements-filters";
 import { MovementLine } from "./movement-line";
+import { useMovementsBulkActions } from "./movements-bulk-actions";
 import { MovementsSelection } from "./movements-selection";
 
 interface MovementsTableProps {
@@ -38,6 +40,10 @@ export function MovementsTable({
     [],
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
+
+  const bulkActions = useMovementsBulkActions(selectedMovements, () =>
+    setSelectedMovements([]),
+  );
 
   const movementsFiltered = React.useMemo(() => {
     return movements
@@ -216,21 +222,47 @@ export function MovementsTable({
                         <div className="flex-1" />
                       </div>
                     ) : (
-                      <MovementLine
-                        movement={item}
-                        checked={selectedMovements.includes(item.id)}
-                        onCheckedChange={() => selectMovement(item.id)}
-                      />
+                      <BulkActionsContextMenu
+                        actions={bulkActions}
+                        onActionComplete={() => setSelectedMovements([])}
+                      >
+                        <div
+                          onContextMenu={() => {
+                            if (!selectedMovements.includes(item.id)) {
+                              setSelectedMovements([item.id]);
+                            }
+                          }}
+                        >
+                          <MovementLine
+                            movement={item}
+                            checked={selectedMovements.includes(item.id)}
+                            onCheckedChange={() => selectMovement(item.id)}
+                          />
+                        </div>
+                      </BulkActionsContextMenu>
                     )}
                   </React.Fragment>
                 ))
               : movementsSorted.map((movement) => (
-                  <MovementLine
+                  <BulkActionsContextMenu
                     key={movement.id}
-                    movement={movement}
-                    checked={selectedMovements.includes(movement.id)}
-                    onCheckedChange={() => selectMovement(movement.id)}
-                  />
+                    actions={bulkActions}
+                    onActionComplete={() => setSelectedMovements([])}
+                  >
+                    <div
+                      onContextMenu={() => {
+                        if (!selectedMovements.includes(movement.id)) {
+                          setSelectedMovements([movement.id]);
+                        }
+                      }}
+                    >
+                      <MovementLine
+                        movement={movement}
+                        checked={selectedMovements.includes(movement.id)}
+                        onCheckedChange={() => selectMovement(movement.id)}
+                      />
+                    </div>
+                  </BulkActionsContextMenu>
                 ))}
           </ScrollArea>
         ) : (

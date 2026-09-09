@@ -3,27 +3,12 @@ import type { FundMove } from "@maille/core/funds";
 import { DollarSign, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
 
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from "@/components/ui/command";
+import type { BulkAction } from "@/components/shared/bulk-actions";
+
 import { updateTransactionMutation } from "@/mutations/activities";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
-
-interface FundMovesCommandPaletteProps {
-  selectedFundMoves: string[];
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onClearSelection?: () => void;
-}
 
 type SelectedFundMove = {
   fundMove: FundMove;
@@ -31,21 +16,10 @@ type SelectedFundMove = {
   transactionId: string;
 };
 
-export function FundMovesCommandPalette({
-  selectedFundMoves,
-  open,
-  onOpenChange,
-  onClearSelection,
-}: FundMovesCommandPaletteProps) {
-  const [search, setSearch] = React.useState("");
-  const [step, setStep] = React.useState<"action" | "value" | "input">(
-    "action",
-  );
-  const [selectedAction, setSelectedAction] = React.useState<string | null>(
-    null,
-  );
-  const [inputValue, setInputValue] = React.useState("");
-
+export function useFundMovesBulkActions(
+  selectedFundMoves: string[],
+  onClearSelection?: () => void,
+): BulkAction[] {
   const mutate = useSync((state) => state.mutate);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
@@ -154,7 +128,6 @@ export function FundMovesCommandPalette({
       if (!transaction) return;
 
       const oldTransaction = { ...transaction };
-
       const remainingFundMoves = (transaction.fundMoves ?? []).filter(
         (move) => move.id !== fundMove.id,
       );
@@ -196,8 +169,12 @@ export function FundMovesCommandPalette({
     });
   }, [selectedFundMovesData, activities, mutate]);
 
-  const actionDefinitions = React.useMemo(() => {
-    const actions = [
+  return React.useMemo(() => {
+    const clearAndComplete = () => {
+      onClearSelection?.();
+    };
+
+    return [
       {
         value: "amount",
         label: "Change amount",
@@ -207,11 +184,13 @@ export function FundMovesCommandPalette({
         defaultValue:
           selectedFundMovesData[0]?.fundMove.amount?.toString() || "",
         shortcut: "A",
-        action: (value: string) => {
+        action: (value?: string) => {
+          if (!value) return;
           const amount = parseFloat(value);
           if (!isNaN(amount)) {
             updateFundMoves({ amount });
           }
+          clearAndComplete();
         },
       },
       {
@@ -232,6 +211,7 @@ export function FundMovesCommandPalette({
             ),
             action: () => {
               updateFundMoves({ fromFund: fund.id });
+              clearAndComplete();
             },
           }));
           fundOptions.push({
@@ -242,6 +222,7 @@ export function FundMovesCommandPalette({
             ),
             action: () => {
               updateFundMoves({ fromFund: null });
+              clearAndComplete();
             },
           });
           return fundOptions;
@@ -265,6 +246,7 @@ export function FundMovesCommandPalette({
             ),
             action: () => {
               updateFundMoves({ toFund: fund.id });
+              clearAndComplete();
             },
           }));
           fundOptions.push({
@@ -275,6 +257,7 @@ export function FundMovesCommandPalette({
             ),
             action: () => {
               updateFundMoves({ toFund: null });
+              clearAndComplete();
             },
           });
           return fundOptions;
@@ -286,157 +269,18 @@ export function FundMovesCommandPalette({
         icon: <Trash2 />,
         type: null,
         shortcut: "Del",
+        variant: "destructive" as const,
         action: () => {
           deleteFundMoves();
+          clearAndComplete();
         },
       },
     ];
-    return actions;
-  }, [selectedFundMovesData, funds, updateFundMoves, deleteFundMoves]);
-
-  const filteredActions = React.useMemo(() => {
-    if (!search) return actionDefinitions;
-    return actionDefinitions.filter((action) =>
-      action.label.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [search, actionDefinitions]);
-
-  const actionValues = React.useMemo(() => {
-    if (!selectedAction) return [];
-    const action = actionDefinitions.find((a) => a.value === selectedAction);
-    return action && action.type === "select" ? action.getValues() : [];
-  }, [selectedAction, actionDefinitions]);
-
-  const filteredValues = React.useMemo(() => {
-    if (!search) return actionValues;
-    return actionValues.filter((value) =>
-      value.label.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [search, actionValues]);
-
-  const handleActionSelect = (actionValue: string) => {
-    const action = actionDefinitions.find((a) => a.value === actionValue);
-    if (action) {
-      if (action.type === "input") {
-        setSelectedAction(actionValue);
-        setStep("input");
-        setInputValue(action.defaultValue || "");
-      } else if (action.type === "select") {
-        setSelectedAction(actionValue);
-        setStep("value");
-        setSearch("");
-      } else if (!action.type) {
-        action.action();
-        onClearSelection?.();
-        onOpenChange(false);
-        setStep("action");
-        setSelectedAction(null);
-        setSearch("");
-      }
-    }
-  };
-
-  const handleInputSubmit = () => {
-    if (selectedAction && inputValue !== null) {
-      const action = actionDefinitions.find((a) => a.value === selectedAction);
-      if (action && action.type === "input") {
-        action.action(inputValue);
-        onOpenChange(false);
-        setStep("action");
-        setSelectedAction(null);
-        setInputValue("");
-        setSearch("");
-      }
-    }
-  };
-
-  return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <Command shouldFilter={false}>
-        {step === "input" ? (
-          <div className="flex items-center">
-            <CommandInput
-              placeholder={
-                actionDefinitions.find((a) => a.value === selectedAction)
-                  ?.placeholder || "Enter value..."
-              }
-              value={inputValue}
-              onValueChange={setInputValue}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleInputSubmit();
-                }
-              }}
-            />
-            <CommandShortcut className="mr-2 text-sm">Enter</CommandShortcut>
-          </div>
-        ) : (
-          <>
-            <CommandInput
-              placeholder={
-                step === "action"
-                  ? "Type a command or search..."
-                  : `Search ${selectedAction}...`
-              }
-              value={search}
-              onValueChange={setSearch}
-            />
-            <div className="h-px w-full bg-border" />
-          </>
-        )}
-
-        <CommandList>
-          {step === "action" && (
-            <>
-              <CommandEmpty>No actions found.</CommandEmpty>
-              <CommandGroup
-                heading={`${selectedFundMovesData.length} fund move${selectedFundMovesData.length > 1 ? "s" : ""} selected`}
-              >
-                {filteredActions.map((action) => (
-                  <CommandItem
-                    key={action.value}
-                    value={action.value}
-                    onSelect={() => handleActionSelect(action.value)}
-                  >
-                    {action.icon}
-                    {action.label}
-                    <CommandShortcut>{action.shortcut}</CommandShortcut>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </>
-          )}
-
-          {step === "value" && (
-            <>
-              <CommandEmpty>No values found.</CommandEmpty>
-              <CommandGroup
-                heading={
-                  actionDefinitions.find((a) => a.value === selectedAction)
-                    ?.label
-                }
-              >
-                {filteredValues.map((value) => (
-                  <CommandItem
-                    key={value.value}
-                    value={value.value}
-                    onSelect={() => {
-                      value.action();
-                      onOpenChange(false);
-                      setStep("action");
-                      setSelectedAction(null);
-                      setSearch("");
-                    }}
-                  >
-                    {value.icon}
-                    {value.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </>
-          )}
-        </CommandList>
-      </Command>
-    </CommandDialog>
-  );
+  }, [
+    selectedFundMovesData,
+    funds,
+    updateFundMoves,
+    deleteFundMoves,
+    onClearSelection,
+  ]);
 }

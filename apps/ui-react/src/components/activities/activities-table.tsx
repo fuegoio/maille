@@ -5,6 +5,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
@@ -14,6 +15,7 @@ import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
+import { useActivitiesBulkActions } from "./activities-bulk-actions";
 import { ActivitiesSelection } from "./activities-selection";
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
@@ -52,6 +54,10 @@ export function ActivitiesTable({
     [],
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
+
+  const bulkActions = useActivitiesBulkActions(selectedActivities, () =>
+    setSelectedActivities([]),
+  );
 
   const activitiesFiltered = React.useMemo(() => {
     return activities
@@ -303,41 +309,73 @@ export function ActivitiesTable({
                         })}
                       </div>
                     ) : (
-                      <ActivityLine
-                        activity={item}
-                        accountFilter={accountFilter}
-                        hideProject={hideProject}
-                        checked={selectedActivities.includes(item.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedActivities((prev) => [...prev, item.id]);
-                          } else {
-                            setSelectedActivities((prev) =>
-                              prev.filter((id) => id !== item.id),
-                            );
-                          }
-                        }}
-                      />
+                      <BulkActionsContextMenu
+                        actions={bulkActions}
+                        onActionComplete={() => setSelectedActivities([])}
+                      >
+                        <div
+                          onContextMenu={() => {
+                            if (!selectedActivities.includes(item.id)) {
+                              setSelectedActivities([item.id]);
+                            }
+                          }}
+                        >
+                          <ActivityLine
+                            activity={item}
+                            accountFilter={accountFilter}
+                            hideProject={hideProject}
+                            checked={selectedActivities.includes(item.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedActivities((prev) => [
+                                  ...prev,
+                                  item.id,
+                                ]);
+                              } else {
+                                setSelectedActivities((prev) =>
+                                  prev.filter((id) => id !== item.id),
+                                );
+                              }
+                            }}
+                          />
+                        </div>
+                      </BulkActionsContextMenu>
                     )}
                   </React.Fragment>
                 ))
               : activitiesSorted.map((activity) => (
-                  <ActivityLine
+                  <BulkActionsContextMenu
                     key={activity.id}
-                    activity={activity}
-                    accountFilter={accountFilter}
-                    hideProject={hideProject}
-                    checked={selectedActivities.includes(activity.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedActivities((prev) => [...prev, activity.id]);
-                      } else {
-                        setSelectedActivities((prev) =>
-                          prev.filter((id) => id !== activity.id),
-                        );
-                      }
-                    }}
-                  />
+                    actions={bulkActions}
+                    onActionComplete={() => setSelectedActivities([])}
+                  >
+                    <div
+                      onContextMenu={() => {
+                        if (!selectedActivities.includes(activity.id)) {
+                          setSelectedActivities([activity.id]);
+                        }
+                      }}
+                    >
+                      <ActivityLine
+                        activity={activity}
+                        accountFilter={accountFilter}
+                        hideProject={hideProject}
+                        checked={selectedActivities.includes(activity.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedActivities((prev) => [
+                              ...prev,
+                              activity.id,
+                            ]);
+                          } else {
+                            setSelectedActivities((prev) =>
+                              prev.filter((id) => id !== activity.id),
+                            );
+                          }
+                        }}
+                      />
+                    </div>
+                  </BulkActionsContextMenu>
                 ))}
           </ScrollArea>
         ) : (
