@@ -11,12 +11,12 @@ import {
 import { useSearch } from "@/stores/search";
 
 export function SearchBar() {
-  const [visible, setVisible] = React.useState(false);
-  const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
-
   const search = useSearch((state) => state.search);
   const setSearch = useSearch((state) => state.setSearch);
   const clearSearch = useSearch((state) => state.clearSearch);
+
+  const [visible, setVisible] = React.useState(search !== "");
+  const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
 
   useHotkey("Mod+F", (event) => {
     event.preventDefault();
@@ -39,12 +39,6 @@ export function SearchBar() {
       handleClose();
     }
   };
-
-  React.useEffect(() => {
-    return () => {
-      clearSearch();
-    };
-  }, [clearSearch]);
 
   return (
     <AnimatePresence>
