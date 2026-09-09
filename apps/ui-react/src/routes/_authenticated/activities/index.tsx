@@ -34,7 +34,7 @@ function ActivitiesPage() {
   return (
     <SidebarInset className="min-w-0 shrink">
       <header className="flex h-12 shrink-0 items-center gap-1 border-b pr-2 pl-3 sm:gap-2 sm:pl-4">
-        <SidebarTrigger className="sm:mr-1" />
+        <SidebarTrigger className="mr-1" />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -56,7 +56,7 @@ function ActivitiesPage() {
         >
           {showTransactions ? "Hide" : "Show"} transactions
         </Button>
-        <div className="hidden h-full w-px shrink-0 bg-border sm:block" />
+        <div className="hidden h-full w-px bg-border sm:block" />
         <ExportActivitiesButton
           viewId={activityView.id}
           activities={activities}

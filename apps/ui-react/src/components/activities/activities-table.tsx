@@ -243,13 +243,13 @@ export function ActivitiesTable({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <ActivitiesFilters
         viewId={activityView.id}
         activities={activitiesFiltered}
       />
 
-      <div className="flex h-full flex-1 flex-col overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
             {grouping
@@ -259,7 +259,7 @@ export function ActivitiesTable({
                       <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
                         <ChevronDown
                           className={cn(
-                            "mr-1 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
+                            "mr-2 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
                             groupsFolded.includes(item.id) &&
                               "-rotate-90 opacity-100",
                           )}

@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, type ReactNode } from "react";
+import { AccountType } from "@maille/core/accounts";
+import { useMemo, useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
@@ -22,14 +23,24 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
 import { createCounterpartyMutation } from "@/mutations/counterparties";
+import { useAccounts } from "@/stores/accounts";
 import { useSync } from "@/stores/sync";
 
-// Define the form schema for creating a counterparty
 const createCounterpartySchema = z.object({
   name: z.string().min(1, "Name is required"),
+  account: z.string().min(1, "Account is required"),
   description: z.string().optional(),
   contact: z.string().optional(),
   initialBalance: z.number().optional(),
@@ -38,17 +49,22 @@ const createCounterpartySchema = z.object({
 type CreateCounterpartyFormValues = z.infer<typeof createCounterpartySchema>;
 
 interface AddCounterpartyModalProps {
-  accountId: string;
   children: ReactNode;
+  accountId?: string;
 }
 
 export function AddCounterpartyModal({
-  accountId,
   children,
+  accountId,
 }: AddCounterpartyModalProps) {
   const mutate = useSync((state) => state.mutate);
-
+  const accounts = useAccounts((state) => state.accounts);
   const [isOpen, setIsOpen] = useState(false);
+
+  const liabilityAccounts = useMemo(
+    () => accounts.filter((a) => a.type === AccountType.LIABILITIES),
+    [accounts],
+  );
 
   const {
     handleSubmit,
@@ -59,6 +75,7 @@ export function AddCounterpartyModal({
     resolver: zodResolver(createCounterpartySchema),
     defaultValues: {
       name: "",
+      account: accountId ?? "",
       description: "",
       contact: "",
       initialBalance: undefined,
@@ -68,7 +85,7 @@ export function AddCounterpartyModal({
   const onSubmit = async (data: CreateCounterpartyFormValues) => {
     const counterparty = {
       id: crypto.randomUUID(),
-      account: accountId,
+      account: data.account,
       name: data.name,
       description: data.description || null,
       contact: data.contact || null,
@@ -116,6 +133,41 @@ export function AddCounterpartyModal({
               </Field>
             )}
           />
+
+          {!accountId && (
+            <Controller
+              name="account"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Account</FieldLabel>
+                  <FieldContent>
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a liability account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Liabilities</SelectLabel>
+                          {liabilityAccounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FieldContent>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          )}
 
           <Controller
             name="contact"
