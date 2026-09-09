@@ -7,6 +7,7 @@ import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
@@ -43,6 +44,9 @@ export function ActivitiesTable({
 
   const activityView = useViews((state) => state.getActivityView(viewId));
   const search = useSearch((state) => state.search);
+  const scrollRef = useScrollRestoration<HTMLDivElement>(
+    `activities:${viewId}`,
+  );
 
   const [selectedActivities, setSelectedActivities] = React.useState<string[]>(
     [],
@@ -247,7 +251,7 @@ export function ActivitiesTable({
 
       <div className="flex h-full flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
-          <ScrollArea className="flex-1 pb-40">
+          <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
             {grouping
               ? activitiesWithGroups.map((item) => (
                   <React.Fragment key={item.id}>

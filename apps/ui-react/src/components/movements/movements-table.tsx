@@ -7,6 +7,7 @@ import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { useSearch } from "@/stores/search";
@@ -32,6 +33,7 @@ export function MovementsTable({
   const router = useRouter();
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
+  const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
   const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
     [],
   );
@@ -185,7 +187,7 @@ export function MovementsTable({
 
       <div className="flex flex-1 flex-col overflow-y-auto">
         {movementsFiltered.length !== 0 ? (
-          <ScrollArea className="flex-1 pb-40">
+          <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
             {grouping
               ? movementsWithGroups.map((item) => (
                   <React.Fragment key={item.id}>
