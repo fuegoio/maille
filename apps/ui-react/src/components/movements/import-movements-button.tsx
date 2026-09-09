@@ -118,9 +118,10 @@ export function ImportMovementsButton({
   const [records, setRecords] = React.useState<Record<string, string>[]>([]);
   const [previewRows, setPreviewRows] = React.useState<PreviewRow[]>([]);
   const [importing, setImporting] = React.useState(false);
-  const [importedCount, setImportedCount] = React.useState(0);
+  const [importMovementIds, setImportMovementIds] = React.useState<string[]>(
+    [],
+  );
   const mutate = useSync((state) => state.mutate);
-  const mutationsQueueLength = useSync((state) => state.mutationsQueue.length);
   const movements = useMovements((state) => state.movements);
   const currencyFormatter = useCurrencyFormatter();
 
@@ -260,20 +261,22 @@ export function ImportMovementsButton({
 
   const toImport = previewRows.filter((r) => !r.skip);
 
-  const initialQueueLength = React.useRef(0);
-  const importTarget = React.useRef(0);
+  // Derive imported count from the movements store — each movement appears
+  // in the store via optimistic update when its mutation is fired
+  const movementIds = React.useMemo(
+    () => new Set(movements.map((m) => m.id)),
+    [movements],
+  );
+
+  const importedCount = importMovementIds.filter((id) =>
+    movementIds.has(id),
+  ).length;
+  const allImported =
+    importMovementIds.length > 0 && importedCount === importMovementIds.length;
 
   const processImport = () => {
     const { account } = getValues();
-
-    setImporting(true);
-    setImportedCount(0);
-    importTarget.current = toImport.length;
-
-    // Capture the queue length BEFORE adding mutations so we can detect
-    // when our N mutations have drained
-    const queueBefore = useSync.getState().mutationsQueue.length;
-    initialQueueLength.current = queueBefore;
+    const ids: string[] = [];
 
     toImport.forEach((row) => {
       const movement = {
@@ -283,6 +286,7 @@ export function ImportMovementsButton({
         account,
         amount: row.amount,
       };
+      ids.push(movement.id);
 
       mutate({
         name: "createMovement",
@@ -298,23 +302,16 @@ export function ImportMovementsButton({
         ],
       });
     });
+
+    setImportMovementIds(ids);
+    setImporting(true);
   };
 
+  // Fire onImported callback once all movements have landed in the store
   React.useEffect(() => {
-    if (!importing) return;
-
-    const completed = initialQueueLength.current - mutationsQueueLength;
-    const target = importTarget.current;
-    setImportedCount(Math.max(0, Math.min(completed, target)));
-
-    if (mutationsQueueLength <= initialQueueLength.current - target) {
-      setImporting(false);
-      setImportedCount(target);
-      if (onImported) onImported();
-      const timer = setTimeout(() => resetDialog(), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [importing, mutationsQueueLength]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!importing || !allImported) return;
+    if (onImported) onImported();
+  }, [importing, allImported]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetDialog = () => {
     setDialogOpen(false);
@@ -324,9 +321,7 @@ export function ImportMovementsButton({
     setRecords([]);
     setPreviewRows([]);
     setImporting(false);
-    setImportedCount(0);
-    initialQueueLength.current = 0;
-    importTarget.current = 0;
+    setImportMovementIds([]);
     reset({
       account: "",
       mapping: {
@@ -355,7 +350,7 @@ export function ImportMovementsButton({
       <Dialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          if (!open && !importing) resetDialog();
+          if (!open && (!importing || allImported)) resetDialog();
           else if (open) setDialogOpen(true);
         }}
       >
@@ -638,8 +633,14 @@ export function ImportMovementsButton({
                       return previewRows.map((row) => {
                         const isImportingRow = !row.skip;
                         const rowImportIdx = isImportingRow ? importIdx++ : -1;
+                        const rowMovementId =
+                          rowImportIdx >= 0
+                            ? importMovementIds[rowImportIdx]
+                            : undefined;
                         const rowDone =
-                          importing && rowImportIdx < importedCount;
+                          importing &&
+                          rowMovementId &&
+                          movementIds.has(rowMovementId);
                         const rowPending =
                           importing && isImportingRow && !rowDone;
 
@@ -693,33 +694,41 @@ export function ImportMovementsButton({
               </div>
 
               <DialogFooter className="shrink-0 border-t pt-4">
-                <Button
-                  variant="outline"
-                  type="button"
-                  disabled={importing}
-                  onClick={() => setStep(1)}
-                >
-                  <ArrowLeft />
-                  Back
-                </Button>
-                <Button
-                  type="button"
-                  className="ml-2"
-                  disabled={importCount === 0 || importing}
-                  onClick={processImport}
-                >
-                  {importing ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Importing {importedCount}/{toImport.length}
-                    </>
-                  ) : (
-                    <>
-                      Import {importCount}{" "}
-                      {importCount === 1 ? "movement" : "movements"}
-                    </>
-                  )}
-                </Button>
+                {allImported ? (
+                  <Button type="button" variant="outline" onClick={resetDialog}>
+                    Close
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={importing}
+                      onClick={() => setStep(1)}
+                    >
+                      <ArrowLeft />
+                      Back
+                    </Button>
+                    <Button
+                      type="button"
+                      className="ml-2"
+                      disabled={importCount === 0 || importing}
+                      onClick={processImport}
+                    >
+                      {importing ? (
+                        <>
+                          <Loader2 className="animate-spin" />
+                          Importing {importedCount}/{toImport.length}
+                        </>
+                      ) : (
+                        <>
+                          Import {importCount}{" "}
+                          {importCount === 1 ? "movement" : "movements"}
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
               </DialogFooter>
             </div>
           )}
