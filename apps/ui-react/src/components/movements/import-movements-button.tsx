@@ -329,49 +329,44 @@ export function ImportMovementsButton({
       >
         <DialogContent
           className={cn(
-            "max-h-[85vh] overflow-hidden sm:max-w-2xl",
+            "flex max-h-[85vh] flex-col overflow-hidden sm:max-w-2xl",
             step === 2 && "sm:max-w-3xl",
           )}
         >
-          <DialogHeader>
+          <DialogHeader className="shrink-0">
             <DialogTitle>Import movements from a CSV</DialogTitle>
-            {step > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                {stepLabels.slice(1).map((label, i) => {
-                  const stepNum = i + 1;
-                  const isActive = step === stepNum;
-                  return (
-                    <React.Fragment key={label}>
-                      {i > 0 && (
-                        <ArrowRight className="size-3 text-muted-foreground/50" />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {stepLabels.map((label, i) => {
+                const isActive = step === i;
+                return (
+                  <React.Fragment key={label}>
+                    {i > 0 && (
+                      <ArrowRight className="size-3 text-muted-foreground/50" />
+                    )}
+                    <span
+                      className={cn(
+                        "font-medium",
+                        isActive ? "text-foreground" : "text-muted-foreground",
                       )}
-                      <span
-                        className={cn(
-                          "font-medium",
-                          isActive
-                            ? "text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {label}
-                      </span>
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            )}
+                    >
+                      {label}
+                    </span>
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </DialogHeader>
 
           {step === 0 ? (
-            <div className="pt-1 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto pt-1 pb-4">
               <UploadDropZone onFile={handleInputFile} />
             </div>
           ) : step === 1 ? (
             <form
               onSubmit={handleSubmit(goToPreview)}
-              className="flex min-w-0 flex-col"
+              className="flex min-h-0 min-w-0 flex-1 flex-col"
             >
-              <div className="overflow-y-auto px-1">
+              <div className="min-h-0 flex-1 overflow-y-auto px-1">
                 <FieldGroup>
                   <Controller
                     name="account"
@@ -542,7 +537,7 @@ export function ImportMovementsButton({
                 </FieldGroup>
               </div>
 
-              <DialogFooter className="border-t pt-4">
+              <DialogFooter className="shrink-0 border-t pt-4">
                 <Button variant="outline" type="button" onClick={resetDialog}>
                   Cancel
                 </Button>
@@ -553,7 +548,7 @@ export function ImportMovementsButton({
               </DialogFooter>
             </form>
           ) : (
-            <div className="flex min-w-0 flex-col">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
               <div className="flex items-center gap-3 border-b px-1 pb-3 text-sm">
                 <span className="font-medium text-foreground">
                   {importCount} to import
@@ -571,7 +566,7 @@ export function ImportMovementsButton({
                 )}
               </div>
 
-              <div className="max-h-[45vh] overflow-auto">
+              <div className="min-h-0 flex-1 overflow-auto">
                 <table className="w-full border-collapse">
                   <thead className="sticky top-0 z-10 bg-background">
                     <tr className="border-b">
@@ -642,7 +637,7 @@ export function ImportMovementsButton({
                 </table>
               </div>
 
-              <DialogFooter className="border-t pt-4">
+              <DialogFooter className="shrink-0 border-t pt-4">
                 <Button
                   variant="outline"
                   type="button"
