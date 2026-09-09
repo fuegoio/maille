@@ -1,11 +1,13 @@
 import type { FundMove } from "@maille/core/funds";
 
 import { getAllocationDate } from "@maille/core/funds";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
@@ -15,6 +17,8 @@ import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useSearch } from "@/stores/search";
+
+import { FundMovesSelection } from "./fund-moves-selection";
 
 /** A fund move as seen from one fund: which activity, which side, how much. */
 type FundMoveWithActivity = FundMove & {
@@ -59,6 +63,40 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const user = useAuth((state) => state.user);
   const search = useSearch((state) => state.search);
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
+  const [selectedFundMoves, setSelectedFundMoves] = React.useState<string[]>(
+    [],
+  );
+
+  const selectFundMove = (fundMoveId: string) => {
+    setSelectedFundMoves((prev) =>
+      prev.includes(fundMoveId)
+        ? prev.filter((id) => id !== fundMoveId)
+        : [...prev, fundMoveId],
+    );
+  };
+
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedFundMoves.length > 0) {
+        setSelectedFundMoves([]);
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      setSelectedFundMoves(moves.map((m) => m.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
     // A move tied to a transaction belongs to the activity holding it
@@ -285,12 +323,19 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                       ? { transaction: item.transaction }
                       : undefined
                   }
+                  checked={selectedFundMoves.includes(item.id)}
+                  onCheckedChange={() => selectFundMove(item.id)}
                 />
               )}
             </React.Fragment>
           ))}
         </ScrollArea>
       </div>
+
+      <FundMovesSelection
+        selectedFundMoves={selectedFundMoves}
+        onClearSelection={() => setSelectedFundMoves([])}
+      />
     </div>
   );
 }
@@ -369,6 +414,8 @@ function FundMoveLine({
   to,
   params,
   search,
+  checked,
+  onCheckedChange,
 }: {
   move: FundMoveWithActivity;
   funds: { id: string; name: string; color: string }[];
@@ -376,6 +423,8 @@ function FundMoveLine({
   to?: string;
   params?: Record<string, string>;
   search?: Record<string, string>;
+  checked: boolean;
+  onCheckedChange: () => void;
 }) {
   const isInflow = move.direction === "in";
   const amount = isInflow ? move.amount : -move.amount;
@@ -404,11 +453,28 @@ function FundMoveLine({
 
   const className = cn(
     "group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+    checked && "bg-primary/30 hover:bg-primary/40",
     to && "cursor-pointer",
   );
 
   const content = (
     <>
+      <Checkbox
+        checked={checked}
+        onCheckedChange={(checked) =>
+          checked != "indeterminate" && onCheckedChange()
+        }
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onCheckedChange();
+        }}
+        className={cn(
+          "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+          checked && "opacity-100",
+        )}
+      />
+
       <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
         <div
           className={cn(
@@ -426,31 +492,38 @@ function FundMoveLine({
 
         {move.activity ? (
           <>
-            <div className="min-w-0 truncate font-medium">
-              {move.activity.name}
-            </div>
-            <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-              <span className="text-xs">{isInflow ? "from" : "to"}</span>
-              {renderCounterpart()}
-            </div>
-            {move.note && (
-              <div
-                className="hidden min-w-0 truncate text-muted-foreground md:block"
-                title={move.note}
-              >
-                {move.note}
+            <Link
+              to={to as never}
+              params={params as never}
+              search={search as never}
+              className="flex min-w-0 flex-1 items-center gap-2 truncate"
+            >
+              <div className="min-w-0 truncate font-medium">
+                {move.activity.name}
               </div>
-            )}
-            <div className="flex-1" />
+              <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+                <span className="text-xs">{isInflow ? "from" : "to"}</span>
+                {renderCounterpart()}
+              </div>
+              {move.note && (
+                <div
+                  className="hidden min-w-0 truncate text-muted-foreground md:block"
+                  title={move.note}
+                >
+                  {move.note}
+                </div>
+              )}
+              <div className="flex-1" />
 
-            {/* The transaction's account movement, when the row is wide */}
-            {move.accounts && (
-              <div className="hidden shrink-0 items-center gap-1.5 text-muted-foreground @3xl:flex">
-                <AccountFlowLabel accountId={move.accounts.from} />
-                <MoveRight className="size-3.5 shrink-0" />
-                <AccountFlowLabel accountId={move.accounts.to} />
-              </div>
-            )}
+              {/* The transaction's account movement, when the row is wide */}
+              {move.accounts && (
+                <div className="hidden shrink-0 items-center gap-1.5 text-muted-foreground @3xl:flex">
+                  <AccountFlowLabel accountId={move.accounts.from} />
+                  <MoveRight className="size-3.5 shrink-0" />
+                  <AccountFlowLabel accountId={move.accounts.to} />
+                </div>
+              )}
+            </Link>
           </>
         ) : (
           <>
@@ -479,17 +552,8 @@ function FundMoveLine({
     </>
   );
 
-  if (to) {
-    return (
-      <Link
-        to={to as never}
-        params={params as never}
-        search={search as never}
-        className={className}
-      >
-        {content}
-      </Link>
-    );
+  if (to && move.activity) {
+    return <div className={className}>{content}</div>;
   }
 
   return <div className={className}>{content}</div>;
