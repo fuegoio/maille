@@ -88,7 +88,7 @@ export function ActivityLine({
       to="/activities/$id"
       params={{ id: activity.id }}
       className={cn(
-        "group block shrink border-b border-l-4 border-l-transparent pl-1 transition-colors hover:bg-accent",
+        "group block shrink border-b pl-1 transition-colors hover:bg-accent",
         {
           "bg-primary/30 hover:bg-primary/40": checked,
         },

@@ -358,7 +358,7 @@ function AllocationLine({
   const fund = funds.find((f) => f.id === allocation.fundId);
 
   return (
-    <div className="group @container flex h-10 shrink-0 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent">
+    <div className="group @container flex h-10 shrink-0 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent">
       <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
         <div
           className={cn(
@@ -452,7 +452,7 @@ function FundMoveLine({
   );
 
   const className = cn(
-    "group @container flex h-10 shrink-0 items-center border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+    "group @container flex h-10 shrink-0 items-center border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
     checked && "bg-primary/30 hover:bg-primary/40",
     to && "cursor-pointer",
   );

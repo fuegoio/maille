@@ -36,7 +36,7 @@ export function MovementLine({
       to="/movements/$id"
       params={{ id: movement.id }}
       className={cn(
-        "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b border-l-4 border-l-transparent pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
         {
           "bg-primary/30 hover:bg-primary/40": checked,
         },

@@ -295,7 +295,7 @@ function TransactionLine({
   return (
     <div
       className={cn(
-        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
         checked && "bg-primary/30 hover:bg-primary/40",
       )}
     >
