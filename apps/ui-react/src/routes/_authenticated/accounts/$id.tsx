@@ -1,5 +1,10 @@
 import { AccountType } from "@maille/core/accounts";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useNavigate,
+} from "@tanstack/react-router";
 import {
   ArrowRightLeft,
   ChevronRight,
@@ -11,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import z from "zod";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
@@ -50,8 +56,15 @@ import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useMovements } from "@/stores/movements";
 
+const searchParamsSchema = z.object({
+  tab: z
+    .enum(["transactions", "movements", "assets", "counterparties"])
+    .optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/accounts/$id")({
   component: AccountPage,
+  validateSearch: searchParamsSchema,
   loader: async ({ params }) => {
     const accounts = useAccounts.getState().accounts;
     const account = accounts.find((a) => a.id === params.id);
@@ -70,8 +83,11 @@ function AccountPage() {
     throw notFound();
   }
 
+  const navigate = useNavigate();
+  const { tab } = Route.useSearch();
+  const selectedTab = tab ?? "transactions";
+
   const isMobile = useIsMobile();
-  const [selectedTab, setSelectedTab] = useState("transactions");
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   const movements = useMovements((state) => state.movements);
@@ -132,7 +148,19 @@ function AccountPage() {
 
           <Tabs
             value={selectedTab}
-            onValueChange={setSelectedTab}
+            onValueChange={(value) =>
+              navigate({
+                to: ".",
+                search: (prev) => ({
+                  ...prev,
+                  tab: value as
+                    | "transactions"
+                    | "movements"
+                    | "assets"
+                    | "counterparties",
+                }),
+              })
+            }
             className="min-h-0 flex-1"
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">

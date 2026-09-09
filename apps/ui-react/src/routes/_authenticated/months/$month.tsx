@@ -1,4 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useNavigate,
+} from "@tanstack/react-router";
 import {
   BookMarked,
   ArrowRightLeft,
@@ -6,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import z from "zod";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
@@ -36,8 +42,13 @@ import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
+const searchParamsSchema = z.object({
+  tab: z.enum(["activities", "movements"]).optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/months/$month")({
   component: MonthPage,
+  validateSearch: searchParamsSchema,
   loader: async ({ params }) => {
     if (params.month === "current") {
       const now = new Date();
@@ -69,7 +80,9 @@ export const Route = createFileRoute("/_authenticated/months/$month")({
 
 function MonthPage() {
   const { month, year, monthDate } = Route.useLoaderData();
-  const [selectedTab, setSelectedTab] = useState("activities");
+  const navigate = useNavigate();
+  const { tab } = Route.useSearch();
+  const selectedTab = tab ?? "activities";
 
   const activities = useActivities((state) => state.activities);
   const movements = useMovements((state) => state.movements);
@@ -142,7 +155,15 @@ function MonthPage() {
 
         <Tabs
           value={selectedTab}
-          onValueChange={setSelectedTab}
+          onValueChange={(value) =>
+            navigate({
+              to: ".",
+              search: (prev) => ({
+                ...prev,
+                tab: value as "activities" | "movements",
+              }),
+            })
+          }
           className="min-h-0 flex-1"
         >
           <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
