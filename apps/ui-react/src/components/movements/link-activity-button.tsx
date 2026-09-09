@@ -69,7 +69,6 @@ export function LinkActivityButton({
   const { filteredActivities, hasAmountMatches, matchCount } =
     React.useMemo(() => {
       const baseActivities = activities.filter((activity) => {
-        if (activity.status === "completed") return false;
         if (activity.movements.some((am) => am.movement === movement.id))
           return false;
         if (
@@ -250,8 +249,8 @@ export function LinkActivityButton({
             {filteredActivities.length === 0 && (
               <div className="flex w-full items-center justify-center py-6 text-sm text-muted-foreground">
                 {filterAmount
-                  ? "No activities match the movement amount. Turn off the amount filter to see all unreconciled activities."
-                  : "No unreconciled activities found for this account."}
+                  ? "No activities match the movement amount. Turn off the amount filter to see all activities."
+                  : "No activities found for this account."}
               </div>
             )}
           </div>

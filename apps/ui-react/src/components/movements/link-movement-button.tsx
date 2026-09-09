@@ -64,7 +64,6 @@ export function LinkMovementButton({
 
     const baseMovements = movements.filter((m) => {
       if (m.account !== account) return false;
-      if (m.status === "completed") return false;
       return true;
     });
 
@@ -235,7 +234,7 @@ export function LinkMovementButton({
 
             {filteredMovements.length === 0 && (
               <div className="flex w-full items-center justify-center py-2 text-sm text-muted-foreground">
-                No movement waiting for reconciliation found.
+                No movement found.
               </div>
             )}
           </div>
