@@ -1,11 +1,12 @@
 import { db } from "@/database";
-import { accounts, activities } from "@/tables";
+import { accounts, activities, transactions } from "@/tables";
 import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import { extractDateFromMovementName } from "@maille/core/movements";
 import { AMOUNT_EPSILON, remainingAmount } from "@maille/core/workflows";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { addEvent } from "@/api/events";
 import { createActivity } from "@/services/activities";
 import { linkMovementToActivity } from "@/services/movements";
 import { findSimilarMovements, searchActivities } from "./evidence";
@@ -131,6 +132,56 @@ async function buildTransactionLegs(
 }
 
 /**
+ * When a movement is linked to an existing activity, the activity's
+ * transactions must be adjusted so the activity stays reconciled: the
+ * movement total on the movement's account must match the transaction
+ * total on that account. We increase the amount of the transaction leg
+ * touching the movement's account by the absolute value of the link.
+ */
+async function adjustTransactionForMovementLink(
+  state: RunState,
+  activityId: string,
+  linkAmount: number,
+) {
+  const movementAccount = state.movement.account;
+  const absLinkAmount = Math.abs(linkAmount);
+
+  // Find the activity's transaction touching the movement's account.
+  const activityTransactions = await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.activity, activityId));
+
+  // A transaction touches the movement's account on either side.
+  const matchingTransaction = activityTransactions.find(
+    (t) => t.fromAccount === movementAccount || t.toAccount === movementAccount,
+  );
+
+  if (!matchingTransaction) {
+    return;
+  }
+
+  const newAmount = matchingTransaction.amount + absLinkAmount;
+
+  await db
+    .update(transactions)
+    .set({ amount: newAmount })
+    .where(eq(transactions.id, matchingTransaction.id));
+
+  await addEvent({
+    type: "updateTransaction",
+    payload: {
+      activityId,
+      id: matchingTransaction.id,
+      amount: newAmount,
+    },
+    createdAt: new Date(),
+    clientId: workflowClientId(state),
+    user: state.workflow.user,
+  });
+}
+
+/**
  * Executes a tool call from the model. Side effects (linking movements,
  * creating activities) go through the same services as the GraphQL mutations
  * and the UI, so history, sync events and workflow cancellation all fire.
@@ -230,6 +281,10 @@ export async function executeTool(
         activityId: activity.id,
         amount: parsed.data.amount,
       });
+
+      // Adjust the activity's transaction so the activity stays reconciled
+      // after adding the new movement link.
+      await adjustTransactionForMovementLink(state, activity.id, parsed.data.amount);
 
       state.linkAmounts.push(parsed.data.amount);
       state.linkedActivities.push(activity.id);
