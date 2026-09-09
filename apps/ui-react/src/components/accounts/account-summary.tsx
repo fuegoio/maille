@@ -155,26 +155,6 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
           <span className="font-mono">{currencyFormatter.format(balance)}</span>
         </div>
 
-        {account?.movements && (
-          <div className="mt-1 flex items-center text-xs text-muted-foreground">
-            <div className="font-medium">Cash balance</div>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              {Math.abs(cashBalancePrev - cashBalance) >= 0.01 && (
-                <>
-                  <span className="font-mono">
-                    {currencyFormatter.format(cashBalancePrev)}
-                  </span>
-                  <ArrowRight className="size-3" />
-                </>
-              )}
-              <span className="font-mono">
-                {currencyFormatter.format(cashBalance)}
-              </span>
-            </div>
-          </div>
-        )}
-
         <div className="mt-3 flex items-center gap-2 text-sm">
           <TrendingUp className="size-3" />
           <div className="font-medium">In</div>
@@ -192,6 +172,26 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
+
+        {account?.movements && (
+          <div className="mt-4 flex items-center text-xs text-muted-foreground">
+            <div className="font-medium">Cash balance</div>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+              {Math.abs(cashBalancePrev - cashBalance) >= 0.01 && (
+                <>
+                  <span className="font-mono">
+                    {currencyFormatter.format(cashBalancePrev)}
+                  </span>
+                  <ArrowRight className="size-3" />
+                </>
+              )}
+              <span className="font-mono">
+                {currencyFormatter.format(cashBalance)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <ChartContainer
@@ -240,7 +240,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
       </ChartContainer>
 
       {fundSpread.length > 1 && (
-        <div className="px-6 pb-6">
+        <div className="border-t px-6 pb-6">
           <div className="text-xs font-medium text-muted-foreground">
             Across funds
           </div>
