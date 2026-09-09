@@ -1,6 +1,6 @@
 import type { Movement } from "@maille/core/movements";
 
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 
@@ -27,6 +27,8 @@ export function MovementLine({
   const workflow = useWorkflows((state) =>
     state.getWorkflowByMovement(movement.id),
   );
+
+  const router = useRouter();
 
   return (
     <Link
@@ -80,11 +82,15 @@ export function MovementLine({
         variant="outline"
         asChild
         className="h-6 shrink-0 sm:mr-1 [a]:hover:bg-border/50"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          void router.navigate({
+            to: `/accounts/$id`,
+            params: { id: movement.account },
+          });
+        }}
       >
-        <Link to={`/accounts/$id`} params={{ id: movement.account }}>
-          <AccountLabel accountId={movement.account} />
-        </Link>
+        <AccountLabel accountId={movement.account} />
       </Badge>
 
       <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
