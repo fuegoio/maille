@@ -18,6 +18,7 @@ import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
+import { useMovements } from "@/stores/movements";
 
 interface AccountSummaryProps {
   accountId: string;
@@ -31,6 +32,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
+  const movements = useMovements((state) => state.movements);
   const user = useAuth((state) => state.user!);
 
   const today = startOfDay(new Date());
@@ -61,6 +63,23 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
   const last30Out = Math.abs(
     getAccountTotal({ flow: "out", rangeStart: thirtyDaysAgo }),
   );
+
+  const getAccountCashBalanceAtDate = (date: Date): number => {
+    if (!account?.movements) return 0;
+    const accountMovements = movements.filter(
+      (m) =>
+        m.account === accountId &&
+        new Date(m.date) <= date &&
+        m.date >= user.startingDate,
+    );
+    return accountMovements.reduce(
+      (acc, m) => acc + m.amount,
+      account.startingCashBalance ?? 0,
+    );
+  };
+
+  const cashBalance = getAccountCashBalanceAtDate(today);
+  const cashBalancePrev = getAccountCashBalanceAtDate(thirtyDaysAgo);
 
   const days = useMemo(
     () => eachDayOfInterval({ start: thirtyDaysAgo, end: today }),
@@ -136,6 +155,26 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
           <span className="font-mono">{currencyFormatter.format(balance)}</span>
         </div>
 
+        {account?.movements && (
+          <div className="mt-1 flex items-center text-xs text-muted-foreground">
+            <div className="font-medium">Cash balance</div>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+              {Math.abs(cashBalancePrev - cashBalance) >= 0.01 && (
+                <>
+                  <span className="font-mono">
+                    {currencyFormatter.format(cashBalancePrev)}
+                  </span>
+                  <ArrowRight className="size-3" />
+                </>
+              )}
+              <span className="font-mono">
+                {currencyFormatter.format(cashBalance)}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="mt-3 flex items-center gap-2 text-sm">
           <TrendingUp className="size-3" />
           <div className="font-medium">In</div>
@@ -153,58 +192,6 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
             {currencyFormatter.format(last30Out)}
           </span>
         </div>
-        {fundSpread.length > 1 && (
-          <div className="mt-5">
-            <div className="text-xs font-medium text-muted-foreground">
-              Across funds
-            </div>
-            <div className="mt-1">
-              {fundSpread.map(({ fund, amount }) => {
-                const rowContent = (
-                  <>
-                    <div
-                      className="size-3 shrink-0 rounded-sm"
-                      style={
-                        fund
-                          ? { backgroundColor: fund.color }
-                          : {
-                              backgroundColor:
-                                "color-mix(in srgb, currentColor 40%, transparent)",
-                            }
-                      }
-                    />
-                    <div className="ml-2 truncate">
-                      {fund ? fund.name : "Untracked"}
-                    </div>
-                    <div className="flex-1" />
-                    <div className="font-mono">
-                      {currencyFormatter.format(amount)}
-                    </div>
-                  </>
-                );
-
-                return fund ? (
-                  <Link
-                    key={fund.id}
-                    to="/funds/$id"
-                    params={{ id: fund.id }}
-                    className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
-                  >
-                    {rowContent}
-                  </Link>
-                ) : (
-                  <Link
-                    key="untracked"
-                    to="/funds/untracked"
-                    className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
-                  >
-                    {rowContent}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       <ChartContainer
@@ -251,6 +238,59 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
           <Bar dataKey="balance" fill="var(--color-balance)" />
         </BarChart>
       </ChartContainer>
+
+      {fundSpread.length > 1 && (
+        <div className="px-6 pb-6">
+          <div className="text-xs font-medium text-muted-foreground">
+            Across funds
+          </div>
+          <div className="mt-1">
+            {fundSpread.map(({ fund, amount }) => {
+              const rowContent = (
+                <>
+                  <div
+                    className="size-3 shrink-0 rounded-sm"
+                    style={
+                      fund
+                        ? { backgroundColor: fund.color }
+                        : {
+                            backgroundColor:
+                              "color-mix(in srgb, currentColor 40%, transparent)",
+                          }
+                    }
+                  />
+                  <div className="ml-2 truncate">
+                    {fund ? fund.name : "Untracked"}
+                  </div>
+                  <div className="flex-1" />
+                  <div className="font-mono">
+                    {currencyFormatter.format(amount)}
+                  </div>
+                </>
+              );
+
+              return fund ? (
+                <Link
+                  key={fund.id}
+                  to="/funds/$id"
+                  params={{ id: fund.id }}
+                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
+                >
+                  {rowContent}
+                </Link>
+              ) : (
+                <Link
+                  key="untracked"
+                  to="/funds/untracked"
+                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
+                >
+                  {rowContent}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
