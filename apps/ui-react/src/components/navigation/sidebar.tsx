@@ -7,6 +7,7 @@ import {
   PiggyBank,
   Tag,
   TentTree,
+  Users,
 } from "lucide-react";
 import * as React from "react";
 
@@ -90,6 +91,11 @@ const data = {
       title: "Projects",
       url: "/projects",
       icon: TentTree,
+    },
+    {
+      title: "Counterparties",
+      url: "/counterparties",
+      icon: Users,
     },
   ],
 };

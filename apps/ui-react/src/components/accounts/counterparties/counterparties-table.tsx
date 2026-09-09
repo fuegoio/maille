@@ -1,6 +1,7 @@
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
+import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -18,7 +19,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../../ui/empty";
-import { AddCounterpartyModal } from "./add-counterparty-modal";
 
 interface CounterpartiesTableProps {
   accountId: string;

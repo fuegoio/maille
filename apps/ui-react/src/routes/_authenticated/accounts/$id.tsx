@@ -25,11 +25,11 @@ import { AccountTransactionsTable } from "@/components/accounts/account-transact
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
-import { AddCounterpartyModal } from "@/components/accounts/counterparties/add-counterparty-modal";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
 import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
