@@ -212,7 +212,7 @@ export function ImportMovementsButton({
       (m) =>
         m.account === account &&
         isSameDay(m.date, date) &&
-        m.amount === amount &&
+        Math.abs(m.amount - amount) <= 0.05 &&
         m.name.toLowerCase() === name.toLowerCase(),
     );
   };
