@@ -378,7 +378,10 @@ export function AddActivityModal({
     movements.forEach((movement) => {
       const { fromAccount, toAccount } = guessBestTransaction(type);
 
-      const extractedDate = extractDateFromMovementName(movement.name);
+      const extractedDate = extractDateFromMovementName(
+        movement.name,
+        movement.date,
+      );
       const activityDate = extractedDate || movement.date;
 
       const newActivity = {
@@ -453,7 +456,7 @@ export function AddActivityModal({
 
     const getMovementDate = (m: Movement | undefined): Date => {
       if (!m) return initialDate || new Date();
-      const extractedDate = extractDateFromMovementName(m.name);
+      const extractedDate = extractDateFromMovementName(m.name, m.date);
       return extractedDate || m.date;
     };
 

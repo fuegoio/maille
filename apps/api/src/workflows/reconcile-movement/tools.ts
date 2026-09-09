@@ -315,7 +315,9 @@ export async function executeTool(
         id: crypto.randomUUID(),
         name: parsed.data.name,
         description: parsed.data.description ?? null,
-        date: extractDateFromMovementName(state.movement.name) ?? state.movement.date,
+        date:
+          extractDateFromMovementName(state.movement.name, state.movement.date) ??
+          state.movement.date,
         type: parsed.data.type,
         category: parsed.data.category ?? null,
         subcategory: parsed.data.subcategory ?? null,

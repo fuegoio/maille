@@ -21,7 +21,7 @@ Rules:
 - If the evidence is ambiguous, ask the user one precise question with concrete options instead of guessing.
 - If you have no reasonable clue, give up: a failed workflow is better than a wrong activity.
 - Call exactly one tool per turn. IDs and dates are used exactly as given in the context. Amounts are plain numbers.
-- When creating an activity, its date is automatically extracted from the movement name if it contains one (e.g. "CB 15/03/2024" → 2024-03-15); otherwise the movement date is used.
+- When creating an activity, its date is automatically extracted from the movement name if it contains one. This includes day/month patterns without a year (e.g. "19/08" → August 19 of the movement's year, "CB 15/03/2024" → 2024-03-15); otherwise the movement date is used.
 - Activity names must be purely descriptive text. Do not include dates, account numbers, or transaction references in the name — these belong in dedicated fields.
 - Do not set a description that merely restates the payment (e.g. the movement name, the merchant, or the amount). Descriptions should add context that is not already obvious from the name or the movement data, or be left empty.`;
 

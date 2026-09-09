@@ -94,4 +94,48 @@ describe("extractDateFromMovementName", () => {
     expect(result?.getMonth()).toBe(0); // January is month 0 (0-indexed)
     expect(result?.getFullYear()).toBe(1999);
   });
+
+  it("should extract DD/MM without year using referenceDate", () => {
+    const ref = new Date(2024, 5, 1); // June 2024
+    const result = extractDateFromMovementName("CARTE 19/08 RESTAURANT", ref);
+    expect(result).not.toBeNull();
+    expect(result?.getDate()).toBe(19);
+    expect(result?.getMonth()).toBe(7); // August is month 7 (0-indexed)
+    expect(result?.getFullYear()).toBe(2024);
+  });
+
+  it("should extract D/M without year using referenceDate", () => {
+    const ref = new Date(2025, 0, 15); // January 2025
+    const result = extractDateFromMovementName("PRLV 3/9 BOULANGER", ref);
+    expect(result).not.toBeNull();
+    expect(result?.getDate()).toBe(3);
+    expect(result?.getMonth()).toBe(8); // September is month 8 (0-indexed)
+    expect(result?.getFullYear()).toBe(2025);
+  });
+
+  it("should prefer full date over DD/MM when both present", () => {
+    const ref = new Date(2024, 0, 1);
+    const result = extractDateFromMovementName(
+      "CB 15/03/2024 OTHER 19/08",
+      ref,
+    );
+    expect(result).not.toBeNull();
+    expect(result?.getDate()).toBe(15);
+    expect(result?.getMonth()).toBe(2); // March
+    expect(result?.getFullYear()).toBe(2024);
+  });
+
+  it("should return null for DD/MM with invalid month", () => {
+    const result = extractDateFromMovementName("Doc 15/13");
+    expect(result).toBeNull();
+  });
+
+  it("should not match DD/MM inside a longer date pattern", () => {
+    const ref = new Date(2024, 0, 1);
+    const result = extractDateFromMovementName("Payment 19/08/2024", ref);
+    expect(result).not.toBeNull();
+    expect(result?.getDate()).toBe(19);
+    expect(result?.getMonth()).toBe(7);
+    expect(result?.getFullYear()).toBe(2024);
+  });
 });
