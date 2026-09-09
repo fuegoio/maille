@@ -82,7 +82,7 @@ export function MovementLine({
         variant="outline"
         className="h-6 shrink-0 hover:bg-border/50 sm:mr-1"
         onClick={(e) => {
-          e.stopPropagation();
+          e.preventDefault();
           void router.navigate({
             to: `/accounts/$id`,
             params: { id: movement.account },
