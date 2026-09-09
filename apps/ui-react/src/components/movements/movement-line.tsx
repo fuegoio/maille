@@ -80,8 +80,7 @@ export function MovementLine({
 
       <Badge
         variant="outline"
-        asChild
-        className="h-6 shrink-0 sm:mr-1 [a]:hover:bg-border/50"
+        className="h-6 shrink-0 hover:bg-border/50 sm:mr-1"
         onClick={(e) => {
           e.stopPropagation();
           void router.navigate({
