@@ -1,5 +1,6 @@
 import type { Activity } from "@maille/core/activities";
 
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { searchCompare } from "@/lib/strings";
@@ -18,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
+
+import { TransactionsSelection } from "./transactions-selection";
 
 /** A transaction as seen from one account: which activity, which side, how much. */
 type AccountTransaction = {
@@ -41,6 +45,40 @@ export function AccountTransactionsTable({
   const activities = useActivities((state) => state.activities);
   const search = useSearch((state) => state.search);
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
+  const [selectedTransactions, setSelectedTransactions] = React.useState<
+    string[]
+  >([]);
+
+  const selectTransaction = (transactionId: string) => {
+    setSelectedTransactions((prev) =>
+      prev.includes(transactionId)
+        ? prev.filter((id) => id !== transactionId)
+        : [...prev, transactionId],
+    );
+  };
+
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedTransactions.length > 0) {
+        setSelectedTransactions([]);
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      setSelectedTransactions(transactionsFiltered.map((t) => t.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
 
   const transactions = React.useMemo<AccountTransaction[]>(() => {
     const result: AccountTransaction[] = [];
@@ -211,12 +249,19 @@ export function AccountTransactionsTable({
                 <TransactionLine
                   transaction={item}
                   currencyFormatter={currencyFormatter}
+                  checked={selectedTransactions.includes(item.id)}
+                  onCheckedChange={() => selectTransaction(item.id)}
                 />
               )}
             </React.Fragment>
           ))}
         </ScrollArea>
       </div>
+
+      <TransactionsSelection
+        selectedTransactions={selectedTransactions}
+        onClearSelection={() => setSelectedTransactions([])}
+      />
     </div>
   );
 }
@@ -224,9 +269,13 @@ export function AccountTransactionsTable({
 function TransactionLine({
   transaction,
   currencyFormatter,
+  checked,
+  onCheckedChange,
 }: {
   transaction: AccountTransaction;
   currencyFormatter: Intl.NumberFormat;
+  checked: boolean;
+  onCheckedChange: () => void;
 }) {
   const accounts = useAccounts((state) => state.accounts);
   const isInflow = transaction.direction === "in";
@@ -244,12 +293,28 @@ function TransactionLine({
   };
 
   return (
-    <Link
-      to="/activities/$id"
-      params={{ id: transaction.activity.id }}
-      search={{ transaction: transaction.id }}
-      className="group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6"
+    <div
+      className={cn(
+        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b border-l-4 border-l-transparent pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        checked && "bg-primary/30 hover:bg-primary/40",
+      )}
     >
+      <Checkbox
+        checked={checked}
+        onCheckedChange={(checked) =>
+          checked != "indeterminate" && onCheckedChange()
+        }
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onCheckedChange();
+        }}
+        className={cn(
+          "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+          checked && "opacity-100",
+        )}
+      />
+
       <div
         className={cn(
           "size-2 shrink-0 rounded-lg",
@@ -266,32 +331,39 @@ function TransactionLine({
 
       {getStatusIcon()}
 
-      <div className="min-w-0 truncate font-medium">
-        {transaction.activity.name}
-      </div>
+      <Link
+        to="/activities/$id"
+        params={{ id: transaction.activity.id }}
+        search={{ transaction: transaction.id }}
+        className="flex min-w-0 flex-1 items-center gap-2 truncate"
+      >
+        <div className="min-w-0 truncate font-medium">
+          {transaction.activity.name}
+        </div>
 
-      <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-        <span className="text-xs">{isInflow ? "from" : "to"}</span>
-        {counterpart && (
-          <>
-            <div
-              className={cn(
-                "size-3 shrink-0 rounded-xl",
-                ACCOUNT_TYPES_COLOR[counterpart.type],
-              )}
-            />
-            <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-              {counterpart.name}
-            </span>
-          </>
-        )}
-      </div>
+        <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+          <span className="text-xs">{isInflow ? "from" : "to"}</span>
+          {counterpart && (
+            <>
+              <div
+                className={cn(
+                  "size-3 shrink-0 rounded-xl",
+                  ACCOUNT_TYPES_COLOR[counterpart.type],
+                )}
+              />
+              <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+                {counterpart.name}
+              </span>
+            </>
+          )}
+        </div>
+      </Link>
 
       <div className="flex-1" />
 
       <div className="w-32 shrink-0 text-right font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
       </div>
-    </Link>
+    </div>
   );
 }
