@@ -368,7 +368,6 @@ export function TransactionsCommandPalette({
         shortcut: "Del",
         action: () => {
           deleteTransactions();
-          onClearSelection?.();
         },
       },
     ];
@@ -379,7 +378,6 @@ export function TransactionsCommandPalette({
     funds,
     updateTransactions,
     deleteTransactions,
-    onClearSelection,
   ]);
 
   const filteredActions = React.useMemo(() => {
@@ -415,6 +413,7 @@ export function TransactionsCommandPalette({
         setSearch("");
       } else if (!action.type) {
         action.action();
+        onClearSelection?.();
         onOpenChange(false);
         setStep("action");
         setSelectedAction(null);

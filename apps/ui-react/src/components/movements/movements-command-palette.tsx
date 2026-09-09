@@ -277,7 +277,6 @@ export function MovementsCommandPalette({
         shortcut: "Del",
         action: () => {
           deleteMovements();
-          onClearSelection?.();
         },
       },
     ];
@@ -287,7 +286,6 @@ export function MovementsCommandPalette({
     accounts,
     updateMovements,
     deleteMovements,
-    onClearSelection,
     triggerWorkflow,
     isTriggering,
     isReconciled,
@@ -329,6 +327,7 @@ export function MovementsCommandPalette({
         setSearch("");
       } else if (!action.type) {
         action.action();
+        onClearSelection?.();
         onOpenChange(false);
         setStep("action");
         setSelectedAction(null);

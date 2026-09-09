@@ -288,18 +288,11 @@ export function FundMovesCommandPalette({
         shortcut: "Del",
         action: () => {
           deleteFundMoves();
-          onClearSelection?.();
         },
       },
     ];
     return actions;
-  }, [
-    selectedFundMovesData,
-    funds,
-    updateFundMoves,
-    deleteFundMoves,
-    onClearSelection,
-  ]);
+  }, [selectedFundMovesData, funds, updateFundMoves, deleteFundMoves]);
 
   const filteredActions = React.useMemo(() => {
     if (!search) return actionDefinitions;
@@ -334,6 +327,7 @@ export function FundMovesCommandPalette({
         setSearch("");
       } else if (!action.type) {
         action.action();
+        onClearSelection?.();
         onOpenChange(false);
         setStep("action");
         setSelectedAction(null);

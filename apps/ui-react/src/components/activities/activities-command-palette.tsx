@@ -350,7 +350,6 @@ export function ActivitiesCommandPalette({
         shortcut: "C",
         action: () => {
           duplicateActivitiesAction();
-          onClearSelection?.();
         },
       },
       {
@@ -361,7 +360,6 @@ export function ActivitiesCommandPalette({
         shortcut: "Del",
         action: () => {
           deleteActivities();
-          onClearSelection?.();
         },
       },
     ];
@@ -374,7 +372,6 @@ export function ActivitiesCommandPalette({
     updateActivities,
     duplicateActivitiesAction,
     deleteActivities,
-    onClearSelection,
   ]);
 
   const filteredActions = React.useMemo(() => {
@@ -412,6 +409,7 @@ export function ActivitiesCommandPalette({
         setSearch("");
       } else if (!action.type) {
         action.action();
+        onClearSelection?.();
         onOpenChange(false);
         setStep("action");
         setSelectedAction(null);
