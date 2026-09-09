@@ -333,30 +333,29 @@ export function ImportMovementsButton({
             step === 2 && "sm:max-w-3xl",
           )}
         >
-          <DialogHeader className="shrink-0">
+          <DialogHeader className="shrink-0 gap-1">
             <DialogTitle>Import movements from a CSV</DialogTitle>
-          </DialogHeader>
-
-          <div className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-            {stepLabels.map((label, i) => {
-              const isActive = step === i;
-              return (
-                <React.Fragment key={label}>
-                  {i > 0 && (
-                    <ArrowRight className="size-3 text-muted-foreground/50" />
-                  )}
-                  <span
-                    className={cn(
-                      "font-medium",
-                      isActive ? "text-foreground" : "text-muted-foreground",
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              {stepLabels.map((label, i) => {
+                const isActive = step === i;
+                return (
+                  <React.Fragment key={label}>
+                    {i > 0 && (
+                      <ArrowRight className="size-3 text-muted-foreground/50" />
                     )}
-                  >
-                    {label}
-                  </span>
-                </React.Fragment>
-              );
-            })}
-          </div>
+                    <span
+                      className={cn(
+                        "font-medium",
+                        isActive ? "text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {label}
+                    </span>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </DialogHeader>
 
           {step === 0 ? (
             <div className="min-h-0 flex-1 overflow-y-auto pt-1 pb-4">

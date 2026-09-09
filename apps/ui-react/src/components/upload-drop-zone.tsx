@@ -31,8 +31,8 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
 
   return (
     <div
-      className={`outline-primary-200 flex flex-col items-center rounded py-4 outline-2 outline-dotted ${
-        overDrop ? "bg-primary-900" : ""
+      className={`flex flex-col items-center rounded border-2 border-dashed py-4 transition-colors ${
+        overDrop ? "border-primary bg-primary/5" : "border-muted-foreground/30"
       }`}
       onDrop={handleDropEvent}
       onDragOver={(e) => {
@@ -45,9 +45,11 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
       }}
     >
       <div className="my-2">
-        <Upload className="text-primary-100 size-10" />
+        <Upload className="size-10 text-muted-foreground" />
       </div>
-      <div className="text-primary-100 text-xs">Drag and drop here, or</div>
+      <div className="text-xs text-muted-foreground">
+        Drag and drop here, or
+      </div>
 
       <input
         ref={fileUploadInput}
@@ -69,7 +71,7 @@ export function UploadDropZone({ onFile }: UploadDropZoneProps) {
         Select from your computer
       </Button>
 
-      <div className="text-primary-200 mt-8 text-xs">
+      <div className="mt-8 text-xs text-muted-foreground">
         File should be a valid CSV.
       </div>
     </div>
