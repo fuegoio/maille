@@ -515,7 +515,7 @@ export function AddActivityModal({
                     showIcon={false}
                     value={field.value}
                     onChange={field.onChange}
-                    className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
+                    className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent dark:hover:bg-transparent"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -543,7 +543,7 @@ export function AddActivityModal({
                   aria-label="Activity name"
                   placeholder="Activity name"
                   autoFocus
-                  className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-2xl font-semibold md:text-2xl dark:bg-transparent"
+                  className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-2xl font-semibold focus-visible:ring-0 focus-visible:ring-transparent md:text-2xl dark:bg-transparent"
                 />
                 {errors.name && <FieldError errors={[errors.name]} />}
               </>
@@ -559,7 +559,7 @@ export function AddActivityModal({
                 {...field}
                 id="description"
                 aria-label="Description"
-                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
+                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent"
                 placeholder="Add a description ..."
                 rows={1}
               />
