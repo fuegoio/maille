@@ -5,6 +5,7 @@ import {
   getActivityMovementsReconciliated,
   getActivityMovementsReconciliatedByAccount,
 } from "@maille/core/activities";
+import { Link } from "@tanstack/react-router";
 import { CircleCheck, Ellipsis, Landmark, TriangleAlert } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 
@@ -269,14 +270,18 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                             month: "2-digit",
                           })}
                         </div>
-                        <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <Link
+                          to="/movements/$id"
+                          params={{ id: movement.id }}
+                          className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap hover:underline"
+                        >
                           {movement.name}
                           {movement.amountLinked !== movement.amount && (
                             <span className="ml-2 font-mono text-sm whitespace-nowrap text-muted-foreground">
                               ({currencyFormatter.format(movement.amount)})
                             </span>
                           )}
-                        </div>
+                        </Link>
 
                         <div className="flex-1" />
 
