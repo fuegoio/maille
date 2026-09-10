@@ -8,6 +8,7 @@ import * as React from "react";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
@@ -50,14 +51,7 @@ export function ActivitiesTable({
     `activities:${viewId}`,
   );
 
-  const [selectedActivities, setSelectedActivities] = React.useState<string[]>(
-    [],
-  );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-
-  const entityActions = useActivitiesEntityActions(selectedActivities, () =>
-    setSelectedActivities([]),
-  );
 
   const activitiesFiltered = React.useMemo(() => {
     return activities
@@ -194,6 +188,30 @@ export function ActivitiesTable({
       }, []);
   }, [activitiesSorted, grouping, groupsFolded]);
 
+  // Rendered row order, skipping group headers, shared by range selection
+  const visibleActivityIds = React.useMemo(
+    () =>
+      grouping
+        ? activitiesWithGroups
+            .filter((item) => item.itemType === "activity")
+            .map((item) => item.id)
+        : activitiesSorted.map((activity) => activity.id),
+    [grouping, activitiesWithGroups, activitiesSorted],
+  );
+
+  const {
+    selectedIds: selectedActivities,
+    toggle: toggleActivity,
+    selectOnly: selectOnlyActivity,
+    selectAll: selectAllActivities,
+    clear: clearSelectedActivities,
+  } = useRangeSelection(visibleActivityIds);
+
+  const entityActions = useActivitiesEntityActions(
+    selectedActivities,
+    clearSelectedActivities,
+  );
+
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
       month: "long",
@@ -229,7 +247,7 @@ export function ActivitiesTable({
     "Escape",
     () => {
       if (selectedActivities.length > 0) {
-        setSelectedActivities([]);
+        clearSelectedActivities();
       }
     },
     {
@@ -241,7 +259,7 @@ export function ActivitiesTable({
     "Mod+A",
     (event) => {
       if (event.key !== "a") return;
-      setSelectedActivities(activitiesFiltered.map((a) => a.id));
+      selectAllActivities(activitiesFiltered.map((a) => a.id));
     },
     {
       ignoreInputs: true,
@@ -311,12 +329,12 @@ export function ActivitiesTable({
                     ) : (
                       <EntityContextMenu
                         actions={entityActions}
-                        onActionComplete={() => setSelectedActivities([])}
+                        onActionComplete={clearSelectedActivities}
                       >
                         <div
                           onContextMenu={() => {
                             if (!selectedActivities.includes(item.id)) {
-                              setSelectedActivities([item.id]);
+                              selectOnlyActivity(item.id);
                             }
                           }}
                         >
@@ -325,18 +343,9 @@ export function ActivitiesTable({
                             accountFilter={accountFilter}
                             hideProject={hideProject}
                             checked={selectedActivities.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedActivities((prev) => [
-                                  ...prev,
-                                  item.id,
-                                ]);
-                              } else {
-                                setSelectedActivities((prev) =>
-                                  prev.filter((id) => id !== item.id),
-                                );
-                              }
-                            }}
+                            onCheckedChange={(event) =>
+                              toggleActivity(item.id, event)
+                            }
                           />
                         </div>
                       </EntityContextMenu>
@@ -347,12 +356,12 @@ export function ActivitiesTable({
                   <EntityContextMenu
                     key={activity.id}
                     actions={entityActions}
-                    onActionComplete={() => setSelectedActivities([])}
+                    onActionComplete={clearSelectedActivities}
                   >
                     <div
                       onContextMenu={() => {
                         if (!selectedActivities.includes(activity.id)) {
-                          setSelectedActivities([activity.id]);
+                          selectOnlyActivity(activity.id);
                         }
                       }}
                     >
@@ -361,18 +370,9 @@ export function ActivitiesTable({
                         accountFilter={accountFilter}
                         hideProject={hideProject}
                         checked={selectedActivities.includes(activity.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedActivities((prev) => [
-                              ...prev,
-                              activity.id,
-                            ]);
-                          } else {
-                            setSelectedActivities((prev) =>
-                              prev.filter((id) => id !== activity.id),
-                            );
-                          }
-                        }}
+                        onCheckedChange={(event) =>
+                          toggleActivity(activity.id, event)
+                        }
                       />
                     </div>
                   </EntityContextMenu>
@@ -389,7 +389,7 @@ export function ActivitiesTable({
 
       <ActivitiesSelection
         selectedActivities={selectedActivities}
-        onClearSelection={() => setSelectedActivities([])}
+        onClearSelection={clearSelectedActivities}
       />
     </div>
   );

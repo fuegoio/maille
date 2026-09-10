@@ -15,6 +15,7 @@ import * as React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
@@ -49,40 +50,6 @@ export function AccountTransactionsTable({
     `transactions:${accountId}`,
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-  const [selectedTransactions, setSelectedTransactions] = React.useState<
-    string[]
-  >([]);
-
-  const selectTransaction = (transactionId: string) => {
-    setSelectedTransactions((prev) =>
-      prev.includes(transactionId)
-        ? prev.filter((id) => id !== transactionId)
-        : [...prev, transactionId],
-    );
-  };
-
-  useHotkey(
-    "Escape",
-    () => {
-      if (selectedTransactions.length > 0) {
-        setSelectedTransactions([]);
-      }
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  useHotkey(
-    "Mod+A",
-    (event) => {
-      if (event.key !== "a") return;
-      setSelectedTransactions(transactionsFiltered.map((t) => t.id));
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
 
   const transactions = React.useMemo<AccountTransaction[]>(() => {
     const result: AccountTransaction[] = [];
@@ -190,6 +157,45 @@ export function AccountTransactionsTable({
       }, []);
   }, [transactionsFiltered, groupsFolded]);
 
+  // Rendered row order, skipping group headers, shared by range selection
+  const visibleTransactionIds = React.useMemo(
+    () =>
+      transactionsWithGroups
+        .filter((item) => item.itemType === "transaction")
+        .map((item) => item.id),
+    [transactionsWithGroups],
+  );
+
+  const {
+    selectedIds: selectedTransactions,
+    toggle: toggleTransaction,
+    selectAll: selectAllTransactions,
+    clear: clearSelectedTransactions,
+  } = useRangeSelection(visibleTransactionIds);
+
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedTransactions.length > 0) {
+        clearSelectedTransactions();
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      selectAllTransactions(transactionsFiltered.map((t) => t.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
   const periodFormatter = (month: number, year: number): string =>
     new Date(year, month).toLocaleString("default", {
       month: "long",
@@ -254,7 +260,7 @@ export function AccountTransactionsTable({
                   transaction={item}
                   currencyFormatter={currencyFormatter}
                   checked={selectedTransactions.includes(item.id)}
-                  onCheckedChange={() => selectTransaction(item.id)}
+                  onCheckedChange={(event) => toggleTransaction(item.id, event)}
                 />
               )}
             </React.Fragment>
@@ -264,7 +270,7 @@ export function AccountTransactionsTable({
 
       <TransactionsSelection
         selectedTransactions={selectedTransactions}
-        onClearSelection={() => setSelectedTransactions([])}
+        onClearSelection={clearSelectedTransactions}
       />
     </div>
   );
@@ -279,7 +285,7 @@ function TransactionLine({
   transaction: AccountTransaction;
   currencyFormatter: Intl.NumberFormat;
   checked: boolean;
-  onCheckedChange: () => void;
+  onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
   const accounts = useAccounts((state) => state.accounts);
   const isInflow = transaction.direction === "in";
@@ -311,7 +317,7 @@ function TransactionLine({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onCheckedChange();
+          onCheckedChange(e);
         }}
         className={cn(
           "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",

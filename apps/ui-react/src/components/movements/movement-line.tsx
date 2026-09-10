@@ -3,6 +3,7 @@ import type { Movement } from "@maille/core/movements";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
+import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ import { useWorkflows } from "@/stores/workflows";
 interface MovementLineProps {
   movement: Movement;
   checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
+  onCheckedChange: (event?: React.MouseEvent) => void;
 }
 
 export function MovementLine({
@@ -45,12 +46,12 @@ export function MovementLine({
       <Checkbox
         checked={checked}
         onCheckedChange={(checked) =>
-          checked != "indeterminate" && onCheckedChange(checked)
+          checked != "indeterminate" && onCheckedChange()
         }
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onCheckedChange(!checked);
+          onCheckedChange(e);
         }}
         className={cn(
           "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",

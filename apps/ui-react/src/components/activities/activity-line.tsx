@@ -7,6 +7,7 @@ import {
   CircleDashed,
   CircleDotDashed,
 } from "lucide-react";
+import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -19,7 +20,7 @@ import { Checkbox } from "../ui/checkbox";
 
 interface ActivityLineProps {
   activity: Activity;
-  onCheckedChange: (checked: boolean) => void;
+  onCheckedChange: (event?: React.MouseEvent) => void;
   checked?: boolean;
   accountFilter?: string | null;
   hideProject?: boolean;
@@ -103,12 +104,12 @@ export function ActivityLine({
         <Checkbox
           checked={checked}
           onCheckedChange={(checked) =>
-            checked != "indeterminate" && onCheckedChange(checked)
+            checked != "indeterminate" && onCheckedChange()
           }
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onCheckedChange(!checked);
+            onCheckedChange(e);
           }}
           className={cn(
             "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",

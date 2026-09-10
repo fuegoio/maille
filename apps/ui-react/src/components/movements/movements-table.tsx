@@ -8,6 +8,7 @@ import * as React from "react";
 
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
@@ -36,14 +37,7 @@ export function MovementsTable({
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
-  const [selectedMovements, setSelectedMovements] = React.useState<string[]>(
-    [],
-  );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-
-  const entityActions = useMovementsEntityActions(selectedMovements, () =>
-    setSelectedMovements([]),
-  );
 
   const movementsFiltered = React.useMemo(() => {
     return movements
@@ -125,19 +119,35 @@ export function MovementsTable({
       }, []);
   }, [movementsSorted, grouping, groupsFolded]);
 
+  // Rendered row order, skipping group headers, shared by range selection
+  const visibleMovementIds = React.useMemo(
+    () =>
+      grouping
+        ? movementsWithGroups
+            .filter((item) => item.itemType === "movement")
+            .map((item) => item.id)
+        : movementsSorted.map((movement) => movement.id),
+    [grouping, movementsWithGroups, movementsSorted],
+  );
+
+  const {
+    selectedIds: selectedMovements,
+    toggle: toggleMovement,
+    selectOnly: selectOnlyMovement,
+    selectAll: selectAllMovements,
+    clear: clearSelectedMovements,
+  } = useRangeSelection(visibleMovementIds);
+
+  const entityActions = useMovementsEntityActions(
+    selectedMovements,
+    clearSelectedMovements,
+  );
+
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
       month: "long",
       year: "numeric",
     });
-  };
-
-  const selectMovement = (movementId: string) => {
-    setSelectedMovements((prev) =>
-      prev.includes(movementId)
-        ? prev.filter((id) => id !== movementId)
-        : [...prev, movementId],
-    );
   };
 
   // Hotkeys: open the first movement of the list, then continue with J/K on
@@ -168,7 +178,7 @@ export function MovementsTable({
     "Escape",
     () => {
       if (selectedMovements.length > 0) {
-        setSelectedMovements([]);
+        clearSelectedMovements();
       }
     },
     {
@@ -180,7 +190,7 @@ export function MovementsTable({
     "Mod+A",
     (event) => {
       if (event.key !== "a") return;
-      setSelectedMovements(movementsFiltered.map((m) => m.id));
+      selectAllMovements(movementsFiltered.map((m) => m.id));
     },
     {
       ignoreInputs: true,
@@ -224,19 +234,21 @@ export function MovementsTable({
                     ) : (
                       <EntityContextMenu
                         actions={entityActions}
-                        onActionComplete={() => setSelectedMovements([])}
+                        onActionComplete={clearSelectedMovements}
                       >
                         <div
                           onContextMenu={() => {
                             if (!selectedMovements.includes(item.id)) {
-                              setSelectedMovements([item.id]);
+                              selectOnlyMovement(item.id);
                             }
                           }}
                         >
                           <MovementLine
                             movement={item}
                             checked={selectedMovements.includes(item.id)}
-                            onCheckedChange={() => selectMovement(item.id)}
+                            onCheckedChange={(event) =>
+                              toggleMovement(item.id, event)
+                            }
                           />
                         </div>
                       </EntityContextMenu>
@@ -247,19 +259,21 @@ export function MovementsTable({
                   <EntityContextMenu
                     key={movement.id}
                     actions={entityActions}
-                    onActionComplete={() => setSelectedMovements([])}
+                    onActionComplete={clearSelectedMovements}
                   >
                     <div
                       onContextMenu={() => {
                         if (!selectedMovements.includes(movement.id)) {
-                          setSelectedMovements([movement.id]);
+                          selectOnlyMovement(movement.id);
                         }
                       }}
                     >
                       <MovementLine
                         movement={movement}
                         checked={selectedMovements.includes(movement.id)}
-                        onCheckedChange={() => selectMovement(movement.id)}
+                        onCheckedChange={(event) =>
+                          toggleMovement(movement.id, event)
+                        }
                       />
                     </div>
                   </EntityContextMenu>
@@ -276,7 +290,7 @@ export function MovementsTable({
 
       <MovementsSelection
         selectedMovements={selectedMovements}
-        onClearSelection={() => setSelectedMovements([])}
+        onClearSelection={clearSelectedMovements}
       />
     </div>
   );

@@ -11,6 +11,7 @@ import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useRangeSelection } from "@/hooks/use-range-selection";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
@@ -65,44 +66,6 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const user = useAuth((state) => state.user);
   const search = useSearch((state) => state.search);
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
-  const [selectedFundMoves, setSelectedFundMoves] = React.useState<string[]>(
-    [],
-  );
-
-  const entityActions = useFundMovesEntityActions(selectedFundMoves, () =>
-    setSelectedFundMoves([]),
-  );
-
-  const selectFundMove = (fundMoveId: string) => {
-    setSelectedFundMoves((prev) =>
-      prev.includes(fundMoveId)
-        ? prev.filter((id) => id !== fundMoveId)
-        : [...prev, fundMoveId],
-    );
-  };
-
-  useHotkey(
-    "Escape",
-    () => {
-      if (selectedFundMoves.length > 0) {
-        setSelectedFundMoves([]);
-      }
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  useHotkey(
-    "Mod+A",
-    (event) => {
-      if (event.key !== "a") return;
-      setSelectedFundMoves(moves.map((m) => m.id));
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
     // A move tied to a transaction belongs to the activity holding it
@@ -254,6 +217,52 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
       }, []);
   }, [rowsFiltered, groupsFolded]);
 
+  // Rendered row order, skipping group headers and unselectable
+  // allocation rows, shared by range selection
+  const visibleFundMoveIds = React.useMemo(
+    () =>
+      rowsWithGroups
+        .filter((item) => item.itemType === "row" && item.kind === "move")
+        .map((item) => item.id),
+    [rowsWithGroups],
+  );
+
+  const {
+    selectedIds: selectedFundMoves,
+    toggle: toggleFundMove,
+    selectOnly: selectOnlyFundMove,
+    selectAll: selectAllFundMoves,
+    clear: clearSelectedFundMoves,
+  } = useRangeSelection(visibleFundMoveIds);
+
+  const entityActions = useFundMovesEntityActions(
+    selectedFundMoves,
+    clearSelectedFundMoves,
+  );
+
+  useHotkey(
+    "Escape",
+    () => {
+      if (selectedFundMoves.length > 0) {
+        clearSelectedFundMoves();
+      }
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  useHotkey(
+    "Mod+A",
+    (event) => {
+      if (event.key !== "a") return;
+      selectAllFundMoves(moves.map((m) => m.id));
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
   const periodFormatter = (month: number, year: number): string =>
     new Date(year, month).toLocaleString("default", {
       month: "long",
@@ -320,12 +329,12 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
               ) : (
                 <EntityContextMenu
                   actions={entityActions}
-                  onActionComplete={() => setSelectedFundMoves([])}
+                  onActionComplete={clearSelectedFundMoves}
                 >
                   <div
                     onContextMenu={() => {
                       if (!selectedFundMoves.includes(item.id)) {
-                        setSelectedFundMoves([item.id]);
+                        selectOnlyFundMove(item.id);
                       }
                     }}
                   >
@@ -343,7 +352,9 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                           : undefined
                       }
                       checked={selectedFundMoves.includes(item.id)}
-                      onCheckedChange={() => selectFundMove(item.id)}
+                      onCheckedChange={(event) =>
+                        toggleFundMove(item.id, event)
+                      }
                     />
                   </div>
                 </EntityContextMenu>
@@ -355,7 +366,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
 
       <FundMovesSelection
         selectedFundMoves={selectedFundMoves}
-        onClearSelection={() => setSelectedFundMoves([])}
+        onClearSelection={clearSelectedFundMoves}
       />
     </div>
   );
@@ -445,7 +456,7 @@ function FundMoveLine({
   params?: Record<string, string>;
   search?: Record<string, string>;
   checked: boolean;
-  onCheckedChange: () => void;
+  onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
   const isInflow = move.direction === "in";
   const amount = isInflow ? move.amount : -move.amount;
@@ -488,7 +499,7 @@ function FundMoveLine({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onCheckedChange();
+          onCheckedChange(e);
         }}
         className={cn(
           "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
