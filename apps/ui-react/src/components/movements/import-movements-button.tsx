@@ -618,7 +618,7 @@ export function ImportMovementsButton({
                     </p>
                   )}
 
-                  <div className="flex items-start gap-4 pt-4">
+                  <div className="flex items-start gap-4 pt-4 pb-4">
                     <Field className="min-w-0 flex-1">
                       <FieldLabel htmlFor="paste-account">Account</FieldLabel>
                       <AccountSelect
