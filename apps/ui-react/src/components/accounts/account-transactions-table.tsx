@@ -1,7 +1,6 @@
 import type { Activity } from "@maille/core/activities";
 
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import {
   Calendar,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -341,7 +341,7 @@ function TransactionLine({
 
       {getStatusIcon()}
 
-      <Link
+      <ContextLink
         to="/activities/$id"
         params={{ id: transaction.activity.id }}
         search={{ transaction: transaction.id }}
@@ -367,7 +367,7 @@ function TransactionLine({
             </>
           )}
         </div>
-      </Link>
+      </ContextLink>
 
       <div className="flex-1" />
 

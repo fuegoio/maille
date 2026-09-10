@@ -2,11 +2,11 @@ import type { FundMove } from "@maille/core/funds";
 
 import { getAllocationDate } from "@maille/core/funds";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -524,7 +524,7 @@ function FundMoveLine({
 
         {move.activity ? (
           <>
-            <Link
+            <ContextLink
               to={to as never}
               params={params as never}
               search={search as never}
@@ -555,7 +555,7 @@ function FundMoveLine({
                   <AccountFlowLabel accountId={move.accounts.to} />
                 </div>
               )}
-            </Link>
+            </ContextLink>
           </>
         ) : (
           <>

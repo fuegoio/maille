@@ -4,11 +4,9 @@ import { Plus } from "lucide-react";
 import { CategoriesTable } from "@/components/categories/categories-table";
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -17,17 +15,17 @@ export const Route = createFileRoute("/_authenticated/categories/")({
 });
 
 function CategoriesPage() {
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/categories",
+    entries: [{ key: "categories", label: "Categories" }],
+  });
+
   return (
     <SidebarInset>
       <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
         <SidebarTrigger className="mr-1" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage>Categories</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateCategoryDialog>
           <Button variant="default">

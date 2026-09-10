@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import {
   ChevronLeft,
@@ -14,15 +14,11 @@ import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { SubcategorySettingsDialog } from "@/components/categories/subcategory-settings-dialog";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
@@ -75,6 +71,31 @@ function SubcategoryPage() {
   const currencyFormatter = useCurrencyFormatter();
 
   const [summaryOpen, setSummaryOpen] = useState(true);
+
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/categories/$id/subcategories/$subcategoryId",
+    entries: [
+      { key: "categories", label: "Categories", target: { to: "/categories" } },
+      {
+        key: `category:${categoryId}`,
+        label: <CategoryLabel categoryId={category.id} />,
+        target: { to: "/categories/$id", params: { id: categoryId } },
+      },
+      {
+        key: `subcategory:${subcategoryId}`,
+        label: (
+          <>
+            {subcategory.emoji && (
+              <span className="mr-2">{subcategory.emoji}</span>
+            )}
+            {subcategory.name}
+          </>
+        ),
+        title: subcategory.name,
+      },
+    ],
+  });
 
   const viewActivities = activities.filter(
     (a) => a.subcategory === subcategory.id,
@@ -140,32 +161,7 @@ function SubcategoryPage() {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/categories">Categories</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to={`/categories/$id`} params={{ id: categoryId }}>
-                    <CategoryLabel categoryId={category.id} />
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {subcategory.emoji && (
-                    <span className="mr-2">{subcategory.emoji}</span>
-                  )}
-                  {subcategory.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <FilterActivitiesButton
             viewId={`subcategory-${subcategory.id}`}
             className="ml-2 text-muted-foreground"

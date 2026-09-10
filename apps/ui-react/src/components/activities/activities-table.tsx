@@ -1,10 +1,10 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -42,7 +42,7 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   hideProject = false,
 }: ActivitiesTableProps) {
-  const router = useRouter();
+  const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
 
   const activityView = useViews((state) => state.getActivityView(viewId));
@@ -225,7 +225,7 @@ export function ActivitiesTable({
     if (event.key !== "k") return;
     if (activitiesSorted.length === 0) return;
 
-    void router.navigate({
+    void contextNavigate({
       to: "/activities/$id",
       params: { id: activitiesSorted[0].id },
       replace: true,
@@ -236,7 +236,7 @@ export function ActivitiesTable({
     if (event.key !== "j") return;
     if (activitiesSorted.length === 0) return;
 
-    void router.navigate({
+    void contextNavigate({
       to: "/activities/$id",
       params: { id: activitiesSorted[0].id },
       replace: true,

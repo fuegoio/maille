@@ -1,26 +1,17 @@
 import { getFundAncestors } from "@maille/core/funds";
-import {
-  createFileRoute,
-  Link,
-  notFound,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -65,6 +56,45 @@ function FundPage() {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/funds/$id",
+    entries: [
+      { key: "funds", label: "Funds", target: { to: "/funds" } },
+      ...ancestors.map((ancestor) => ({
+        key: `fund:${ancestor.id}`,
+        label: (
+          <span className="flex items-center gap-1.5">
+            <span
+              className="inline-block size-3 rounded-sm align-[-1px]"
+              style={{ backgroundColor: ancestor.color }}
+            />
+            <span>{ancestor.name}</span>
+          </span>
+        ),
+        title: ancestor.name,
+        target: { to: "/funds/$id", params: { id: ancestor.id } },
+      })),
+      ...(fund
+        ? [
+            {
+              key: `fund:${fund.id}`,
+              label: (
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block size-3 rounded-sm align-[-1px]"
+                    style={{ backgroundColor: fund.color }}
+                  />
+                  <span>{fund.name}</span>
+                </span>
+              ),
+              title: fund.name,
+            },
+          ]
+        : []),
+    ],
+  });
+
   if (!fund) {
     return <FundDeletedRedirect />;
   }
@@ -80,45 +110,7 @@ function FundPage() {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/funds">Funds</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              {ancestors.map((ancestor) => (
-                <Fragment key={ancestor.id}>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link
-                        to="/funds/$id"
-                        params={{ id: ancestor.id }}
-                        className="flex items-center gap-1.5"
-                      >
-                        <span
-                          className="inline-block size-3 rounded-sm align-[-1px]"
-                          style={{ backgroundColor: ancestor.color }}
-                        />
-                        <span>{ancestor.name}</span>
-                      </Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                </Fragment>
-              ))}
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  <span
-                    className="mr-1.5 inline-block size-3 rounded-sm align-[-1px]"
-                    style={{ backgroundColor: fund.color }}
-                  />
-                  <span>{fund.name}</span>
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
           {!summaryOpen && (

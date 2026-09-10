@@ -5,13 +5,11 @@ import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { ImportMovementsButton } from "@/components/movements/import-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -33,17 +31,17 @@ function MovementsPage() {
     state.getMovementView("activities-page"),
   );
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/movements",
+    entries: [{ key: "movements", label: "Movements" }],
+  });
+
   return (
     <SidebarInset className="min-w-0 shrink">
       <header className="flex h-12 shrink-0 items-center gap-1 border-b pr-2 pl-3 sm:gap-2 sm:pl-4">
         <SidebarTrigger className="mr-1" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage>Movements</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageBreadcrumbs entries={breadcrumbs} />
         <FilterMovementsButton
           viewId={movementsView.id}
           className="ml-2 text-muted-foreground"

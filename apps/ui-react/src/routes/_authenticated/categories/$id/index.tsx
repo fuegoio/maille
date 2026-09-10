@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
@@ -8,15 +8,11 @@ import { FilterActivitiesButton } from "@/components/activities/filters/filter-a
 import { CategoryLabel } from "@/components/categories/category-label";
 import { CategorySettingsDialog } from "@/components/categories/category-settings-dialog";
 import { CategorySummary } from "@/components/categories/category-summary";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -51,6 +47,18 @@ function CategoryPage() {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/categories/$id",
+    entries: [
+      { key: "categories", label: "Categories", target: { to: "/categories" } },
+      {
+        key: `category:${category.id}`,
+        label: <CategoryLabel categoryId={category.id} />,
+      },
+    ],
+  });
+
   const viewActivities = activities.filter((a) => a.category === category.id);
 
   return (
@@ -64,21 +72,7 @@ function CategoryPage() {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/categories">Categories</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  <CategoryLabel categoryId={category.id} />
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <FilterActivitiesButton
             viewId={`category-${category.id}`}
             className="ml-2 text-muted-foreground"

@@ -5,10 +5,10 @@ import type {
   HistoryValue,
 } from "@maille/core/history";
 
-import { Link } from "@tanstack/react-router";
 import { format, isToday, isYesterday } from "date-fns";
 import * as React from "react";
 
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -60,13 +60,13 @@ function EntityLink({
   }
 
   return (
-    <Link
+    <ContextLink
       to={entityRef.type === "activity" ? "/activities/$id" : "/movements/$id"}
       params={{ id: entityRef.id }}
       className="underline decoration-border underline-offset-2 hover:decoration-foreground"
     >
       {label}
-    </Link>
+    </ContextLink>
   );
 }
 

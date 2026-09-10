@@ -1,10 +1,5 @@
 import { AccountType } from "@maille/core/accounts";
-import {
-  createFileRoute,
-  Link,
-  notFound,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
   ChevronRight,
@@ -33,15 +28,11 @@ import { AddCounterpartyModal } from "@/components/counterparties/add-counterpar
 import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -55,6 +46,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useMovements } from "@/stores/movements";
+
+const ACCOUNT_TABS_NAMES = {
+  movements: "Movements",
+  assets: "Assets",
+  counterparties: "Counterparties",
+} as const;
 
 const searchParamsSchema = z.object({
   tab: z
@@ -94,6 +91,36 @@ function AccountPage() {
 
   const viewMovements = movements.filter((m) => m.account === account.id);
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/accounts/$id",
+    entries: [
+      { key: "accounts", label: "Accounts", target: { to: "/accounts" } },
+      ...(account
+        ? [
+            {
+              key: `account:${account.id}`,
+              label: <AccountLabel accountId={account.id} />,
+              target: { to: "/accounts/$id", params: { id: account.id } },
+            },
+          ]
+        : []),
+      ...(account && selectedTab !== "transactions"
+        ? [
+            {
+              key: `account-tab:${selectedTab}`,
+              label: ACCOUNT_TABS_NAMES[selectedTab],
+              target: {
+                to: "/accounts/$id",
+                params: { id: account.id },
+                search: { tab: selectedTab },
+              },
+            },
+          ]
+        : []),
+    ],
+  });
+
   return (
     <>
       <SidebarInset className="flex-row">
@@ -106,21 +133,7 @@ function AccountPage() {
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
 
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/accounts">Accounts</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <AccountLabel accountId={account.id} />
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+            <PageBreadcrumbs entries={breadcrumbs} />
             <div className="flex-1" />
             <SearchBar />
             {!summaryOpen && (

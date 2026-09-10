@@ -1,6 +1,6 @@
 import { ActivityType, type ActivityStatus } from "@maille/core/activities";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { Link, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import {
   CircleCheck,
   CircleDashed,
@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import {
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -25,14 +29,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -153,6 +149,19 @@ export function ActivityPage({
 
   const activity = useActivities((state) => state.getActivityById(activityId));
   const activities = useActivities((state) => state.activities);
+
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: true,
+    routeKey: "/activities/$id",
+    own: {
+      key: `activity:${activityId}`,
+      label: activity?.name ?? "",
+      title: activity?.name,
+    },
+    fallback: [
+      { key: "activities", label: "Activities", target: { to: "/activities" } },
+    ],
+  });
 
   const filteredCategories = React.useMemo(() => {
     if (!activity?.type) return categories;
@@ -337,21 +346,7 @@ export function ActivityPage({
       <div className="flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb className="min-w-0 flex-1">
-            <BreadcrumbList>
-              <BreadcrumbItem className="shrink-0">
-                <BreadcrumbLink asChild>
-                  <Link to="/activities">Activities</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="shrink-0" />
-              <BreadcrumbItem className="min-w-0">
-                <BreadcrumbPage className="truncate" title={activity.name}>
-                  {activity.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} className="flex-1" />
 
           <div className="flex items-center justify-end gap-3">
             <AlertDialog

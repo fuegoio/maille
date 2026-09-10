@@ -2,10 +2,10 @@ import type { Movement } from "@maille/core/movements";
 
 import { verifyMovementFilter } from "@maille/core/movements";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRangeSelection } from "@/hooks/use-range-selection";
@@ -33,7 +33,7 @@ export function MovementsTable({
   grouping = null,
   accountFilter = null,
 }: MovementsTableProps) {
-  const router = useRouter();
+  const contextNavigate = useContextNavigate();
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
@@ -156,7 +156,7 @@ export function MovementsTable({
     if (event.key !== "k") return;
     if (movementsSorted.length === 0) return;
 
-    void router.navigate({
+    void contextNavigate({
       to: "/movements/$id",
       params: { id: movementsSorted[0].id },
       replace: true,
@@ -167,7 +167,7 @@ export function MovementsTable({
     if (event.key !== "j") return;
     if (movementsSorted.length === 0) return;
 
-    void router.navigate({
+    void contextNavigate({
       to: "/movements/$id",
       params: { id: movementsSorted[0].id },
       replace: true,

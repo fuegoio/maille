@@ -17,16 +17,13 @@ import * as React from "react";
 
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { HistoryTimeline } from "@/components/history/history-timeline";
+import {
+  ContextLink,
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AmountInput } from "@/components/ui/amount-input";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -126,6 +123,19 @@ export function MovementPage({ movementId }: MovementPageProps) {
 
   const movement = useMovements((state) => state.getMovementById(movementId));
   const movements = useMovements((state) => state.movements);
+
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: true,
+    routeKey: "/movements/$id",
+    own: {
+      key: `movement:${movementId}`,
+      label: movement?.name ?? "",
+      title: movement?.name,
+    },
+    fallback: [
+      { key: "movements", label: "Movements", target: { to: "/movements" } },
+    ],
+  });
 
   const activities = useActivities((state) => state.activities);
   const categories = useActivities((state) => state.activityCategories);
@@ -321,21 +331,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
       <div className="flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb className="min-w-0 flex-1">
-            <BreadcrumbList>
-              <BreadcrumbItem className="shrink-0">
-                <BreadcrumbLink asChild>
-                  <Link to="/movements">Movements</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="shrink-0" />
-              <BreadcrumbItem className="min-w-0">
-                <BreadcrumbPage className="truncate" title={movement.name}>
-                  {movement.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} className="flex-1" />
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -441,7 +437,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
                       : null;
 
                     return (
-                      <Link
+                      <ContextLink
                         key={movementActivity.id}
                         to="/activities/$id"
                         params={{ id: activity.id }}
@@ -581,7 +577,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
                             <p>Unlink activity</p>
                           </TooltipContent>
                         </Tooltip>
-                      </Link>
+                      </ContextLink>
                     );
                   })
                 )}

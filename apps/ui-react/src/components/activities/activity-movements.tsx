@@ -5,12 +5,12 @@ import {
   getActivityMovementsReconciliated,
   getActivityMovementsReconciliatedByAccount,
 } from "@maille/core/activities";
-import { Link } from "@tanstack/react-router";
 import { CircleCheck, Ellipsis, Landmark, TriangleAlert } from "lucide-react";
 import { Trash2, RefreshCw, Edit2 } from "lucide-react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { LinkMovementButton } from "@/components/movements/link-movement-button";
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -270,7 +270,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                             month: "2-digit",
                           })}
                         </div>
-                        <Link
+                        <ContextLink
                           to="/movements/$id"
                           params={{ id: movement.id }}
                           className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap hover:underline"
@@ -281,7 +281,7 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                               ({currencyFormatter.format(movement.amount)})
                             </span>
                           )}
-                        </Link>
+                        </ContextLink>
 
                         <div className="flex-1" />
 

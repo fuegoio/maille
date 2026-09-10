@@ -1,18 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSummary } from "@/components/funds/fund-summary";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -28,6 +24,23 @@ function UntrackedFundPage() {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/funds/untracked",
+    entries: [
+      { key: "funds", label: "Funds", target: { to: "/funds" } },
+      {
+        key: "untracked",
+        label: (
+          <span className="flex items-center">
+            <span className="mr-1.5 inline-block size-3 rounded-sm bg-muted-foreground/40" />
+            <span className="text-muted-foreground">Untracked</span>
+          </span>
+        ),
+      },
+    ],
+  });
+
   return (
     <SidebarInset className="flex-row">
       <div
@@ -39,22 +52,7 @@ function UntrackedFundPage() {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/funds">Funds</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="flex items-center">
-                  <span className="mr-1.5 inline-block size-3 rounded-sm bg-muted-foreground/40" />
-                  <span className="text-muted-foreground">Untracked</span>
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
           {!summaryOpen && (

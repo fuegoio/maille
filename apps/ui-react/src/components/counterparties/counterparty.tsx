@@ -5,6 +5,11 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import {
+  ContextLink,
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -16,14 +21,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -54,6 +51,23 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
     state.getCounterpartyById(counterpartyId),
   );
   const counterparties = useCounterparties((state) => state.counterparties);
+
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: true,
+    routeKey: "/counterparties/$id",
+    own: {
+      key: `counterparty:${counterpartyId}`,
+      label: counterparty?.name ?? "",
+      title: counterparty?.name,
+    },
+    fallback: [
+      {
+        key: "counterparties",
+        label: "Counterparties",
+        target: { to: "/counterparties" },
+      },
+    ],
+  });
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
 
@@ -192,21 +206,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
       <div className="flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4 sm:px-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb className="min-w-0 flex-1">
-            <BreadcrumbList>
-              <BreadcrumbItem className="shrink-0">
-                <BreadcrumbLink asChild>
-                  <Link to="/counterparties">Counterparties</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="shrink-0" />
-              <BreadcrumbItem className="min-w-0">
-                <BreadcrumbPage className="truncate" title={counterparty.name}>
-                  {counterparty.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} className="flex-1" />
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -336,7 +336,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
                   </div>
                 ) : (
                   counterpartyActivities.map((activity, index) => (
-                    <Link
+                    <ContextLink
                       key={activity.id}
                       to="/activities/$id"
                       params={{ id: activity.id }}
@@ -363,7 +363,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
                       <div className="w-20 text-right font-mono whitespace-nowrap">
                         {currencyFormatter.format(activity.amount)}
                       </div>
-                    </Link>
+                    </ContextLink>
                   ))
                 )}
               </div>

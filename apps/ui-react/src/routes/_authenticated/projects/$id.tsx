@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
@@ -6,16 +6,12 @@ import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import {
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -54,6 +50,24 @@ function ProjectPage() {
     {},
   );
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/projects/$id",
+    entries: [
+      { key: "projects", label: "Projects", target: { to: "/projects" } },
+      {
+        key: `project:${projectId}`,
+        label: (
+          <>
+            {project.emoji && <span className="mr-1">{project.emoji}</span>}
+            <span>{project.name}</span>
+          </>
+        ),
+        title: project.name,
+      },
+    ],
+  });
+
   return (
     <SidebarInset className="flex-row">
       <div
@@ -64,24 +78,7 @@ function ProjectPage() {
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/projects">Projects</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>
-                  {project.emoji && (
-                    <span className="mr-1">{project.emoji}</span>
-                  )}
-                  <span>{project.name}</span>
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <AddActivityButton project={projectId} />
           <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>

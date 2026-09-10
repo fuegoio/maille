@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import type { Counterparty } from "@/gql/graphql";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
@@ -45,7 +46,7 @@ export function CounterpartyLine({ counterparty }: CounterpartyLineProps) {
     : null;
 
   return (
-    <Link
+    <ContextLink
       to="/counterparties/$id"
       params={{ id: counterparty.id }}
       className="group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6"
@@ -81,6 +82,6 @@ export function CounterpartyLine({ counterparty }: CounterpartyLineProps) {
       <div className="text-right font-mono whitespace-nowrap sm:min-w-16">
         {currencyFormatter.format(getCounterpartyLiability())}
       </div>
-    </Link>
+    </ContextLink>
   );
 }

@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  notFound,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   BookMarked,
   ArrowRightLeft,
@@ -24,15 +19,11 @@ import { MonthFundsSummary } from "@/components/months/month-funds-summary";
 import { MonthSummary } from "@/components/months/month-summary";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
-import { SearchBar } from "@/components/search-bar";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
+import { SearchBar } from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -117,6 +108,15 @@ function MonthPage() {
     });
   };
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/months/$month",
+    entries: [
+      { key: "months", label: "Months", target: { to: "/months" } },
+      { key: `month:${month}`, label: monthFormatter(monthDate) },
+    ],
+  });
+
   return (
     <SidebarInset className="flex-row">
       <div
@@ -128,19 +128,7 @@ function MonthPage() {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
 
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/months">Months</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{monthFormatter(monthDate)}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
 
           <SearchBar />

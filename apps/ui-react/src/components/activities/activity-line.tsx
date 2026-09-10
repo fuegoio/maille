@@ -10,6 +10,7 @@ import {
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
@@ -85,7 +86,7 @@ export function ActivityLine({
   };
 
   return (
-    <Link
+    <ContextLink
       to="/activities/$id"
       params={{ id: activity.id }}
       className={cn(
@@ -235,6 +236,6 @@ export function ActivityLine({
           ))}
         </div>
       )}
-    </Link>
+    </ContextLink>
   );
 }

@@ -6,11 +6,9 @@ import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import {
   ChartContainer,
   ChartTooltip,
@@ -155,17 +153,17 @@ function RouteComponent() {
     },
   ];
 
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/",
+    entries: [{ key: "dashboard", label: "Dashboard" }],
+  });
+
   return (
     <SidebarInset>
       <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
         <SidebarTrigger className="mr-1" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage>Dashboard</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <PageBreadcrumbs entries={breadcrumbs} />
       </header>
 
       <div className="grid grid-cols-3 border-b">

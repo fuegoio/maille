@@ -1,11 +1,12 @@
 import type { Movement } from "@maille/core/movements";
 
-import { Link, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WorkflowStatusBadge } from "@/components/workflows/workflow-status";
@@ -32,7 +33,7 @@ export function MovementLine({
   const router = useRouter();
 
   return (
-    <Link
+    <ContextLink
       key={movement.id}
       to="/movements/$id"
       params={{ id: movement.id }}
@@ -109,6 +110,6 @@ export function MovementLine({
       <div className="text-right font-mono whitespace-nowrap text-white">
         {currencyFormatter.format(movement.amount)}
       </div>
-    </Link>
+    </ContextLink>
   );
 }

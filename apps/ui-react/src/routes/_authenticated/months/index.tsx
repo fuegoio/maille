@@ -2,11 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { MonthsTable } from "@/components/months/months-table";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+  PageBreadcrumbs,
+  usePageBreadcrumbs,
+} from "@/components/navigation/breadcrumbs";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/_authenticated/months/")({
@@ -14,18 +12,18 @@ export const Route = createFileRoute("/_authenticated/months/")({
 });
 
 function RouteComponent() {
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/months",
+    entries: [{ key: "months", label: "Months" }],
+  });
+
   return (
     <>
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
           <SidebarTrigger className="mr-1" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Months</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <PageBreadcrumbs entries={breadcrumbs} />
         </header>
 
         <header className="flex h-8 items-center gap-6 border-b bg-muted/50 pr-6 pl-6 text-xs font-medium text-muted-foreground">
