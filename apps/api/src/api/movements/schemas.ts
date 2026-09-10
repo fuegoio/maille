@@ -82,3 +82,39 @@ DeleteMovementActivityResponseSchema.implement({
     success: t.exposeBoolean("success"),
   }),
 });
+
+export const ExtractedMovementSchema = builder.objectRef<{
+  name: string;
+  date: Date;
+  amount: number;
+}>("ExtractedMovement");
+
+ExtractedMovementSchema.implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    date: t.field({
+      type: "Date",
+      resolve: (parent) => parent.date,
+    }),
+    amount: t.exposeFloat("amount"),
+  }),
+});
+
+export const ExtractionResultSchema = builder.objectRef<{
+  movements: {
+    name: string;
+    date: Date;
+    amount: number;
+  }[];
+  dropped: number;
+}>("ExtractionResult");
+
+ExtractionResultSchema.implement({
+  fields: (t) => ({
+    movements: t.field({
+      type: [ExtractedMovementSchema],
+      resolve: (parent) => parent.movements,
+    }),
+    dropped: t.exposeInt("dropped"),
+  }),
+});

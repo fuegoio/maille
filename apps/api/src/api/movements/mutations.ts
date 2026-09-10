@@ -4,6 +4,7 @@ import {
   DeleteMovementResponseSchema,
   MovementActivitySchema,
   DeleteMovementActivityResponseSchema,
+  ExtractionResultSchema,
 } from "./schemas";
 import { accounts, activities, movements, movementsActivities } from "@/tables";
 import { db } from "@/database";
@@ -17,6 +18,10 @@ import {
   buildUpdateLinkEntry,
   diffMovement,
 } from "@maille/core/history";
+import { extractMovements, ExtractionInputError } from "@maille/workflows/extract-movements";
+import { LlmError } from "@maille/workflows/llm";
+import { isWorkflowsConfigured, workflowApiKey } from "@/workflows/config";
+import { env } from "@/env";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { linkMovementToActivity } from "@/services/movements";
@@ -534,6 +539,37 @@ export const registerMovementsMutations = () => {
         });
 
         return { id: movementActivity.id, success: true };
+      },
+    }),
+  );
+
+  builder.mutationField("extractMovements", (t) =>
+    t.field({
+      type: ExtractionResultSchema,
+      args: {
+        text: t.arg.string(),
+      },
+      description:
+        "Extracts a structured list of movements from pasted text or HTML using AI. No state is written.",
+      resolve: async (root, args) => {
+        if (!isWorkflowsConfigured()) {
+          throw new GraphQLError("AI extraction is not configured (MISTRAL_API_KEY missing)");
+        }
+
+        try {
+          return await extractMovements({
+            baseUrl: env.WORKFLOWS_LLM_BASE_URL,
+            apiKey: workflowApiKey(),
+            model: env.WORKFLOWS_LLM_MODEL,
+            timeoutMs: env.WORKFLOWS_TIMEOUT_MS,
+            text: args.text,
+          });
+        } catch (error) {
+          if (error instanceof ExtractionInputError || error instanceof LlmError) {
+            throw new GraphQLError(error.message);
+          }
+          throw error;
+        }
       },
     }),
   );

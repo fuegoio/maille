@@ -3,6 +3,7 @@
   "type": "module",
   "exports": {
     "./llm": "./src/llm.ts",
+    "./extract-movements": "./src/extract-movements.ts",
     "./reconcile-movement/tools": "./src/reconcile-movement/tools.ts",
     "./reconcile-movement/prompt": "./src/reconcile-movement/prompt.ts",
     "./reconcile-movement/evidence": "./src/reconcile-movement/evidence.ts"
