@@ -5,7 +5,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
-import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
+import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
@@ -15,7 +15,7 @@ import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
-import { useActivitiesBulkActions } from "./activities-bulk-actions";
+import { useActivitiesEntityActions } from "./activities-actions";
 import { ActivitiesSelection } from "./activities-selection";
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
@@ -55,7 +55,7 @@ export function ActivitiesTable({
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
-  const bulkActions = useActivitiesBulkActions(selectedActivities, () =>
+  const entityActions = useActivitiesEntityActions(selectedActivities, () =>
     setSelectedActivities([]),
   );
 
@@ -309,8 +309,8 @@ export function ActivitiesTable({
                         })}
                       </div>
                     ) : (
-                      <BulkActionsContextMenu
-                        actions={bulkActions}
+                      <EntityContextMenu
+                        actions={entityActions}
                         onActionComplete={() => setSelectedActivities([])}
                       >
                         <div
@@ -339,14 +339,14 @@ export function ActivitiesTable({
                             }}
                           />
                         </div>
-                      </BulkActionsContextMenu>
+                      </EntityContextMenu>
                     )}
                   </React.Fragment>
                 ))
               : activitiesSorted.map((activity) => (
-                  <BulkActionsContextMenu
+                  <EntityContextMenu
                     key={activity.id}
-                    actions={bulkActions}
+                    actions={entityActions}
                     onActionComplete={() => setSelectedActivities([])}
                   >
                     <div
@@ -375,7 +375,7 @@ export function ActivitiesTable({
                         }}
                       />
                     </div>
-                  </BulkActionsContextMenu>
+                  </EntityContextMenu>
                 ))}
           </ScrollArea>
         ) : (

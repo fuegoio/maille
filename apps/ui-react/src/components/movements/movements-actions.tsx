@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import type { BulkAction } from "@/components/shared/bulk-actions";
+import type { EntityAction } from "@/components/shared/entity-actions";
 
 import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { getGraphQLDate } from "@/lib/date";
@@ -29,10 +29,10 @@ import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 import { useWorkflows } from "@/stores/workflows";
 
-export function useMovementsBulkActions(
+export function useMovementsEntityActions(
   selectedMovementIds: string[],
   onClearSelection?: () => void,
-): BulkAction[] {
+): EntityAction[] {
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);

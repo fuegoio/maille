@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
-import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
+import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -19,7 +19,7 @@ import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useSearch } from "@/stores/search";
 
-import { useFundMovesBulkActions } from "./fund-moves-bulk-actions";
+import { useFundMovesEntityActions } from "./fund-moves-actions";
 import { FundMovesSelection } from "./fund-moves-selection";
 
 /** A fund move as seen from one fund: which activity, which side, how much. */
@@ -69,7 +69,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     [],
   );
 
-  const bulkActions = useFundMovesBulkActions(selectedFundMoves, () =>
+  const entityActions = useFundMovesEntityActions(selectedFundMoves, () =>
     setSelectedFundMoves([]),
   );
 
@@ -318,8 +318,8 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                   currencyFormatter={currencyFormatter}
                 />
               ) : (
-                <BulkActionsContextMenu
-                  actions={bulkActions}
+                <EntityContextMenu
+                  actions={entityActions}
                   onActionComplete={() => setSelectedFundMoves([])}
                 >
                   <div
@@ -346,7 +346,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                       onCheckedChange={() => selectFundMove(item.id)}
                     />
                   </div>
-                </BulkActionsContextMenu>
+                </EntityContextMenu>
               )}
             </React.Fragment>
           ))}

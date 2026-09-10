@@ -1,5 +1,5 @@
-import { useMovementsBulkActions } from "@/components/movements/movements-bulk-actions";
-import { SelectionBar } from "@/components/shared/bulk-actions";
+import { useMovementsEntityActions } from "@/components/movements/movements-actions";
+import { SelectionBar } from "@/components/shared/entity-actions";
 
 interface MovementsSelectionProps {
   selectedMovements: string[];
@@ -10,7 +10,10 @@ export function MovementsSelection({
   selectedMovements,
   onClearSelection,
 }: MovementsSelectionProps) {
-  const actions = useMovementsBulkActions(selectedMovements, onClearSelection);
+  const actions = useMovementsEntityActions(
+    selectedMovements,
+    onClearSelection,
+  );
 
   return (
     <SelectionBar

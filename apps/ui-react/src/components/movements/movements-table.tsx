@@ -6,7 +6,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
-import { BulkActionsContextMenu } from "@/components/shared/bulk-actions";
+import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
@@ -16,7 +16,7 @@ import { useViews } from "@/stores/views";
 
 import { MovementsFilters } from "./filters/movements-filters";
 import { MovementLine } from "./movement-line";
-import { useMovementsBulkActions } from "./movements-bulk-actions";
+import { useMovementsEntityActions } from "./movements-actions";
 import { MovementsSelection } from "./movements-selection";
 
 interface MovementsTableProps {
@@ -41,7 +41,7 @@ export function MovementsTable({
   );
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
-  const bulkActions = useMovementsBulkActions(selectedMovements, () =>
+  const entityActions = useMovementsEntityActions(selectedMovements, () =>
     setSelectedMovements([]),
   );
 
@@ -222,8 +222,8 @@ export function MovementsTable({
                         <div className="flex-1" />
                       </div>
                     ) : (
-                      <BulkActionsContextMenu
-                        actions={bulkActions}
+                      <EntityContextMenu
+                        actions={entityActions}
                         onActionComplete={() => setSelectedMovements([])}
                       >
                         <div
@@ -239,14 +239,14 @@ export function MovementsTable({
                             onCheckedChange={() => selectMovement(item.id)}
                           />
                         </div>
-                      </BulkActionsContextMenu>
+                      </EntityContextMenu>
                     )}
                   </React.Fragment>
                 ))
               : movementsSorted.map((movement) => (
-                  <BulkActionsContextMenu
+                  <EntityContextMenu
                     key={movement.id}
-                    actions={bulkActions}
+                    actions={entityActions}
                     onActionComplete={() => setSelectedMovements([])}
                   >
                     <div
@@ -262,7 +262,7 @@ export function MovementsTable({
                         onCheckedChange={() => selectMovement(movement.id)}
                       />
                     </div>
-                  </BulkActionsContextMenu>
+                  </EntityContextMenu>
                 ))}
           </ScrollArea>
         ) : (

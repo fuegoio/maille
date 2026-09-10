@@ -3,7 +3,7 @@ import type { FundMove } from "@maille/core/funds";
 import { DollarSign, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
 
-import type { BulkAction } from "@/components/shared/bulk-actions";
+import type { EntityAction } from "@/components/shared/entity-actions";
 
 import { updateTransactionMutation } from "@/mutations/activities";
 import { useActivities } from "@/stores/activities";
@@ -16,10 +16,10 @@ type SelectedFundMove = {
   transactionId: string;
 };
 
-export function useFundMovesBulkActions(
+export function useFundMovesEntityActions(
   selectedFundMoves: string[],
   onClearSelection?: () => void,
-): BulkAction[] {
+): EntityAction[] {
   const mutate = useSync((state) => state.mutate);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);

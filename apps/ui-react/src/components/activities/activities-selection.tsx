@@ -1,5 +1,5 @@
-import { useActivitiesBulkActions } from "@/components/activities/activities-bulk-actions";
-import { SelectionBar } from "@/components/shared/bulk-actions";
+import { useActivitiesEntityActions } from "@/components/activities/activities-actions";
+import { SelectionBar } from "@/components/shared/entity-actions";
 
 interface ActivitiesSelectionProps {
   selectedActivities: string[];
@@ -10,7 +10,7 @@ export function ActivitiesSelection({
   selectedActivities,
   onClearSelection,
 }: ActivitiesSelectionProps) {
-  const actions = useActivitiesBulkActions(
+  const actions = useActivitiesEntityActions(
     selectedActivities,
     onClearSelection,
   );
