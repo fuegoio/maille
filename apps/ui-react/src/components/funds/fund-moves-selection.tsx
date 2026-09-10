@@ -1,5 +1,5 @@
-import { useFundMovesBulkActions } from "@/components/funds/fund-moves-bulk-actions";
-import { SelectionBar } from "@/components/shared/bulk-actions";
+import { useFundMovesEntityActions } from "@/components/funds/fund-moves-actions";
+import { SelectionBar } from "@/components/shared/entity-actions";
 
 interface FundMovesSelectionProps {
   selectedFundMoves: string[];
@@ -10,7 +10,10 @@ export function FundMovesSelection({
   selectedFundMoves,
   onClearSelection,
 }: FundMovesSelectionProps) {
-  const actions = useFundMovesBulkActions(selectedFundMoves, onClearSelection);
+  const actions = useFundMovesEntityActions(
+    selectedFundMoves,
+    onClearSelection,
+  );
 
   return (
     <SelectionBar

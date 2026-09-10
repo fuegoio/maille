@@ -30,14 +30,14 @@ import { Input } from "@/components/ui/input";
 // Types
 // ---------------------------------------------------------------------------
 
-export type BulkActionValue = {
+export type EntityActionValue = {
   value: string;
   label: string;
   icon: React.ReactNode;
   action: () => void;
 };
 
-export type BulkAction = {
+export type EntityAction = {
   value: string;
   label: string;
   icon: React.ReactNode;
@@ -50,7 +50,7 @@ export type BulkAction = {
   /** Called for null and input actions. For input, receives the typed value. */
   action?: (value?: string) => void;
   /** Called for select actions to enumerate the submenu values. */
-  getValues?: () => BulkActionValue[];
+  getValues?: () => EntityActionValue[];
   /** Render as destructive in the context menu. */
   variant?: "default" | "destructive";
 };
@@ -60,7 +60,7 @@ export type BulkAction = {
 // ---------------------------------------------------------------------------
 
 interface CommandPaletteDialogProps {
-  actions: BulkAction[];
+  actions: EntityAction[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClearSelection?: () => void;
@@ -234,7 +234,7 @@ export function CommandPaletteDialog({
 
 interface SelectionBarProps {
   selectedIds: string[];
-  actions: BulkAction[];
+  actions: EntityAction[];
   /** singular entity name, e.g. "activity" */
   entityName: string;
   onClearSelection: () => void;
@@ -314,23 +314,25 @@ export function SelectionBar({
 // Context menu (right-click menu as an alternative to the command palette)
 // ---------------------------------------------------------------------------
 
-interface BulkActionsContextMenuProps {
-  actions: BulkAction[];
+interface EntityContextMenuProps {
+  actions: EntityAction[];
   onClearSelection?: () => void;
   /** Called when the menu closes after an action, to clear selection. */
   onActionComplete?: () => void;
   children: React.ReactNode;
 }
 
-export function BulkActionsContextMenu({
+export function EntityContextMenu({
   actions,
   onActionComplete,
   children,
-}: BulkActionsContextMenuProps) {
-  const [inputAction, setInputAction] = React.useState<BulkAction | null>(null);
+}: EntityContextMenuProps) {
+  const [inputAction, setInputAction] = React.useState<EntityAction | null>(
+    null,
+  );
   const [inputValue, setInputValue] = React.useState("");
 
-  const handleDirectAction = (action: BulkAction) => {
+  const handleDirectAction = (action: EntityAction) => {
     action.action?.();
     onActionComplete?.();
   };
