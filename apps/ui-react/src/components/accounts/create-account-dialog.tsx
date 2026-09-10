@@ -90,7 +90,9 @@ export function CreateAccountDialog({
         mutation: createAccountMutation,
         variables: {
           ...account,
+          startingBalance: data.startingBalance,
           startingCashBalance: data.movements ? data.startingCashBalance : null,
+          movements: data.movements,
         },
         rollbackData: undefined,
         events: [
