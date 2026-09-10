@@ -5,6 +5,10 @@ import { ChevronRight, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import {
+  DebouncedInput,
+  DebouncedTextarea,
+} from "@/components/shared/debounced-text-field";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,9 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
-import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
@@ -190,20 +192,22 @@ export function Asset() {
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">Asset name</FieldLabel>
-                <Input
+                <DebouncedInput
+                  key={asset.id}
                   id="name"
                   value={asset.name}
-                  onChange={(e) => handleUpdateAsset({ name: e.target.value })}
+                  onCommit={(name) => handleUpdateAsset({ name })}
                 />
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="description">Description</FieldLabel>
-                <Textarea
+                <DebouncedTextarea
+                  key={asset.id}
                   id="description"
                   value={asset.description || ""}
-                  onChange={(e) =>
-                    handleUpdateAsset({ description: e.target.value || null })
+                  onCommit={(description) =>
+                    handleUpdateAsset({ description: description || null })
                   }
                   className="resize-none"
                   placeholder="Add a description ..."
@@ -213,11 +217,12 @@ export function Asset() {
 
               <Field>
                 <FieldLabel htmlFor="location">Location</FieldLabel>
-                <Input
+                <DebouncedInput
+                  key={asset.id}
                   id="location"
                   value={asset.location || ""}
-                  onChange={(e) =>
-                    handleUpdateAsset({ location: e.target.value || null })
+                  onCommit={(location) =>
+                    handleUpdateAsset({ location: location || null })
                   }
                   placeholder="Add a location ..."
                 />

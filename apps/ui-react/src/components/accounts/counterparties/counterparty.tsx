@@ -5,6 +5,10 @@ import * as React from "react";
 import type { Counterparty } from "@/gql/graphql";
 
 import {
+  DebouncedInput,
+  DebouncedTextarea,
+} from "@/components/shared/debounced-text-field";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -19,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarInset } from "@/components/ui/sidebar";
-import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -206,23 +209,23 @@ export function Counterparty() {
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">Counterparty name</FieldLabel>
-                <Input
+                <DebouncedInput
+                  key={counterparty.id}
                   id="name"
                   value={counterparty.name}
-                  onChange={(e) =>
-                    handleUpdateCounterparty({ name: e.target.value })
-                  }
+                  onCommit={(name) => handleUpdateCounterparty({ name })}
                 />
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="description">Description</FieldLabel>
-                <Textarea
+                <DebouncedTextarea
+                  key={counterparty.id}
                   id="description"
                   value={counterparty.description || ""}
-                  onChange={(e) =>
+                  onCommit={(description) =>
                     handleUpdateCounterparty({
-                      description: e.target.value || null,
+                      description: description || null,
                     })
                   }
                   className="resize-none"

@@ -17,6 +17,10 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import {
+  DebouncedInput,
+  DebouncedTextarea,
+} from "@/components/shared/debounced-text-field";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -36,8 +40,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import {
@@ -413,11 +415,12 @@ export function ActivityPage({
               />
 
               <div className="mt-1 flex items-baseline justify-between gap-4">
-                <Input
+                <DebouncedInput
+                  key={activity.id}
                   id="name"
                   aria-label="Activity name"
                   value={activity.name}
-                  onChange={(e) => updateActivity({ name: e.target.value })}
+                  onCommit={(name) => updateActivity({ name })}
                   placeholder="Activity name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
@@ -426,12 +429,13 @@ export function ActivityPage({
                 </div>
               </div>
 
-              <Textarea
+              <DebouncedTextarea
+                key={activity.id}
                 id="description"
                 aria-label="Description"
                 value={activity.description || ""}
-                onChange={(e) =>
-                  updateActivity({ description: e.target.value || null })
+                onCommit={(description) =>
+                  updateActivity({ description: description || null })
                 }
                 placeholder="Add a description ..."
                 rows={1}

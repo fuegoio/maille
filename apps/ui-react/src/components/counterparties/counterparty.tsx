@@ -10,6 +10,10 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import {
+  DebouncedInput,
+  DebouncedTextarea,
+} from "@/components/shared/debounced-text-field";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -25,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { Textarea } from "@/components/ui/textarea";
 import { UserSelect } from "@/components/users/user-select";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -250,12 +253,11 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
               </div>
 
               <div className="mt-3 flex items-baseline justify-between gap-4">
-                <Input
+                <DebouncedInput
+                  key={counterparty.id}
                   aria-label="Counterparty name"
                   value={counterparty.name}
-                  onChange={(e) =>
-                    handleUpdateCounterparty({ name: e.target.value })
-                  }
+                  onCommit={(name) => handleUpdateCounterparty({ name })}
                   placeholder="Counterparty name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
@@ -268,13 +270,12 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
                 Current liability
               </div>
 
-              <Textarea
+              <DebouncedTextarea
+                key={counterparty.id}
                 aria-label="Description"
                 value={counterparty.description || ""}
-                onChange={(e) =>
-                  handleUpdateCounterparty({
-                    description: e.target.value || null,
-                  })
+                onCommit={(description) =>
+                  handleUpdateCounterparty({ description: description || null })
                 }
                 placeholder="Add a description ..."
                 rows={1}

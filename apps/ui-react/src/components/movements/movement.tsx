@@ -22,6 +22,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { DebouncedInput } from "@/components/shared/debounced-text-field";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
@@ -63,7 +64,6 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { LinkActivityButton } from "./link-activity-button";
 
@@ -375,13 +375,12 @@ export function MovementPage({ movementId }: MovementPageProps) {
               />
 
               <div className="mt-1 flex items-baseline justify-between gap-4">
-                <Input
+                <DebouncedInput
+                  key={movement.id}
                   id="name"
                   aria-label="Movement name"
                   value={movement.name}
-                  onChange={(e) =>
-                    handleUpdateMovement({ name: e.target.value })
-                  }
+                  onCommit={(name) => handleUpdateMovement({ name })}
                   placeholder="Movement name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
