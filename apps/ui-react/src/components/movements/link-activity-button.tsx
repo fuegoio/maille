@@ -3,9 +3,17 @@ import type { Movement } from "@maille/core/movements";
 
 import { getActivityTransactionsSumByAccount } from "@maille/core/activities";
 import _ from "lodash";
-import { Euro, Link } from "lucide-react";
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+  Euro,
+  Landmark,
+  Link,
+} from "lucide-react";
 import * as React from "react";
 
+import { AccountLabel } from "@/components/accounts/account-label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import {
@@ -14,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListKeyboardNavigation } from "@/hooks/use-list-keyboard-navigation";
 import {
   linkActivityHistoryEvent,
   linkMovementHistoryEvent,
@@ -24,6 +33,8 @@ import { createMovementActivityMutation } from "@/mutations/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
+
+import { LinkFilterChip } from "./link-filter-chip";
 
 interface LinkActivityButtonProps {
   movement: Movement;
@@ -39,13 +50,22 @@ export function LinkActivityButton({
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [filterAmount, setFilterAmount] = React.useState(false);
+  const [filterAccount, setFilterAccount] = React.useState(true);
+  const [filterUnreconciled, setFilterUnreconciled] = React.useState(true);
+
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const listboxId = React.useId();
+
+  const resetFilters = () => {
+    setSearch("");
+    setFilterAmount(false);
+    setFilterAccount(true);
+    setFilterUnreconciled(true);
+  };
 
   const handleOpenChange = (open: boolean) => {
     setDialogOpen(open);
-    if (open) {
-      setSearch("");
-      setFilterAmount(false);
-    }
+    if (open) resetFilters();
   };
 
   const mutate = useSync((state) => state.mutate);
@@ -53,60 +73,72 @@ export function LinkActivityButton({
   const accounts = useAccounts((state) => state.accounts);
   const currencyFormatter = useCurrencyFormatter();
 
-  const getAccountSum = React.useCallback(
-    (activity: Activity) => {
-      const transactionsSumByAccount = getActivityTransactionsSumByAccount(
-        activity.transactions,
-        accounts,
-      );
-      return transactionsSumByAccount.find(
-        (tba) => tba.account === movement.account,
-      )?.total;
-    },
-    [accounts, movement.account],
-  );
+  const {
+    filteredActivities,
+    remainingAmount,
+    amountMatchCount,
+    reconciledCount,
+  } = React.useMemo(() => {
+    // Amount still to reconcile on the movement:
+    // total minus what linked activities already cover.
+    const remainingAmount = _.round(
+      movement.amount -
+        movement.activities.reduce((sum, ma) => sum + ma.amount, 0),
+      2,
+    );
 
-  const { filteredActivities, hasAmountMatches, matchCount } =
-    React.useMemo(() => {
-      const baseActivities = activities.filter((activity) => {
-        if (activity.movements.some((am) => am.movement === movement.id))
-          return false;
-        if (
-          !activity.transactions.some(
-            (t) =>
-              t.fromAccount === movement.account ||
-              t.toAccount === movement.account,
-          )
-        )
+    const sumsOf = (activity: Activity) =>
+      getActivityTransactionsSumByAccount(activity.transactions, accounts);
+
+    const involvesAccount = (activity: Activity, accountId: string) =>
+      sumsOf(activity).some((sba) => sba.account === accountId);
+
+    // An activity matches when one of its account totals corresponds
+    // to what the movement still needs.
+    const matchesAmount = (activity: Activity) =>
+      sumsOf(activity).some((sba) => _.round(sba.total, 2) === remainingAmount);
+
+    const baseActivities = activities.filter((activity) => {
+      if (activity.movements.some((am) => am.movement === movement.id))
+        return false;
+      if (filterAccount && !involvesAccount(activity, movement.account))
+        return false;
+      return true;
+    });
+
+    const filtered = _.orderBy(
+      baseActivities.filter((activity) => {
+        if (filterAmount && !matchesAmount(activity)) return false;
+        if (filterUnreconciled && activity.status === "completed") return false;
+        if (search !== "" && !searchCompare(search, activity.name))
           return false;
         return true;
-      });
+      }),
+      [(activity) => matchesAmount(activity), "date"],
+      ["desc", "desc"],
+    );
 
-      const matchesAmount = (activity: Activity) =>
-        _.round(getAccountSum(activity) ?? 0, 2) ===
-        _.round(movement.amount, 2);
+    return {
+      filteredActivities: filtered,
+      remainingAmount,
+      amountMatchCount: baseActivities.filter(matchesAmount).length,
+      reconciledCount: baseActivities.filter(
+        (activity) => activity.status === "completed",
+      ).length,
+    };
+  }, [
+    activities,
+    accounts,
+    movement,
+    filterAccount,
+    filterAmount,
+    filterUnreconciled,
+    search,
+  ]);
 
-      const amountMatches = baseActivities.filter(matchesAmount);
-
-      const filtered = _.orderBy(
-        baseActivities.filter((activity) => {
-          if (filterAmount && !matchesAmount(activity)) return false;
-
-          if (search !== "" && !searchCompare(search, activity.name))
-            return false;
-
-          return true;
-        }),
-        [(activity) => matchesAmount(activity), "date"],
-        ["desc", "desc"],
-      );
-
-      return {
-        filteredActivities: filtered,
-        hasAmountMatches: amountMatches.length > 0,
-        matchCount: amountMatches.length,
-      };
-    }, [activities, movement, filterAmount, search, getAccountSum]);
+  const accountName = accounts.find((a) => a.id === movement.account)?.name;
+  const hasActiveFilters =
+    filterAmount || !filterAccount || filterUnreconciled || search !== "";
 
   const linkActivity = (activity: Activity) => {
     const newId = crypto.randomUUID();
@@ -141,6 +173,32 @@ export function LinkActivityButton({
     setDialogOpen(false);
   };
 
+  const { highlightedIndex, listRef, handleKeyDown } =
+    useListKeyboardNavigation({
+      items: filteredActivities,
+      onSelect: linkActivity,
+      resetKey: `${dialogOpen}|${search}|${filterAmount}|${filterAccount}|${filterUnreconciled}`,
+    });
+
+  const toggleFilter = (toggle: () => void) => {
+    toggle();
+    inputRef.current?.focus();
+  };
+
+  const renderStatusIcon = (activity: Activity) => {
+    if (activity.status === "scheduled") {
+      return (
+        <CircleDashed className="mx-1.5 size-4 shrink-0 text-muted-foreground" />
+      );
+    }
+    if (activity.status === "incomplete") {
+      return (
+        <CircleDotDashed className="mx-1.5 size-4 shrink-0 text-orange-300" />
+      );
+    }
+    return <CircleCheck className="mx-1.5 size-4 shrink-0 text-indigo-300" />;
+  };
+
   return (
     <>
       <Tooltip>
@@ -162,59 +220,130 @@ export function LinkActivityButton({
       </Tooltip>
 
       <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="flex max-h-[420px] flex-col sm:max-w-2xl">
+        <DialogContent className="flex max-h-[480px] flex-col sm:max-w-2xl">
           <DialogHeader>
-            <div className="mb-2 flex">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
               <div className="flex h-6 items-center rounded bg-muted px-2.5 text-xs font-medium text-foreground">
                 {movement.name}
               </div>
+              <div className="flex h-6 items-center rounded bg-muted px-2.5 font-mono text-xs font-medium text-muted-foreground">
+                {currencyFormatter.format(remainingAmount)} to reconcile
+              </div>
             </div>
 
-            <div className="-mr-1 flex items-center gap-2">
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search for an activity..."
-                className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-foreground outline-none"
-                autoFocus
-              />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search for an activity..."
+              className="h-10 min-w-0 flex-1 border-none bg-transparent pl-1 text-left text-lg text-foreground outline-none"
+              ref={inputRef}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                highlightedIndex >= 0
+                  ? `${listboxId}-option-${highlightedIndex}`
+                  : undefined
+              }
+              autoFocus
+            />
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "transition-colors",
-                      filterAmount && "bg-primary/10 text-primary",
-                    )}
-                    onClick={() => setFilterAmount(!filterAmount)}
-                  >
-                    <Euro />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+              <LinkFilterChip
+                active={filterAmount}
+                onToggle={() =>
+                  toggleFilter(() => setFilterAmount(!filterAmount))
+                }
+                icon={<Euro className="size-3.5" />}
+                tooltip={
                   <p>
                     {filterAmount
-                      ? `Amount filter on — showing ${matchCount} matching activit${matchCount === 1 ? "y" : "ies"}`
-                      : hasAmountMatches
-                        ? `Amount filter off — ${matchCount} activit${matchCount === 1 ? "y" : "ies"} match the movement amount`
-                        : "Amount filter off — no activities match the movement amount"}
+                      ? amountMatchCount > 0
+                        ? `Amount filter on — ${amountMatchCount} activit${amountMatchCount === 1 ? "y" : "ies"} match${amountMatchCount === 1 ? "es" : ""} the ${currencyFormatter.format(remainingAmount)} to reconcile.`
+                        : `Amount filter on — no activity matches the ${currencyFormatter.format(remainingAmount)} to reconcile.`
+                      : `Show only activities matching the ${currencyFormatter.format(remainingAmount)} to reconcile.`}
                   </p>
-                </TooltipContent>
-              </Tooltip>
+                }
+              >
+                Amount
+              </LinkFilterChip>
+
+              <LinkFilterChip
+                active={filterAccount}
+                onToggle={() =>
+                  toggleFilter(() => setFilterAccount(!filterAccount))
+                }
+                icon={<Landmark className="size-3.5" />}
+                tooltip={
+                  <p>
+                    {filterAccount
+                      ? `Only activities with a transaction on ${accountName} are shown. Click to see all activities.`
+                      : `Activities from all accounts are shown. Click to restrict to ${accountName}.`}
+                  </p>
+                }
+              >
+                {filterAccount
+                  ? (accountName ?? "This account")
+                  : "All accounts"}
+              </LinkFilterChip>
+
+              <LinkFilterChip
+                active={filterUnreconciled}
+                onToggle={() =>
+                  toggleFilter(() => setFilterUnreconciled(!filterUnreconciled))
+                }
+                icon={<CircleDotDashed className="size-3.5" />}
+                tooltip={
+                  <p>
+                    {filterUnreconciled
+                      ? `Reconciled activities are hidden${reconciledCount > 0 ? ` (${reconciledCount})` : ""}. Click to show all.`
+                      : "Show only activities not yet reconciled."}
+                  </p>
+                }
+              >
+                To reconcile
+              </LinkFilterChip>
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-auto">
-            {filteredActivities.map((activity) => {
-              const amountMatches =
-                _.round(getAccountSum(activity) ?? 0, 2) ===
-                _.round(movement.amount, 2);
+          <div
+            ref={listRef}
+            id={listboxId}
+            role="listbox"
+            className="flex-1 overflow-auto"
+          >
+            {filteredActivities.map((activity, index) => {
+              const sums = getActivityTransactionsSumByAccount(
+                activity.transactions,
+                accounts,
+              );
+              const amountMatches = sums.some(
+                (sba) => _.round(sba.total, 2) === remainingAmount,
+              );
+              const displayedAccount = sums.some(
+                (sba) => sba.account === movement.account,
+              )
+                ? movement.account
+                : ((amountMatches
+                    ? sums.find(
+                        (sba) => _.round(sba.total, 2) === remainingAmount,
+                      )?.account
+                    : _.maxBy(sums, (sba) => Math.abs(sba.total))?.account) ??
+                  movement.account);
+              const displayedSum =
+                sums.find((sba) => sba.account === displayedAccount)?.total ??
+                0;
+              const isHighlighted = index === highlightedIndex;
               return (
                 <div
                   key={activity.id}
-                  className="flex h-10 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted"
+                  data-index={index}
+                  role="option"
+                  aria-selected={isHighlighted}
+                  id={`${listboxId}-option-${index}`}
+                  className={cn(
+                    "flex h-10 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted",
+                    isHighlighted && "bg-accent",
+                  )}
                   onClick={() => linkActivity(activity)}
                 >
                   <div className="hidden w-20 shrink-0 font-mono text-muted-foreground sm:block">
@@ -227,30 +356,41 @@ export function LinkActivityButton({
                     })}
                   </div>
 
-                  <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-foreground">
+                  {renderStatusIcon(activity)}
+
+                  <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-foreground">
                     {activity.name}
                   </div>
-                  {amountMatches && (
-                    <div className="ml-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                  {displayedAccount !== movement.account && (
+                    <AccountLabel accountId={displayedAccount} />
                   )}
-                  <div className="flex-1" />
+                  {amountMatches && (
+                    <div className="mr-1 size-1.5 shrink-0 rounded-full bg-primary" />
+                  )}
                   <div
                     className={cn(
-                      "w-20 text-right font-mono whitespace-nowrap",
+                      "w-24 shrink-0 text-right font-mono whitespace-nowrap",
                       amountMatches ? "text-primary" : "text-muted-foreground",
                     )}
                   >
-                    {currencyFormatter.format(getAccountSum(activity) ?? 0)}
+                    {currencyFormatter.format(displayedSum)}
                   </div>
                 </div>
               );
             })}
 
             {filteredActivities.length === 0 && (
-              <div className="flex w-full items-center justify-center py-6 text-sm text-muted-foreground">
-                {filterAmount
-                  ? "No activities match the movement amount. Turn off the amount filter to see all activities."
-                  : "No activities found for this account."}
+              <div className="flex flex-col items-center justify-center gap-3 py-6 text-sm text-muted-foreground">
+                <p>
+                  {hasActiveFilters
+                    ? "No activities match the current filters."
+                    : "No activities found."}
+                </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" size="sm" onClick={resetFilters}>
+                    Reset filters
+                  </Button>
+                )}
               </div>
             )}
           </div>
