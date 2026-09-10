@@ -139,6 +139,56 @@ interface ActivitiesState {
   handleMutationError: (event: any) => void;
 }
 
+/**
+ * Recompute the reconciliation status of every activity with a transaction or
+ * linked movement on an account whose `movements` flag just changed: enabling
+ * or disabling movements changes whether those transactions require linked
+ * movements to be reconciled, so cached statuses become stale.
+ *
+ * The account snapshot is overridden locally because the accounts store
+ * applies updateAccount events after this store (see useSync's event
+ * fan-out).
+ */
+function recomputeActivityStatusesForAccount(
+  accountId: string,
+  movements: boolean,
+) {
+  const accounts = useAccounts
+    .getState()
+    .accounts.map((account) =>
+      account.id === accountId ? { ...account, movements } : account,
+    );
+  const getMovementById = useMovements.getState().getMovementById;
+
+  useActivities.setState((state) => ({
+    activities: state.activities.map((activity) => {
+      const hasTransactionOnAccount = activity.transactions.some(
+        (transaction) =>
+          transaction.fromAccount === accountId ||
+          transaction.toAccount === accountId,
+      );
+      const hasMovementOnAccount = activity.movements.some(
+        (activityMovement) =>
+          getMovementById(activityMovement.movement)?.account === accountId,
+      );
+      if (!hasTransactionOnAccount && !hasMovementOnAccount) {
+        return activity;
+      }
+
+      return {
+        ...activity,
+        status: getActivityStatus(
+          activity.date,
+          activity.transactions,
+          activity.movements,
+          accounts,
+          getMovementById,
+        ),
+      };
+    }),
+  }));
+}
+
 export const useActivities = create<ActivitiesState>()(
   persist(
     (set, get) => ({
@@ -653,6 +703,13 @@ export const useActivities = create<ActivitiesState>()(
               }
             });
           });
+        } else if (event.type === "updateAccount") {
+          if (event.payload.movements !== undefined) {
+            recomputeActivityStatusesForAccount(
+              event.payload.id,
+              event.payload.movements,
+            );
+          }
         }
       },
 
@@ -698,6 +755,11 @@ export const useActivities = create<ActivitiesState>()(
               (s) => s.user !== mutation.variables.userId,
             ),
           });
+        } else if (mutation.name === "updateAccount") {
+          recomputeActivityStatusesForAccount(
+            mutation.rollbackData.id,
+            mutation.rollbackData.movements,
+          );
         } else if (mutation.name === "createActivityCategory") {
           get().deleteActivityCategory(mutation.variables.id);
         } else if (mutation.name === "updateActivityCategory") {
