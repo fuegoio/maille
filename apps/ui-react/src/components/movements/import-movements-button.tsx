@@ -3,7 +3,14 @@ import type { Movement } from "@maille/core/movements";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parse as parseCSV } from "csv-parse/browser/esm/sync";
 import { parse, format, isSameDay } from "date-fns";
-import { ArrowLeft, ArrowRight, Check, Loader2, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Loader2,
+  Sparkles,
+  Upload,
+} from "lucide-react";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -25,6 +32,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -45,9 +53,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
+import { extractMovementsFromText } from "@/lib/extract-movements";
 import { movementCreateHistoryEvent } from "@/lib/history-events";
 import { cn } from "@/lib/utils";
 import { createMovementMutation } from "@/mutations/movements";
@@ -57,6 +68,8 @@ import { useSync } from "@/stores/sync";
 import { Separator } from "../ui/separator";
 
 type DelimiterOption = "auto" | "semicolon" | "comma" | "tab";
+type ImportMode = "csv" | "paste";
+type EditableField = "name" | "date" | "amount";
 
 const DELIMITER_VALUES: Record<DelimiterOption, string | string[]> = {
   auto: [";", ","],
@@ -100,6 +113,7 @@ type PreviewRow = {
   amount: number;
   isDuplicate: boolean;
   skip: boolean;
+  edited: boolean;
 };
 
 interface ImportMovementsButtonProps {
@@ -112,6 +126,7 @@ export function ImportMovementsButton({
   onImported,
 }: ImportMovementsButtonProps) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [mode, setMode] = React.useState<ImportMode>("csv");
   const [step, setStep] = React.useState(0);
   const [rawText, setRawText] = React.useState("");
   const [delimiter, setDelimiter] = React.useState<DelimiterOption>("auto");
@@ -121,6 +136,22 @@ export function ImportMovementsButton({
   const [importMovementIds, setImportMovementIds] = React.useState<string[]>(
     [],
   );
+  const [pastedText, setPastedText] = React.useState("");
+  const [pasteAccount, setPasteAccount] = React.useState("");
+  const [pasteRatio, setPasteRatio] = React.useState(100);
+  const [extracting, setExtracting] = React.useState(false);
+  const [extractionError, setExtractionError] = React.useState<string | null>(
+    null,
+  );
+  const [extractionNotice, setExtractionNotice] = React.useState<string | null>(
+    null,
+  );
+  const [droppedCount, setDroppedCount] = React.useState(0);
+  const [previewAccount, setPreviewAccount] = React.useState("");
+  const [editing, setEditing] = React.useState<{
+    index: number;
+    field: EditableField;
+  } | null>(null);
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const currencyFormatter = useCurrencyFormatter();
@@ -138,7 +169,7 @@ export function ImportMovementsButton({
     },
   });
 
-  const { control, handleSubmit, reset, getValues } = form;
+  const { control, handleSubmit, reset } = form;
 
   const headers = React.useMemo(() => {
     if (records.length === 0) return [];
@@ -233,18 +264,133 @@ export function ImportMovementsButton({
         amount,
         isDuplicate: dup,
         skip: dup,
+        edited: false,
       };
     });
   };
 
   const goToPreview = (data: FormValues) => {
     setPreviewRows(buildPreviewRows(data));
+    setPreviewAccount(data.account);
+    setDroppedCount(0);
     setStep(2);
+  };
+
+  const handleExtract = async () => {
+    if (pastedText.trim().length === 0) {
+      setExtractionNotice(null);
+      setExtractionError("Paste a statement, an email or an HTML page first.");
+      return;
+    }
+    if (!pasteAccount) {
+      setExtractionNotice(null);
+      setExtractionError("Select the account the movements belong to.");
+      return;
+    }
+
+    setExtracting(true);
+    setExtractionError(null);
+    setExtractionNotice(null);
+    try {
+      const result = await extractMovementsFromText(pastedText);
+      if (result.movements.length === 0) {
+        setExtractionNotice("No movements found in this text.");
+        return;
+      }
+
+      const rows: PreviewRow[] = result.movements.map((movement, index) => {
+        const date = parse(movement.date, "yyyy-MM-dd", new Date());
+        const amount = movement.amount * (pasteRatio / 100);
+        const dup = checkDuplicate(
+          pasteAccount,
+          movement.name,
+          date,
+          amount,
+          movements,
+        );
+        return {
+          index,
+          name: movement.name,
+          date,
+          amount,
+          isDuplicate: dup,
+          skip: dup,
+          edited: false,
+        };
+      });
+
+      setPreviewRows(rows);
+      setPreviewAccount(pasteAccount);
+      setDroppedCount(result.dropped);
+      setStep(2);
+    } catch (error) {
+      setExtractionError(
+        error instanceof Error
+          ? error.message
+          : "The extraction failed. Try again.",
+      );
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const toggleRow = (index: number) => {
     setPreviewRows((rows) =>
       rows.map((r) => (r.index === index ? { ...r, skip: !r.skip } : r)),
+    );
+  };
+
+  const commitEdit = (index: number, field: EditableField, raw: string) => {
+    setEditing(null);
+    setPreviewRows((rows) =>
+      rows.map((r) => {
+        if (r.index !== index) return r;
+
+        // Edits re-derive the duplicate flag, and with it the skip state —
+        // same semantics as when the preview was first built.
+        const withDuplicate = (partial: Partial<PreviewRow>): PreviewRow => ({
+          ...r,
+          ...partial,
+          edited: true,
+        });
+
+        if (field === "name") {
+          const name = raw.trim();
+          if (!name || name === r.name) return r;
+          const isDuplicate = checkDuplicate(
+            previewAccount,
+            name,
+            r.date,
+            r.amount,
+            movements,
+          );
+          return withDuplicate({ name, isDuplicate, skip: isDuplicate });
+        }
+
+        if (field === "date") {
+          const date = parseDate(raw);
+          if (isNaN(date.getTime()) || +date === +r.date) return r;
+          const isDuplicate = checkDuplicate(
+            previewAccount,
+            r.name,
+            date,
+            r.amount,
+            movements,
+          );
+          return withDuplicate({ date, isDuplicate, skip: isDuplicate });
+        }
+
+        const amount = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
+        if (isNaN(amount) || amount === r.amount) return r;
+        const isDuplicate = checkDuplicate(
+          previewAccount,
+          r.name,
+          r.date,
+          amount,
+          movements,
+        );
+        return withDuplicate({ amount, isDuplicate, skip: isDuplicate });
+      }),
     );
   };
 
@@ -275,7 +421,7 @@ export function ImportMovementsButton({
     importMovementIds.length > 0 && importedCount === importMovementIds.length;
 
   const processImport = () => {
-    const { account } = getValues();
+    const account = previewAccount;
     const ids: string[] = [];
 
     toImport.forEach((row) => {
@@ -315,6 +461,7 @@ export function ImportMovementsButton({
 
   const resetDialog = () => {
     setDialogOpen(false);
+    setMode("csv");
     setStep(0);
     setRawText("");
     setDelimiter("auto");
@@ -322,6 +469,15 @@ export function ImportMovementsButton({
     setPreviewRows([]);
     setImporting(false);
     setImportMovementIds([]);
+    setPastedText("");
+    setPasteAccount("");
+    setPasteRatio(100);
+    setExtracting(false);
+    setExtractionError(null);
+    setExtractionNotice(null);
+    setDroppedCount(0);
+    setPreviewAccount("");
+    setEditing(null);
     reset({
       account: "",
       mapping: {
@@ -333,7 +489,35 @@ export function ImportMovementsButton({
     });
   };
 
-  const stepLabels = ["Upload", "Map fields", "Preview & import"];
+  const stepLabels =
+    mode === "csv"
+      ? ["Upload", "Map fields", "Preview & import"]
+      : ["Paste", "Preview & import"];
+  const stepLabelIndex = mode === "csv" ? step : step === 2 ? 1 : 0;
+
+  const goBackFromPreview = () => {
+    if (mode === "csv") {
+      setStep(1);
+    } else {
+      setPreviewRows([]);
+      setEditing(null);
+      setStep(0);
+    }
+  };
+
+  const editorKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+    index: number,
+    field: EditableField,
+  ) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitEdit(index, field, event.currentTarget.value);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setEditing(null);
+    }
+  };
 
   return (
     <>
@@ -361,12 +545,12 @@ export function ImportMovementsButton({
           )}
         >
           <DialogHeader className="shrink-0">
-            <DialogTitle>Import movements from a CSV</DialogTitle>
+            <DialogTitle>Import movements</DialogTitle>
           </DialogHeader>
 
           <div className="flex shrink-0 items-center gap-1.5 border-b px-1 pb-4 text-xs text-muted-foreground">
             {stepLabels.map((label, i) => {
-              const isActive = step === i;
+              const isActive = stepLabelIndex === i;
               return (
                 <React.Fragment key={label}>
                   {i > 0 && (
@@ -386,9 +570,109 @@ export function ImportMovementsButton({
           </div>
 
           {step === 0 ? (
-            <div className="min-h-0 flex-1 overflow-y-auto pt-1 pb-4">
-              <UploadDropZone onFile={handleInputFile} />
-            </div>
+            <Tabs
+              value={mode}
+              onValueChange={(value) => {
+                setMode(value as ImportMode);
+                setExtractionError(null);
+                setExtractionNotice(null);
+              }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <TabsList className="shrink-0 self-start">
+                <TabsTrigger value="csv">CSV file</TabsTrigger>
+                <TabsTrigger value="paste">Paste text</TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="csv"
+                className="mt-0 min-h-0 flex-1 overflow-y-auto pt-3 pb-4"
+              >
+                <UploadDropZone onFile={handleInputFile} />
+              </TabsContent>
+
+              <TabsContent
+                value="paste"
+                className="mt-0 flex min-h-0 flex-1 flex-col pt-3"
+              >
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <Textarea
+                    value={pastedText}
+                    onChange={(event) => {
+                      setPastedText(event.target.value);
+                      setExtractionError(null);
+                      setExtractionNotice(null);
+                    }}
+                    placeholder="Paste a bank statement, an email, a receipt, or an HTML page — the AI extracts every movement it contains."
+                    className="min-h-44 flex-1 resize-none font-mono text-xs"
+                    disabled={extracting}
+                  />
+                  {extractionError && (
+                    <p className="pt-2 text-sm text-destructive">
+                      {extractionError}
+                    </p>
+                  )}
+                  {extractionNotice && (
+                    <p className="pt-2 text-sm text-muted-foreground">
+                      {extractionNotice}
+                    </p>
+                  )}
+
+                  <div className="flex items-start gap-4 pt-4">
+                    <Field className="min-w-0 flex-1">
+                      <FieldLabel htmlFor="paste-account">Account</FieldLabel>
+                      <AccountSelect
+                        id="paste-account"
+                        value={pasteAccount}
+                        onChange={(value) => setPasteAccount(value ?? "")}
+                        movementsOnly
+                      />
+                    </Field>
+
+                    <Field className="w-32 shrink-0">
+                      <FieldLabel htmlFor="paste-ratio">Ratio</FieldLabel>
+                      <InputGroup>
+                        <InputGroupInput
+                          id="paste-ratio"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={pasteRatio}
+                          onChange={(event) =>
+                            setPasteRatio(parseFloat(event.target.value) || 0)
+                          }
+                        />
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupText>%</InputGroupText>
+                        </InputGroupAddon>
+                      </InputGroup>
+                      <FieldDescription>
+                        Use 50 for a shared account (50%).
+                      </FieldDescription>
+                    </Field>
+                  </div>
+                </div>
+
+                <DialogFooter className="shrink-0 border-t pt-4">
+                  <Button variant="outline" type="button" onClick={resetDialog}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    className="ml-2"
+                    onClick={handleExtract}
+                    disabled={extracting}
+                  >
+                    {extracting ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Sparkles />
+                    )}
+                    {extracting ? "Extracting..." : "Extract movements"}
+                  </Button>
+                </DialogFooter>
+              </TabsContent>
+            </Tabs>
           ) : step === 1 ? (
             <form
               onSubmit={handleSubmit(goToPreview)}
@@ -590,6 +874,14 @@ export function ImportMovementsButton({
                     detected
                   </span>
                 )}
+                {droppedCount > 0 && (
+                  <span className="text-muted-foreground">
+                    · {droppedCount} could not be read
+                  </span>
+                )}
+                <span className="ml-auto text-xs text-muted-foreground">
+                  Click a cell to correct it
+                </span>
               </div>
 
               <div className="min-h-0 flex-1 overflow-auto">
@@ -644,6 +936,12 @@ export function ImportMovementsButton({
                         const rowPending =
                           importing && isImportingRow && !rowDone;
 
+                        const editingField =
+                          editing?.index === row.index ? editing.field : null;
+
+                        const cellButton =
+                          "w-full rounded-sm px-1.5 py-1 text-left transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed";
+
                         return (
                           <tr
                             key={row.index}
@@ -659,14 +957,116 @@ export function ImportMovementsButton({
                                 onCheckedChange={() => toggleRow(row.index)}
                               />
                             </td>
-                            <td className="h-10 max-w-[200px] truncate px-2 text-sm">
-                              {row.name}
+                            <td className="h-10 max-w-[200px] px-1 text-sm">
+                              {editingField === "name" ? (
+                                <Input
+                                  autoFocus
+                                  defaultValue={row.name}
+                                  className="h-7 px-1.5 text-sm"
+                                  onFocus={(event) => event.target.select()}
+                                  onBlur={(event) =>
+                                    commitEdit(
+                                      row.index,
+                                      "name",
+                                      event.target.value,
+                                    )
+                                  }
+                                  onKeyDown={(event) =>
+                                    editorKeyDown(event, row.index, "name")
+                                  }
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={cn(cellButton, "truncate")}
+                                  disabled={importing}
+                                  onClick={() =>
+                                    setEditing({
+                                      index: row.index,
+                                      field: "name",
+                                    })
+                                  }
+                                >
+                                  <span className="block truncate">
+                                    {row.name}
+                                  </span>
+                                </button>
+                              )}
                             </td>
-                            <td className="h-10 px-2 text-sm whitespace-nowrap text-muted-foreground">
-                              {format(row.date, "dd MMM yyyy")}
+                            <td className="h-10 px-1 text-sm">
+                              {editingField === "date" ? (
+                                <Input
+                                  autoFocus
+                                  defaultValue={format(row.date, "dd/MM/yyyy")}
+                                  className="h-7 px-1.5 text-sm"
+                                  onFocus={(event) => event.target.select()}
+                                  onBlur={(event) =>
+                                    commitEdit(
+                                      row.index,
+                                      "date",
+                                      event.target.value,
+                                    )
+                                  }
+                                  onKeyDown={(event) =>
+                                    editorKeyDown(event, row.index, "date")
+                                  }
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    cellButton,
+                                    "whitespace-nowrap text-muted-foreground",
+                                  )}
+                                  disabled={importing}
+                                  onClick={() =>
+                                    setEditing({
+                                      index: row.index,
+                                      field: "date",
+                                    })
+                                  }
+                                >
+                                  {format(row.date, "dd MMM yyyy")}
+                                </button>
+                              )}
                             </td>
-                            <td className="h-10 px-2 text-right font-mono text-sm whitespace-nowrap">
-                              {currencyFormatter.format(row.amount)}
+                            <td className="h-10 px-1 text-sm">
+                              {editingField === "amount" ? (
+                                <Input
+                                  autoFocus
+                                  defaultValue={String(row.amount)}
+                                  inputMode="decimal"
+                                  className="h-7 px-1.5 text-right font-mono text-sm"
+                                  onFocus={(event) => event.target.select()}
+                                  onBlur={(event) =>
+                                    commitEdit(
+                                      row.index,
+                                      "amount",
+                                      event.target.value,
+                                    )
+                                  }
+                                  onKeyDown={(event) =>
+                                    editorKeyDown(event, row.index, "amount")
+                                  }
+                                />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    cellButton,
+                                    "text-right font-mono whitespace-nowrap",
+                                  )}
+                                  disabled={importing}
+                                  onClick={() =>
+                                    setEditing({
+                                      index: row.index,
+                                      field: "amount",
+                                    })
+                                  }
+                                >
+                                  {currencyFormatter.format(row.amount)}
+                                </button>
+                              )}
                             </td>
                             <td className="h-10 px-3 text-right">
                               {rowDone ? (
@@ -682,6 +1082,10 @@ export function ImportMovementsButton({
                               ) : row.isDuplicate ? (
                                 <span className="text-xs text-muted-foreground">
                                   Duplicate
+                                </span>
+                              ) : row.edited ? (
+                                <span className="text-xs text-muted-foreground">
+                                  Edited
                                 </span>
                               ) : null}
                             </td>
@@ -704,7 +1108,7 @@ export function ImportMovementsButton({
                       variant="outline"
                       type="button"
                       disabled={importing}
-                      onClick={() => setStep(1)}
+                      onClick={goBackFromPreview}
                     >
                       <ArrowLeft />
                       Back

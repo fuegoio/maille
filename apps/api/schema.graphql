@@ -142,6 +142,17 @@ type Event {
   user: String!
 }
 
+type ExtractedMovement {
+  amount: Float!
+  date: Date!
+  name: String!
+}
+
+type ExtractionResult {
+  dropped: Int!
+  movements: [ExtractedMovement!]!
+}
+
 type Fund {
   color: String!
   endDate: Date
@@ -255,6 +266,11 @@ type Mutation {
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
+
+  """
+  Extracts a structured list of movements from pasted text or HTML using AI. No state is written.
+  """
+  extractMovements(text: String!): ExtractionResult!
   setFundAllocations(allocations: [FundAllocationInput!]!, fund: String!): [FundAllocation!]!
   shareAccount(id: String!, userId: String!): Account!
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!

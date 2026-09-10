@@ -58,6 +58,8 @@ export type ChatCompletionParams = {
   messages: LlmMessage[];
   tools: LlmTool[];
   timeoutMs: number;
+  /** Force a specific tool by name; defaults to model choice ("auto"). */
+  toolChoice?: string;
   fetchFn?: FetchLike;
 };
 
@@ -166,7 +168,9 @@ export async function chatCompletion(params: ChatCompletionParams): Promise<Chat
             parameters: tool.parameters,
           },
         })),
-        tool_choice: "auto",
+        tool_choice: params.toolChoice
+          ? { type: "function", function: { name: params.toolChoice } }
+          : "auto",
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
