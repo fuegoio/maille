@@ -403,8 +403,8 @@ export function FundSummary({
                 <div className="font-mono text-sm">
                   {currencyFormatter.format(childBalances.get(child.id) ?? 0)}
                 </div>
-                <div className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100">
-                  <ChevronRight className="size-4" />
+                <div className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100">
+                  <ChevronRight className="ml-2 size-4" />
                 </div>
               </Link>
             ))}
@@ -522,9 +522,9 @@ export function FundSummary({
                             params={{ id: account.id }}
                             onClick={(event) => event.stopPropagation()}
                             aria-label={`Open ${account.name}`}
-                            className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+                            className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100"
                           >
-                            <ChevronRight className="size-4" />
+                            <ChevronRight className="ml-2 size-4" />
                           </Link>
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import type {
   ActivitySubCategory,
 } from "@maille/core/activities";
 
+import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -147,6 +148,16 @@ export function MonthActivityCategoryLine({
           <div className="font-mono text-sm whitespace-nowrap text-white">
             {currencyFormatter.format(monthActivityCategoryValue)}
           </div>
+
+          <Link
+            to="/categories/$id"
+            params={{ id: category.id }}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`Open ${category.name}`}
+            className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100"
+          >
+            <ChevronRight className="ml-2 size-4" />
+          </Link>
         </div>
       </div>
 

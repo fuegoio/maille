@@ -131,9 +131,9 @@ export function MonthFundsSummary({
       params={params as never}
       onClick={(event) => event.stopPropagation()}
       aria-label={label}
-      className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+      className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100"
     >
-      <ChevronRight className="size-4" />
+      <ChevronRight className="ml-2 size-4" />
     </Link>
   );
 
