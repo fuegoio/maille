@@ -1,9 +1,8 @@
 import type { FundMove } from "@maille/core/funds";
 
 import { getAllocationDate } from "@maille/core/funds";
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { format } from "date-fns";
-import { Calendar, ChevronDown, MoveRight } from "lucide-react";
+import { MoveRight } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -11,16 +10,13 @@ import {
   useContextNavigate,
 } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
-import {
-  computeRowOutlines,
-  rowOutlineClasses,
-  type OutlineRow,
-} from "@/components/shared/row-outline";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
+import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useListFocus } from "@/hooks/use-list-focus";
-import { useRangeSelection } from "@/hooks/use-range-selection";
+import { useGroupedRows } from "@/hooks/use-grouped-rows";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
@@ -75,7 +71,6 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
   const search = useSearch((state) => state.search);
-  const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
     // A move tied to a transaction belongs to the activity holding it
@@ -162,130 +157,29 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     [rows, search],
   );
 
-  type Group = {
-    id: string;
-    month: number;
-    year: number;
-    inflow: number;
-    outflow: number;
-    rows: FundRow[];
-  };
+  const { items, isFolded, toggleGroup } = useGroupedRows(rowsFiltered, true);
 
-  type RowAndGroup =
-    | ({ itemType: "group" } & Group)
-    | ({ itemType: "row" } & FundRow);
-
-  const rowsWithGroups = React.useMemo<RowAndGroup[]>(() => {
-    const groups = rowsFiltered.reduce((groups: Group[], row) => {
-      const month = row.date.getMonth();
-      const year = row.date.getFullYear();
-      let group = groups.find((p) => p.month === month && p.year === year);
-
-      if (!group) {
-        group = {
-          id: `${month}-${year}`,
-          month,
-          year,
-          inflow: 0,
-          outflow: 0,
-          rows: [],
-        };
-        groups.push(group);
-      }
-
-      group.rows.push(row);
-      if (row.direction === "in") {
-        group.inflow += row.amount;
-      } else {
-        group.outflow += row.amount;
-      }
-
-      return groups;
-    }, []);
-
-    return groups
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
-      })
-      .reduce((rwg: RowAndGroup[], group) => {
-        rwg.push({
-          itemType: "group",
-          id: group.id,
-          month: group.month,
-          year: group.year,
-          inflow: group.inflow,
-          outflow: group.outflow,
-          rows: group.rows,
-        });
-        if (!groupsFolded.includes(group.id)) {
-          return rwg.concat(
-            group.rows.map((row) => ({ itemType: "row" as const, ...row })),
-          );
-        }
-        return rwg;
-      }, []);
-  }, [rowsFiltered, groupsFolded]);
-
-  // Rendered row order, skipping group headers and unselectable
-  // allocation rows, shared by range selection
-  const visibleFundMoveIds = React.useMemo(
+  const tableRows = React.useMemo<TableRow[]>(
     () =>
-      rowsWithGroups
-        .filter((item) => item.itemType === "row" && item.kind === "move")
-        .map((item) => item.id),
-    [rowsWithGroups],
+      items.map((item) => ({
+        id: item.id,
+        selectable: item.itemType === "row" && item.kind === "move",
+      })),
+    [items],
   );
 
   const {
+    rowOutlines,
+    registerRow,
     selectedIds: selectedFundMoves,
     toggle: toggleFundMove,
     selectOnly: selectOnlyFundMove,
-    selectAll: selectAllFundMoves,
-    clear: clearSelectedFundMoves,
-  } = useRangeSelection(visibleFundMoveIds);
-
-  const { focusedId, registerRow, moveFocus, clearFocus } =
-    useListFocus(visibleFundMoveIds);
-
-  // Outline sides for selected (checked or focused) rows; contiguous
-  // selected rows merge into one outlined block. Group headers and
-  // unselectable allocation rows split runs.
-  const rowOutlines = React.useMemo(() => {
-    const rows: OutlineRow[] = rowsWithGroups.map((item) =>
-      item.itemType !== "row" || item.kind === "allocation"
-        ? ("break" as const)
-        : {
-            id: item.id,
-            selected:
-              selectedFundMoves.includes(item.id) || item.id === focusedId,
-          },
-    );
-    return computeRowOutlines(rows);
-  }, [rowsWithGroups, selectedFundMoves, focusedId]);
-
-  const entityActions = useFundMovesEntityActions(
-    selectedFundMoves,
-    clearSelectedFundMoves,
-  );
-
-  // Hotkeys: J/K move a focused row through the list (K up, J down, first
-  // row when nothing is focused), Enter opens the focused move's activity
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
-  });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId === null) return;
-      const move = moves.find((m) => m.id === focusedId);
+    clearSelection: clearSelectedFundMoves,
+  } = useTableRows({
+    rows: tableRows,
+    checkable: true,
+    onOpen: (id) => {
+      const move = moves.find((m) => m.id === id);
       if (!move?.activity) return;
 
       void contextNavigate({
@@ -296,41 +190,12 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
           : undefined,
       });
     },
-    {
-      ignoreInputs: true,
-    },
-  );
+  });
 
-  useHotkey(
-    "Escape",
-    () => {
-      if (selectedFundMoves.length > 0) {
-        clearSelectedFundMoves();
-      } else {
-        clearFocus();
-      }
-    },
-    {
-      conflictBehavior: "allow",
-    },
+  const entityActions = useFundMovesEntityActions(
+    selectedFundMoves,
+    clearSelectedFundMoves,
   );
-
-  useHotkey(
-    "Mod+A",
-    (event) => {
-      if (event.key !== "a") return;
-      selectAllFundMoves(moves.map((m) => m.id));
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  const periodFormatter = (month: number, year: number): string =>
-    new Date(year, month).toLocaleString("default", {
-      month: "long",
-      year: "numeric",
-    });
 
   if (rowsFiltered.length === 0) {
     return (
@@ -344,45 +209,42 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto">
         <ScrollArea className="flex-1 pb-40">
-          {rowsWithGroups.map((item) => (
+          {items.map((item) => (
             <React.Fragment key={item.id}>
               {item.itemType === "group" ? (
-                <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
-                  <ChevronDown
-                    className={cn(
-                      "mr-1 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
-                      groupsFolded.includes(item.id) &&
-                        "-rotate-90 opacity-100",
-                    )}
-                    onClick={() => {
-                      if (groupsFolded.includes(item.id)) {
-                        setGroupsFolded((prev) =>
-                          prev.filter((id) => id !== item.id),
-                        );
-                      } else {
-                        setGroupsFolded((prev) => [...prev, item.id]);
-                      }
-                    }}
-                  />
-                  <Calendar className="hidden size-4 sm:block" />
-                  <div className="text-sm">
-                    {periodFormatter(item.month, item.year)}
-                  </div>
-                  <div className="flex-1" />
+                <TableGroupHeader
+                  id={item.id}
+                  folded={isFolded(item.id)}
+                  onToggle={toggleGroup}
+                  month={item.month}
+                  year={item.year}
+                >
+                  {(
+                    [
+                      ["in", "bg-green-400"],
+                      ["out", "bg-red-400"],
+                    ] as const
+                  ).map(([direction, color]) => {
+                    const total = item.rows
+                      .filter((row) => row.direction === direction)
+                      .reduce((sum, row) => sum + row.amount, 0);
 
-                  {item.inflow > 0 && (
-                    <div className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4">
-                      <div className="mr-2 size-2.5 shrink-0 rounded-lg bg-green-400 sm:mr-3" />
-                      {currencyFormatter.format(item.inflow)}
-                    </div>
-                  )}
-                  {item.outflow > 0 && (
-                    <div className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4">
-                      <div className="mr-2 size-2.5 shrink-0 rounded-lg bg-red-400 sm:mr-3" />
-                      {currencyFormatter.format(item.outflow)}
-                    </div>
-                  )}
-                </div>
+                    return total > 0 ? (
+                      <div
+                        key={direction}
+                        className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
+                      >
+                        <div
+                          className={cn(
+                            "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
+                            color,
+                          )}
+                        />
+                        {currencyFormatter.format(total)}
+                      </div>
+                    ) : null;
+                  })}
+                </TableGroupHeader>
               ) : item.kind === "allocation" ? (
                 <AllocationLine
                   allocation={item}

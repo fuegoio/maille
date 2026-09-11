@@ -1,22 +1,16 @@
 import type { Movement } from "@maille/core/movements";
 
 import { verifyMovementFilter } from "@maille/core/movements";
-import { useHotkey } from "@tanstack/react-hotkeys";
-import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
-import {
-  computeRowOutlines,
-  type OutlineRow,
-} from "@/components/shared/row-outline";
+import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useListFocus } from "@/hooks/use-list-focus";
-import { useRangeSelection } from "@/hooks/use-range-selection";
+import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
-import { cn } from "@/lib/utils";
 import { useSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -42,7 +36,6 @@ export function MovementsTable({
   const search = useSearch((state) => state.search);
   const movementView = useViews((state) => state.getMovementView(viewId));
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
-  const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   const movementsFiltered = React.useMemo(() => {
     return movements
@@ -67,162 +60,38 @@ export function MovementsTable({
     });
   }, [movementsFiltered]);
 
-  type Group = {
-    id: string;
-    month: number;
-    year: number;
-    movements: Movement[];
-  };
+  const { items, isFolded, toggleGroup } = useGroupedRows(
+    movementsSorted,
+    grouping !== null,
+  );
 
-  type MovementAndGroup =
-    | ({ itemType: "group" } & Group)
-    | ({ itemType: "movement" } & Movement);
-
-  const movementsWithGroups = React.useMemo<MovementAndGroup[]>(() => {
-    if (!grouping)
-      return movementsSorted.map((m) => ({ itemType: "movement", ...m }));
-
-    const groups = movementsSorted.reduce((groups: Group[], m) => {
-      const month = m.date.getMonth();
-      const year = m.date.getFullYear();
-      const group = groups.find((p) => p.month === month && p.year === year);
-
-      if (group) {
-        group.movements.push(m);
-      } else {
-        groups.push({
-          id: `${month}-${year}`,
-          month,
-          year,
-          movements: [m],
-        });
-      }
-
-      return groups;
-    }, []);
-
-    return groups
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
-      })
-      .reduce((mwg: MovementAndGroup[], group) => {
-        mwg.push({
-          itemType: "group",
-          id: group.id,
-          month: group.month,
-          year: group.year,
-          movements: group.movements,
-        });
-        if (!groupsFolded.includes(group.id)) {
-          return mwg.concat(
-            group.movements.map((m) => ({ itemType: "movement", ...m })),
-          );
-        } else {
-          return mwg;
-        }
-      }, []);
-  }, [movementsSorted, grouping, groupsFolded]);
-
-  // Rendered row order, skipping group headers, shared by range selection
-  const visibleMovementIds = React.useMemo(
+  const rows = React.useMemo<TableRow[]>(
     () =>
-      grouping
-        ? movementsWithGroups
-            .filter((item) => item.itemType === "movement")
-            .map((item) => item.id)
-        : movementsSorted.map((movement) => movement.id),
-    [grouping, movementsWithGroups, movementsSorted],
+      items.map((item) => ({
+        id: item.id,
+        selectable: item.itemType === "row",
+      })),
+    [items],
   );
 
   const {
+    rowOutlines,
+    registerRow,
     selectedIds: selectedMovements,
     toggle: toggleMovement,
     selectOnly: selectOnlyMovement,
-    selectAll: selectAllMovements,
-    clear: clearSelectedMovements,
-  } = useRangeSelection(visibleMovementIds);
+    clearSelection: clearSelectedMovements,
+  } = useTableRows({
+    rows,
+    checkable: true,
+    onOpen: (id) => {
+      void contextNavigate({ to: "/movements/$id", params: { id } });
+    },
+  });
 
   const entityActions = useMovementsEntityActions(
     selectedMovements,
     clearSelectedMovements,
-  );
-
-  const { focusedId, registerRow, moveFocus, clearFocus } =
-    useListFocus(visibleMovementIds);
-
-  // Outline sides for selected (checked or focused) rows; contiguous
-  // selected rows merge into one outlined block
-  const rowOutlines = React.useMemo(() => {
-    const rows: OutlineRow[] = movementsWithGroups.map((item) =>
-      item.itemType === "group"
-        ? ("break" as const)
-        : {
-            id: item.id,
-            selected:
-              selectedMovements.includes(item.id) || item.id === focusedId,
-          },
-    );
-    return computeRowOutlines(rows);
-  }, [movementsWithGroups, selectedMovements, focusedId]);
-
-  const periodFormatter = (month: number, year: number): string => {
-    return new Date(year, month).toLocaleString("default", {
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  // Hotkeys: J/K move a focused row through the list (K up, J down, first
-  // row when nothing is focused), Enter opens the focused movement
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
-  });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId === null) return;
-
-      void contextNavigate({
-        to: "/movements/$id",
-        params: { id: focusedId },
-      });
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  useHotkey(
-    "Escape",
-    () => {
-      if (selectedMovements.length > 0) {
-        clearSelectedMovements();
-      } else {
-        clearFocus();
-      }
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  useHotkey(
-    "Mod+A",
-    (event) => {
-      if (event.key !== "a") return;
-      selectAllMovements(movementsFiltered.map((m) => m.id));
-    },
-    {
-      ignoreInputs: true,
-    },
   );
 
   return (
@@ -232,84 +101,42 @@ export function MovementsTable({
       <div className="flex flex-1 flex-col overflow-y-auto">
         {movementsFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
-            {grouping
-              ? movementsWithGroups.map((item) => (
-                  <React.Fragment key={item.id}>
-                    {item.itemType === "group" ? (
-                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
-                        <ChevronDown
-                          className={cn(
-                            "mr-2 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
-                            groupsFolded.includes(item.id) &&
-                              "-rotate-90 opacity-100",
-                          )}
-                          onClick={() => {
-                            if (groupsFolded.includes(item.id)) {
-                              setGroupsFolded((prev) =>
-                                prev.filter((id) => id !== item.id),
-                              );
-                            } else {
-                              setGroupsFolded((prev) => [...prev, item.id]);
-                            }
-                          }}
-                        />
-                        <Calendar className="hidden size-4 sm:block" />
-                        <div className="text-sm">
-                          {periodFormatter(item.month, item.year)}
-                        </div>
-                        <div className="flex-1" />
-                      </div>
-                    ) : (
-                      <EntityContextMenu
-                        actions={entityActions}
-                        onActionComplete={clearSelectedMovements}
-                      >
-                        <div
-                          ref={registerRow(item.id)}
-                          onContextMenu={() => {
-                            if (!selectedMovements.includes(item.id)) {
-                              selectOnlyMovement(item.id);
-                            }
-                          }}
-                        >
-                          <MovementLine
-                            movement={item}
-                            checked={selectedMovements.includes(item.id)}
-                            outlineSides={rowOutlines.get(item.id)}
-                            onCheckedChange={(event) =>
-                              toggleMovement(item.id, event)
-                            }
-                          />
-                        </div>
-                      </EntityContextMenu>
-                    )}
-                  </React.Fragment>
-                ))
-              : movementsSorted.map((movement) => (
+            {items.map((item) => (
+              <React.Fragment key={item.id}>
+                {item.itemType === "group" ? (
+                  <TableGroupHeader
+                    id={item.id}
+                    folded={isFolded(item.id)}
+                    onToggle={toggleGroup}
+                    month={item.month}
+                    year={item.year}
+                  />
+                ) : (
                   <EntityContextMenu
-                    key={movement.id}
                     actions={entityActions}
                     onActionComplete={clearSelectedMovements}
                   >
                     <div
-                      ref={registerRow(movement.id)}
+                      ref={registerRow(item.id)}
                       onContextMenu={() => {
-                        if (!selectedMovements.includes(movement.id)) {
-                          selectOnlyMovement(movement.id);
+                        if (!selectedMovements.includes(item.id)) {
+                          selectOnlyMovement(item.id);
                         }
                       }}
                     >
                       <MovementLine
-                        movement={movement}
-                        checked={selectedMovements.includes(movement.id)}
-                        outlineSides={rowOutlines.get(movement.id)}
+                        movement={item}
+                        checked={selectedMovements.includes(item.id)}
+                        outlineSides={rowOutlines.get(item.id)}
                         onCheckedChange={(event) =>
-                          toggleMovement(movement.id, event)
+                          toggleMovement(item.id, event)
                         }
                       />
                     </div>
                   </EntityContextMenu>
-                ))}
+                )}
+              </React.Fragment>
+            ))}
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center overflow-hidden">

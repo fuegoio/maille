@@ -1,14 +1,10 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
-import {
-  computeRowOutlines,
-  rowOutlineClasses,
-} from "@/components/shared/row-outline";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useListFocus } from "@/hooks/use-list-focus";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -50,63 +46,20 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
     );
   }, [counterparties, accountId]);
 
-  const accountCounterpartyIds = useMemo(
-    () => accountCounterparties.map((counterparty) => counterparty.id),
+  const rows = useMemo<TableRow[]>(
+    () => accountCounterparties.map((cp) => ({ id: cp.id })),
     [accountCounterparties],
   );
 
-  const { focusedId, registerRow, moveFocus, clearFocus } = useListFocus(
-    accountCounterpartyIds,
-  );
-
-  // Hotkeys: J/K move a focused row through the list (K up, J down, first
-  // row when nothing is focused), Enter opens the focused counterparty's
-  // panel
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
+  const { rowOutlines, registerRow } = useTableRows({
+    rows,
+    // The outline also covers the counterparty whose panel is open
+    forcedSelectedIds:
+      focusedCounterparty !== null ? [focusedCounterparty] : undefined,
+    onOpen: (id) => {
+      setFocusedCounterparty(id);
+    },
   });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId !== null) {
-        setFocusedCounterparty(focusedId);
-      }
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  useHotkey(
-    "Escape",
-    () => {
-      clearFocus();
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  // Outline sides for selected rows: keyboard-focused or panel-open
-  const rowOutlines = useMemo(
-    () =>
-      computeRowOutlines(
-        accountCounterparties.map((counterparty) => ({
-          id: counterparty.id,
-          selected:
-            counterparty.id === focusedId ||
-            counterparty.id === focusedCounterparty,
-        })),
-      ),
-    [accountCounterparties, focusedId, focusedCounterparty],
-  );
 
   const getCounterpartyLiability = (counterpartyId: string) => {
     const counterparty = accountCounterparties.find(

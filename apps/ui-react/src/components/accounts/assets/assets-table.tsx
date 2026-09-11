@@ -1,13 +1,9 @@
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
-import {
-  computeRowOutlines,
-  rowOutlineClasses,
-} from "@/components/shared/row-outline";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useListFocus } from "@/hooks/use-list-focus";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
@@ -39,59 +35,19 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
     return assets.filter((asset) => asset.account === accountId);
   }, [assets, accountId]);
 
-  const accountAssetIds = useMemo(
-    () => accountAssets.map((asset) => asset.id),
+  const rows = useMemo<TableRow[]>(
+    () => accountAssets.map((asset) => ({ id: asset.id })),
     [accountAssets],
   );
 
-  const { focusedId, registerRow, moveFocus, clearFocus } =
-    useListFocus(accountAssetIds);
-
-  // Hotkeys: J/K move a focused row through the list (K up, J down, first
-  // row when nothing is focused), Enter opens the focused asset's panel
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
+  const { rowOutlines, registerRow } = useTableRows({
+    rows,
+    // The outline also covers the asset whose panel is open
+    forcedSelectedIds: focusedAsset !== null ? [focusedAsset] : undefined,
+    onOpen: (id) => {
+      setFocusedAsset(id);
+    },
   });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId !== null) {
-        setFocusedAsset(focusedId);
-      }
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  useHotkey(
-    "Escape",
-    () => {
-      clearFocus();
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  // Outline sides for selected rows: keyboard-focused or panel-open
-  const rowOutlines = useMemo(
-    () =>
-      computeRowOutlines(
-        accountAssets.map((asset) => ({
-          id: asset.id,
-          selected: asset.id === focusedId || asset.id === focusedAsset,
-        })),
-      ),
-    [accountAssets, focusedId, focusedAsset],
-  );
 
   const getAssetValue = (assetId: string) => {
     return activities

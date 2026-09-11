@@ -1,20 +1,15 @@
 import { ActivityType, type Activity } from "@maille/core/activities";
 import { verifyActivityFilter } from "@maille/core/activities";
-import { useHotkey } from "@tanstack/react-hotkeys";
-import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
-import {
-  computeRowOutlines,
-  type OutlineRow,
-} from "@/components/shared/row-outline";
+import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useListFocus } from "@/hooks/use-list-focus";
-import { useRangeSelection } from "@/hooks/use-range-selection";
+import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
@@ -55,8 +50,6 @@ export function ActivitiesTable({
   const scrollRef = useScrollRestoration<HTMLDivElement>(
     `activities:${viewId}`,
   );
-
-  const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
   const activitiesFiltered = React.useMemo(() => {
     return activities
@@ -118,180 +111,38 @@ export function ActivitiesTable({
     });
   }, [activitiesFiltered]);
 
-  type Group = {
-    id: string;
-    month: number;
-    year: number;
-    total: {
-      [ActivityType.EXPENSE]?: number;
-      [ActivityType.REVENUE]?: number;
-      [ActivityType.INVESTMENT]?: number;
-    };
-  };
+  const { items, isFolded, toggleGroup } = useGroupedRows(
+    activitiesSorted,
+    grouping !== null,
+  );
 
-  type ActivityAndGroup =
-    | ({ itemType: "group" } & Group)
-    | ({ itemType: "activity" } & Activity);
-
-  const activitiesWithGroups = React.useMemo<ActivityAndGroup[]>(() => {
-    if (!grouping)
-      return activitiesSorted.map((a) => ({ itemType: "activity", ...a }));
-
-    const groups = activitiesSorted.reduce(
-      (groups: (Group & { activities: Activity[] })[], a) => {
-        const month = a.date.getMonth();
-        const year = a.date.getFullYear();
-        let group = groups.find((p) => p.month === month && p.year === year);
-
-        if (group) {
-          group.activities.push(a);
-        } else {
-          group = {
-            id: `${month}-${year}`,
-            month,
-            year,
-            total: {},
-            activities: [a],
-          };
-          groups.push(group);
-        }
-
-        if (a.type !== ActivityType.NEUTRAL) {
-          const typeKey = a.type.toLowerCase() as keyof Group["total"];
-          if (group.total[typeKey] === undefined) {
-            group.total[typeKey] = a.amount;
-          } else {
-            group.total[typeKey]! += a.amount;
-          }
-        }
-
-        return groups;
-      },
-      [],
-    );
-
-    return groups
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
-      })
-      .reduce((awg: ActivityAndGroup[], group) => {
-        awg.push({
-          itemType: "group",
-          id: group.id,
-          month: group.month,
-          year: group.year,
-          total: group.total,
-        });
-        if (!groupsFolded.includes(group.id)) {
-          return awg.concat(
-            group.activities.map((a) => ({ itemType: "activity", ...a })),
-          );
-        } else {
-          return awg;
-        }
-      }, []);
-  }, [activitiesSorted, grouping, groupsFolded]);
-
-  // Rendered row order, skipping group headers, shared by range selection
-  const visibleActivityIds = React.useMemo(
+  const rows = React.useMemo<TableRow[]>(
     () =>
-      grouping
-        ? activitiesWithGroups
-            .filter((item) => item.itemType === "activity")
-            .map((item) => item.id)
-        : activitiesSorted.map((activity) => activity.id),
-    [grouping, activitiesWithGroups, activitiesSorted],
+      items.map((item) => ({
+        id: item.id,
+        selectable: item.itemType === "row",
+      })),
+    [items],
   );
 
   const {
+    rowOutlines,
+    registerRow,
     selectedIds: selectedActivities,
     toggle: toggleActivity,
     selectOnly: selectOnlyActivity,
-    selectAll: selectAllActivities,
-    clear: clearSelectedActivities,
-  } = useRangeSelection(visibleActivityIds);
+    clearSelection: clearSelectedActivities,
+  } = useTableRows({
+    rows,
+    checkable: true,
+    onOpen: (id) => {
+      void contextNavigate({ to: "/activities/$id", params: { id } });
+    },
+  });
 
   const entityActions = useActivitiesEntityActions(
     selectedActivities,
     clearSelectedActivities,
-  );
-
-  const { focusedId, registerRow, moveFocus, clearFocus } =
-    useListFocus(visibleActivityIds);
-
-  // Outline sides for selected (checked or focused) rows; contiguous
-  // selected rows merge into one outlined block
-  const rowOutlines = React.useMemo(() => {
-    const rows: OutlineRow[] = activitiesWithGroups.map((item) =>
-      item.itemType === "group"
-        ? ("break" as const)
-        : {
-            id: item.id,
-            selected:
-              selectedActivities.includes(item.id) || item.id === focusedId,
-          },
-    );
-    return computeRowOutlines(rows);
-  }, [activitiesWithGroups, selectedActivities, focusedId]);
-
-  const periodFormatter = (month: number, year: number): string => {
-    return new Date(year, month).toLocaleString("default", {
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  // Hotkeys: J/K move a focused row through the list (K up, J down, first
-  // row when nothing is focused), Enter opens the focused activity
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
-  });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId === null) return;
-
-      void contextNavigate({
-        to: "/activities/$id",
-        params: { id: focusedId },
-      });
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  useHotkey(
-    "Escape",
-    () => {
-      if (selectedActivities.length > 0) {
-        clearSelectedActivities();
-      } else {
-        clearFocus();
-      }
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  useHotkey(
-    "Mod+A",
-    (event) => {
-      if (event.key !== "a") return;
-      selectAllActivities(activitiesFiltered.map((a) => a.id));
-    },
-    {
-      ignoreInputs: true,
-    },
   );
 
   return (
@@ -304,111 +155,69 @@ export function ActivitiesTable({
       <div className="flex flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
           <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
-            {grouping
-              ? activitiesWithGroups.map((item) => (
-                  <React.Fragment key={item.id}>
-                    {item.itemType === "group" ? (
-                      <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
-                        <ChevronDown
-                          className={cn(
-                            "mr-2 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
-                            groupsFolded.includes(item.id) &&
-                              "-rotate-90 opacity-100",
-                          )}
-                          onClick={() => {
-                            if (groupsFolded.includes(item.id)) {
-                              setGroupsFolded((prev) =>
-                                prev.filter((id) => id !== item.id),
-                              );
-                            } else {
-                              setGroupsFolded((prev) => [...prev, item.id]);
-                            }
-                          }}
-                        />
-                        <Calendar className="hidden size-4 sm:block" />
-                        <div className="text-sm">
-                          {periodFormatter(item.month, item.year)}
-                        </div>
-                        <div className="flex-1" />
+            {items.map((item) => (
+              <React.Fragment key={item.id}>
+                {item.itemType === "group" ? (
+                  <TableGroupHeader
+                    id={item.id}
+                    folded={isFolded(item.id)}
+                    onToggle={toggleGroup}
+                    month={item.month}
+                    year={item.year}
+                  >
+                    {[
+                      ActivityType.INVESTMENT,
+                      ActivityType.REVENUE,
+                      ActivityType.EXPENSE,
+                    ].map((activityType) => {
+                      const total = item.rows
+                        .filter((activity) => activity.type === activityType)
+                        .reduce((sum, activity) => sum + activity.amount, 0);
 
-                        {[
-                          ActivityType.INVESTMENT,
-                          ActivityType.REVENUE,
-                          ActivityType.EXPENSE,
-                        ].map((activityType) => {
-                          const typeKey =
-                            activityType.toLowerCase() as keyof Group["total"];
-                          return item.total[typeKey] ? (
-                            <div
-                              key={activityType}
-                              className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
-                            >
-                              <div
-                                className={cn(
-                                  "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
-                                  ACTIVITY_TYPES_COLOR[activityType],
-                                )}
-                              />
-                              {currencyFormatter.format(item.total[typeKey]!)}
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    ) : (
-                      <EntityContextMenu
-                        actions={entityActions}
-                        onActionComplete={clearSelectedActivities}
-                      >
+                      return total !== 0 ? (
                         <div
-                          ref={registerRow(item.id)}
-                          onContextMenu={() => {
-                            if (!selectedActivities.includes(item.id)) {
-                              selectOnlyActivity(item.id);
-                            }
-                          }}
+                          key={activityType}
+                          className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
                         >
-                          <ActivityLine
-                            activity={item}
-                            accountFilter={accountFilter}
-                            hideProject={hideProject}
-                            checked={selectedActivities.includes(item.id)}
-                            outlineSides={rowOutlines.get(item.id)}
-                            onCheckedChange={(event) =>
-                              toggleActivity(item.id, event)
-                            }
+                          <div
+                            className={cn(
+                              "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
+                              ACTIVITY_TYPES_COLOR[activityType],
+                            )}
                           />
+                          {currencyFormatter.format(total)}
                         </div>
-                      </EntityContextMenu>
-                    )}
-                  </React.Fragment>
-                ))
-              : activitiesSorted.map((activity) => (
+                      ) : null;
+                    })}
+                  </TableGroupHeader>
+                ) : (
                   <EntityContextMenu
-                    key={activity.id}
                     actions={entityActions}
                     onActionComplete={clearSelectedActivities}
                   >
                     <div
-                      ref={registerRow(activity.id)}
+                      ref={registerRow(item.id)}
                       onContextMenu={() => {
-                        if (!selectedActivities.includes(activity.id)) {
-                          selectOnlyActivity(activity.id);
+                        if (!selectedActivities.includes(item.id)) {
+                          selectOnlyActivity(item.id);
                         }
                       }}
                     >
                       <ActivityLine
-                        activity={activity}
+                        activity={item}
                         accountFilter={accountFilter}
                         hideProject={hideProject}
-                        checked={selectedActivities.includes(activity.id)}
-                        outlineSides={rowOutlines.get(activity.id)}
+                        checked={selectedActivities.includes(item.id)}
+                        outlineSides={rowOutlines.get(item.id)}
                         onCheckedChange={(event) =>
-                          toggleActivity(activity.id, event)
+                          toggleActivity(item.id, event)
                         }
                       />
                     </div>
                   </EntityContextMenu>
-                ))}
+                )}
+              </React.Fragment>
+            ))}
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center overflow-hidden">

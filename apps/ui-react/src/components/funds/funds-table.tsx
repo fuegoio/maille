@@ -1,14 +1,10 @@
 import { flattenFundTree } from "@maille/core/funds";
-import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ChevronRight, PiggyBank } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import {
-  computeRowOutlines,
-  rowOutlineClasses,
-} from "@/components/shared/row-outline";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -19,7 +15,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useListFocus } from "@/hooks/use-list-focus";
+import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
 import { getFundTreeBalance, getUntrackedBalanceAtDate } from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
@@ -114,60 +110,18 @@ export function FundsTable() {
     [accounts, activities, funds, fundMoves, fundAllocations, user],
   );
 
-  // Row order as rendered (only expanded tree nodes), shared by row focus
-  const visibleFundIds = useMemo(
-    () => visibleNodes.map((node) => node.fund.id),
+  // Row order as rendered (only expanded tree nodes)
+  const rows = useMemo<TableRow[]>(
+    () => visibleNodes.map(({ fund }) => ({ id: fund.id })),
     [visibleNodes],
   );
 
-  const { focusedId, registerRow, moveFocus, clearFocus } =
-    useListFocus(visibleFundIds);
-
-  // Hotkeys: J/K move a focused row through the tree (K up, J down, first
-  // row when nothing is focused), Enter opens the focused fund
-  useHotkey("K", (event) => {
-    if (event.key !== "k") return;
-    moveFocus(-1);
+  const { rowOutlines, registerRow } = useTableRows({
+    rows,
+    onOpen: (id) => {
+      void navigate({ to: "/funds/$id", params: { id } });
+    },
   });
-
-  useHotkey("J", (event) => {
-    if (event.key !== "j") return;
-    moveFocus(1);
-  });
-
-  useHotkey(
-    "Enter",
-    () => {
-      if (focusedId === null) return;
-
-      void navigate({ to: "/funds/$id", params: { id: focusedId } });
-    },
-    {
-      ignoreInputs: true,
-    },
-  );
-
-  useHotkey(
-    "Escape",
-    () => {
-      clearFocus();
-    },
-    {
-      conflictBehavior: "allow",
-    },
-  );
-
-  // Outline sides for focused rows
-  const rowOutlines = useMemo(
-    () =>
-      computeRowOutlines(
-        visibleNodes.map(({ fund }) => ({
-          id: fund.id,
-          selected: fund.id === focusedId,
-        })),
-      ),
-    [visibleNodes, focusedId],
-  );
 
   if (funds.length === 0) {
     return (
