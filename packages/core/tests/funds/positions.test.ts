@@ -149,7 +149,7 @@ describe("fund positions", () => {
     );
   });
 
-  it("carries unlegged transfers proportionally to the source mix", () => {
+  it("moves unlegged transfers untracked to untracked, earmarks stay put", () => {
     const positions = computePositions(
       build({
         activities: [
@@ -164,19 +164,15 @@ describe("fund positions", () => {
         fundAllocations: [allocation("a1", "vacation", "checking", 500)],
       }),
     );
-    // The mix is 500 vacation / 500 untracked, so 250 of each moves over
+    // Unassigned money stays unassigned: the earmark does not follow the
+    // transfer, it keeps claiming the source account
     expect(positions.get("checking")).toEqual(
       new Map([
-        ["vacation", 250],
-        [null, 250],
+        ["vacation", 500],
+        [null, 0],
       ]),
     );
-    expect(positions.get("savings")).toEqual(
-      new Map([
-        ["vacation", 250],
-        [null, 250],
-      ]),
-    );
+    expect(positions.get("savings")).toEqual(new Map([[null, 500]]));
   });
 
   it("pins a transfer's fund with a same-fund leg", () => {
@@ -244,7 +240,7 @@ describe("fund positions", () => {
     expect(houseSpread).toEqual(new Map([["savings", 300]]));
   });
 
-  it("sends a legged transfer's remainder back to the source mix on both sides", () => {
+  it("keeps a legged transfer's remainder untracked on both sides", () => {
     const positions = computePositions(
       build({
         fundAllocations: [allocation("a1", "vacation", "checking", 800)],
@@ -254,8 +250,7 @@ describe("fund positions", () => {
             transactions: [
               // 200 of the 400 transfer is pinned to vacation: the leg's
               // destination side lands Untracked in savings (+200), and the
-              // 200 of unlegged remainder follows the remaining mix (600
-              // vacation + 200 untracked -> 150 vacation + 50 untracked)
+              // 200 of unlegged remainder also travels Untracked
               transaction("t1", 400, "checking", "savings", [
                 leg("m1", { fromFund: "vacation", amount: 200 }),
               ]),
@@ -266,19 +261,14 @@ describe("fund positions", () => {
     );
     expect(positions.get("checking")).toEqual(
       new Map([
-        ["vacation", 450],
-        [null, 150],
+        ["vacation", 600],
+        [null, 0],
       ]),
     );
-    expect(positions.get("savings")).toEqual(
-      new Map([
-        ["vacation", 150],
-        [null, 250],
-      ]),
-    );
+    expect(positions.get("savings")).toEqual(new Map([[null, 400]]));
   });
 
-  it("spreads a fund across accounts through unlegged transfers", () => {
+  it("does not spread a fund across accounts without legs", () => {
     const positions = computePositions(
       build({
         fundAllocations: [allocation("a1", "vacation", "checking", 1000)],
@@ -291,12 +281,10 @@ describe("fund positions", () => {
         ],
       }),
     );
-    expect(getFundAccountPositions(positions, "vacation")).toEqual(
-      new Map([
-        ["checking", 600],
-        ["savings", 400],
-      ]),
-    );
+    // The unlegged transfer leaves the earmark claiming the source account
+    // even as its balance drops; only a leg would move the fund over
+    expect(getFundAccountPositions(positions, "vacation")).toEqual(new Map([["checking", 1000]]));
+    expect(positions.get("savings")).toEqual(new Map([[null, 400]]));
   });
 
   it("transfers from an empty account go untracked to untracked", () => {

@@ -60,29 +60,6 @@ const adjust = (composition: FundComposition, fund: string | null, delta: number
   composition.set(fund, (composition.get(fund) ?? 0) + delta);
 };
 
-/**
- * Move an amount between two accounts' compositions, each fund's share
- * following the source's current mix (Untracked included). When the source
- * holds nothing to divide, the amount travels Untracked to Untracked so the
- * account totals still balance.
- */
-const carryProportionally = (from: FundComposition, to: FundComposition, amount: number) => {
-  if (amount <= 0) return;
-
-  const total = [...from.values()].reduce((sum, value) => sum + value, 0);
-  if (total > 0) {
-    for (const [fund, value] of from) {
-      const share = (amount * value) / total;
-      adjust(from, fund, -share);
-      adjust(to, fund, share);
-    }
-    return;
-  }
-
-  adjust(from, null, -amount);
-  adjust(to, null, amount);
-};
-
 type ReplayEvent =
   | { kind: "allocation"; date: Date; id: string; allocation: FundAllocation }
   | { kind: "transaction"; date: Date; id: string; transaction: Transaction };
@@ -91,8 +68,8 @@ type ReplayEvent =
  * Replay the ledger into positions: each balance account starts with its
  * starting balance as Untracked, opening allocations claim parts of it for
  * funds at their start dates, and every transaction moves composition
- * between accounts (its fund legs pin where, the unlegged remainder follows
- * the source account's mix).
+ * between accounts through its fund legs — the unlegged remainder travels
+ * Untracked, so unassigned money stays unassigned.
  *
  * Same-day ordering is deterministic: allocations land before the day's
  * transactions (the opening earmark precedes the flows), then by id.
@@ -165,14 +142,16 @@ export function computePositions(input: PositionsInput): Map<string, FundComposi
     );
 
     if (from && to) {
-      // Balance-to-balance: the composition follows the money. Each leg is
+      // Balance-to-balance: only the legs carry fund identity. Each leg is
       // a pair — the fromFund side leaves the source account, the toFund
-      // side lands in the destination (a null side is Untracked there).
+      // side lands in the destination — and the unlegged remainder travels
+      // Untracked to Untracked so the account totals still balance.
       for (const leg of legs) {
         adjust(from, leg.fromFund ?? null, -leg.amount);
         adjust(to, leg.toFund ?? null, leg.amount);
       }
-      carryProportionally(from, to, remainder);
+      adjust(from, null, -remainder);
+      adjust(to, null, remainder);
     } else if (from) {
       // Money out of one balance account: legs draw their fund (a leg is
       // conventionally a fromFund here), the unlegged remainder draws
