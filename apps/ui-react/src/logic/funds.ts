@@ -3,6 +3,7 @@ import type { Activity } from "@maille/core/activities";
 import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 import type { PositionsInput } from "@maille/core/funds";
 
+import { AccountType } from "@maille/core/accounts";
 import {
   computePositions,
   getAllocationDate,
@@ -259,4 +260,80 @@ export function getAccountSpreadAcrossFunds(
     computePositions(toPositionsInput(input)).get(input.accountId) ??
     new Map([[null, 0]])
   );
+}
+
+/**
+ * Every account's default fund: the fund holding the largest share of the
+ * account's balance, Untracked excluded. Accounts no fund claims map to
+ * null — their money is all Untracked, so new transactions on them stay
+ * unclassified. One positions replay answers for all accounts at once.
+ */
+export function getDefaultFundByAccount(
+  input: Parameters<typeof toPositionsInput>[0],
+): Map<string, string | null> {
+  const positions = computePositions(toPositionsInput(input));
+  const defaults = new Map<string, string | null>();
+  for (const [accountId, composition] of positions) {
+    let defaultFund: string | null = null;
+    let largestShare = 0;
+    for (const [fundId, amount] of composition) {
+      if (fundId === null || amount <= largestShare) continue;
+      defaultFund = fundId;
+      largestShare = amount;
+    }
+    defaults.set(accountId, defaultFund);
+  }
+  return defaults;
+}
+
+/**
+ * Classify a new transaction's money across funds: each balance-account
+ * side is pinned to its account's default fund, exactly like setting the
+ * side's fund chip by hand. Expense and revenue sides hold nothing, so
+ * they stay out; with no default on either side the money is Untracked
+ * (no leg).
+ */
+export function classifyFundMoves({
+  fromAccount,
+  toAccount,
+  amount,
+  accounts,
+  defaultFundByAccount,
+}: {
+  fromAccount: string;
+  toAccount: string;
+  amount: number;
+  accounts: Pick<Account, "id" | "type">[];
+  defaultFundByAccount: Map<string, string | null>;
+}): FundMove[] {
+  const balanceFund = (accountId: string): string | null => {
+    const account = accounts.find((a) => a.id === accountId);
+    if (
+      !account ||
+      account.type === AccountType.EXPENSE ||
+      account.type === AccountType.REVENUE
+    ) {
+      return null;
+    }
+    return defaultFundByAccount.get(accountId) ?? null;
+  };
+
+  const fromFund = balanceFund(fromAccount);
+  const toFund = balanceFund(toAccount);
+
+  if (fromFund === null && toFund === null) {
+    return [];
+  }
+
+  return [
+    {
+      id: crypto.randomUUID(),
+      fromFund,
+      toFund,
+      amount,
+      note: null,
+      date: new Date(),
+      transaction: null,
+    },
+  ];
 }

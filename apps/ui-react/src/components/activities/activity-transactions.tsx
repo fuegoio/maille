@@ -9,12 +9,14 @@ import {
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 
+import { useAccountDefaultFunds } from "@/hooks/use-account-default-funds";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   addTransactionHistoryEvent,
   removeTransactionHistoryEvent,
   updateTransactionHistoryEvent,
 } from "@/lib/history-events";
+import { classifyFundMoves } from "@/logic/funds";
 import {
   addTransactionMutation,
   updateTransactionMutation,
@@ -41,6 +43,7 @@ export function ActivityTransactions({
   const currencyFormatter = useCurrencyFormatter();
   const mutate = useSync((state) => state.mutate);
   const accounts = useAccounts((state) => state.accounts);
+  const defaultFundByAccount = useAccountDefaultFunds();
   const [stagedTransactions, setStagedTransactions] = useState<
     StagedTransaction[]
   >([]);
@@ -149,6 +152,16 @@ export function ActivityTransactions({
     });
 
     transactions.forEach((transaction) => {
+      // Templates carry no fund legs: classify each new leg into its
+      // accounts' default funds
+      const fundMoves = classifyFundMoves({
+        fromAccount: transaction.fromAccount,
+        toAccount: transaction.toAccount,
+        amount: transaction.amount,
+        accounts,
+        defaultFundByAccount,
+      });
+
       mutate({
         name: "addTransaction",
         mutation: addTransactionMutation,
@@ -162,6 +175,13 @@ export function ActivityTransactions({
           toAccount: transaction.toAccount,
           toAsset: transaction.toAsset || null,
           toCounterparty: transaction.toCounterparty || null,
+          fundMoves: fundMoves.map((move) => ({
+            id: move.id,
+            fromFund: move.fromFund,
+            toFund: move.toFund,
+            amount: move.amount,
+            note: move.note,
+          })),
         },
         rollbackData: undefined,
         events: [
@@ -170,7 +190,10 @@ export function ActivityTransactions({
             payload: {
               activityId: activity.id,
               id: crypto.randomUUID(),
-              fundMoves: [],
+              fundMoves: fundMoves.map((move) => ({
+                ...move,
+                date: move.date.toISOString(),
+              })),
               amount: transaction.amount,
               fromAccount: transaction.fromAccount,
               fromAsset: transaction.fromAsset || null,
@@ -213,6 +236,19 @@ export function ActivityTransactions({
   };
 
   const commitTransaction = (transaction: StagedTransaction) => {
+    // Neutral activities stage without accounts, so their legs classify
+    // here, once both sides are known; legs set by hand win over defaults.
+    const fundMoves =
+      transaction.fundMoves && transaction.fundMoves.length > 0
+        ? transaction.fundMoves
+        : classifyFundMoves({
+            fromAccount: transaction.fromAccount,
+            toAccount: transaction.toAccount,
+            amount: transaction.amount,
+            accounts,
+            defaultFundByAccount,
+          });
+
     mutate({
       name: "addTransaction",
       mutation: addTransactionMutation,
@@ -226,6 +262,13 @@ export function ActivityTransactions({
         fromCounterparty: transaction.fromCounterparty || null,
         toAsset: transaction.toAsset || null,
         toCounterparty: transaction.toCounterparty || null,
+        fundMoves: fundMoves.map((move) => ({
+          id: move.id,
+          fromFund: move.fromFund,
+          toFund: move.toFund,
+          amount: move.amount,
+          note: move.note,
+        })),
       },
       rollbackData: undefined,
       events: [
@@ -234,7 +277,7 @@ export function ActivityTransactions({
           payload: {
             activityId: activity.id,
             id: transaction.id,
-            fundMoves: (transaction.fundMoves ?? []).map((move) => ({
+            fundMoves: fundMoves.map((move) => ({
               ...move,
               date: move.date.toISOString(),
             })),
@@ -286,6 +329,15 @@ export function ActivityTransactions({
       fromCounterparty: null,
       toAsset: null,
       toCounterparty: null,
+      // Each side lands in its account's default fund, so the new leg is
+      // classified from the start
+      fundMoves: classifyFundMoves({
+        fromAccount: fromAccount || "",
+        toAccount: toAccount || "",
+        amount: 0,
+        accounts,
+        defaultFundByAccount,
+      }),
     };
 
     // For Neutral activities, accounts are unknown — stage locally until complete
@@ -294,29 +346,7 @@ export function ActivityTransactions({
       return;
     }
 
-    mutate({
-      name: "addTransaction",
-      mutation: addTransactionMutation,
-      variables: {
-        activityId: activity.id,
-        ...transaction,
-      },
-      rollbackData: undefined,
-      events: [
-        {
-          type: "addTransaction",
-          payload: {
-            activityId: activity.id,
-            ...transaction,
-            fundMoves: (transaction.fundMoves ?? []).map((move) => ({
-              ...move,
-              date: move.date.toISOString(),
-            })),
-          },
-        },
-        addTransactionHistoryEvent(activity, transaction),
-      ],
-    });
+    commitTransaction(transaction);
   };
 
   return (

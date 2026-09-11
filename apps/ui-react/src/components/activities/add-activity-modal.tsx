@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useAccountDefaultFunds } from "@/hooks/use-account-default-funds";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import {
@@ -37,6 +38,7 @@ import {
   linkMovementHistoryEvent,
 } from "@/lib/history-events";
 import { cn } from "@/lib/utils";
+import { classifyFundMoves } from "@/logic/funds";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
 import {
@@ -118,6 +120,7 @@ export function AddActivityModal({
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
+  const defaultFundByAccount = useAccountDefaultFunds();
   const mutate = useSync((state) => state.mutate);
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
@@ -251,11 +254,28 @@ export function AddActivityModal({
           toAsset: null,
           toCounterparty: null,
           amount,
-          fundMoves: [],
+          // Each side lands in its account's default fund, so the activity
+          // is classified from the start
+          fundMoves: classifyFundMoves({
+            fromAccount: fromAccount || "",
+            toAccount: toAccount || "",
+            amount,
+            accounts,
+            defaultFundByAccount,
+          }),
         },
       ]);
     },
-    [movement, movements, guessBestTransaction, transactions, setValue, type],
+    [
+      movement,
+      movements,
+      guessBestTransaction,
+      transactions,
+      setValue,
+      type,
+      accounts,
+      defaultFundByAccount,
+    ],
   );
 
   // Handle form submission
@@ -450,7 +470,15 @@ export function AddActivityModal({
         toAsset: null,
         toCounterparty: null,
         amount,
-        fundMoves: [],
+        // Each side lands in its account's default fund, so the activity
+        // is classified from the start
+        fundMoves: classifyFundMoves({
+          fromAccount: bestTransaction.fromAccount ?? "",
+          toAccount: bestTransaction.toAccount ?? "",
+          amount: amount ?? 0,
+          accounts,
+          defaultFundByAccount,
+        }),
       });
     }
 
@@ -482,6 +510,8 @@ export function AddActivityModal({
     initialProject,
     reset,
     guessBestTransaction,
+    accounts,
+    defaultFundByAccount,
   ]);
 
   return (

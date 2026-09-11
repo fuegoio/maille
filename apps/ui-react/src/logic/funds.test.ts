@@ -7,7 +7,9 @@ import { ActivityType } from "@maille/core/activities";
 import { describe, expect, it } from "vitest";
 
 import {
+  classifyFundMoves,
   getAccountSpreadAcrossFunds,
+  getDefaultFundByAccount,
   getFundChildren,
   getFundSpreadAcrossAccounts,
   getFundTreeBalance,
@@ -369,5 +371,81 @@ describe("positions (ui logic)", () => {
       accountId: "groceries",
     });
     expect([...spread.values()].reduce((a, b) => a + b, 0)).toBe(0);
+  });
+});
+
+describe("default fund classification (ui logic)", () => {
+  // Checking: 700 house, 200 liquid, 100 untracked; savings: 300 house;
+  // cash: entirely untracked; groceries: an expense account.
+  const accounts = [
+    account("checking", 1000),
+    account("savings", 0),
+    account("cash", 50),
+    account("groceries", 0, AccountType.EXPENSE),
+  ];
+  const funds = [fund("house"), fund("liquid")];
+  const fundAllocations = [
+    allocation("a1", "house", "checking", 700),
+    allocation("a2", "liquid", "checking", 200),
+    allocation("a3", "house", "savings", 300),
+  ];
+  const startingDate = new Date("2025-01-01");
+
+  const defaultFundByAccount = getDefaultFundByAccount({
+    accounts,
+    activities: [],
+    funds,
+    fundMoves: [],
+    fundAllocations,
+    startingDate,
+  });
+
+  it("an account's default fund is the one holding the most of it", () => {
+    expect(defaultFundByAccount.get("checking")).toBe("house");
+    expect(defaultFundByAccount.get("savings")).toBe("house");
+    expect(defaultFundByAccount.get("cash")).toBe(null);
+    // The expense account holds no position at all
+    expect(defaultFundByAccount.get("groceries")).toBe(undefined);
+  });
+
+  it("a balance-to-balance transaction pins both sides to their defaults", () => {
+    const moves = classifyFundMoves({
+      fromAccount: "checking",
+      toAccount: "savings",
+      amount: 100,
+      accounts,
+      defaultFundByAccount,
+    });
+    expect(moves).toHaveLength(1);
+    expect(moves[0]).toMatchObject({
+      fromFund: "house",
+      toFund: "house",
+      amount: 100,
+      note: null,
+    });
+  });
+
+  it("an expense side stays out of the classification", () => {
+    const moves = classifyFundMoves({
+      fromAccount: "checking",
+      toAccount: "groceries",
+      amount: 100,
+      accounts,
+      defaultFundByAccount,
+    });
+    expect(moves).toHaveLength(1);
+    expect(moves[0].fromFund).toBe("house");
+    expect(moves[0].toFund).toBe(null);
+  });
+
+  it("money between unclassified accounts stays untracked (no leg)", () => {
+    const moves = classifyFundMoves({
+      fromAccount: "cash",
+      toAccount: "groceries",
+      amount: 100,
+      accounts,
+      defaultFundByAccount,
+    });
+    expect(moves).toHaveLength(0);
   });
 });

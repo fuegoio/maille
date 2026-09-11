@@ -1,6 +1,5 @@
 import type { FundMove } from "@maille/core/funds";
 
-import { getAllocationDate } from "@maille/core/funds";
 import { format } from "date-fns";
 import { MoveRight } from "lucide-react";
 import * as React from "react";
@@ -21,7 +20,6 @@ import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
-import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useViewSearch } from "@/stores/search";
 
@@ -39,24 +37,6 @@ type FundMoveWithActivity = FundMove & {
   accounts: { from: string; to: string } | null;
 };
 
-/**
- * An opening allocation as seen from one fund: money earmarked out of
- * Untracked at the fund's start, sitting on one account.
- */
-type AllocationWithDirection = {
-  kind: "allocation";
-  id: string;
-  date: Date;
-  amount: number;
-  direction: "in" | "out";
-  /** The fund the allocation claims money for. */
-  fundId: string;
-  /** The account the earmarked money sits on. */
-  account: string;
-};
-
-type FundRow = FundMoveWithActivity | AllocationWithDirection;
-
 interface FundMovesTableProps {
   /** The fund whose moves to show; null is Untracked (the null side of moves). */
   fundId: string | null;
@@ -67,9 +47,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
-  const fundAllocations = useFunds((state) => state.fundAllocations);
   const activities = useActivities((state) => state.activities);
-  const user = useAuth((state) => state.user);
   const { search } = useViewSearch();
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
@@ -108,48 +86,21 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
       });
   }, [fundMoves, activities, fundId]);
 
-  // Opening allocations: an inflow on the fund's own page, and on the
-  // Untracked page the mirror outflow into every fund.
-  const allocations = React.useMemo<AllocationWithDirection[]>(() => {
-    if (!user) return [];
-    const fundById = new Map(funds.map((fund) => [fund.id, fund]));
-    return fundAllocations
-      .filter((allocation) =>
-        fundId === null ? true : allocation.fund === fundId,
-      )
-      .map((allocation) => {
-        const fund = fundById.get(allocation.fund);
-        return {
-          kind: "allocation" as const,
-          id: allocation.id,
-          date: getAllocationDate(
-            fund ?? { startDate: null },
-            user.startingDate,
-          ),
-          amount: allocation.amount,
-          direction: fundId === null ? ("out" as const) : ("in" as const),
-          fundId: allocation.fund,
-          account: allocation.account,
-        };
-      });
-  }, [fundAllocations, funds, fundId, user]);
-
-  const rows = React.useMemo<FundRow[]>(() => {
-    const all: FundRow[] = [...moves, ...allocations];
-    return all.sort((a, b) => {
-      if (a.date.getTime() !== b.date.getTime()) {
-        return b.date.getTime() - a.date.getTime();
-      }
-      return b.id.localeCompare(a.id);
-    });
-  }, [moves, allocations]);
+  const rows = React.useMemo<FundMoveWithActivity[]>(
+    () =>
+      [...moves].sort((a, b) => {
+        if (a.date.getTime() !== b.date.getTime()) {
+          return b.date.getTime() - a.date.getTime();
+        }
+        return b.id.localeCompare(a.id);
+      }),
+    [moves],
+  );
 
   const rowsFiltered = React.useMemo(
     () =>
       rows.filter((row) => {
         if (!search) return true;
-        // Opening allocations carry no activity to match on
-        if (row.kind === "allocation") return false;
         return (
           row.activity !== null && searchCompare(search, row.activity.name)
         );
@@ -245,12 +196,6 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                     ) : null;
                   })}
                 </TableGroupHeader>
-              ) : item.kind === "allocation" ? (
-                <AllocationLine
-                  allocation={item}
-                  funds={funds}
-                  currencyFormatter={currencyFormatter}
-                />
               ) : (
                 <EntityContextMenu
                   actions={entityActions}
@@ -299,73 +244,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   );
 }
 
-/** An opening allocation row: earmarked money moving out of Untracked. */
-function AllocationLine({
-  allocation,
-  funds,
-  currencyFormatter,
-}: {
-  allocation: AllocationWithDirection;
-  funds: { id: string; name: string; color: string }[];
-  currencyFormatter: Intl.NumberFormat;
-}) {
-  const isInflow = allocation.direction === "in";
-  const amount = isInflow ? allocation.amount : -allocation.amount;
-
-  // The other side of an allocation is always Untracked; the account tells
-  // where the earmarked money sits.
-  const fund = funds.find((f) => f.id === allocation.fundId);
-
-  return (
-    <div className="group @container flex h-10 shrink-0 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent">
-      <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
-        <div
-          className={cn(
-            "size-2 shrink-0 rounded-lg",
-            isInflow ? "bg-green-400" : "bg-red-400",
-          )}
-        />
-
-        <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
-          {format(allocation.date, "dd EEE")}
-        </div>
-        <div className="ml-2 w-8 shrink-0 text-muted-foreground lg:hidden">
-          {format(allocation.date, "dd EEEEE")}
-        </div>
-
-        <div className="flex min-w-0 items-center gap-1.5 font-medium">
-          <span className="text-muted-foreground">
-            {isInflow ? "from" : "to"}
-          </span>
-          {isInflow ? (
-            <span>Untracked</span>
-          ) : fund ? (
-            <>
-              <div
-                className="mr-1 size-2.5 shrink-0 rounded-sm"
-                style={{ backgroundColor: fund.color }}
-              />
-              <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-                {fund.name}
-              </span>
-            </>
-          ) : (
-            <span>Untracked</span>
-          )}
-        </div>
-        <div className="min-w-0 truncate font-medium">Opening allocation</div>
-        <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-          <AccountFlowLabel accountId={allocation.account} />
-        </div>
-      </div>
-
-      <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">
-        {currencyFormatter.format(amount)}
-      </div>
-    </div>
-  );
-}
-
+/** A fund move row, tied to a transaction's activity. */
 function FundMoveLine({
   move,
   funds,
