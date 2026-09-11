@@ -1,7 +1,12 @@
 import { AccountType } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronRight,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -25,8 +30,8 @@ interface AccountSummaryProps {
   accountId: string;
   /** The fund currently filtering the account's transactions; null is Untracked. */
   fundFilter?: string | null;
-  /** Filter the account's transactions by a fund; null is Untracked. */
-  onFundFilter?: (fund: string | null) => void;
+  /** Set the fund filtering the transactions; undefined clears, null is Untracked. */
+  onFundFilter?: (fund: string | null | undefined) => void;
 }
 
 export function AccountSummary({
@@ -256,7 +261,8 @@ export function AccountSummary({
           <div className="mt-1">
             {fundSpread.map(({ fund, amount }) => {
               const active = (fund?.id ?? null) === (fundFilter ?? null);
-              const selectFund = () => onFundFilter?.(fund?.id ?? null);
+              const selectFund = () =>
+                onFundFilter?.(active ? undefined : (fund?.id ?? null));
 
               return (
                 <div
@@ -271,42 +277,48 @@ export function AccountSummary({
                     }
                   }}
                   className={cn(
-                    "flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50",
-                    active && "bg-muted",
+                    "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
+                    active ? "bg-muted" : "hover:bg-muted/50",
                   )}
                 >
-                  {fund ? (
-                    <Link
-                      to="/funds/$id"
-                      params={{ id: fund.id }}
-                      onClick={(event) => event.stopPropagation()}
-                      className="flex min-w-0 items-center"
+                  <div className="flex min-w-0 items-center">
+                    <div
+                      className="size-3 shrink-0 rounded-sm"
+                      style={
+                        fund
+                          ? { backgroundColor: fund.color }
+                          : {
+                              backgroundColor:
+                                "color-mix(in srgb, currentColor 40%, transparent)",
+                            }
+                      }
+                    />
+                    <div className="ml-2 truncate">
+                      {fund ? fund.name : "Untracked"}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div
+                      className={cn(
+                        "mr-4 text-sm text-muted-foreground",
+                        !active && "hidden group-hover:block",
+                      )}
                     >
-                      <div
-                        className="size-3 shrink-0 rounded-sm"
-                        style={{ backgroundColor: fund.color }}
-                      />
-                      <div className="ml-2 truncate">{fund.name}</div>
-                    </Link>
-                  ) : (
+                      {active ? "Clear filter" : "Filter"}
+                    </div>
+                    <div className="font-mono text-sm whitespace-nowrap">
+                      {currencyFormatter.format(amount)}
+                    </div>
                     <Link
-                      to="/funds/untracked"
+                      to={fund ? "/funds/$id" : "/funds/untracked"}
+                      params={fund ? { id: fund.id } : undefined}
                       onClick={(event) => event.stopPropagation()}
-                      className="flex min-w-0 items-center"
+                      aria-label={fund ? `Open ${fund.name}` : "Open Untracked"}
+                      className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
                     >
-                      <div
-                        className="size-3 shrink-0 rounded-sm"
-                        style={{
-                          backgroundColor:
-                            "color-mix(in srgb, currentColor 40%, transparent)",
-                        }}
-                      />
-                      <div className="ml-2 truncate">Untracked</div>
+                      <ChevronRight className="size-4" />
                     </Link>
-                  )}
-                  <div className="flex-1" />
-                  <div className="font-mono">
-                    {currencyFormatter.format(amount)}
                   </div>
                 </div>
               );
