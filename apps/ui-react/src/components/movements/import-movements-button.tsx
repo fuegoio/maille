@@ -1,7 +1,6 @@
 import type { Movement } from "@maille/core/movements";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { parse as parseCSV } from "csv-parse/browser/esm/sync";
 import { parse, format, isSameDay } from "date-fns";
 import {
   ArrowLeft,
@@ -57,6 +56,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { parseRecords, type DelimiterOption } from "@/lib/csv";
 import { getGraphQLDate } from "@/lib/date";
 import { extractMovementsFromText } from "@/lib/extract-movements";
 import { movementCreateHistoryEvent } from "@/lib/history-events";
@@ -67,49 +67,8 @@ import { useSync } from "@/stores/sync";
 
 import { Separator } from "../ui/separator";
 
-type DelimiterOption = "auto" | "semicolon" | "comma" | "tab";
 type ImportMode = "csv" | "paste";
 type EditableField = "name" | "date" | "amount";
-
-const DELIMITER_VALUES: Record<Exclude<DelimiterOption, "auto">, string> = {
-  semicolon: ";",
-  comma: ",",
-  tab: "\t",
-};
-
-// Auto must resolve to a single delimiter: accepting several at once makes
-// csv-parse also split decimal-comma values ("-7,90") into separate fields.
-function detectDelimiter(text: string): string {
-  const firstLine = text.split(/\r?\n/).find((line) => line.trim() !== "");
-  if (!firstLine) return ";";
-  let best = ";";
-  let bestCount = -1;
-  for (const candidate of [";", ",", "\t"]) {
-    const count = firstLine.split(candidate).length - 1;
-    if (count > bestCount) {
-      best = candidate;
-      bestCount = count;
-    }
-  }
-  return best;
-}
-
-function parseRecords(
-  text: string,
-  delimiter: DelimiterOption,
-): Record<string, string>[] {
-  const clean = text.replace(/^\uFEFF/, "");
-  return parseCSV(clean, {
-    delimiter:
-      delimiter === "auto"
-        ? detectDelimiter(clean)
-        : DELIMITER_VALUES[delimiter],
-    columns: true,
-    skip_empty_lines: true,
-    relax_quotes: true,
-    relax_column_count: true,
-  }) as Record<string, string>[];
-}
 
 const formSchema = z.object({
   account: z.string().min(1, "Account is required"),
