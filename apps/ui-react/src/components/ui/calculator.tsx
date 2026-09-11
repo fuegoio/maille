@@ -271,7 +271,7 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
             return (
               <div
                 key={key}
-                className={cn("flex justify-center", wide && "col-span-2")}
+                className={cn("flex justify-center", wide && "col-span-2 px-2")}
               >
                 <Button
                   className={wide ? "h-9 w-full" : "size-9"}
