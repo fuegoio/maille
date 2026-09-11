@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useFundMoves } from "@/hooks/use-fund-moves";
 import { getAccountTypeShadeColor } from "@/lib/account-progress-color";
 import { cn } from "@/lib/utils";
 import {
@@ -31,6 +32,7 @@ import {
   getFundSpreadAcrossAccounts,
   getFundTreeBalanceAtDate,
   getFundTreeFlowsBetweenDates,
+  getFundTreeSpreadAcrossAccounts,
   getUntrackedBalanceAtDate,
   getUntrackedByAccountAtDate,
 } from "@/logic/funds";
@@ -50,6 +52,10 @@ interface FundSummaryProps {
   accountFilter?: string;
   /** Set the account filtering the moves; undefined clears. */
   onAccountFilterChange?: (account: string | undefined) => void;
+  /** "none" narrows the rollups to the fund's own money, excluding subfunds. */
+  subfundFilter?: "none";
+  /** Set the subfund filter; undefined clears. */
+  onSubfundFilterChange?: (value: "none" | undefined) => void;
 }
 
 interface AccountSpreadEntry {
@@ -72,10 +78,12 @@ export function FundSummary({
   fundId,
   accountFilter,
   onAccountFilterChange,
+  subfundFilter,
+  onSubfundFilterChange,
 }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
+  const fundMoves = useFundMoves();
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
@@ -91,12 +99,11 @@ export function FundSummary({
             accounts,
             activities,
             funds,
-            fundMoves,
             fundAllocations,
             startingDate: user.startingDate,
           }
         : null,
-    [user, accounts, activities, funds, fundMoves, fundAllocations],
+    [user, accounts, activities, funds, fundAllocations],
   );
 
   // A real fund's numbers are its subtree's: money that entered the tree
@@ -109,7 +116,6 @@ export function FundSummary({
         accounts,
         activities,
         funds,
-        fundMoves,
         fundAllocations,
         date,
         startingDate: user.startingDate,
@@ -205,7 +211,9 @@ export function FundSummary({
   );
 
   // Where the money sits: a fund spread across accounts, or Untracked
-  // spread across accounts — the two questions positions answer.
+  // spread across accounts — the two questions positions answer. A fund
+  // with subfunds answers for its whole subtree, matching the balance
+  // above; the No subfund filter narrows it to the fund's own money.
   const accountSpread = useMemo<AccountSpreadEntry[]>(() => {
     if (!positionsInput) return [];
     const spread =
@@ -219,11 +227,18 @@ export function FundSummary({
             .filter(([, amount]) => Math.abs(amount) >= 0.01)
             .map(([accountId, amount]) => [accountId, amount] as const)
         : [
-            ...getFundSpreadAcrossAccounts({
-              ...positionsInput,
-              fundId,
-              date: today,
-            }).entries(),
+            ...(subfundFilter === "none"
+              ? getFundSpreadAcrossAccounts({
+                  ...positionsInput,
+                  fundId,
+                  date: today,
+                })
+              : getFundTreeSpreadAcrossAccounts({
+                  ...positionsInput,
+                  fundId,
+                  date: today,
+                })
+            ).entries(),
           ]
             .filter(([, amount]) => Math.abs(amount) >= 0.01)
             .map(([accountId, amount]) => [accountId, amount] as const);
@@ -236,7 +251,7 @@ export function FundSummary({
         amount:
           spread.find(([accountId]) => accountId === account.id)?.[1] ?? 0,
       }));
-  }, [positionsInput, fundId, accounts, today]);
+  }, [positionsInput, fundId, accounts, today, subfundFilter]);
 
   // Accounts grouped by type, ordered and shaded like the periods accounts
   // summary. Negative positions still get a row, but only positive amounts
@@ -409,15 +424,46 @@ export function FundSummary({
                 </div>
               </Link>
             ))}
-            {directBalance !== null && (
-              <div className="flex h-9 items-center rounded px-3 pl-5 text-sm">
-                <div className="text-muted-foreground">No subfund</div>
-                <div className="flex-1" />
-                <div className="font-mono text-sm text-muted-foreground">
-                  {currencyFormatter.format(directBalance)}
-                </div>
-              </div>
-            )}
+            {directBalance !== null &&
+              (() => {
+                const active = subfundFilter === "none";
+                const selectDirect = () =>
+                  onSubfundFilterChange?.(active ? undefined : "none");
+
+                return (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={selectDirect}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        selectDirect();
+                      }
+                    }}
+                    className={cn(
+                      "group flex h-9 cursor-pointer items-center rounded px-3 pl-5 text-sm transition-colors",
+                      active ? "bg-muted" : "hover:bg-muted/50",
+                    )}
+                  >
+                    <div className="text-muted-foreground">No subfund</div>
+                    <div className="flex-1" />
+                    <div className="flex items-center">
+                      <div
+                        className={cn(
+                          "mr-4 text-sm text-muted-foreground",
+                          !active && "hidden group-hover:block",
+                        )}
+                      >
+                        {active ? "Clear filter" : "Filter"}
+                      </div>
+                      <div className="font-mono text-sm text-muted-foreground">
+                        {currencyFormatter.format(directBalance)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
         </div>
       )}

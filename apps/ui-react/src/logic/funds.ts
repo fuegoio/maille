@@ -159,14 +159,13 @@ export const getAllocationsLandedBetweenDates = (
 
 /**
  * Assemble the ledger shape the core positions replay consumes: activities
- * with their transactions, each carrying the fund legs held by the funds
- * store.
+ * with their transactions, each carrying the fund legs held on it — there
+ * is no separate fund move collection, legs live on their transactions.
  */
 export function toPositionsInput({
   accounts,
   activities,
   funds,
-  fundMoves,
   fundAllocations,
   startingDate,
   date,
@@ -174,19 +173,10 @@ export function toPositionsInput({
   accounts: Account[];
   activities: Activity[];
   funds: Fund[];
-  fundMoves: FundMove[];
   fundAllocations: FundAllocation[];
   startingDate: Date;
   date?: Date;
 }): PositionsInput {
-  const legsByTransaction = new Map<string, FundMove[]>();
-  for (const move of fundMoves) {
-    if (move.transaction === null) continue;
-    const legs = legsByTransaction.get(move.transaction) ?? [];
-    legs.push(move);
-    legsByTransaction.set(move.transaction, legs);
-  }
-
   return {
     accounts,
     funds,
@@ -195,7 +185,7 @@ export function toPositionsInput({
       date: activity.date,
       transactions: activity.transactions.map((transaction) => ({
         ...transaction,
-        fundMoves: legsByTransaction.get(transaction.id) ?? [],
+        fundMoves: transaction.fundMoves ?? [],
       })),
     })),
     startingDate,
@@ -203,12 +193,26 @@ export function toPositionsInput({
   };
 }
 
+/**
+ * The fund moves of a set of activities, flattened from their
+ * transactions: the flat list the balance and flow helpers consume.
+ */
+export function flattenActivityFundMoves(activities: Activity[]): FundMove[] {
+  return activities.flatMap((activity) =>
+    activity.transactions.flatMap((transaction) =>
+      (transaction.fundMoves ?? []).map((leg) => ({
+        ...leg,
+        transaction: leg.transaction ?? transaction.id,
+      })),
+    ),
+  );
+}
+
 /** The Untracked position of every account at the given date. */
 export function getUntrackedByAccountAtDate(input: {
   accounts: Account[];
   activities: Activity[];
   funds: Fund[];
-  fundMoves: FundMove[];
   fundAllocations: FundAllocation[];
   date: Date;
   startingDate: Date;
@@ -225,7 +229,6 @@ export function getUntrackedBalanceAtDate(input: {
   accounts: Account[];
   activities: Activity[];
   funds: Fund[];
-  fundMoves: FundMove[];
   fundAllocations: FundAllocation[];
   date: Date;
   startingDate: Date;
@@ -247,6 +250,27 @@ export function getFundSpreadAcrossAccounts(
     computePositions(toPositionsInput(input)),
     input.fundId,
   );
+}
+
+/**
+ * A fund subtree's spread across accounts: one positions replay, summing
+ * the compositions of the fund and every fund below it — the account-side
+ * view matching the subtree balance.
+ */
+export function getFundTreeSpreadAcrossAccounts(
+  input: Parameters<typeof toPositionsInput>[0] & { fundId: string },
+): Map<string, number> {
+  const positions = computePositions(toPositionsInput(input));
+  const totals = new Map<string, number>();
+  for (const fundId of getTreeIds(input.fundId, input.funds)) {
+    for (const [accountId, amount] of getFundAccountPositions(
+      positions,
+      fundId,
+    )) {
+      totals.set(accountId, (totals.get(accountId) ?? 0) + amount);
+    }
+  }
+  return totals;
 }
 
 /**

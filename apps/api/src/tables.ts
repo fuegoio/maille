@@ -15,6 +15,7 @@ import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import type { SerializedHistoryEntry } from "@maille/core/history";
 import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
+import type { TransactionFundMove } from "@/api/funds/types";
 import type {
   WorkflowMessage,
   WorkflowResult,
@@ -216,6 +217,10 @@ export const transactions = pgTable("transactions", {
   toCounterparty: text("to_counterparty").references(() => counterparties.id, {
     onDelete: "set null",
   }),
+  // The transaction's fund legs, stored with it: fund money always has an
+  // account-side location through its transaction. There is no separate
+  // fund move collection — a leg exists only as part of its transaction.
+  fundMoves: jsonb("fund_moves").$type<TransactionFundMove[]>(),
 });
 
 export const accountTypeEnum = pgEnum("account_type", AccountType);
@@ -335,25 +340,6 @@ export const funds = pgTable("funds", {
   parentFund: text("parent_fund").references((): AnyPgColumn => funds.id, {
     onDelete: "set null",
   }),
-});
-
-export const fundMoves = pgTable("fund_moves", {
-  id: text("id").primaryKey(),
-  user: text("user")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  fromFund: text("from_fund").references(() => funds.id, { onDelete: "cascade" }),
-  toFund: text("to_fund").references(() => funds.id, { onDelete: "cascade" }),
-  amount: real("amount").notNull(),
-  date: timestamp("date", { mode: "date" }).notNull(),
-  note: text("note"),
-  // Every move is a leg of a transaction: fund money always has an
-  // account-side location through it.
-  transaction: text("transaction")
-    .notNull()
-    .references(() => transactions.id, {
-      onDelete: "cascade",
-    }),
 });
 
 // A fund's opening allocations: at the fund's start date, this much of the

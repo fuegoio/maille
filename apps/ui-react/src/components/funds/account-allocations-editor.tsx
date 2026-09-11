@@ -75,7 +75,6 @@ export function AccountAllocationsEditor({
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const user = useAuth((state) => state.user);
   const currencyFormatter = useCurrencyFormatter();
@@ -93,7 +92,6 @@ export function AccountAllocationsEditor({
         ),
         activities,
         funds,
-        fundMoves,
         fundAllocations: fundAllocations.filter(
           (allocation) => allocation.account !== accountId,
         ),
@@ -108,7 +106,6 @@ export function AccountAllocationsEditor({
     startingBalance,
     activities,
     funds,
-    fundMoves,
     fundAllocations,
   ]);
 

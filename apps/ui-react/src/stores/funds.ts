@@ -1,5 +1,5 @@
-import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
-import type { SerializedFundMove, SyncEvent } from "@maille/core/sync";
+import type { Fund, FundAllocation } from "@maille/core/funds";
+import type { SyncEvent } from "@maille/core/sync";
 
 import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
 import { create } from "zustand";
@@ -7,12 +7,10 @@ import { persist } from "zustand/middleware";
 
 import type { Mutation } from "@/mutations";
 
-import { useActivities } from "./activities";
 import { migrationFlags, storage } from "./storage";
 
 interface FundsState {
   funds: Fund[];
-  fundMoves: FundMove[];
   fundAllocations: FundAllocation[];
 
   getFundById: (fundId: string) => Fund | undefined;
@@ -22,14 +20,6 @@ interface FundsState {
   deleteFund: (fundId: string) => void;
   restoreFund: (fund: Fund) => void;
 
-  addFundMove: (fundMove: FundMove) => void;
-  updateFundMove: (
-    fundMoveId: string,
-    update: Partial<Omit<FundMove, "id">>,
-  ) => void;
-  deleteFundMove: (fundMoveId: string) => void;
-  restoreFundMove: (fundMove: FundMove) => void;
-
   setFundAllocations: (fundId: string, allocations: FundAllocation[]) => void;
 
   handleEvent: (event: SyncEvent) => void;
@@ -37,16 +27,10 @@ interface FundsState {
   handleMutationError: (mutation: Mutation) => void;
 }
 
-const toFundMove = (payload: SerializedFundMove): FundMove => ({
-  ...payload,
-  date: new Date(payload.date),
-});
-
 export const useFunds = create<FundsState>()(
   persist(
     (set, get) => ({
       funds: [],
-      fundMoves: [],
       fundAllocations: [],
 
       getFundById: (fundId) => {
@@ -80,15 +64,6 @@ export const useFunds = create<FundsState>()(
                   ? { ...fund, parentFund: deleted?.parentFund ?? null }
                   : fund,
               ),
-            // The deleted fund's legs go back to Untracked server-side; legs
-            // left with both sides untracked carry no information and go.
-            fundMoves: state.fundMoves
-              .map((move) => ({
-                ...move,
-                fromFund: move.fromFund === fundId ? null : move.fromFund,
-                toFund: move.toFund === fundId ? null : move.toFund,
-              }))
-              .filter((move) => move.fromFund !== null || move.toFund !== null),
             fundAllocations: state.fundAllocations.filter(
               (allocation) => allocation.fund !== fundId,
             ),
@@ -99,38 +74,6 @@ export const useFunds = create<FundsState>()(
       restoreFund: (fund) => {
         set((state) => ({
           funds: [...state.funds.filter((f) => f.id !== fund.id), fund],
-        }));
-      },
-
-      addFundMove: (fundMove) => {
-        set((state) => ({
-          fundMoves: [
-            ...state.fundMoves.filter((m) => m.id !== fundMove.id),
-            fundMove,
-          ],
-        }));
-      },
-
-      updateFundMove: (fundMoveId, update) => {
-        set((state) => ({
-          fundMoves: state.fundMoves.map((move) =>
-            move.id === fundMoveId ? { ...move, ...update } : move,
-          ),
-        }));
-      },
-
-      deleteFundMove: (fundMoveId) => {
-        set((state) => ({
-          fundMoves: state.fundMoves.filter((move) => move.id !== fundMoveId),
-        }));
-      },
-
-      restoreFundMove: (fundMove) => {
-        set((state) => ({
-          fundMoves: [
-            ...state.fundMoves.filter((m) => m.id !== fundMove.id),
-            fundMove,
-          ],
         }));
       },
 
@@ -195,68 +138,6 @@ export const useFunds = create<FundsState>()(
               fund: event.payload.fund,
             })),
           );
-        } else if (event.type === "createActivity") {
-          event.payload.transactions?.forEach((transaction) => {
-            transaction.fundMoves?.forEach((move) => {
-              get().addFundMove(toFundMove(move));
-            });
-          });
-        } else if (event.type === "updateActivity") {
-          // Fund moves date with their activity: a new date re-dates the
-          // legs of every transaction under it.
-          if (event.payload.date) {
-            const transactionIds = new Set(
-              useActivities
-                .getState()
-                .activities.find((a) => a.id === event.payload.id)
-                ?.transactions.map((t) => t.id),
-            );
-            if (transactionIds.size > 0) {
-              const date = new Date(event.payload.date);
-              set((state) => ({
-                fundMoves: state.fundMoves.map((move) =>
-                  move.transaction && transactionIds.has(move.transaction)
-                    ? { ...move, date }
-                    : move,
-                ),
-              }));
-            }
-          }
-        } else if (event.type === "addTransaction") {
-          event.payload.fundMoves?.forEach((move) => {
-            get().addFundMove(toFundMove(move));
-          });
-        } else if (event.type === "updateTransaction") {
-          if (event.payload.fundMoves !== undefined) {
-            // Replace all legs of this transaction
-            set((state) => ({
-              fundMoves: [
-                ...state.fundMoves.filter(
-                  (m) => m.transaction !== event.payload.id,
-                ),
-                ...event.payload.fundMoves!.map((move) => toFundMove(move)),
-              ],
-            }));
-          }
-        } else if (event.type === "deleteTransaction") {
-          set((state) => ({
-            fundMoves: state.fundMoves.filter(
-              (m) => m.transaction !== event.payload.id,
-            ),
-          }));
-        } else if (event.type === "deleteActivity") {
-          // Transactions cascade server-side; remove their fund legs
-          const transactions = useActivities
-            .getState()
-            .activities.find((a) => a.id === event.payload.id)
-            ?.transactions.map((t) => t.id);
-          if (transactions) {
-            set((state) => ({
-              fundMoves: state.fundMoves.filter(
-                (m) => !m.transaction || !transactions.includes(m.transaction),
-              ),
-            }));
-          }
         }
       },
 
@@ -278,29 +159,21 @@ export const useFunds = create<FundsState>()(
             mutation.variables.fund,
             mutation.rollbackData,
           );
-        } else if (mutation.name === "addTransaction") {
-          const addTransactionEvent = mutation.events[0];
-          if (addTransactionEvent.type === "addTransaction") {
-            addTransactionEvent.payload.fundMoves?.forEach((move) => {
-              get().deleteFundMove(move.id);
-            });
-          }
-        } else if (mutation.name === "deleteTransaction") {
-          mutation.rollbackData.fundMoves?.forEach((move) => {
-            get().restoreFundMove(move);
-          });
         }
       },
     }),
     {
       name: "funds",
-      version: 3,
+      version: 4,
       storage,
       migrate: (persisted, version) => {
         const state = persisted as {
           funds?: Fund[];
           fundAllocations?: FundAllocation[];
+          fundMoves?: unknown;
         };
+        // Fund moves moved onto their transactions: the collection is gone.
+        delete state.fundMoves;
         if (state.funds) {
           state.funds = state.funds.map((fund) => ({
             ...fund,
@@ -318,7 +191,6 @@ export const useFunds = create<FundsState>()(
       },
       partialize: (state) => ({
         funds: state.funds,
-        fundMoves: state.fundMoves,
         fundAllocations: state.fundAllocations,
       }),
     },

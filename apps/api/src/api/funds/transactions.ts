@@ -1,13 +1,14 @@
 import { AccountType } from "@maille/core/accounts";
+import type { FundMove } from "@maille/core/funds";
 
 import { db } from "@/database";
-import { accounts, fundMoves } from "@/tables";
-import { and, eq, inArray, like } from "drizzle-orm";
+import { accounts } from "@/tables";
+import { and, eq, inArray } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import type { FundMoveInput } from "./types";
+import type { FundMoveInput, TransactionFundMove } from "./types";
 
 /**
- * Insert fund moves linked to a transaction.
+ * A transaction's fund legs, stored on its row.
  *
  * Semantics of a fund leg relative to a transaction:
  * - fromFund: money leaves this fund (expense, investment purchase)
@@ -25,17 +26,19 @@ import type { FundMoveInput } from "./types";
  * side, a transaction leaving the fund system (balance to P&L) may only
  * draw its fromFund, one entering it (P&L to balance) may only feed its
  * toFund, and a P&L to P&L transaction holds no positions at all.
+ *
+ * Fund moves date with their activity: the caller passes the activity's
+ * date and every leg carries it.
  */
-export const insertTransactionFundMoves = async (params: {
+export const buildTransactionFundMoves = async (params: {
   userId: string;
-  transactionId: string;
   transactionDate: Date;
   amount: number;
   fromAccount: string;
   toAccount: string;
   fundMovesInput: FundMoveInput[] | null | undefined;
-}) => {
-  const { userId, transactionId, amount, fundMovesInput } = params;
+}): Promise<TransactionFundMove[]> => {
+  const { userId, transactionDate, amount, fundMovesInput } = params;
 
   if (!fundMovesInput || fundMovesInput.length === 0) return [];
 
@@ -78,51 +81,35 @@ export const insertTransactionFundMoves = async (params: {
     throw new GraphQLError("Fund moves exceed the transaction amount");
   }
 
-  const values = legs.map((leg) => ({
+  return legs.map((leg) => ({
     id: leg.id,
-    user: userId,
     fromFund: leg.fromFund ?? null,
     toFund: leg.toFund ?? null,
     amount: leg.amount,
-    date: params.transactionDate,
+    date: transactionDate.toISOString(),
     note: leg.note ?? null,
-    transaction: transactionId,
   }));
-
-  if (values.length === 0) return [];
-
-  return await db.insert(fundMoves).values(values).returning();
 };
 
 /**
- * Serialize fund move rows for sync event payloads (dates as ISO strings).
+ * A transaction's legs as complete fund moves (dates as Date), the shape
+ * GraphQL serves and the core replay consumes.
  */
-export const serializeFundMoves = (moves: (typeof fundMoves.$inferSelect)[]) =>
+export const toFundMoves = (
+  transactionId: string,
+  legs: TransactionFundMove[] | null | undefined,
+): FundMove[] =>
+  (legs ?? []).map((leg) => ({
+    ...leg,
+    date: new Date(leg.date),
+    transaction: transactionId,
+  }));
+
+/**
+ * Serialize fund moves for sync event payloads (dates as ISO strings).
+ */
+export const serializeFundMoves = (moves: FundMove[]) =>
   moves.map((move) => ({
     ...move,
     date: move.date.toISOString(),
   }));
-
-/**
- * Delete all fund moves linked to a transaction (used before re-inserting
- * on update, and by the database cascade on transaction deletion).
- */
-export const deleteTransactionFundMoves = async (params: {
-  userId: string;
-  transactionId: string;
-}) => {
-  const existing = await db
-    .select()
-    .from(fundMoves)
-    .where(
-      and(like(fundMoves.transaction, params.transactionId), eq(fundMoves.user, params.userId)),
-    );
-  if (existing.length > 0) {
-    await db
-      .delete(fundMoves)
-      .where(
-        and(like(fundMoves.transaction, params.transactionId), eq(fundMoves.user, params.userId)),
-      );
-  }
-  return existing;
-};

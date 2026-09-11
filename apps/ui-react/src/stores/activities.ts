@@ -433,6 +433,20 @@ export const useActivities = create<ActivitiesState>()(
               return {
                 ...activity,
                 ...filteredUpdate,
+                // Fund moves date with their activity: a new date re-dates
+                // the legs of every transaction under it.
+                ...(update.date !== undefined
+                  ? {
+                      transactions: activity.transactions.map(
+                        (transaction) => ({
+                          ...transaction,
+                          fundMoves: (transaction.fundMoves ?? []).map(
+                            (leg) => ({ ...leg, date: update.date! }),
+                          ),
+                        }),
+                      ),
+                    }
+                  : {}),
                 amount: getActivityTransactionsReconciliationSum(
                   update.type ?? activity.type,
                   activity.transactions,
@@ -634,6 +648,41 @@ export const useActivities = create<ActivitiesState>()(
           });
         } else if (event.type === "deleteActivity") {
           get().deleteActivity(event.payload.id);
+        } else if (event.type === "deleteFund") {
+          // The deleted fund's legs go back to Untracked (a null side); a
+          // leg left untracked on both sides carries no information and
+          // goes. Legs live on their transactions.
+          set((state) => ({
+            activities: state.activities.map((activity) => ({
+              ...activity,
+              transactions: activity.transactions.map((transaction) => {
+                const legs = transaction.fundMoves;
+                if (
+                  !legs?.some(
+                    (leg) =>
+                      leg.fromFund === event.payload.id ||
+                      leg.toFund === event.payload.id,
+                  )
+                ) {
+                  return transaction;
+                }
+                return {
+                  ...transaction,
+                  fundMoves: legs!
+                    .map((leg) => ({
+                      ...leg,
+                      fromFund:
+                        leg.fromFund === event.payload.id ? null : leg.fromFund,
+                      toFund:
+                        leg.toFund === event.payload.id ? null : leg.toFund,
+                    }))
+                    .filter(
+                      (leg) => leg.fromFund !== null || leg.toFund !== null,
+                    ),
+                };
+              }),
+            })),
+          }));
         } else if (event.type === "createActivityCategory") {
           get().addActivityCategory(event.payload);
         } else if (event.type === "updateActivityCategory") {

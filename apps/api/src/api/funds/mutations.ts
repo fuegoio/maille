@@ -2,10 +2,10 @@ import { db } from "@/database";
 import { DEFAULT_FUND_COLOR, wouldCreateCycle } from "@maille/core/funds";
 import { builder } from "../builder";
 import { FundAllocationSchema, FundSchema } from "./schemas";
-import { fundAllocations, funds, fundMoves } from "@/tables";
+import { activities, fundAllocations, funds, transactions } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
-import { and, eq, isNull, like } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import {
   getFundAllocations,
@@ -224,19 +224,27 @@ export const registerFundsMutations = () => {
           .where(eq(funds.parentFund, fund.id));
 
         // The deleted fund's legs go back to Untracked (a null side), so the
-        // counterpart funds keep their history.
-        await db.update(fundMoves).set({ fromFund: null }).where(eq(fundMoves.fromFund, fund.id));
-        await db.update(fundMoves).set({ toFund: null }).where(eq(fundMoves.toFund, fund.id));
-        // Moves with both sides untracked carry no information: drop them.
-        await db
-          .delete(fundMoves)
-          .where(
-            and(
-              eq(fundMoves.user, ctx.user.id),
-              isNull(fundMoves.fromFund),
-              isNull(fundMoves.toFund),
-            ),
-          );
+        // counterpart funds keep their history. Legs live on their
+        // transactions; a leg left untracked on both sides carries no
+        // information and is dropped.
+        const userTransactions = await db
+          .select({ id: transactions.id, fundMoves: transactions.fundMoves })
+          .from(transactions)
+          .innerJoin(activities, eq(transactions.activity, activities.id))
+          .where(eq(activities.user, ctx.user.id));
+        for (const { id, fundMoves: legs } of userTransactions) {
+          if (!legs?.some((leg) => leg.fromFund === fund.id || leg.toFund === fund.id)) {
+            continue;
+          }
+          const updated = legs!
+            .map((leg) => ({
+              ...leg,
+              fromFund: leg.fromFund === fund.id ? null : leg.fromFund,
+              toFund: leg.toFund === fund.id ? null : leg.toFund,
+            }))
+            .filter((leg) => leg.fromFund !== null || leg.toFund !== null);
+          await db.update(transactions).set({ fundMoves: updated }).where(eq(transactions.id, id));
+        }
 
         await db.delete(fundAllocations).where(eq(fundAllocations.fund, fund.id));
 

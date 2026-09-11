@@ -1,12 +1,12 @@
 import { db } from "@/database";
 import { builder } from "../builder";
 import { ActivityCategorySchema, ActivitySchema, ActivitySubCategorySchema } from "./schemas";
+import { toFundMoves } from "@/api/funds/transactions";
 import {
   accounts,
   activities,
   activityCategories,
   activitySubcategories,
-  fundMoves,
   movements,
   movementsActivities,
   transactions,
@@ -39,11 +39,6 @@ export const registerActivitiesQueries = () => {
           .from(movements)
           .where(eq(movements.user, ctx.user.id));
 
-        const fundMovesData = await db
-          .select()
-          .from(fundMoves)
-          .where(eq(fundMoves.user, ctx.user.id));
-
         return activitiesData.map(async (activity) => {
           const activityTransactions = await db
             .select()
@@ -55,21 +50,25 @@ export const registerActivitiesQueries = () => {
             .from(movementsActivities)
             .where(eq(movementsActivities.activity, activity.id));
 
+          // Legs live on the transaction rows; hand them over as complete
+          // fund moves (dates as Date) to GraphQL and the reconcilers.
+          const transactionsWithMoves = activityTransactions.map((transaction) => ({
+            ...transaction,
+            fundMoves: toFundMoves(transaction.id, transaction.fundMoves),
+          }));
+
           return {
             ...activity,
-            transactions: activityTransactions.map((transaction) => ({
-              ...transaction,
-              fundMoves: fundMovesData.filter((move) => move.transaction === transaction.id),
-            })),
+            transactions: transactionsWithMoves,
             movements: activityMovements,
             amount: getActivityTransactionsReconciliationSum(
               activity.type,
-              activityTransactions,
+              transactionsWithMoves,
               accountsQuery,
             ),
             status: getActivityStatus(
               activity.date,
-              activityTransactions,
+              transactionsWithMoves,
               activityMovements,
               accountsQuery,
               (id) => {

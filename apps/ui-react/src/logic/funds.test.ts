@@ -9,6 +9,7 @@ import { describe, expect, it } from "vitest";
 import {
   activityTouchesFund,
   classifyFundMoves,
+  flattenActivityFundMoves,
   getAccountSpreadAcrossFunds,
   getDefaultFundByAccount,
   getFundChildren,
@@ -16,6 +17,7 @@ import {
   getFundTreeBalance,
   getFundTreeBalanceAtDate,
   getFundTreeFlowsBetweenDates,
+  getFundTreeSpreadAcrossAccounts,
   getFundsBalances,
   getTransactionSideFund,
   getUntrackedBalanceAtDate,
@@ -296,7 +298,6 @@ describe("positions (ui logic)", () => {
     amount: 300,
     transaction: "t1",
   });
-  const fundMoves = [leg];
   const fundAllocations = [allocation("a1", "house", "checking", 400)];
   const activities = [
     activity("act-1", "2026-01-05", [
@@ -309,7 +310,6 @@ describe("positions (ui logic)", () => {
     accounts,
     activities,
     funds,
-    fundMoves,
     fundAllocations,
     startingDate,
   };
@@ -348,6 +348,36 @@ describe("positions (ui logic)", () => {
     const spread = getFundSpreadAcrossAccounts({ ...input, fundId: "house" });
     expect(spread.get("checking")).toBe(100);
     expect(spread.has("savings")).toBe(false);
+  });
+
+  it("a subtree spreads across accounts as the sum of its funds", () => {
+    // Kitchen is a house subfund claiming 50 more of the checking account
+    const treeInput = {
+      ...input,
+      funds: [
+        ...funds,
+        { ...fund("kitchen", "house"), startDate: new Date("2026-01-01") },
+      ],
+      fundAllocations: [
+        ...fundAllocations,
+        allocation("a2", "kitchen", "checking", 50),
+      ],
+    };
+
+    const tree = getFundTreeSpreadAcrossAccounts({
+      ...treeInput,
+      fundId: "house",
+      date: new Date("2026-01-31"),
+    });
+    expect(tree.get("checking")).toBe(150);
+
+    // The direct spread stays the fund's own money
+    const direct = getFundSpreadAcrossAccounts({
+      ...treeInput,
+      fundId: "house",
+      date: new Date("2026-01-31"),
+    });
+    expect(direct.get("checking")).toBe(100);
   });
 
   it("an account spreads across the funds claiming it", () => {
@@ -397,7 +427,6 @@ describe("default fund classification (ui logic)", () => {
     accounts,
     activities: [],
     funds,
-    fundMoves: [],
     fundAllocations,
     startingDate,
   });
@@ -536,5 +565,44 @@ describe("activity fund touches (ui logic)", () => {
     ]);
     expect(activityTouchesFund(a, "house")).toBe(true);
     expect(activityTouchesFund(a, null)).toBe(true);
+  });
+});
+
+describe("flattenActivityFundMoves (ui logic)", () => {
+  it("collects the legs of every transaction of every activity", () => {
+    const leg1 = move({ id: "m1", fromFund: "house", amount: 100 });
+    const leg2 = move({ id: "m2", toFund: "car", amount: 50 });
+    const activities = [
+      activity("act-1", "2026-01-05", [
+        transaction("t1", 100, "checking", "savings", [leg1]),
+        transaction("t2", 50, "revenue", "checking"),
+      ]),
+      activity("act-2", "2026-02-05", [
+        transaction("t3", 50, "checking", "savings", [leg2]),
+      ]),
+    ];
+
+    expect(flattenActivityFundMoves(activities)).toEqual([
+      { ...leg1, transaction: "t1" },
+      { ...leg2, transaction: "t3" },
+    ]);
+  });
+
+  it("keeps a leg's own transaction reference when it has one", () => {
+    const leg = move({
+      id: "m1",
+      fromFund: "house",
+      amount: 100,
+      transaction: "elsewhere",
+    });
+    const activities = [
+      activity("act-1", "2026-01-05", [
+        transaction("t1", 100, "checking", "savings", [leg]),
+      ]),
+    ];
+
+    expect(flattenActivityFundMoves(activities)).toEqual([
+      { ...leg, transaction: "elsewhere" },
+    ]);
   });
 });

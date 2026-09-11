@@ -46,6 +46,10 @@ function FundPage() {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
+  // "none" narrows the page to the fund's own money, excluding subfunds
+  const [subfundFilter, setSubfundFilter] = useState<"none" | undefined>(
+    undefined,
+  );
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -124,7 +128,11 @@ function FundPage() {
           </FundSettingsDialog>
         </header>
 
-        <FundMovesTable fundId={fund.id} accountFilter={accountFilter} />
+        <FundMovesTable
+          fundId={fund.id}
+          accountFilter={accountFilter}
+          subtree={subfundFilter !== "none"}
+        />
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
@@ -132,6 +140,8 @@ function FundPage() {
           fundId={fund.id}
           accountFilter={accountFilter ?? undefined}
           onAccountFilterChange={(account) => setAccountFilter(account ?? null)}
+          subfundFilter={subfundFilter}
+          onSubfundFilterChange={setSubfundFilter}
         />
       </SummaryPanel>
     </SidebarInset>

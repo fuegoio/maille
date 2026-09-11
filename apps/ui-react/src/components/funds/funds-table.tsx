@@ -15,6 +15,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useFundMoves } from "@/hooks/use-fund-moves";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
 import { getFundTreeBalance, getUntrackedBalanceAtDate } from "@/logic/funds";
@@ -40,7 +41,7 @@ const readCollapsed = (): Set<string> => {
 export function FundsTable() {
   const navigate = useNavigate();
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
+  const fundMoves = useFundMoves();
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
@@ -101,13 +102,12 @@ export function FundsTable() {
             accounts,
             activities,
             funds,
-            fundMoves,
             fundAllocations,
             date: new Date(),
             startingDate: user.startingDate,
           })
         : 0,
-    [accounts, activities, funds, fundMoves, fundAllocations, user],
+    [accounts, activities, funds, fundAllocations, user],
   );
 
   // Row order as rendered (only expanded tree nodes)

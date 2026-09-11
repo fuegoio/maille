@@ -6,7 +6,7 @@ import {
   type ActivityMovement,
 } from "@maille/core/activities";
 import { buildCreateEntry, buildLinkEntry, diffActivity } from "@maille/core/history";
-import { and, eq, inArray, like } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { z } from "zod";
 import { db } from "@/database";
@@ -17,7 +17,6 @@ import {
   activitySubcategories,
   assets,
   counterparties,
-  fundMoves,
   movements,
   movementsActivities,
   projects,
@@ -28,7 +27,11 @@ import { addEvent } from "@/api/events";
 import { computeHistory, emitHistoryEvents } from "@/api/history/history";
 import { loadHistoryLabels } from "@/api/history/labels";
 import { getActivitySharings } from "@/services/sharing";
-import { insertTransactionFundMoves, serializeFundMoves } from "@/api/funds/transactions";
+import {
+  buildTransactionFundMoves,
+  serializeFundMoves,
+  toFundMoves,
+} from "@/api/funds/transactions";
 import type { FundMoveInput } from "@/api/funds/types";
 import { cancelWorkflowIfActive, workflowClientId } from "@/workflows/store";
 
@@ -201,6 +204,14 @@ export async function createActivity(userId: string, clientId: string, args: Cre
               .limit(1)
           )[0]?.id
         : transaction.toCounterparty;
+      const fundMoves = await buildTransactionFundMoves({
+        userId,
+        transactionDate: new Date(args.date),
+        amount: transaction.amount,
+        fromAccount,
+        toAccount,
+        fundMovesInput: transaction.fundMoves,
+      });
       const transactionResults = await db
         .insert(transactions)
         .values({
@@ -213,6 +224,7 @@ export async function createActivity(userId: string, clientId: string, args: Cre
           fromCounterparty,
           toCounterparty,
           activity: args.id,
+          fundMoves,
         })
         .returning();
       const newTransaction = transactionResults[0];
@@ -221,17 +233,10 @@ export async function createActivity(userId: string, clientId: string, args: Cre
         throw new GraphQLError("Failed to create transaction");
       }
 
-      const newFundMoves = await insertTransactionFundMoves({
-        userId,
-        transactionId: newTransaction.id,
-        transactionDate: new Date(args.date),
-        amount: transaction.amount,
-        fromAccount,
-        toAccount,
-        fundMovesInput: transaction.fundMoves,
-      });
-
-      return { ...newTransaction, fundMoves: newFundMoves };
+      return {
+        ...newTransaction,
+        fundMoves: toFundMoves(newTransaction.id, newTransaction.fundMoves),
+      };
     }) || [];
 
   const newTransactions = await Promise.all(transactionPromises);
@@ -507,19 +512,20 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
     // of every transaction under it.
     if (activityUpdates.date) {
       const activityTransactions = await db
-        .select({ id: transactions.id })
+        .select({ id: transactions.id, fundMoves: transactions.fundMoves })
         .from(transactions)
         .where(eq(transactions.activity, activity.id));
-      if (activityTransactions.length > 0) {
+      for (const { id, fundMoves: legs } of activityTransactions) {
+        if (!legs || legs.length === 0) continue;
         await db
-          .update(fundMoves)
-          .set({ date: activityUpdates.date })
-          .where(
-            inArray(
-              fundMoves.transaction,
-              activityTransactions.map(({ id }) => id),
-            ),
-          );
+          .update(transactions)
+          .set({
+            fundMoves: legs.map((leg) => ({
+              ...leg,
+              date: activityUpdates.date!.toISOString(),
+            })),
+          })
+          .where(eq(transactions.id, id));
       }
     }
   }
@@ -540,10 +546,12 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
   }
 
   const accountsQuery = await db.select().from(accounts);
-  const transactionsData = await db
-    .select()
-    .from(transactions)
-    .where(eq(transactions.activity, activity.id));
+  const transactionsData = (
+    await db.select().from(transactions).where(eq(transactions.activity, activity.id))
+  ).map((transaction) => ({
+    ...transaction,
+    fundMoves: toFundMoves(transaction.id, transaction.fundMoves),
+  }));
   const movementsData = await db
     .select()
     .from(movementsActivities)

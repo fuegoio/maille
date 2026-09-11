@@ -320,18 +320,6 @@ export const fetchUserData = async () => {
     });
   });
 
-  // Populate fund moves: transaction legs, nested under their transactions
-  userData.activities.forEach((activity) => {
-    activity.transactions.forEach((transaction) => {
-      transaction.fundMoves?.forEach((fundMove) => {
-        useFunds.getState().addFundMove({
-          ...fundMove,
-          date: new Date(fundMove.date),
-        });
-      });
-    });
-  });
-
   // Populate fund allocations
   useFunds.setState({ fundAllocations: userData.fundAllocations });
 
@@ -400,6 +388,6 @@ export const clearAllStores = () => {
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
-  useFunds.setState({ funds: [], fundMoves: [], fundAllocations: [] });
+  useFunds.setState({ funds: [], fundAllocations: [] });
   useWorkflows.setState({ workflows: [] });
 };

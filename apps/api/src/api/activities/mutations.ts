@@ -25,7 +25,6 @@ import {
   assets,
   contacts,
   counterparties,
-  fundMoves,
   movements,
   movementsActivities,
   transactions,
@@ -36,7 +35,12 @@ import { addEvent } from "@/api/events";
 import { computeHistory, emitHistoryEvents } from "@/api/history/history";
 import { loadHistoryLabels, transactionLeg } from "@/api/history/labels";
 import { getActivitySharings } from "@/services/sharing";
-import { insertTransactionFundMoves, serializeFundMoves } from "@/api/funds/transactions";
+import {
+  buildTransactionFundMoves,
+  serializeFundMoves,
+  toFundMoves,
+} from "@/api/funds/transactions";
+import type { FundMove } from "@maille/core/funds";
 import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
@@ -501,6 +505,14 @@ export const registerActivitiesMutations = () => {
             )[0]?.id
           : args.toCounterparty;
 
+        const fundMoves = await buildTransactionFundMoves({
+          userId: ctx.user.id,
+          transactionDate: activity.date,
+          amount: args.amount,
+          fromAccount,
+          toAccount,
+          fundMovesInput: args.fundMoves,
+        });
         const newTransactions = await db
           .insert(transactions)
           .values({
@@ -513,6 +525,7 @@ export const registerActivitiesMutations = () => {
             fromCounterparty,
             toCounterparty,
             activity: activity.id,
+            fundMoves,
           })
           .returning();
         const newTransaction = newTransactions[0];
@@ -521,15 +534,7 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to create transaction");
         }
 
-        const newFundMoves = await insertTransactionFundMoves({
-          userId: ctx.user.id,
-          transactionId: newTransaction.id,
-          transactionDate: activity.date,
-          amount: args.amount,
-          fromAccount: newTransaction.fromAccount,
-          toAccount: newTransaction.toAccount,
-          fundMovesInput: args.fundMoves,
-        });
+        const newFundMoves = toFundMoves(newTransaction.id, fundMoves);
 
         await addEvent({
           type: "addTransaction",
@@ -605,7 +610,7 @@ export const registerActivitiesMutations = () => {
           }),
         );
 
-        return newTransaction;
+        return { ...newTransaction, fundMoves: newFundMoves };
       },
     }),
   );
@@ -767,6 +772,25 @@ export const registerActivitiesMutations = () => {
               )[0]?.id
             : args.toCounterparty;
 
+        // Replace fund legs when provided (undefined = keep existing legs).
+        // Legs live on the transaction row, stored with the activity's date.
+        let updatedFundMoves: FundMove[] | null = null;
+        if (args.fundMoves !== null && args.fundMoves !== undefined) {
+          const legs = await buildTransactionFundMoves({
+            userId: ctx.user.id,
+            transactionDate: activity.date,
+            amount:
+              args.amount !== null && args.amount !== undefined ? args.amount : transaction.amount,
+            fromAccount: updatedFields.fromAccount ?? transaction.fromAccount,
+            toAccount: updatedFields.toAccount ?? transaction.toAccount,
+            fundMovesInput: args.fundMoves,
+          });
+          updatedFundMoves = toFundMoves(transaction.id, legs);
+          if (legs.length > 0 || (transaction.fundMoves ?? []).length > 0) {
+            updatedFields.fundMoves = legs;
+          }
+        }
+
         const updatedTransactions =
           Object.keys(updatedFields).length > 0
             ? await db
@@ -781,36 +805,16 @@ export const registerActivitiesMutations = () => {
           throw new GraphQLError("Failed to update transaction");
         }
 
-        // Replace fund legs when provided (undefined = keep existing legs)
-        let updatedFundMoves: Awaited<ReturnType<typeof insertTransactionFundMoves>> | null = null;
-        if (args.fundMoves !== null && args.fundMoves !== undefined) {
-          const existingFundMoves = await db
-            .select()
-            .from(fundMoves)
-            .where(eq(fundMoves.transaction, transaction.id));
-          await db.delete(fundMoves).where(eq(fundMoves.transaction, transaction.id));
-
-          if (args.fundMoves.length > 0) {
-            updatedFundMoves = await insertTransactionFundMoves({
-              userId: ctx.user.id,
-              transactionId: transaction.id,
-              transactionDate: activity.date,
-              amount: updatedTransaction.amount,
-              fromAccount: updatedTransaction.fromAccount,
-              toAccount: updatedTransaction.toAccount,
-              fundMovesInput: args.fundMoves,
-            });
-          } else if (existingFundMoves.length > 0) {
-            updatedFundMoves = [];
-          }
-        }
+        // The stored legs stay on the row; the event carries the serialized
+        // moves instead.
+        const { fundMoves: _storedLegs, ...updatedFieldsWithoutLegs } = updatedFields;
 
         await addEvent({
           type: "updateTransaction",
           payload: {
             activityId: transaction.activity,
             id: transaction.id,
-            ...updatedFields,
+            ...updatedFieldsWithoutLegs,
             ...(updatedFundMoves !== null
               ? { fundMoves: serializeFundMoves(updatedFundMoves) }
               : {}),
@@ -900,7 +904,11 @@ export const registerActivitiesMutations = () => {
           }),
         );
 
-        return updatedTransaction;
+        return {
+          ...updatedTransaction,
+          fundMoves:
+            updatedFundMoves ?? toFundMoves(updatedTransaction.id, updatedTransaction.fundMoves),
+        };
       },
     }),
   );

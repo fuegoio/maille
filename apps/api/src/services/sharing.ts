@@ -1,5 +1,6 @@
 import { db } from "@/database";
 import { accountsSharing, activitiesSharing, counterparties, transactions } from "@/tables";
+import { toFundMoves } from "@/api/funds/transactions";
 import type { Counterparty } from "@maille/core/accounts";
 import type { Transaction } from "@maille/core/activities";
 import { and, eq, ne } from "drizzle-orm";
@@ -36,10 +37,12 @@ export const getActivitySharings = async (
   return await Promise.all(
     activitySharings.map(async (sharing) => ({
       user: sharing.user,
-      transactions: await db
-        .select()
-        .from(transactions)
-        .where(eq(transactions.activity, sharing.activity)),
+      transactions: (
+        await db.select().from(transactions).where(eq(transactions.activity, sharing.activity))
+      ).map((transaction) => ({
+        ...transaction,
+        fundMoves: toFundMoves(transaction.id, transaction.fundMoves),
+      })),
       counterparties: await db
         .select()
         .from(counterparties)

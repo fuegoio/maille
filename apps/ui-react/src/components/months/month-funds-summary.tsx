@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useFundMoves } from "@/hooks/use-fund-moves";
 import { cn } from "@/lib/utils";
 import {
   getFundTreeBalanceAtDate,
@@ -28,7 +29,7 @@ export function MonthFundsSummary({
   onFundFilterChange,
 }: MonthFundsSummaryProps) {
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
+  const fundMoves = useFundMoves();
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
@@ -84,7 +85,6 @@ export function MonthFundsSummary({
           accounts,
           activities,
           funds,
-          fundMoves,
           fundAllocations,
           date: beforeMonth,
           startingDate: user.startingDate,
@@ -93,7 +93,6 @@ export function MonthFundsSummary({
           accounts,
           activities,
           funds,
-          fundMoves,
           fundAllocations,
           date: endOfMonth,
           startingDate: user.startingDate,

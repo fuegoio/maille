@@ -4,11 +4,13 @@ import type { FundAllocation } from "@maille/core/funds";
 import type { PositionsInput } from "@maille/core/funds";
 
 import { db } from "@/database";
-import { accounts, activities, fundAllocations, fundMoves, funds, transactions } from "@/tables";
+import { accounts, activities, fundAllocations, funds, transactions } from "@/tables";
 import { user as userTable } from "@/tables";
 
-import { and, eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+
+import { toFundMoves } from "@/api/funds/transactions";
 
 type AccountRow = typeof accounts.$inferSelect;
 type FundRow = typeof funds.$inferSelect;
@@ -28,7 +30,7 @@ export const loadPositionsInput = async (
     .where(eq(userTable.id, userId))
     .limit(1);
 
-  const [accountRows, fundRows, allocationRows, transactionRows, moveRows] = await Promise.all([
+  const [accountRows, fundRows, allocationRows, transactionRows] = await Promise.all([
     db.select().from(accounts).where(eq(accounts.user, userId)),
     db.select().from(funds).where(eq(funds.user, userId)),
     db.select().from(fundAllocations).where(eq(fundAllocations.user, userId)),
@@ -38,21 +40,14 @@ export const loadPositionsInput = async (
         amount: transactions.amount,
         fromAccount: transactions.fromAccount,
         toAccount: transactions.toAccount,
+        fundMoves: transactions.fundMoves,
         activity: activities.id,
         activityDate: activities.date,
       })
       .from(transactions)
       .innerJoin(activities, eq(transactions.activity, activities.id))
       .where(eq(activities.user, userId)),
-    db.select().from(fundMoves).where(eq(fundMoves.user, userId)),
   ]);
-
-  const movesByTransaction = new Map<string, typeof moveRows>();
-  for (const move of moveRows) {
-    const legs = movesByTransaction.get(move.transaction) ?? [];
-    legs.push(move);
-    movesByTransaction.set(move.transaction, legs);
-  }
 
   const transactionsByActivity = new Map<string, { date: Date; transactions: unknown[] }>();
   for (const row of transactionRows) {
@@ -65,7 +60,7 @@ export const loadPositionsInput = async (
       amount: row.amount,
       fromAccount: row.fromAccount,
       toAccount: row.toAccount,
-      fundMoves: movesByTransaction.get(row.id) ?? [],
+      fundMoves: toFundMoves(row.id, row.fundMoves),
     });
     transactionsByActivity.set(row.activity, entry);
   }
@@ -149,20 +144,18 @@ export const getFundEarliestAllocatedTransactionDate = async (params: {
   fundId: string;
 }): Promise<Date | null> => {
   const rows = await db
-    .select({ date: activities.date })
-    .from(fundMoves)
-    .innerJoin(transactions, eq(fundMoves.transaction, transactions.id))
+    .select({ date: activities.date, fundMoves: transactions.fundMoves })
+    .from(transactions)
     .innerJoin(activities, eq(transactions.activity, activities.id))
-    .where(
-      and(
-        eq(fundMoves.user, params.userId),
-        eq(activities.user, params.userId),
-        // A leg touches the fund from either side
-        or(eq(fundMoves.fromFund, params.fundId), eq(fundMoves.toFund, params.fundId)),
-      ),
-    );
+    .where(eq(activities.user, params.userId));
 
-  const dates = rows.map((row) => row.date.getTime());
+  const dates = rows
+    .filter(({ fundMoves }) =>
+      (fundMoves ?? []).some(
+        (leg) => leg.fromFund === params.fundId || leg.toFund === params.fundId,
+      ),
+    )
+    .map(({ date }) => date.getTime());
   if (dates.length === 0) return null;
   return new Date(Math.min(...dates));
 };

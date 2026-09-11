@@ -15,7 +15,6 @@ export function useAccountDefaultFunds(): Map<string, string | null> {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const startingDate = useAuth((state) => state.user?.startingDate);
 
@@ -27,9 +26,8 @@ export function useAccountDefaultFunds(): Map<string, string | null> {
       accounts,
       activities,
       funds,
-      fundMoves,
       fundAllocations,
       startingDate,
     });
-  }, [accounts, activities, funds, fundMoves, fundAllocations, startingDate]);
+  }, [accounts, activities, funds, fundAllocations, startingDate]);
 }

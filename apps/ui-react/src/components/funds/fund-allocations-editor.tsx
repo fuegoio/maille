@@ -70,7 +70,6 @@ export function FundAllocationsEditor({
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const user = useAuth((state) => state.user);
 
@@ -93,7 +92,6 @@ export function FundAllocationsEditor({
       accounts,
       activities,
       funds,
-      fundMoves,
       fundAllocations: excludeFund
         ? fundAllocations.filter(
             (allocation) => allocation.fund !== excludeFund,
@@ -107,7 +105,6 @@ export function FundAllocationsEditor({
     accounts,
     activities,
     funds,
-    fundMoves,
     fundAllocations,
     excludeFund,
     startDate,

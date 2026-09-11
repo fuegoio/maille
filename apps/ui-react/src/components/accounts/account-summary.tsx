@@ -44,7 +44,6 @@ export function AccountSummary({
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const movements = useMovements((state) => state.movements);
   const user = useAuth((state) => state.user!);
@@ -124,7 +123,6 @@ export function AccountSummary({
       accounts,
       activities,
       funds,
-      fundMoves,
       fundAllocations,
       accountId,
       startingDate: user.startingDate,
@@ -139,16 +137,7 @@ export function AccountSummary({
         amount,
       }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    account,
-    accounts,
-    activities,
-    funds,
-    fundMoves,
-    fundAllocations,
-    accountId,
-    today,
-  ]);
+  }, [account, accounts, activities, funds, fundAllocations, accountId, today]);
 
   const chartConfig = {
     views: { label: "Balance" },

@@ -1,5 +1,6 @@
 import type { FundMove } from "@maille/core/funds";
 
+import { getFundDescendants } from "@maille/core/funds";
 import { format } from "date-fns";
 import { MoveRight } from "lucide-react";
 import * as React from "react";
@@ -35,6 +36,11 @@ type FundMoveWithActivity = FundMove & {
   activity: { id: string; name: string } | null;
   /** The transaction's account movement, when the move is tied to one. */
   accounts: { from: string; to: string } | null;
+  /**
+   * The fund inside the scope holding the move, when it is not the page's
+   * fund itself — a subfund's row in the subtree view.
+   */
+  own?: string;
 };
 
 interface FundMovesTableProps {
@@ -42,54 +48,82 @@ interface FundMovesTableProps {
   fundId: string | null;
   /** Only show moves whose transaction touches this account. */
   accountFilter?: string | null;
+  /** Show the whole subtree's moves, not just this fund's own. */
+  subtree?: boolean;
 }
 
 export function FundMovesTable({
   fundId,
   accountFilter = null,
+  subtree = false,
 }: FundMovesTableProps) {
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
-  const fundMoves = useFunds((state) => state.fundMoves);
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
 
+  // The funds whose moves the table shows: the fund itself, or its whole
+  // subtree. Money crossing the scope's boundary is a row; moves between
+  // funds inside it cancel out of the rollup, like the summary's flows.
+  const scopeIds = React.useMemo(() => {
+    if (fundId === null) return null;
+    return new Set(
+      subtree ? [fundId, ...getFundDescendants(fundId, funds)] : [fundId],
+    );
+  }, [fundId, subtree, funds]);
+
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
-    // A move tied to a transaction belongs to the activity holding it
-    const transactionsById = new Map<
-      string,
-      { activityId: string; activityName: string; from: string; to: string }
-    >();
+    const inScope = (fund: string | null) =>
+      fund !== null && scopeIds !== null && scopeIds.has(fund);
+
+    // Legs live on their transactions, nested in the activity holding
+    // them — there is no separate fund move collection.
+    const result: FundMoveWithActivity[] = [];
     for (const activity of activities) {
       for (const transaction of activity.transactions) {
-        transactionsById.set(transaction.id, {
-          activityId: activity.id,
-          activityName: activity.name,
-          from: transaction.fromAccount,
-          to: transaction.toAccount,
-        });
+        for (const leg of transaction.fundMoves ?? []) {
+          // Untracked lists the null side of every move; a fund lists its
+          // (or its subtree's) boundary moves.
+          const fromInside = inScope(leg.fromFund);
+          const toInside = inScope(leg.toFund);
+          if (scopeIds === null) {
+            if (leg.fromFund !== null && leg.toFund !== null) continue;
+          } else if (fromInside === toInside) {
+            continue;
+          }
+
+          // The fund inside the scope holding the move: the subfund a
+          // subtree row belongs to, when it is not the page's fund itself.
+          const insideFund = fromInside ? leg.fromFund : leg.toFund;
+          const own =
+            subtree && fundId !== null && insideFund !== fundId
+              ? (insideFund ?? undefined)
+              : undefined;
+
+          result.push({
+            ...leg,
+            kind: "move" as const,
+            direction:
+              scopeIds === null
+                ? leg.toFund === null
+                  ? ("in" as const)
+                  : ("out" as const)
+                : toInside
+                  ? ("in" as const)
+                  : ("out" as const),
+            activity: { id: activity.id, name: activity.name },
+            accounts: {
+              from: transaction.fromAccount,
+              to: transaction.toAccount,
+            },
+            own,
+          });
+        }
       }
     }
-
-    return fundMoves
-      .filter((m) => m.fromFund === fundId || m.toFund === fundId)
-      .map((m) => {
-        const info = m.transaction
-          ? transactionsById.get(m.transaction)
-          : undefined;
-
-        return {
-          ...m,
-          kind: "move" as const,
-          direction: m.toFund === fundId ? ("in" as const) : ("out" as const),
-          activity: info
-            ? { id: info.activityId, name: info.activityName }
-            : null,
-          accounts: info ? { from: info.from, to: info.to } : null,
-        };
-      });
-  }, [fundMoves, activities, fundId]);
+    return result;
+  }, [activities, scopeIds, subtree, fundId]);
 
   const rows = React.useMemo<FundMoveWithActivity[]>(
     () =>
@@ -302,6 +336,23 @@ function FundMoveLine({
   const counterpartId = isInflow ? move.fromFund : move.toFund;
   const counterpart = funds.find((f) => f.id === counterpartId);
 
+  // The subfund holding the row in the subtree view, when it is not the
+  // page's fund itself
+  const own = funds.find((f) => f.id === move.own);
+
+  const renderOwn = () =>
+    own ? (
+      <div className="flex min-w-0 shrink-0 items-center gap-1">
+        <div
+          className="size-2.5 shrink-0 rounded-sm"
+          style={{ backgroundColor: own.color }}
+        />
+        <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+          {own.name}
+        </span>
+      </div>
+    ) : null;
+
   const renderCounterpart = () => (
     <>
       {counterpart ? (
@@ -370,6 +421,11 @@ function FundMoveLine({
               <div className="min-w-0 truncate font-medium">
                 {move.activity.name}
               </div>
+              {own && (
+                <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+                  {renderOwn()}
+                </div>
+              )}
               <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
                 <span className="text-xs">{isInflow ? "from" : "to"}</span>
                 {renderCounterpart()}
@@ -397,6 +453,7 @@ function FundMoveLine({
         ) : (
           <>
             <div className="flex min-w-0 items-center gap-1.5 font-medium">
+              {own && renderOwn()}
               <span className="text-muted-foreground">
                 {isInflow ? "from" : "to"}
               </span>
