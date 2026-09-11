@@ -102,11 +102,12 @@ export function MovementLine({
 
       <div className="flex-1" />
 
-      {workflow?.status === "running" && (
+      {(workflow?.status === "running" || workflow?.status === "pending") && (
         <span
           className={cn(
-            "size-1.5 shrink-0 animate-pulse rounded-full sm:mr-1",
-            WORKFLOW_STATUS_CONFIG.running.dotClass,
+            "size-1.5 shrink-0 rounded-full sm:mr-1",
+            WORKFLOW_STATUS_CONFIG[workflow.status].dotClass,
+            workflow.status === "running" && "animate-pulse",
           )}
         />
       )}
