@@ -223,7 +223,33 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
 
       {/* Input / action bar */}
       <div className="shrink-0 border-t p-2">
-        {isTerminal ? (
+        {isTerminal && isReconciled ? (
+          // The movement is reconciled: the conversation continues with
+          // follow-up questions, answered without touching the ledger.
+          <div className="flex items-end gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              placeholder="Ask a follow-up question..."
+              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
+              rows={1}
+            />
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={!input.trim()}
+              className="h-9"
+            >
+              Send
+            </Button>
+          </div>
+        ) : isTerminal ? (
           <div className="flex items-end gap-2">
             <Textarea
               value={input}
@@ -235,7 +261,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
                 }
               }}
               placeholder="Optional hint for the next run (empty to just retry)..."
-              disabled={isTriggering || isReconciled}
+              disabled={isTriggering}
               className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
               rows={1}
             />
@@ -243,8 +269,8 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
               size="sm"
               variant="outline"
               onClick={handleRetry}
-              disabled={isTriggering || isReconciled}
-              className="gap-1.5"
+              disabled={isTriggering}
+              className="h-9 gap-1.5"
             >
               {isTriggering ? (
                 <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -253,11 +279,9 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
               )}
               {isTriggering
                 ? "Starting..."
-                : isReconciled
-                  ? "Already reconciled"
-                  : workflow.status === "succeeded"
-                    ? "Start new"
-                    : "Retry"}
+                : workflow.status === "succeeded"
+                  ? "Start new"
+                  : "Retry"}
             </Button>
           </div>
         ) : (
@@ -286,6 +310,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
               size="sm"
               onClick={handleSubmit}
               disabled={!isPending || !input.trim()}
+              className="h-9"
             >
               Send
             </Button>

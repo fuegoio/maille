@@ -93,6 +93,37 @@ describe("chatCompletion request mapping", () => {
     expect(result.toolCalls).toEqual([]);
   });
 
+  it("omits tools and tool_choice from the body when none are given", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const messages: LlmMessage[] = [
+      { role: "system", content: "You are the AI assistant" },
+      { role: "user", content: "Why was this categorized as rent?" },
+    ];
+
+    const result = await chatCompletion({
+      baseUrl: "https://api.mistral.ai/v1",
+      apiKey: "test-key",
+      model: "z-ai-glm-5-3",
+      messages,
+      timeoutMs: 5000,
+      fetchFn: async (url: string, init: RequestInit) => {
+        calls.push({ url, init });
+        return new Response(
+          JSON.stringify({
+            choices: [{ message: { role: "assistant", content: "Because the name matches" } }],
+          }),
+          { status: 200 },
+        );
+      },
+    });
+
+    const body = JSON.parse(lastRequest(calls).init.body as string);
+    expect(body.tools).toBeUndefined();
+    expect(body.tool_choice).toBeUndefined();
+    expect(body.messages).toEqual(messages);
+    expect(result.content).toBe("Because the name matches");
+  });
+
   it("maps assistant tool calls and tool results to the wire format", async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const messages: LlmMessage[] = [

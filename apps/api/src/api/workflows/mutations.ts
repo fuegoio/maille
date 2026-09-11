@@ -42,7 +42,8 @@ export const registerWorkflowsMutations = () => {
         content: t.arg.string(),
         optionId: t.arg({ type: "String", required: false }),
       },
-      description: "Answers the workflow's pending question and resumes the run.",
+      description:
+        "Answers the workflow's pending question and resumes the run. On a workflow whose movement is already reconciled, the answer is a follow-up question answered by a read-only conversation turn.",
       resolve: async (root, args, ctx) => {
         const row = await answerWorkflow(
           ctx.user.id,

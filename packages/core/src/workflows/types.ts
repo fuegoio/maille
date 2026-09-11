@@ -62,7 +62,10 @@ export type MovementWorkflow = {
 /**
  * Legal status transitions. `queued` is the only entry point for a run; a
  * workflow run always ends in `pending`, `succeeded` or `failed`, and only a
- * manual retry can revive a `failed`/`cancelled` workflow.
+ * manual retry can revive a `failed`/`cancelled` workflow. A `succeeded`
+ * workflow can also be revived by a user follow-up question: the run is a
+ * read-only conversation turn (the movement is reconciled, the ledger is
+ * not touched) and ends back in `succeeded`.
  */
 export const WORKFLOW_TRANSITIONS: Record<WorkflowStatus, WorkflowStatus[]> = {
   queued: ["running", "cancelled"],
@@ -70,7 +73,7 @@ export const WORKFLOW_TRANSITIONS: Record<WorkflowStatus, WorkflowStatus[]> = {
   pending: ["running", "cancelled"],
   failed: ["queued", "cancelled"],
   cancelled: ["queued"],
-  succeeded: [],
+  succeeded: ["queued"],
 };
 
 export const TERMINAL_WORKFLOW_STATUSES = ["succeeded", "failed", "cancelled"] as const;

@@ -3,11 +3,12 @@ import { movementWorkflows, movements, movementsActivities } from "@/tables";
 import { addEvent } from "@/api/events";
 import { env } from "@/env";
 import { logger } from "@/logger";
-import type { WorkflowMessage, WorkflowResult } from "@maille/core/workflows";
+import type { WorkflowMessage, WorkflowResult, WorkflowStatus } from "@maille/core/workflows";
 import { remainingAmount } from "@maille/core/workflows";
 import { and, eq } from "drizzle-orm";
 import { chatCompletion, LlmError, type LlmMessage } from "@maille/workflows/llm";
 import {
+  FOLLOW_UP_SYSTEM_PROMPT,
   RECONCILE_MOVEMENT_TOOLS,
   SYSTEM_PROMPT,
 } from "@maille/workflows/reconcile-movement/tools";
@@ -131,6 +132,58 @@ async function updateWorkflowIfRunning(
     user: row.user,
   });
   return true;
+}
+
+//
+// Follow-up conversation turns (fully reconciled movements)
+//
+
+/** True when the transcript's last message is the user's (a follow-up). */
+const lastMessageIsFromUser = (messages: WorkflowMessage[]): boolean => {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]!;
+    if (message.role === "separator") {
+      continue;
+    }
+    return message.role === "user";
+  }
+  return false;
+};
+
+/**
+ * The terminal status a follow-up turn returns to, derived from the row the
+ * way every write path leaves it: `error` set means the last run failed,
+ * `result` set means it succeeded, neither means it was cancelled (e.g. the
+ * user reconciled the movement by hand).
+ */
+const settledStatus = (state: RunState): WorkflowStatus =>
+  state.workflow.error ? "failed" : state.workflow.result ? "succeeded" : "cancelled";
+
+/**
+ * A follow-up conversation turn: the movement is already fully reconciled and
+ * the user asked a question. The model answers from fresh evidence and the
+ * transcript, with no tools — the ledger cannot change — and the workflow
+ * settles back where it was.
+ */
+async function answerFollowUp(state: RunState): Promise<void> {
+  const evidence = await buildEvidence(state.workflow.user, state.movement);
+  const response = await chatCompletion({
+    baseUrl: env.WORKFLOWS_LLM_BASE_URL,
+    apiKey: workflowApiKey(),
+    model: env.WORKFLOWS_LLM_MODEL,
+    messages: [
+      { role: "system", content: FOLLOW_UP_SYSTEM_PROMPT },
+      taskMessage(evidence, 0),
+      ...transcriptToLlmMessages(state.messages),
+    ],
+    timeoutMs: env.WORKFLOWS_TIMEOUT_MS,
+  });
+  const reply = response.content?.trim() || "I could not come up with an answer to that.";
+  state.messages = [...state.messages, assistantMessage(state, reply)];
+  await updateWorkflowIfRunning(state, {
+    status: settledStatus(state),
+    messages: state.messages,
+  });
 }
 
 //
@@ -278,7 +331,7 @@ export async function runWorkflow(workflowId: string): Promise<void> {
   };
 
   const remaining = remainingAmount(state.movement.amount, state.linkAmounts);
-  if (remaining === 0) {
+  if (remaining === 0 && !lastMessageIsFromUser(state.messages)) {
     const message = assistantMessage(
       state,
       "This movement is already fully reconciled — nothing to do.",
@@ -292,7 +345,11 @@ export async function runWorkflow(workflowId: string): Promise<void> {
   }
 
   try {
-    await executeRun(state);
+    if (remaining === 0) {
+      await answerFollowUp(state);
+    } else {
+      await executeRun(state);
+    }
   } catch (error) {
     const kind = isTimeoutError(error) ? "timeout" : "provider_error";
     const message = error instanceof Error ? error.message : String(error);
@@ -300,6 +357,18 @@ export async function runWorkflow(workflowId: string): Promise<void> {
 
     const fresh = await getWorkflow(workflowId);
     if (!fresh || fresh.status !== "running") {
+      return;
+    }
+    if (remaining === 0) {
+      // A failed follow-up turn settles the workflow back where it was,
+      // untouched: the ledger state is unchanged and the user can ask again.
+      await updateWorkflowIfRunning(state, {
+        status: settledStatus(state),
+        messages: [
+          ...state.messages,
+          assistantMessage(state, `I could not answer that: ${message}`),
+        ],
+      });
       return;
     }
     if (fresh.attempts < env.WORKFLOWS_MAX_ATTEMPTS) {

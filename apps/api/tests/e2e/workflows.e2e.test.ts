@@ -1,7 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { fileURLToPath } from "node:url";
 import { eq } from "drizzle-orm";
-import { MockMistral, createTestDatabase, dropTestDatabase, toolCallResponse } from "./helpers";
+import {
+  MockMistral,
+  createTestDatabase,
+  dropTestDatabase,
+  textResponse,
+  toolCallResponse,
+} from "./helpers";
 
 /**
  * End-to-end tests for the AI workflows: the full API boots against a real
@@ -386,6 +392,27 @@ const waitForWorkflowStatus = async (
   }
 };
 
+/** Waits until the workflow's transcript ends with the given assistant reply. */
+const waitForReply = async (
+  workflowId: string,
+  reply: string,
+  timeoutMs = 8000,
+): Promise<WorkflowRow> => {
+  const start = Date.now();
+  for (;;) {
+    const row = await getWorkflowRow(workflowId);
+    if (row?.messages.at(-1)?.role === "assistant" && row.messages.at(-1)?.content === reply) {
+      return row;
+    }
+    if (Date.now() - start > timeoutMs) {
+      throw new Error(
+        `Workflow ${workflowId} did not reply '${reply}' within ${timeoutMs}ms (last: ${row?.messages.at(-1)?.content ?? "none"})`,
+      );
+    }
+    await sleep(25);
+  }
+};
+
 //
 // Scenarios
 //
@@ -683,6 +710,116 @@ describe("AI workflows", () => {
 
     const movementsData = await queryMovements(user);
     expect(movementsData.movements.find((m) => m.id === movementId)?.status).toBe("completed");
+  });
+
+  it("answers follow-up questions after the movement is reconciled", async () => {
+    const user = await createUser();
+    mockMistral.enqueue(
+      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
+    );
+
+    const movementId = await createMovement(user, "STANDING ORDER", -800);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
+    const succeeded = await waitForWorkflowStatus(workflowId, ["succeeded"]);
+    expect(succeeded.result?.createdActivities).toHaveLength(1);
+
+    // The movement is reconciled: the user asks a follow-up question and the
+    // assistant answers without re-running the reconcile loop.
+    mockMistral.enqueue(textResponse("I created the 'Rent' activity for the full -800."));
+    await gql(user.token, ANSWER_WORKFLOW, {
+      id: workflowId,
+      content: "Why did you categorize it as rent?",
+    });
+    const row = await waitForReply(workflowId, "I created the 'Rent' activity for the full -800.");
+
+    // The reply is appended to the transcript and the workflow settles back
+    // to succeeded, keeping its original result and error.
+    expect(row.status).toBe("succeeded");
+    expect(row.result?.createdActivities).toHaveLength(1);
+    expect(row.error).toBeNull();
+    const messages = row.messages.filter((m) => m.role !== "separator");
+    expect(messages.at(-2)?.role).toBe("user");
+    expect(messages.at(-2)?.content).toBe("Why did you categorize it as rent?");
+    expect(messages.at(-1)?.role).toBe("assistant");
+    expect(messages.at(-1)?.content).toBe("I created the 'Rent' activity for the full -800.");
+
+    // The follow-up turn is a plain conversation: no tools are offered, the
+    // follow-up system prompt is used, the evidence is replayed with zero
+    // remaining, and the transcript carries the question and the summary.
+    const followUp = mockMistral.requests[1]!;
+    expect(followUp.tools).toBeUndefined();
+    expect(followUp.messages[0]?.role).toBe("system");
+    expect(followUp.messages[0]?.content).toContain("already fully reconciled");
+    const task = JSON.parse(followUp.messages[1]?.content ?? "{}");
+    expect(task.movement.name).toBe("STANDING ORDER");
+    expect(task.remainingToAllocate).toBe(0);
+    const contents = followUp.messages.map((message) => message.content ?? "");
+    expect(contents.some((content) => content.includes("Why did you categorize it as rent?"))).toBe(
+      true,
+    );
+    expect(contents.some((content) => content.includes("Movement fully allocated"))).toBe(true);
+
+    // The ledger was not touched: still one link, one activity.
+    const links = await db
+      .select()
+      .from(movementsActivities)
+      .where(eq(movementsActivities.movement, movementId));
+    expect(links).toHaveLength(1);
+    const activities = await queryActivities(user);
+    expect(activities.activities.filter((activity) => activity.name === "Rent")).toHaveLength(1);
+  });
+
+  it("answers follow-ups on a workflow the user reconciled by hand, staying cancelled", async () => {
+    const user = await createUser();
+    const activityId = await createActivityManually(user, "Spotify", -12.99);
+    mockMistral.enqueue(
+      toolCallResponse("askUser", { question: "Is this the usual subscription?" }),
+    );
+
+    const movementId = await createMovement(user, "Spotify", -12.99);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
+    await waitForWorkflowStatus(workflowId, ["pending"]);
+    await linkMovementManually(user, movementId, activityId, -12.99);
+    await waitForWorkflowStatus(workflowId, ["cancelled"]);
+
+    // The movement is reconciled by hand: the conversation can still continue.
+    mockMistral.enqueue(textResponse("You linked it to the existing 'Spotify' activity."));
+    await gql(user.token, ANSWER_WORKFLOW, {
+      id: workflowId,
+      content: "How should I have categorized it?",
+    });
+    const row = await waitForReply(workflowId, "You linked it to the existing 'Spotify' activity.");
+
+    expect(row.status).toBe("cancelled");
+    expect(row.result).toBeNull();
+    expect(row.error).toBeNull();
+    expect(row.messages.at(-1)?.role).toBe("assistant");
+    expect(row.messages.at(-2)?.role).toBe("user");
+  });
+
+  it("rejects answers on workflows whose movement is not reconciled", async () => {
+    const user = await createUser();
+    mockMistral.enqueue(toolCallResponse("giveUp", { reason: "No clue" }));
+
+    const movementId = await createMovement(user, "MYSTERY PAYMENT", -42);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
+    await waitForWorkflowStatus(workflowId, ["failed"]);
+
+    const response = await fetch(`${baseUrl}/graphql`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({
+        query: ANSWER_WORKFLOW,
+        variables: { id: workflowId, content: "What about rent?" },
+      }),
+    });
+    const body = (await response.json()) as { errors?: { message: string }[] };
+    expect(body.errors?.[0]?.message).toContain("not reconciled");
+
+    // The workflow and its transcript are untouched.
+    const row = await getWorkflowRow(workflowId);
+    expect(row?.status).toBe("failed");
+    expect(row?.messages.filter((m) => m.role === "user")).toHaveLength(0);
   });
 
   it("retries provider errors, then fails with the provider error kind", async () => {

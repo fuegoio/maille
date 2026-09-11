@@ -246,29 +246,29 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
                 onClick={handleOpen}
                 className="gap-1.5"
               >
-                View conversation
+                {isReconciled ? "Continue conversation" : "View conversation"}
                 <ArrowRight className="size-3.5" />
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleTrigger}
-                disabled={isTriggering || isReconciled}
-                className="gap-1.5"
-              >
-                {isTriggering ? (
-                  <Spinner className="size-3.5" />
-                ) : (
-                  <Sparkles className="size-3.5" />
-                )}
-                {isTriggering
-                  ? "Starting..."
-                  : isReconciled
-                    ? "Already reconciled"
+              {!isReconciled && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleTrigger}
+                  disabled={isTriggering}
+                  className="gap-1.5"
+                >
+                  {isTriggering ? (
+                    <Spinner className="size-3.5" />
+                  ) : (
+                    <Sparkles className="size-3.5" />
+                  )}
+                  {isTriggering
+                    ? "Starting..."
                     : workflow.status === "succeeded"
                       ? "Start new"
                       : "Retry"}
-              </Button>
+                </Button>
+              )}
             </>
           )}
         </div>

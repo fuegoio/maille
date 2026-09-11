@@ -254,7 +254,7 @@ export type MovementWorkflow = {
 
 export type Mutation = {
   addTransaction: Transaction;
-  /** Answers the workflow's pending question and resumes the run. */
+  /** Answers the workflow's pending question and resumes the run. On a workflow whose movement is already reconciled, the answer is a follow-up question answered by a read-only conversation turn. */
   answerWorkflow: MovementWorkflow;
   createAccount: Account;
   createActivity: Activity;

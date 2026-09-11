@@ -56,7 +56,8 @@ export type ChatCompletionParams = {
   apiKey: string;
   model: string;
   messages: LlmMessage[];
-  tools: LlmTool[];
+  /** Tool contract; omitted for plain conversational turns. */
+  tools?: LlmTool[];
   timeoutMs: number;
   /** Force a specific tool by name; defaults to model choice ("auto"). */
   toolChoice?: string;
@@ -160,17 +161,21 @@ export async function chatCompletion(params: ChatCompletionParams): Promise<Chat
       body: JSON.stringify({
         model,
         messages: messages.map(toWireMessage),
-        tools: tools.map((tool) => ({
-          type: "function",
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.parameters,
-          },
-        })),
-        tool_choice: params.toolChoice
-          ? { type: "function", function: { name: params.toolChoice } }
-          : "auto",
+        ...(tools?.length
+          ? {
+              tools: tools.map((tool) => ({
+                type: "function",
+                function: {
+                  name: tool.name,
+                  description: tool.description,
+                  parameters: tool.parameters,
+                },
+              })),
+              tool_choice: params.toolChoice
+                ? { type: "function", function: { name: params.toolChoice } }
+                : "auto",
+            }
+          : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });

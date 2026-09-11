@@ -44,8 +44,9 @@ describe("workflow status machine", () => {
     expect(canTransitionWorkflow("pending", "failed")).toBe(false);
   });
 
-  it("succeeded is a dead end", () => {
-    for (const to of ALL_STATUSES) {
+  it("succeeded is only revived by a user follow-up question", () => {
+    expect(canTransitionWorkflow("succeeded", "queued")).toBe(true);
+    for (const to of ALL_STATUSES.filter((status) => status !== "queued")) {
       expect(canTransitionWorkflow("succeeded", to)).toBe(false);
     }
   });

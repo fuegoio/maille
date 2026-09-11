@@ -1,9 +1,11 @@
 import { db } from "@/database";
-import { movementWorkflows, movements } from "@/tables";
+import { movementWorkflows, movements, movementsActivities } from "@/tables";
 import { addEvent } from "@/api/events";
 import { idPattern } from "@/api/idPrefix";
 import {
+  isFullyAllocated,
   isRetryableWorkflowStatus,
+  isTerminalWorkflowStatus,
   type MovementWorkflow,
   type WorkflowMessage,
   type WorkflowStatus,
@@ -212,9 +214,36 @@ export async function triggerWorkflow(
 }
 
 /**
+ * True when the movement's links fully allocate it — i.e. it is reconciled.
+ */
+async function isMovementReconciled(userId: string, movementId: string): Promise<boolean> {
+  const movement = (
+    await db
+      .select({ id: movements.id, amount: movements.amount })
+      .from(movements)
+      .where(and(like(movements.id, idPattern(movementId)), eq(movements.user, userId)))
+      .limit(1)
+  )[0];
+  if (!movement) {
+    return false;
+  }
+  const links = await db
+    .select({ amount: movementsActivities.amount })
+    .from(movementsActivities)
+    .where(eq(movementsActivities.movement, movement.id));
+  return isFullyAllocated(
+    movement.amount,
+    links.map((link) => link.amount),
+  );
+}
+
+/**
  * Appends the user's answer to the workflow's transcript and re-queues the
- * run; the worker resumes with the transcript included (re-planned from
- * fresh evidence, not by executing a stale plan).
+ * run. On a `pending` workflow the answer resumes the reconcile loop (the
+ * worker re-plans from fresh evidence, not by executing a stale plan). On a
+ * terminal workflow whose movement is reconciled, the answer is a follow-up
+ * question: the worker runs a read-only conversation turn instead, and the
+ * workflow settles back where it was.
  */
 export async function answerWorkflow(
   userId: string,
@@ -228,7 +257,15 @@ export async function answerWorkflow(
     throw new GraphQLError("Workflow not found");
   }
   if (workflow.status !== "pending") {
-    throw new GraphQLError("Workflow is not waiting for an answer");
+    if (!isTerminalWorkflowStatus(workflow.status)) {
+      throw new GraphQLError("Workflow is not waiting for an answer");
+    }
+    // The conversation can continue past the reconciliation, but only once
+    // there is nothing left to reconcile — otherwise the message belongs to
+    // a new run started with triggerWorkflow.
+    if (!(await isMovementReconciled(userId, workflow.movement))) {
+      throw new GraphQLError("The movement is not reconciled; start a new run instead");
+    }
   }
 
   const message: WorkflowMessage = {
