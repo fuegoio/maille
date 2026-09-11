@@ -1,7 +1,13 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
+import {
+  computeRowOutlines,
+  rowOutlineClasses,
+} from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
@@ -32,6 +38,60 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
   const accountAssets = useMemo(() => {
     return assets.filter((asset) => asset.account === accountId);
   }, [assets, accountId]);
+
+  const accountAssetIds = useMemo(
+    () => accountAssets.map((asset) => asset.id),
+    [accountAssets],
+  );
+
+  const { focusedId, registerRow, moveFocus, clearFocus } =
+    useListFocus(accountAssetIds);
+
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused asset's panel
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    moveFocus(-1);
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    moveFocus(1);
+  });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId !== null) {
+        setFocusedAsset(focusedId);
+      }
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
+  useHotkey(
+    "Escape",
+    () => {
+      clearFocus();
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  // Outline sides for selected rows: keyboard-focused or panel-open
+  const rowOutlines = useMemo(
+    () =>
+      computeRowOutlines(
+        accountAssets.map((asset) => ({
+          id: asset.id,
+          selected: asset.id === focusedId || asset.id === focusedAsset,
+        })),
+      ),
+    [accountAssets, focusedId, focusedAsset],
+  );
 
   const getAssetValue = (assetId: string) => {
     return activities
@@ -88,11 +148,11 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
             {accountAssets.map((asset) => (
               <div
                 key={asset.id}
+                ref={registerRow(asset.id)}
                 className={cn(
-                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 hover:bg-muted/50",
-                  focusedAsset === asset.id
-                    ? "border-l-4 border-l-primary bg-accent pl-13"
-                    : "pl-14",
+                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 pl-14 hover:bg-muted/50",
+                  rowOutlines.has(asset.id) &&
+                    rowOutlineClasses(rowOutlines.get(asset.id)!),
                 )}
                 onClick={() => setFocusedAsset(asset.id)}
               >

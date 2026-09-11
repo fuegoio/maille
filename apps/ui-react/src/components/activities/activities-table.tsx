@@ -6,8 +6,13 @@ import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import {
+  computeRowOutlines,
+  type OutlineRow,
+} from "@/components/shared/row-outline";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
@@ -212,6 +217,24 @@ export function ActivitiesTable({
     clearSelectedActivities,
   );
 
+  const { focusedId, registerRow, moveFocus, clearFocus } =
+    useListFocus(visibleActivityIds);
+
+  // Outline sides for selected (checked or focused) rows; contiguous
+  // selected rows merge into one outlined block
+  const rowOutlines = React.useMemo(() => {
+    const rows: OutlineRow[] = activitiesWithGroups.map((item) =>
+      item.itemType === "group"
+        ? ("break" as const)
+        : {
+            id: item.id,
+            selected:
+              selectedActivities.includes(item.id) || item.id === focusedId,
+          },
+    );
+    return computeRowOutlines(rows);
+  }, [activitiesWithGroups, selectedActivities, focusedId]);
+
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
       month: "long",
@@ -219,35 +242,40 @@ export function ActivitiesTable({
     });
   };
 
-  // Hotkeys: open the first activity of the list, then continue with J/K on
-  // the activity page
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused activity
   useHotkey("K", (event) => {
     if (event.key !== "k") return;
-    if (activitiesSorted.length === 0) return;
-
-    void contextNavigate({
-      to: "/activities/$id",
-      params: { id: activitiesSorted[0].id },
-      replace: true,
-    });
+    moveFocus(-1);
   });
 
   useHotkey("J", (event) => {
     if (event.key !== "j") return;
-    if (activitiesSorted.length === 0) return;
-
-    void contextNavigate({
-      to: "/activities/$id",
-      params: { id: activitiesSorted[0].id },
-      replace: true,
-    });
+    moveFocus(1);
   });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId === null) return;
+
+      void contextNavigate({
+        to: "/activities/$id",
+        params: { id: focusedId },
+      });
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
 
   useHotkey(
     "Escape",
     () => {
       if (selectedActivities.length > 0) {
         clearSelectedActivities();
+      } else {
+        clearFocus();
       }
     },
     {
@@ -332,6 +360,7 @@ export function ActivitiesTable({
                         onActionComplete={clearSelectedActivities}
                       >
                         <div
+                          ref={registerRow(item.id)}
                           onContextMenu={() => {
                             if (!selectedActivities.includes(item.id)) {
                               selectOnlyActivity(item.id);
@@ -343,6 +372,7 @@ export function ActivitiesTable({
                             accountFilter={accountFilter}
                             hideProject={hideProject}
                             checked={selectedActivities.includes(item.id)}
+                            outlineSides={rowOutlines.get(item.id)}
                             onCheckedChange={(event) =>
                               toggleActivity(item.id, event)
                             }
@@ -359,6 +389,7 @@ export function ActivitiesTable({
                     onActionComplete={clearSelectedActivities}
                   >
                     <div
+                      ref={registerRow(activity.id)}
                       onContextMenu={() => {
                         if (!selectedActivities.includes(activity.id)) {
                           selectOnlyActivity(activity.id);
@@ -370,6 +401,7 @@ export function ActivitiesTable({
                         accountFilter={accountFilter}
                         hideProject={hideProject}
                         checked={selectedActivities.includes(activity.id)}
+                        outlineSides={rowOutlines.get(activity.id)}
                         onCheckedChange={(event) =>
                           toggleActivity(activity.id, event)
                         }

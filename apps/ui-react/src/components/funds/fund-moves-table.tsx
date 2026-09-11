@@ -6,11 +6,20 @@ import { format } from "date-fns";
 import { Calendar, ChevronDown, MoveRight } from "lucide-react";
 import * as React from "react";
 
-import { ContextLink } from "@/components/navigation/breadcrumbs";
+import {
+  ContextLink,
+  useContextNavigate,
+} from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import {
+  computeRowOutlines,
+  rowOutlineClasses,
+  type OutlineRow,
+} from "@/components/shared/row-outline";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { useRangeSelection } from "@/hooks/use-range-selection";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
@@ -58,6 +67,7 @@ interface FundMovesTableProps {
 }
 
 export function FundMovesTable({ fundId }: FundMovesTableProps) {
+  const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
@@ -235,9 +245,60 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     clear: clearSelectedFundMoves,
   } = useRangeSelection(visibleFundMoveIds);
 
+  const { focusedId, registerRow, moveFocus, clearFocus } =
+    useListFocus(visibleFundMoveIds);
+
+  // Outline sides for selected (checked or focused) rows; contiguous
+  // selected rows merge into one outlined block. Group headers and
+  // unselectable allocation rows split runs.
+  const rowOutlines = React.useMemo(() => {
+    const rows: OutlineRow[] = rowsWithGroups.map((item) =>
+      item.itemType !== "row" || item.kind === "allocation"
+        ? ("break" as const)
+        : {
+            id: item.id,
+            selected:
+              selectedFundMoves.includes(item.id) || item.id === focusedId,
+          },
+    );
+    return computeRowOutlines(rows);
+  }, [rowsWithGroups, selectedFundMoves, focusedId]);
+
   const entityActions = useFundMovesEntityActions(
     selectedFundMoves,
     clearSelectedFundMoves,
+  );
+
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused move's activity
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    moveFocus(-1);
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    moveFocus(1);
+  });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId === null) return;
+      const move = moves.find((m) => m.id === focusedId);
+      if (!move?.activity) return;
+
+      void contextNavigate({
+        to: "/activities/$id",
+        params: { id: move.activity.id },
+        search: move.transaction
+          ? { transaction: move.transaction }
+          : undefined,
+      });
+    },
+    {
+      ignoreInputs: true,
+    },
   );
 
   useHotkey(
@@ -245,6 +306,8 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     () => {
       if (selectedFundMoves.length > 0) {
         clearSelectedFundMoves();
+      } else {
+        clearFocus();
       }
     },
     {
@@ -332,6 +395,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                   onActionComplete={clearSelectedFundMoves}
                 >
                   <div
+                    ref={registerRow(item.id)}
                     onContextMenu={() => {
                       if (!selectedFundMoves.includes(item.id)) {
                         selectOnlyFundMove(item.id);
@@ -352,6 +416,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                           : undefined
                       }
                       checked={selectedFundMoves.includes(item.id)}
+                      outlineSides={rowOutlines.get(item.id)}
                       onCheckedChange={(event) =>
                         toggleFundMove(item.id, event)
                       }
@@ -447,6 +512,7 @@ function FundMoveLine({
   params,
   search,
   checked,
+  outlineSides,
   onCheckedChange,
 }: {
   move: FundMoveWithActivity;
@@ -456,6 +522,8 @@ function FundMoveLine({
   params?: Record<string, string>;
   search?: Record<string, string>;
   checked: boolean;
+  /** Outline sides when the row is checked or focused; absent otherwise. */
+  outlineSides?: { top: boolean; bottom: boolean };
   onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
   const isInflow = move.direction === "in";
@@ -485,7 +553,7 @@ function FundMoveLine({
 
   const className = cn(
     "group @container flex h-10 shrink-0 items-center border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
-    checked && "bg-primary/30 hover:bg-primary/40",
+    outlineSides && rowOutlineClasses(outlineSides),
     to && "cursor-pointer",
   );
 

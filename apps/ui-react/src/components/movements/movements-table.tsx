@@ -7,7 +7,12 @@ import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import {
+  computeRowOutlines,
+  type OutlineRow,
+} from "@/components/shared/row-outline";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
@@ -143,6 +148,24 @@ export function MovementsTable({
     clearSelectedMovements,
   );
 
+  const { focusedId, registerRow, moveFocus, clearFocus } =
+    useListFocus(visibleMovementIds);
+
+  // Outline sides for selected (checked or focused) rows; contiguous
+  // selected rows merge into one outlined block
+  const rowOutlines = React.useMemo(() => {
+    const rows: OutlineRow[] = movementsWithGroups.map((item) =>
+      item.itemType === "group"
+        ? ("break" as const)
+        : {
+            id: item.id,
+            selected:
+              selectedMovements.includes(item.id) || item.id === focusedId,
+          },
+    );
+    return computeRowOutlines(rows);
+  }, [movementsWithGroups, selectedMovements, focusedId]);
+
   const periodFormatter = (month: number, year: number): string => {
     return new Date(year, month).toLocaleString("default", {
       month: "long",
@@ -150,35 +173,40 @@ export function MovementsTable({
     });
   };
 
-  // Hotkeys: open the first movement of the list, then continue with J/K on
-  // the movement page
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused movement
   useHotkey("K", (event) => {
     if (event.key !== "k") return;
-    if (movementsSorted.length === 0) return;
-
-    void contextNavigate({
-      to: "/movements/$id",
-      params: { id: movementsSorted[0].id },
-      replace: true,
-    });
+    moveFocus(-1);
   });
 
   useHotkey("J", (event) => {
     if (event.key !== "j") return;
-    if (movementsSorted.length === 0) return;
-
-    void contextNavigate({
-      to: "/movements/$id",
-      params: { id: movementsSorted[0].id },
-      replace: true,
-    });
+    moveFocus(1);
   });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId === null) return;
+
+      void contextNavigate({
+        to: "/movements/$id",
+        params: { id: focusedId },
+      });
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
 
   useHotkey(
     "Escape",
     () => {
       if (selectedMovements.length > 0) {
         clearSelectedMovements();
+      } else {
+        clearFocus();
       }
     },
     {
@@ -237,6 +265,7 @@ export function MovementsTable({
                         onActionComplete={clearSelectedMovements}
                       >
                         <div
+                          ref={registerRow(item.id)}
                           onContextMenu={() => {
                             if (!selectedMovements.includes(item.id)) {
                               selectOnlyMovement(item.id);
@@ -246,6 +275,7 @@ export function MovementsTable({
                           <MovementLine
                             movement={item}
                             checked={selectedMovements.includes(item.id)}
+                            outlineSides={rowOutlines.get(item.id)}
                             onCheckedChange={(event) =>
                               toggleMovement(item.id, event)
                             }
@@ -262,6 +292,7 @@ export function MovementsTable({
                     onActionComplete={clearSelectedMovements}
                   >
                     <div
+                      ref={registerRow(movement.id)}
                       onContextMenu={() => {
                         if (!selectedMovements.includes(movement.id)) {
                           selectOnlyMovement(movement.id);
@@ -271,6 +302,7 @@ export function MovementsTable({
                       <MovementLine
                         movement={movement}
                         checked={selectedMovements.includes(movement.id)}
+                        outlineSides={rowOutlines.get(movement.id)}
                         onCheckedChange={(event) =>
                           toggleMovement(movement.id, event)
                         }

@@ -7,6 +7,7 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WorkflowStatusBadge } from "@/components/workflows/workflow-status";
@@ -17,12 +18,15 @@ import { useWorkflows } from "@/stores/workflows";
 interface MovementLineProps {
   movement: Movement;
   checked: boolean;
+  /** Outline sides when the row is checked or focused; absent otherwise. */
+  outlineSides?: { top: boolean; bottom: boolean };
   onCheckedChange: (event?: React.MouseEvent) => void;
 }
 
 export function MovementLine({
   movement,
   checked,
+  outlineSides,
   onCheckedChange,
 }: MovementLineProps) {
   const currencyFormatter = useCurrencyFormatter();
@@ -38,10 +42,8 @@ export function MovementLine({
       to="/movements/$id"
       params={{ id: movement.id }}
       className={cn(
-        "group flex h-10 shrink-0 items-center gap-2 overflow-hidden border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
-        {
-          "bg-primary/30 hover:bg-primary/40": checked,
-        },
+        "group flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        outlineSides && rowOutlineClasses(outlineSides),
       )}
     >
       <Checkbox

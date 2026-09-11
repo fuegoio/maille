@@ -11,10 +11,19 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { ContextLink } from "@/components/navigation/breadcrumbs";
+import {
+  ContextLink,
+  useContextNavigate,
+} from "@/components/navigation/breadcrumbs";
+import {
+  computeRowOutlines,
+  rowOutlineClasses,
+  type OutlineRow,
+} from "@/components/shared/row-outline";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { useRangeSelection } from "@/hooks/use-range-selection";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { searchCompare } from "@/lib/strings";
@@ -43,6 +52,7 @@ interface AccountTransactionsTableProps {
 export function AccountTransactionsTable({
   accountId,
 }: AccountTransactionsTableProps) {
+  const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
   const search = useSearch((state) => state.search);
@@ -173,11 +183,63 @@ export function AccountTransactionsTable({
     clear: clearSelectedTransactions,
   } = useRangeSelection(visibleTransactionIds);
 
+  const { focusedId, registerRow, moveFocus, clearFocus } = useListFocus(
+    visibleTransactionIds,
+  );
+
+  // Outline sides for selected (checked or focused) rows; contiguous
+  // selected rows merge into one outlined block
+  const rowOutlines = React.useMemo(() => {
+    const rows: OutlineRow[] = transactionsWithGroups.map((item) =>
+      item.itemType === "group"
+        ? ("break" as const)
+        : {
+            id: item.id,
+            selected:
+              selectedTransactions.includes(item.id) || item.id === focusedId,
+          },
+    );
+    return computeRowOutlines(rows);
+  }, [transactionsWithGroups, selectedTransactions, focusedId]);
+
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused transaction's
+  // activity
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    moveFocus(-1);
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    moveFocus(1);
+  });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId === null) return;
+      const transaction = transactions.find((t) => t.id === focusedId);
+      if (!transaction) return;
+
+      void contextNavigate({
+        to: "/activities/$id",
+        params: { id: transaction.activity.id },
+        search: { transaction: transaction.id },
+      });
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
   useHotkey(
     "Escape",
     () => {
       if (selectedTransactions.length > 0) {
         clearSelectedTransactions();
+      } else {
+        clearFocus();
       }
     },
     {
@@ -260,6 +322,8 @@ export function AccountTransactionsTable({
                   transaction={item}
                   currencyFormatter={currencyFormatter}
                   checked={selectedTransactions.includes(item.id)}
+                  outlineSides={rowOutlines.get(item.id)}
+                  rowRef={registerRow(item.id)}
                   onCheckedChange={(event) => toggleTransaction(item.id, event)}
                 />
               )}
@@ -280,11 +344,16 @@ function TransactionLine({
   transaction,
   currencyFormatter,
   checked,
+  outlineSides,
+  rowRef,
   onCheckedChange,
 }: {
   transaction: AccountTransaction;
   currencyFormatter: Intl.NumberFormat;
   checked: boolean;
+  /** Outline sides when the row is checked or focused; absent otherwise. */
+  outlineSides?: { top: boolean; bottom: boolean };
+  rowRef?: (element: HTMLElement | null) => void;
   onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
   const accounts = useAccounts((state) => state.accounts);
@@ -304,9 +373,10 @@ function TransactionLine({
 
   return (
     <div
+      ref={rowRef}
       className={cn(
         "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
-        checked && "bg-primary/30 hover:bg-primary/40",
+        outlineSides && rowOutlineClasses(outlineSides),
       )}
     >
       <Checkbox

@@ -1,8 +1,14 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
+import {
+  computeRowOutlines,
+  rowOutlineClasses,
+} from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -43,6 +49,64 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
       (counterparty) => counterparty.account === accountId,
     );
   }, [counterparties, accountId]);
+
+  const accountCounterpartyIds = useMemo(
+    () => accountCounterparties.map((counterparty) => counterparty.id),
+    [accountCounterparties],
+  );
+
+  const { focusedId, registerRow, moveFocus, clearFocus } = useListFocus(
+    accountCounterpartyIds,
+  );
+
+  // Hotkeys: J/K move a focused row through the list (K up, J down, first
+  // row when nothing is focused), Enter opens the focused counterparty's
+  // panel
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    moveFocus(-1);
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    moveFocus(1);
+  });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId !== null) {
+        setFocusedCounterparty(focusedId);
+      }
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
+  useHotkey(
+    "Escape",
+    () => {
+      clearFocus();
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  // Outline sides for selected rows: keyboard-focused or panel-open
+  const rowOutlines = useMemo(
+    () =>
+      computeRowOutlines(
+        accountCounterparties.map((counterparty) => ({
+          id: counterparty.id,
+          selected:
+            counterparty.id === focusedId ||
+            counterparty.id === focusedCounterparty,
+        })),
+      ),
+    [accountCounterparties, focusedId, focusedCounterparty],
+  );
 
   const getCounterpartyLiability = (counterpartyId: string) => {
     const counterparty = accountCounterparties.find(
@@ -108,11 +172,11 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
             {accountCounterparties.map((counterparty) => (
               <div
                 key={counterparty.id}
+                ref={registerRow(counterparty.id)}
                 className={cn(
-                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 hover:bg-muted/50",
-                  focusedCounterparty === counterparty.id
-                    ? "border-l-4 border-l-primary bg-accent pl-13"
-                    : "pl-14",
+                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 pl-14 hover:bg-muted/50",
+                  rowOutlines.has(counterparty.id) &&
+                    rowOutlineClasses(rowOutlines.get(counterparty.id)!),
                 )}
                 onClick={() => setFocusedCounterparty(counterparty.id)}
               >

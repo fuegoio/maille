@@ -11,6 +11,7 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
+import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
@@ -23,6 +24,8 @@ interface ActivityLineProps {
   activity: Activity;
   onCheckedChange: (event?: React.MouseEvent) => void;
   checked?: boolean;
+  /** Outline sides when the row is checked or focused; absent otherwise. */
+  outlineSides?: { top: boolean; bottom: boolean };
   accountFilter?: string | null;
   hideProject?: boolean;
 }
@@ -31,6 +34,7 @@ export function ActivityLine({
   activity,
   onCheckedChange,
   checked = false,
+  outlineSides,
   accountFilter = null,
   hideProject = false,
 }: ActivityLineProps) {
@@ -91,9 +95,7 @@ export function ActivityLine({
       params={{ id: activity.id }}
       className={cn(
         "group block shrink border-b pl-1 transition-colors hover:bg-accent",
-        {
-          "bg-primary/30 hover:bg-primary/40": checked,
-        },
+        outlineSides && rowOutlineClasses(outlineSides),
       )}
       style={{
         height: showTransactions

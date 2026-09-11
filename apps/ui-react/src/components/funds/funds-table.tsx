@@ -1,9 +1,14 @@
 import { flattenFundTree } from "@maille/core/funds";
-import { Link } from "@tanstack/react-router";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ChevronRight, PiggyBank } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import {
+  computeRowOutlines,
+  rowOutlineClasses,
+} from "@/components/shared/row-outline";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -14,6 +19,8 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { useListFocus } from "@/hooks/use-list-focus";
+import { cn } from "@/lib/utils";
 import { getFundTreeBalance, getUntrackedBalanceAtDate } from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
@@ -35,6 +42,7 @@ const readCollapsed = (): Set<string> => {
 };
 
 export function FundsTable() {
+  const navigate = useNavigate();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
@@ -106,6 +114,61 @@ export function FundsTable() {
     [accounts, activities, funds, fundMoves, fundAllocations, user],
   );
 
+  // Row order as rendered (only expanded tree nodes), shared by row focus
+  const visibleFundIds = useMemo(
+    () => visibleNodes.map((node) => node.fund.id),
+    [visibleNodes],
+  );
+
+  const { focusedId, registerRow, moveFocus, clearFocus } =
+    useListFocus(visibleFundIds);
+
+  // Hotkeys: J/K move a focused row through the tree (K up, J down, first
+  // row when nothing is focused), Enter opens the focused fund
+  useHotkey("K", (event) => {
+    if (event.key !== "k") return;
+    moveFocus(-1);
+  });
+
+  useHotkey("J", (event) => {
+    if (event.key !== "j") return;
+    moveFocus(1);
+  });
+
+  useHotkey(
+    "Enter",
+    () => {
+      if (focusedId === null) return;
+
+      void navigate({ to: "/funds/$id", params: { id: focusedId } });
+    },
+    {
+      ignoreInputs: true,
+    },
+  );
+
+  useHotkey(
+    "Escape",
+    () => {
+      clearFocus();
+    },
+    {
+      conflictBehavior: "allow",
+    },
+  );
+
+  // Outline sides for focused rows
+  const rowOutlines = useMemo(
+    () =>
+      computeRowOutlines(
+        visibleNodes.map(({ fund }) => ({
+          id: fund.id,
+          selected: fund.id === focusedId,
+        })),
+      ),
+    [visibleNodes, focusedId],
+  );
+
   if (funds.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-6">
@@ -137,9 +200,14 @@ export function FundsTable() {
         return (
           <Link
             key={fund.id}
+            ref={registerRow(fund.id)}
             to="/funds/$id"
             params={{ id: fund.id }}
-            className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
+            className={cn(
+              "flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50",
+              rowOutlines.has(fund.id) &&
+                rowOutlineClasses(rowOutlines.get(fund.id)!),
+            )}
           >
             <div
               className="flex min-w-0 items-center"
