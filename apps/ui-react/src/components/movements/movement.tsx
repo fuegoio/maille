@@ -152,6 +152,14 @@ export function MovementPage({ movementId }: MovementPageProps) {
       .filter((ma) => ma.activity !== undefined);
   }, [movement, activities]);
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      void router.navigate({ to: "/movements" });
+    }
+  };
+
   const deleteMovement = () => {
     if (!movement) return;
     const movementData = _.cloneDeep(movement);
@@ -190,7 +198,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
       ],
     });
 
-    void router.navigate({ to: "/movements" });
+    goBack();
   };
 
   const handleUpdateMovement = (update: {
@@ -316,13 +324,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
     });
   });
 
-  useHotkey("Escape", () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      void router.navigate({ to: "/movements" });
-    }
-  });
+  useHotkey("Escape", goBack);
 
   if (!movement) return null;
 

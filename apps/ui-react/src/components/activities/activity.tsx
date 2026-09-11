@@ -172,6 +172,14 @@ export function ActivityPage({
 
   const currencyFormatter = useCurrencyFormatter();
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      void router.navigate({ to: "/activities" });
+    }
+  };
+
   const deleteActivity = () => {
     if (!activity) return;
 
@@ -211,7 +219,7 @@ export function ActivityPage({
     });
 
     setShowDeleteModal(false);
-    void router.navigate({ to: "/activities" });
+    goBack();
   };
 
   const duplicateActivity = () => {
@@ -333,13 +341,7 @@ export function ActivityPage({
     });
   });
 
-  useHotkey("Escape", () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      void router.navigate({ to: "/activities" });
-    }
-  });
+  useHotkey("Escape", goBack);
 
   if (!activity) return null;
 
