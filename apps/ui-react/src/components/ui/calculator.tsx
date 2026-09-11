@@ -32,9 +32,11 @@ const CALCULATOR_KEYS = [
   2,
   3,
   "plus",
-  "back",
+  "left-paren",
   0,
   "point",
+  "right-paren",
+  "back",
   "validate",
 ] as const;
 
@@ -42,6 +44,25 @@ type CalculatorKey = (typeof CALCULATOR_KEYS)[number];
 
 export interface CalculatorHandle {
   handleKeyDown: (event: React.KeyboardEvent) => void;
+  handlePaste: (event: React.ClipboardEvent) => void;
+}
+
+/**
+ * Normalizes a raw calculator input into a mathjs expression: display
+ * operators and decimal separators are converted, and unclosed
+ * parentheses are auto-closed.
+ */
+export function parseCalculatorExpression(input: string): string {
+  const expression = input
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/,/g, ".");
+  const openParens = (expression.match(/\(/g) ?? []).length;
+  const closeParens = (expression.match(/\)/g) ?? []).length;
+  if (openParens > closeParens) {
+    return expression + ")".repeat(openParens - closeParens);
+  }
+  return expression;
 }
 
 interface CalculatorBaseProps {
@@ -79,11 +100,7 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
 
     const computedValue = React.useMemo(() => {
       try {
-        const expression = input
-          .replace("×", "*")
-          .replace("÷", "/")
-          .replace(",", ".");
-        const result = evaluate(expression);
+        const result = evaluate(parseCalculatorExpression(input));
         return Math.round(result * 100) / 100;
       } catch {
         return NaN;
@@ -127,6 +144,12 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
             break;
           case "percentage":
             setInput((prev) => prev + "%");
+            break;
+          case "left-paren":
+            setInput((prev) => prev + "(");
+            break;
+          case "right-paren":
+            setInput((prev) => prev + ")");
             break;
           case "plus-minus":
             setInput((prev) =>
@@ -184,6 +207,12 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
           case "%":
             handleKey("percentage");
             break;
+          case "(":
+            handleKey("left-paren");
+            break;
+          case ")":
+            handleKey("right-paren");
+            break;
           case ".":
           case ",":
             handleKey("point");
@@ -193,7 +222,19 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
       [handleKey],
     );
 
-    React.useImperativeHandle(ref, () => ({ handleKeyDown }), [handleKeyDown]);
+    const handlePaste = React.useCallback((event: React.ClipboardEvent) => {
+      event.preventDefault();
+      const text = event.clipboardData.getData("text");
+      const sanitized = text.replace(/[^0-9+\-*/×÷().,%]/g, "");
+      if (sanitized) {
+        setInput((prev) => prev + sanitized);
+      }
+    }, []);
+
+    React.useImperativeHandle(ref, () => ({ handleKeyDown, handlePaste }), [
+      handleKeyDown,
+      handlePaste,
+    ]);
 
     React.useEffect(() => {
       if (autoFocus) containerRef.current?.focus();
@@ -204,6 +245,7 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
         ref={containerRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         className={cn("flex flex-col outline-none", className)}
       >
         <div className="flex h-10 items-center px-4 font-mono text-sm">
@@ -224,49 +266,59 @@ export const Calculator = React.forwardRef<CalculatorHandle, CalculatorProps>(
         </div>
 
         <div className="grid grid-cols-4 gap-y-2 border-t p-2">
-          {CALCULATOR_KEYS.map((key) => (
-            <div key={key} className="flex justify-center">
-              <Button
-                className="size-9"
-                tabIndex={-1}
-                variant={
-                  key === "validate" && isValueValid ? "default" : "outline"
-                }
-                disabled={key === "validate" && !isValueValid}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => handleKey(key)}
+          {CALCULATOR_KEYS.map((key) => {
+            const wide = key === "back" || key === "validate";
+            return (
+              <div
+                key={key}
+                className={cn("flex justify-center", wide && "col-span-2")}
               >
-                {typeof key === "number" ? (
-                  <span className="text-sm font-medium">{key}</span>
-                ) : key === "point" ? (
-                  <span>{decimalSeparator}</span>
-                ) : key === "divide" ? (
-                  <Divide className="h-4 w-4" />
-                ) : key === "multiply" ? (
-                  <X className="h-4 w-4" />
-                ) : key === "minus" ? (
-                  <Minus className="h-4 w-4" />
-                ) : key === "plus" ? (
-                  <Plus className="h-4 w-4" />
-                ) : key === "back" ? (
-                  <Delete className="h-4 w-4" />
-                ) : key === "plus-minus" ? (
-                  <Diff className="h-4 w-4 text-teal-500" />
-                ) : key === "percentage" ? (
-                  <Percent className="h-4 w-4 text-teal-500" />
-                ) : key === "C" ? (
-                  <span className="text-sm font-medium text-teal-500">C</span>
-                ) : key === "validate" ? (
-                  <Check
-                    className={cn(
-                      "h-4 w-4",
-                      isValueValid ? "text-white" : "text-primary-600",
-                    )}
-                  />
-                ) : null}
-              </Button>
-            </div>
-          ))}
+                <Button
+                  className={wide ? "h-9 w-full" : "size-9"}
+                  tabIndex={-1}
+                  variant={
+                    key === "validate" && isValueValid ? "default" : "outline"
+                  }
+                  disabled={key === "validate" && !isValueValid}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleKey(key)}
+                >
+                  {typeof key === "number" ? (
+                    <span className="text-sm font-medium">{key}</span>
+                  ) : key === "point" ? (
+                    <span>{decimalSeparator}</span>
+                  ) : key === "left-paren" ? (
+                    <span className="text-sm font-medium">(</span>
+                  ) : key === "right-paren" ? (
+                    <span className="text-sm font-medium">)</span>
+                  ) : key === "divide" ? (
+                    <Divide className="h-4 w-4" />
+                  ) : key === "multiply" ? (
+                    <X className="h-4 w-4" />
+                  ) : key === "minus" ? (
+                    <Minus className="h-4 w-4" />
+                  ) : key === "plus" ? (
+                    <Plus className="h-4 w-4" />
+                  ) : key === "back" ? (
+                    <Delete className="h-4 w-4" />
+                  ) : key === "plus-minus" ? (
+                    <Diff className="h-4 w-4 text-teal-500" />
+                  ) : key === "percentage" ? (
+                    <Percent className="h-4 w-4 text-teal-500" />
+                  ) : key === "C" ? (
+                    <span className="text-sm font-medium text-teal-500">C</span>
+                  ) : key === "validate" ? (
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        isValueValid ? "text-white" : "text-primary-600",
+                      )}
+                    />
+                  ) : null}
+                </Button>
+              </div>
+            );
+          })}
         </div>
       </div>
     );

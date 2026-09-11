@@ -27,6 +27,7 @@ function CalculatorPanel({ onClose }: { onClose: () => void }) {
       ref={wrapperRef}
       tabIndex={0}
       onKeyDown={(e) => calculatorRef.current?.handleKeyDown(e)}
+      onPaste={(e) => calculatorRef.current?.handlePaste(e)}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       className={cn(
