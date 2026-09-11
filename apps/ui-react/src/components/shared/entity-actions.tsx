@@ -147,19 +147,21 @@ export function CommandPaletteDialog({
       <Command shouldFilter={false}>
         {step === "input" ? (
           <div className="flex items-center">
-            <CommandInput
-              placeholder={
-                actions.find((a) => a.value === selectedAction)?.placeholder ||
-                "Enter value..."
-              }
-              value={inputValue}
-              onValueChange={setInputValue}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleInputSubmit();
+            <div className="min-w-0 flex-1">
+              <CommandInput
+                placeholder={
+                  actions.find((a) => a.value === selectedAction)
+                    ?.placeholder || "Enter value..."
                 }
-              }}
-            />
+                value={inputValue}
+                onValueChange={setInputValue}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleInputSubmit();
+                  }
+                }}
+              />
+            </div>
             <CommandShortcut className="mr-2 text-sm">Enter</CommandShortcut>
           </div>
         ) : (

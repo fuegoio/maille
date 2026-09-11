@@ -441,19 +441,21 @@ export function TransactionsCommandPalette({
       <Command shouldFilter={false}>
         {step === "input" ? (
           <div className="flex items-center">
-            <CommandInput
-              placeholder={
-                actionDefinitions.find((a) => a.value === selectedAction)
-                  ?.placeholder || "Enter value..."
-              }
-              value={inputValue}
-              onValueChange={setInputValue}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleInputSubmit();
+            <div className="min-w-0 flex-1">
+              <CommandInput
+                placeholder={
+                  actionDefinitions.find((a) => a.value === selectedAction)
+                    ?.placeholder || "Enter value..."
                 }
-              }}
-            />
+                value={inputValue}
+                onValueChange={setInputValue}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleInputSubmit();
+                  }
+                }}
+              />
+            </div>
             <CommandShortcut className="mr-2 text-sm">Enter</CommandShortcut>
           </div>
         ) : (
