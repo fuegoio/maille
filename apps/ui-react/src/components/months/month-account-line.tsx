@@ -1,6 +1,8 @@
-import { ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ChevronRight } from "lucide-react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
@@ -10,11 +12,17 @@ import { useMovements } from "@/stores/movements";
 interface MonthAccountLineProps {
   monthDate: Date;
   accountId: string;
+  /** The account currently filtering the month's tables. */
+  accountFilter?: string;
+  /** Set the account filtering the tables; undefined clears. */
+  onAccountFilterChange?: (account: string | undefined) => void;
 }
 
 export function MonthAccountLine({
   monthDate,
   accountId,
+  accountFilter,
+  onAccountFilterChange,
 }: MonthAccountLineProps) {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
@@ -69,28 +77,69 @@ export function MonthAccountLine({
   );
   const endCashBalance = getAccountCashBalanceAtDate(endOfMonth);
 
-  return (
-    <div className="ml-4 rounded py-2 pr-3 pl-4 transition-colors hover:bg-muted/50">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center font-medium">{account.name}</div>
+  const active = accountFilter === account.id;
+  const selectAccount = () =>
+    onAccountFilterChange?.(active ? undefined : account.id);
 
-        <div className="flex items-center gap-2">
-          {Math.abs(startBalance - endBalance) >= 0.01 && (
-            <>
-              <div className="font-mono whitespace-nowrap text-muted-foreground">
-                {currencyFormatter.format(startBalance)}
-              </div>
-              <ArrowRight className="size-4 text-muted-foreground" />
-            </>
-          )}
-          <div className="font-mono whitespace-nowrap">
-            {currencyFormatter.format(endBalance)}
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={selectAccount}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectAccount();
+        }
+      }}
+      className={cn(
+        "group ml-4 cursor-pointer rounded pr-3 pl-4 transition-colors",
+        active ? "bg-muted" : "hover:bg-muted/50",
+      )}
+    >
+      <div className="flex h-9 items-center justify-between">
+        <div className="min-w-0 truncate text-sm font-medium">
+          {account.name}
+        </div>
+
+        <div className="flex items-center">
+          <div
+            className={cn(
+              "mr-4 text-sm text-muted-foreground",
+              !active && "hidden group-hover:block",
+            )}
+          >
+            {active ? "Clear filter" : "Filter"}
           </div>
+
+          <div className="flex items-center gap-2">
+            {Math.abs(startBalance - endBalance) >= 0.01 && (
+              <>
+                <div className="font-mono text-sm whitespace-nowrap text-muted-foreground">
+                  {currencyFormatter.format(startBalance)}
+                </div>
+                <ArrowRight className="size-4 text-muted-foreground" />
+              </>
+            )}
+            <div className="font-mono text-sm whitespace-nowrap">
+              {currencyFormatter.format(endBalance)}
+            </div>
+          </div>
+
+          <Link
+            to="/accounts/$id"
+            params={{ id: account.id }}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`Open ${account.name}`}
+            className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+          >
+            <ChevronRight className="size-4" />
+          </Link>
         </div>
       </div>
 
       {account.movements && (
-        <div className="mt-1 flex items-center pl-4 text-xs text-muted-foreground">
+        <div className="flex h-7 items-center pl-4 text-xs text-muted-foreground">
           <div className="font-medium">Cash balance</div>
           <div className="flex-1" />
           <div className="flex items-center gap-2">

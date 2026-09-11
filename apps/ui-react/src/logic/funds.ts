@@ -339,6 +339,27 @@ export function classifyFundMoves({
 }
 
 /**
+ * Whether an activity's money touches a fund: any transaction leg naming
+ * the fund on either side. Null is Untracked — a transaction with no legs,
+ * or with a leg leaving it unnamed on one side, carries untracked money.
+ */
+export function activityTouchesFund(
+  activity: Pick<Activity, "transactions">,
+  fundId: string | null,
+): boolean {
+  return activity.transactions.some((transaction) => {
+    const legs = transaction.fundMoves ?? [];
+    if (fundId === null) {
+      return (
+        legs.length === 0 ||
+        legs.some((leg) => leg.fromFund === null || leg.toFund === null)
+      );
+    }
+    return legs.some((leg) => leg.fromFund === fundId || leg.toFund === fundId);
+  });
+}
+
+/**
  * The fund a transaction's money holds on one account's side: the fromFund
  * its legs carry when the account sends it, the toFund when the account
  * receives it. Null is Untracked.

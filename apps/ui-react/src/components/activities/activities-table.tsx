@@ -12,6 +12,7 @@ import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { activityTouchesFund } from "@/logic/funds";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
@@ -29,6 +30,8 @@ interface ActivitiesTableProps {
   categoryFilter?: string | null;
   subcategoryFilter?: string | null;
   activityTypeFilter?: ActivityType | null;
+  /** A fund the activities must touch; null is Untracked, undefined is off. */
+  fundFilter?: string | null;
   hideProject?: boolean;
 }
 
@@ -40,6 +43,7 @@ export function ActivitiesTable({
   categoryFilter = null,
   subcategoryFilter = null,
   activityTypeFilter = null,
+  fundFilter,
   hideProject = false,
 }: ActivitiesTableProps) {
   const contextNavigate = useContextNavigate();
@@ -83,6 +87,11 @@ export function ActivitiesTable({
           ? activity.type === activityTypeFilter
           : true,
       )
+      .filter((activity) =>
+        fundFilter === undefined
+          ? true
+          : activityTouchesFund(activity, fundFilter),
+      )
       .filter((activity) => {
         if (activityView.filters.length === 0) return true;
 
@@ -99,6 +108,7 @@ export function ActivitiesTable({
     categoryFilter,
     accountFilter,
     activityTypeFilter,
+    fundFilter,
     activityView,
   ]);
 

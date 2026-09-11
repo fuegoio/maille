@@ -40,9 +40,14 @@ type FundMoveWithActivity = FundMove & {
 interface FundMovesTableProps {
   /** The fund whose moves to show; null is Untracked (the null side of moves). */
   fundId: string | null;
+  /** Only show moves whose transaction touches this account. */
+  accountFilter?: string | null;
 }
 
-export function FundMovesTable({ fundId }: FundMovesTableProps) {
+export function FundMovesTable({
+  fundId,
+  accountFilter = null,
+}: FundMovesTableProps) {
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
@@ -100,12 +105,21 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const rowsFiltered = React.useMemo(
     () =>
       rows.filter((row) => {
+        if (accountFilter !== null) {
+          if (
+            !row.accounts ||
+            (row.accounts.from !== accountFilter &&
+              row.accounts.to !== accountFilter)
+          ) {
+            return false;
+          }
+        }
         if (!search) return true;
         return (
           row.activity !== null && searchCompare(search, row.activity.name)
         );
       }),
-    [rows, search],
+    [rows, search, accountFilter],
   );
 
   const { items, isFolded, toggleGroup } = useGroupedRows(rowsFiltered, true);

@@ -1,8 +1,10 @@
 import { flattenFundTree } from "@maille/core/funds";
-import { ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import {
   getFundTreeBalanceAtDate,
   getUntrackedBalanceAtDate,
@@ -14,9 +16,17 @@ import { useFunds } from "@/stores/funds";
 
 interface MonthFundsSummaryProps {
   monthDate: Date;
+  /** The fund currently filtering the month's activities; null is Untracked. */
+  fundFilter?: string | null;
+  /** Set the fund filtering the activities; undefined clears, null is Untracked. */
+  onFundFilterChange?: (fund: string | null | undefined) => void;
 }
 
-export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
+export function MonthFundsSummary({
+  monthDate,
+  fundFilter,
+  onFundFilterChange,
+}: MonthFundsSummaryProps) {
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
   const fundAllocations = useFunds((state) => state.fundAllocations);
@@ -107,20 +117,56 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
     </div>
   );
 
+  const renderChevron = ({
+    to,
+    params,
+    label,
+  }: {
+    to: string;
+    params?: Record<string, string>;
+    label: string;
+  }) => (
+    <Link
+      to={to as never}
+      params={params as never}
+      onClick={(event) => event.stopPropagation()}
+      aria-label={label}
+      className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+    >
+      <ChevronRight className="size-4" />
+    </Link>
+  );
+
   return (
     // The funds tree over the month, untracked closing the list as the
     // complement of the funds.
     <div className="w-full border-b px-3 py-4">
       {variations.length > 0 ? (
         <div className="space-y-1 pb-2">
-          {variations.map((variation) => (
-            <div
-              key={variation.fund.id}
-              className="ml-4 rounded py-2 pr-3 pl-4 transition-colors hover:bg-muted/50"
-            >
-              <div className="flex items-center justify-between">
+          {variations.map((variation) => {
+            const active = fundFilter === variation.fund.id;
+            const selectFund = () =>
+              onFundFilterChange?.(active ? undefined : variation.fund.id);
+
+            return (
+              <div
+                key={variation.fund.id}
+                role="button"
+                tabIndex={0}
+                onClick={selectFund}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    selectFund();
+                  }
+                }}
+                className={cn(
+                  "group ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-4 text-sm transition-colors",
+                  active ? "bg-muted" : "hover:bg-muted/50",
+                )}
+              >
                 <div
-                  className="flex items-center font-medium"
+                  className="flex min-w-0 items-center font-medium"
                   style={
                     variation.depth > 0
                       ? { paddingLeft: `${variation.depth * 20}px` }
@@ -131,12 +177,28 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
                     className="mr-2 size-3 shrink-0 rounded-sm"
                     style={{ backgroundColor: variation.fund.color }}
                   />
-                  {variation.fund.name}
+                  <span className="truncate">{variation.fund.name}</span>
                 </div>
-                {renderVariation(variation)}
+
+                <div className="flex items-center">
+                  <div
+                    className={cn(
+                      "mr-4 text-sm text-muted-foreground",
+                      !active && "hidden group-hover:block",
+                    )}
+                  >
+                    {active ? "Clear filter" : "Filter"}
+                  </div>
+                  {renderVariation(variation)}
+                  {renderChevron({
+                    to: "/funds/$id",
+                    params: { id: variation.fund.id },
+                    label: `Open ${variation.fund.name}`,
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="ml-4 rounded py-2 pr-3 pl-4 text-sm text-muted-foreground">
@@ -145,15 +207,50 @@ export function MonthFundsSummary({ monthDate }: MonthFundsSummaryProps) {
       )}
 
       {/* Untracked is the complement of the funds, muted like elsewhere */}
-      <div className="ml-4 rounded py-2 pr-3 pl-4 transition-colors hover:bg-muted/50">
-        <div className="flex items-center justify-between text-muted-foreground">
-          <div className="flex items-center font-medium">
-            <div className="mr-2 size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
-            <span className="text-sm">Untracked</span>
+      {(() => {
+        const active = fundFilter === null;
+        const selectFund = () =>
+          onFundFilterChange?.(active ? undefined : null);
+
+        return (
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={selectFund}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                selectFund();
+              }
+            }}
+            className={cn(
+              "group ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-4 text-sm transition-colors",
+              active ? "bg-muted" : "hover:bg-muted/50",
+            )}
+          >
+            <div className="flex min-w-0 items-center font-medium text-muted-foreground">
+              <div className="mr-2 size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
+              <span className="truncate">Untracked</span>
+            </div>
+
+            <div className="flex items-center">
+              <div
+                className={cn(
+                  "mr-4 text-sm text-muted-foreground",
+                  !active && "hidden group-hover:block",
+                )}
+              >
+                {active ? "Clear filter" : "Filter"}
+              </div>
+              {renderVariation(untracked)}
+              {renderChevron({
+                to: "/funds/untracked",
+                label: "Open Untracked",
+              })}
+            </div>
           </div>
-          {renderVariation(untracked)}
-        </div>
-      </div>
+        );
+      })()}
     </div>
   );
 }

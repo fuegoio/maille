@@ -1,7 +1,12 @@
 import { AccountType, type Account } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronRight,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
@@ -41,6 +46,10 @@ import { useFunds } from "@/stores/funds";
 interface FundSummaryProps {
   /** The fund to summarize; null is Untracked (the null side of moves). */
   fundId: string | null;
+  /** The account currently filtering the fund's moves. */
+  accountFilter?: string;
+  /** Set the account filtering the moves; undefined clears. */
+  onAccountFilterChange?: (account: string | undefined) => void;
 }
 
 interface AccountSpreadEntry {
@@ -59,7 +68,11 @@ const ACCOUNT_SPREAD_TYPE_ORDER = [
   AccountType.REVENUE,
 ];
 
-export function FundSummary({ fundId }: FundSummaryProps) {
+export function FundSummary({
+  fundId,
+  accountFilter,
+  onAccountFilterChange,
+}: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFunds((state) => state.fundMoves);
@@ -376,24 +389,30 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                 key={child.id}
                 to="/funds/$id"
                 params={{ id: child.id }}
-                className="flex h-8 cursor-pointer items-center text-sm transition-colors hover:bg-muted/50"
+                aria-label={`Open ${child.name}`}
+                className="group flex h-9 items-center rounded px-3 text-sm transition-colors hover:bg-muted/50"
               >
-                <div
-                  className="size-3 shrink-0 rounded-sm"
-                  style={{ backgroundColor: child.color }}
-                />
-                <div className="ml-2 truncate">{child.name}</div>
+                <div className="flex min-w-0 items-center">
+                  <div
+                    className="size-3 shrink-0 rounded-sm"
+                    style={{ backgroundColor: child.color }}
+                  />
+                  <div className="ml-2 truncate">{child.name}</div>
+                </div>
                 <div className="flex-1" />
-                <div className="font-mono">
+                <div className="font-mono text-sm">
                   {currencyFormatter.format(childBalances.get(child.id) ?? 0)}
+                </div>
+                <div className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100">
+                  <ChevronRight className="size-4" />
                 </div>
               </Link>
             ))}
             {directBalance !== null && (
-              <div className="flex h-8 items-center pl-5 text-sm">
+              <div className="flex h-9 items-center rounded px-3 pl-5 text-sm">
                 <div className="text-muted-foreground">No subfund</div>
                 <div className="flex-1" />
-                <div className="font-mono text-muted-foreground">
+                <div className="font-mono text-sm text-muted-foreground">
                   {currencyFormatter.format(directBalance)}
                 </div>
               </div>
@@ -462,20 +481,55 @@ export function FundSummary({ fundId }: FundSummaryProps) {
                     </div>
                   )}
 
-                  {entries.map(({ account, amount }) => (
-                    <Link
-                      key={account.id}
-                      to="/accounts/$id"
-                      params={{ id: account.id }}
-                      className="flex h-8 cursor-pointer items-center pl-5 text-sm transition-colors hover:bg-muted/50"
-                    >
-                      <div className="truncate">{account.name}</div>
-                      <div className="flex-1" />
-                      <div className="font-mono">
-                        {currencyFormatter.format(amount)}
+                  {entries.map(({ account, amount }) => {
+                    const active = accountFilter === account.id;
+                    const selectAccount = () =>
+                      onAccountFilterChange?.(active ? undefined : account.id);
+
+                    return (
+                      <div
+                        key={account.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={selectAccount}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            selectAccount();
+                          }
+                        }}
+                        className={cn(
+                          "group flex h-9 cursor-pointer items-center rounded pr-3 pl-5 text-sm transition-colors",
+                          active ? "bg-muted" : "hover:bg-muted/50",
+                        )}
+                      >
+                        <div className="min-w-0 truncate">{account.name}</div>
+                        <div className="flex-1" />
+                        <div className="flex items-center">
+                          <div
+                            className={cn(
+                              "mr-4 text-sm text-muted-foreground",
+                              !active && "hidden group-hover:block",
+                            )}
+                          >
+                            {active ? "Clear filter" : "Filter"}
+                          </div>
+                          <div className="font-mono text-sm whitespace-nowrap">
+                            {currencyFormatter.format(amount)}
+                          </div>
+                          <Link
+                            to="/accounts/$id"
+                            params={{ id: account.id }}
+                            onClick={(event) => event.stopPropagation()}
+                            aria-label={`Open ${account.name}`}
+                            className="ml-2 -translate-x-2 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100"
+                          >
+                            <ChevronRight className="size-4" />
+                          </Link>
+                        </div>
                       </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               ),
             )}

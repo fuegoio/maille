@@ -277,7 +277,7 @@ export function AccountSummary({
                     }
                   }}
                   className={cn(
-                    "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
+                    "group flex h-9 cursor-pointer items-center justify-between rounded px-3 text-sm transition-colors",
                     active ? "bg-muted" : "hover:bg-muted/50",
                   )}
                 >

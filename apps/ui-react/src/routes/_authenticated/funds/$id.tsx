@@ -45,6 +45,7 @@ function FundPage() {
   );
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+  const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -123,11 +124,15 @@ function FundPage() {
           </FundSettingsDialog>
         </header>
 
-        <FundMovesTable fundId={fund.id} />
+        <FundMovesTable fundId={fund.id} accountFilter={accountFilter} />
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        <FundSummary fundId={fund.id} />
+        <FundSummary
+          fundId={fund.id}
+          accountFilter={accountFilter ?? undefined}
+          onAccountFilterChange={(account) => setAccountFilter(account ?? null)}
+        />
       </SummaryPanel>
     </SidebarInset>
   );

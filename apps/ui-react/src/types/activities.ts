@@ -4,4 +4,7 @@ export type ActivitiesFilters = {
   activityType?: ActivityType;
   category?: string;
   subcategory?: string;
+  account?: string;
+  /** Fund id, null being Untracked. */
+  fund?: string | null;
 };

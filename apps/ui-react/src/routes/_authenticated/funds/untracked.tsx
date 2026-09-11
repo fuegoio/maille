@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/funds/untracked")({
 function UntrackedFundPage() {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+  const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -64,11 +65,15 @@ function UntrackedFundPage() {
           )}
         </header>
 
-        <FundMovesTable fundId={null} />
+        <FundMovesTable fundId={null} accountFilter={accountFilter} />
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        <FundSummary fundId={null} />
+        <FundSummary
+          fundId={null}
+          accountFilter={accountFilter ?? undefined}
+          onAccountFilterChange={(account) => setAccountFilter(account ?? null)}
+        />
       </SummaryPanel>
     </SidebarInset>
   );

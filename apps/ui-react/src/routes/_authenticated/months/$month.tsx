@@ -188,6 +188,8 @@ function MonthPage() {
               activityTypeFilter={activitiesFilters.activityType}
               categoryFilter={activitiesFilters.category}
               subcategoryFilter={activitiesFilters.subcategory}
+              accountFilter={activitiesFilters.account ?? null}
+              fundFilter={activitiesFilters.fund}
             />
           </TabsContent>
 
@@ -195,6 +197,7 @@ function MonthPage() {
             <MovementsTable
               viewId={`month-${month}-${year}-movements`}
               movements={monthMovements}
+              accountFilter={activitiesFilters.account ?? null}
             />
           </TabsContent>
         </Tabs>
@@ -219,11 +222,23 @@ function MonthPage() {
           </TabsContent>
 
           <TabsContent value="accounts">
-            <MonthAccountsSummary monthDate={monthDate} />
+            <MonthAccountsSummary
+              monthDate={monthDate}
+              accountFilter={activitiesFilters.account}
+              onAccountFilterChange={(account) =>
+                setActivitiesFilters((prev) => ({ ...prev, account }))
+              }
+            />
           </TabsContent>
 
           <TabsContent value="funds">
-            <MonthFundsSummary monthDate={monthDate} />
+            <MonthFundsSummary
+              monthDate={monthDate}
+              fundFilter={activitiesFilters.fund}
+              onFundFilterChange={(fund) =>
+                setActivitiesFilters((prev) => ({ ...prev, fund }))
+              }
+            />
           </TabsContent>
         </Tabs>
       </SummaryPanel>

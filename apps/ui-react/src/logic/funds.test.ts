@@ -7,6 +7,7 @@ import { ActivityType } from "@maille/core/activities";
 import { describe, expect, it } from "vitest";
 
 import {
+  activityTouchesFund,
   classifyFundMoves,
   getAccountSpreadAcrossFunds,
   getDefaultFundByAccount,
@@ -479,5 +480,56 @@ describe("transaction side funds (ui logic)", () => {
         "checking",
       ),
     ).toBeNull();
+  });
+});
+
+describe("activity fund touches (ui logic)", () => {
+  it("touches a fund named on either side of any leg", () => {
+    const a = activity("a1", "2026-01-10", [
+      transaction("t1", 10, "checking", "expense", [
+        move({ id: "m1", toFund: "house", amount: 10 }),
+      ]),
+    ]);
+    expect(activityTouchesFund(a, "house")).toBe(true);
+    expect(activityTouchesFund(a, "car")).toBe(false);
+  });
+
+  it("touches untracked when a transaction has no legs", () => {
+    const a = activity("a2", "2026-01-10", [
+      transaction("t2", 10, "checking", "expense"),
+    ]);
+    expect(activityTouchesFund(a, null)).toBe(true);
+    expect(activityTouchesFund(a, "house")).toBe(false);
+  });
+
+  it("touches untracked when a leg leaves a side unnamed", () => {
+    const a = activity("a3", "2026-01-10", [
+      transaction("t3", 10, "unclassified", "house", [
+        move({ id: "m3", fromFund: null, toFund: "house", amount: 10 }),
+      ]),
+    ]);
+    expect(activityTouchesFund(a, null)).toBe(true);
+  });
+
+  it("does not touch untracked when every leg names both sides", () => {
+    const a = activity("a4", "2026-01-10", [
+      transaction("t4", 10, "checking", "savings", [
+        move({ id: "m4", fromFund: "house", toFund: "car", amount: 10 }),
+      ]),
+    ]);
+    expect(activityTouchesFund(a, null)).toBe(false);
+    expect(activityTouchesFund(a, "house")).toBe(true);
+    expect(activityTouchesFund(a, "car")).toBe(true);
+  });
+
+  it("touches when any of the activity's transactions does", () => {
+    const a = activity("a5", "2026-01-10", [
+      transaction("t5", 10, "checking", "expense"),
+      transaction("t6", 10, "revenue", "savings", [
+        move({ id: "m6", toFund: "house", amount: 10 }),
+      ]),
+    ]);
+    expect(activityTouchesFund(a, "house")).toBe(true);
+    expect(activityTouchesFund(a, null)).toBe(true);
   });
 });

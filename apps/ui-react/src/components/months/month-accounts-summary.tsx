@@ -23,9 +23,17 @@ import { MonthAccountLine } from "./month-account-line";
 
 interface MonthAccountsSummaryProps {
   monthDate: Date;
+  /** The account currently filtering the month's tables. */
+  accountFilter?: string;
+  /** Set the account filtering the tables; undefined clears. */
+  onAccountFilterChange?: (account: string | undefined) => void;
 }
 
-export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
+export function MonthAccountsSummary({
+  monthDate,
+  accountFilter,
+  onAccountFilterChange,
+}: MonthAccountsSummaryProps) {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
@@ -167,6 +175,8 @@ export function MonthAccountsSummary({ monthDate }: MonthAccountsSummaryProps) {
                     key={account.id}
                     monthDate={monthDate}
                     accountId={account.id}
+                    accountFilter={accountFilter}
+                    onAccountFilterChange={onAccountFilterChange}
                   />
                 ))}
               </div>
