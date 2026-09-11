@@ -169,7 +169,7 @@ export function FundsTable() {
             >
               {hasChildren ? (
                 <Button
-                  variant="ghost"
+                  variant="link"
                   size="icon-xs"
                   aria-label={
                     isCollapsed

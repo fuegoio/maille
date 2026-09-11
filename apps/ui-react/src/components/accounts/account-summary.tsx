@@ -260,7 +260,7 @@ export function AccountSummary({
           <div className="text-xs font-medium text-muted-foreground">
             Across funds
           </div>
-          <div className="mt-1">
+          <div className="-mx-3 mt-1">
             {fundSpread.map(({ fund, amount }) => {
               const active =
                 fundFilter !== undefined && (fund?.id ?? null) === fundFilter;

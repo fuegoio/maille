@@ -384,7 +384,7 @@ export function FundSummary({
           <div className="text-xs font-medium text-muted-foreground">
             Subfunds
           </div>
-          <div className="mt-2">
+          <div className="-mx-3 mt-2">
             {children.map((child) => (
               <Link
                 key={child.id}
@@ -500,7 +500,7 @@ export function FundSummary({
                           }
                         }}
                         className={cn(
-                          "group flex h-9 cursor-pointer items-center rounded pr-3 pl-5 text-sm transition-colors",
+                          "group flex h-9 cursor-pointer items-center rounded pl-5 text-sm transition-colors",
                           active ? "bg-muted" : "hover:bg-muted/50",
                         )}
                       >
@@ -523,7 +523,7 @@ export function FundSummary({
                             params={{ id: account.id }}
                             onClick={(event) => event.stopPropagation()}
                             aria-label={`Open ${account.name}`}
-                            className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100"
+                            className="w-0 overflow-hidden pr-0 text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:mr-3 group-hover:w-6 group-hover:opacity-100"
                           >
                             <ChevronRight className="ml-2 size-4" />
                           </Link>

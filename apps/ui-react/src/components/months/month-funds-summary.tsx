@@ -161,7 +161,7 @@ export function MonthFundsSummary({
                   }
                 }}
                 className={cn(
-                  "group ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-4 text-sm transition-colors",
+                  "group flex h-9 cursor-pointer items-center justify-between rounded px-3 text-sm transition-colors",
                   active ? "bg-muted" : "hover:bg-muted/50",
                 )}
               >
@@ -201,7 +201,7 @@ export function MonthFundsSummary({
           })}
         </div>
       ) : (
-        <div className="ml-4 rounded py-2 pr-3 pl-4 text-sm text-muted-foreground">
+        <div className="rounded px-3 py-2 text-sm text-muted-foreground">
           No funds yet
         </div>
       )}
@@ -224,7 +224,7 @@ export function MonthFundsSummary({
               }
             }}
             className={cn(
-              "group ml-4 flex h-9 cursor-pointer items-center justify-between rounded pr-3 pl-4 text-sm transition-colors",
+              "group flex h-9 cursor-pointer items-center justify-between rounded px-3 text-sm transition-colors",
               active ? "bg-muted" : "hover:bg-muted/50",
             )}
           >
