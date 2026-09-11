@@ -86,7 +86,6 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
               className="h-8 flex-1 text-sm"
             />
             <Button
-              size="sm"
               variant="outline"
               onClick={handleTriggerWithHint}
               disabled={isTriggering || isReconciled}
