@@ -21,11 +21,15 @@ export function useScrollRestoration<T extends HTMLElement = HTMLDivElement>(
 
     const storageKeyFull = `${STORAGE_PREFIX}${storageKey}`;
 
-    // Restore on mount
+    // Restore on mount. The last position is also kept in a local variable:
+    // by the time the cleanup below runs, React has already detached the
+    // element and its scrollTop reads 0, so the element cannot be trusted.
     const saved = sessionStorage.getItem(storageKeyFull);
+    let lastScrollTop = 0;
     if (saved !== null) {
       const scrollTop = Number.parseInt(saved, 10);
       if (!Number.isNaN(scrollTop)) {
+        lastScrollTop = scrollTop;
         // Defer until content is painted so the scroll height is correct
         requestAnimationFrame(() => {
           viewport.scrollTop = scrollTop;
@@ -35,10 +39,11 @@ export function useScrollRestoration<T extends HTMLElement = HTMLDivElement>(
 
     let frame = 0;
     const onScroll = () => {
+      lastScrollTop = viewport.scrollTop;
       if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
-        sessionStorage.setItem(storageKeyFull, String(viewport.scrollTop));
+        sessionStorage.setItem(storageKeyFull, String(lastScrollTop));
       });
     };
 
@@ -48,7 +53,7 @@ export function useScrollRestoration<T extends HTMLElement = HTMLDivElement>(
       viewport.removeEventListener("scroll", onScroll);
       if (frame) cancelAnimationFrame(frame);
       // Persist final position on unmount
-      sessionStorage.setItem(storageKeyFull, String(viewport.scrollTop));
+      sessionStorage.setItem(storageKeyFull, String(lastScrollTop));
     };
   }, [storageKey]);
 
