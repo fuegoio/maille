@@ -10,7 +10,6 @@ import { storage } from "./storage";
 
 interface CounterpartiesState {
   counterparties: Counterparty[];
-  focusedCounterparty: string | null;
   getCounterpartyById: (counterpartyId: string) => Counterparty | undefined;
   getCounterpartiesByAccount: (accountId: string) => Counterparty[];
   addCounterparty: (counterparty: Omit<Counterparty, "value">) => Counterparty;
@@ -25,7 +24,6 @@ interface CounterpartiesState {
   ) => void;
   deleteCounterparty: (counterpartyId: string) => void;
   restoreCounterparty: (counterparty: Counterparty) => void;
-  setFocusedCounterparty: (counterpartyId: string | null) => void;
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
@@ -35,7 +33,6 @@ export const useCounterparties = create<CounterpartiesState>()(
   persist(
     (set, get) => ({
       counterparties: [],
-      focusedCounterparty: null,
 
       getCounterpartyById: (
         counterpartyId: string,
@@ -92,10 +89,6 @@ export const useCounterparties = create<CounterpartiesState>()(
         set((state) => ({
           counterparties: [...state.counterparties, counterparty],
         }));
-      },
-
-      setFocusedCounterparty: (counterpartyId: string | null) => {
-        set({ focusedCounterparty: counterpartyId });
       },
 
       handleEvent: (event: SyncEvent) => {

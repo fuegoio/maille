@@ -2,6 +2,7 @@ import { Users, Plus } from "lucide-react";
 import { useMemo } from "react";
 
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
+import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
@@ -28,12 +29,7 @@ interface CounterpartiesTableProps {
 
 export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
   const counterparties = useCounterparties((state) => state.counterparties);
-  const focusedCounterparty = useCounterparties(
-    (state) => state.focusedCounterparty,
-  );
-  const setFocusedCounterparty = useCounterparties(
-    (state) => state.setFocusedCounterparty,
-  );
+  const openCounterparty = useContextNavigate();
   const activities = useActivities((state) => state.activities);
   const contacts = useContacts((state) => state.contacts);
   const user = useAuth((state) => state.user!);
@@ -53,11 +49,8 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
 
   const { rowOutlines, registerRow } = useTableRows({
     rows,
-    // The outline also covers the counterparty whose panel is open
-    forcedSelectedIds:
-      focusedCounterparty !== null ? [focusedCounterparty] : undefined,
     onOpen: (id) => {
-      setFocusedCounterparty(id);
+      openCounterparty({ to: "/counterparties/$id", params: { id } });
     },
   });
 
@@ -131,7 +124,12 @@ export function CounterpartiesTable({ accountId }: CounterpartiesTableProps) {
                   rowOutlines.has(counterparty.id) &&
                     rowOutlineClasses(rowOutlines.get(counterparty.id)!),
                 )}
-                onClick={() => setFocusedCounterparty(counterparty.id)}
+                onClick={() =>
+                  openCounterparty({
+                    to: "/counterparties/$id",
+                    params: { id: counterparty.id },
+                  })
+                }
               >
                 <div className="text-sm font-semibold">{counterparty.name}</div>
                 {counterparty.description && (

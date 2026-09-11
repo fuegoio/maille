@@ -21,7 +21,6 @@ import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
-import { Counterparty } from "@/components/accounts/counterparties/counterparty";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
@@ -285,7 +284,6 @@ function AccountPage({ account }: { account: Account }) {
       </SidebarInset>
 
       {selectedTab === "assets" && <Asset />}
-      {selectedTab === "counterparties" && <Counterparty />}
     </>
   );
 }

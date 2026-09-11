@@ -65,9 +65,30 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
     },
     fallback: [
       {
-        key: "counterparties",
+        key: "accounts",
+        label: "Accounts",
+        target: { to: "/accounts" },
+      },
+      {
+        key: `account:${counterparty?.account}`,
+        label: counterparty ? (
+          <AccountLabel accountId={counterparty.account} />
+        ) : (
+          ""
+        ),
+        target: {
+          to: "/accounts/$id",
+          params: { id: counterparty?.account },
+        },
+      },
+      {
+        key: "account-tab:counterparties",
         label: "Counterparties",
-        target: { to: "/counterparties" },
+        target: {
+          to: "/accounts/$id",
+          params: { id: counterparty?.account },
+          search: { tab: "counterparties" },
+        },
       },
     ],
   });
@@ -125,7 +146,11 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
         },
       ],
     });
-    void router.navigate({ to: "/counterparties" });
+    void router.navigate({
+      to: "/accounts/$id",
+      params: { id: counterparty.account },
+      search: { tab: "counterparties" },
+    });
   };
 
   const handleUpdateCounterparty = (update: {
@@ -197,8 +222,14 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
   useHotkey("Escape", () => {
     if (window.history.length > 1) {
       window.history.back();
+    } else if (counterparty) {
+      void router.navigate({
+        to: "/accounts/$id",
+        params: { id: counterparty.account },
+        search: { tab: "counterparties" },
+      });
     } else {
-      void router.navigate({ to: "/counterparties" });
+      void router.navigate({ to: "/accounts" });
     }
   });
 

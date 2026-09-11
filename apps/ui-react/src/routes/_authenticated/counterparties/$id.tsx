@@ -20,11 +20,19 @@ export const Route = createFileRoute("/_authenticated/counterparties/$id")({
 
 function CounterpartyPageRoute() {
   const { id } = Route.useParams();
+  const { counterparty: loadedCounterparty } = Route.useLoaderData();
   const counterparty = useCounterparties((state) =>
     state.getCounterpartyById(id),
   );
   if (!counterparty) {
-    return <DeletedRedirect target={{ to: "/counterparties" }} />;
+    return (
+      <DeletedRedirect
+        target={{
+          to: "/accounts/$id",
+          params: { id: loadedCounterparty.account },
+        }}
+      />
+    );
   }
 
   return <CounterpartyPage counterpartyId={id} />;
