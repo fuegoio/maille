@@ -8,6 +8,7 @@ import {
   ContextLink,
   useContextNavigate,
 } from "@/components/navigation/breadcrumbs";
+import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,6 +23,7 @@ import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useViewSearch } from "@/stores/search";
 
+import { useTransactionsEntityActions } from "./transactions-actions";
 import { TransactionsSelection } from "./transactions-selection";
 
 /** A transaction as seen from one account: which activity, which side, how much. */
@@ -106,26 +108,35 @@ export function AccountTransactionsTable({
     [items],
   );
 
+  const openTransaction = (id: string) => {
+    const transaction = transactions.find((t) => t.id === id);
+    if (!transaction) return;
+
+    void contextNavigate({
+      to: "/activities/$id",
+      params: { id: transaction.activity.id },
+      search: { transaction: transaction.id },
+    });
+  };
+
   const {
     rowOutlines,
     registerRow,
     selectedIds: selectedTransactions,
     toggle: toggleTransaction,
+    selectOnly: selectOnlyTransaction,
     clearSelection: clearSelectedTransactions,
   } = useTableRows({
     rows,
     checkable: true,
-    onOpen: (id) => {
-      const transaction = transactions.find((t) => t.id === id);
-      if (!transaction) return;
-
-      void contextNavigate({
-        to: "/activities/$id",
-        params: { id: transaction.activity.id },
-        search: { transaction: transaction.id },
-      });
-    },
+    onOpen: openTransaction,
   });
+
+  const entityActions = useTransactionsEntityActions(
+    accountId,
+    selectedTransactions,
+    clearSelectedTransactions,
+  );
 
   if (transactionsFiltered.length === 0) {
     return (
@@ -178,14 +189,43 @@ export function AccountTransactionsTable({
                   })}
                 </TableGroupHeader>
               ) : (
-                <TransactionLine
-                  transaction={item}
-                  currencyFormatter={currencyFormatter}
-                  checked={selectedTransactions.includes(item.id)}
-                  outlineSides={rowOutlines.get(item.id)}
-                  rowRef={registerRow(item.id)}
-                  onCheckedChange={(event) => toggleTransaction(item.id, event)}
-                />
+                <EntityContextMenu
+                  actions={entityActions}
+                  onActionComplete={clearSelectedTransactions}
+                >
+                  <div
+                    ref={registerRow(item.id)}
+                    onClick={(event) => {
+                      if (event.defaultPrevented || event.button !== 0) return;
+                      if (
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey
+                      )
+                        return;
+                      // The activity name is its own link (and keeps
+                      // modifier-clicks for the browser)
+                      if ((event.target as HTMLElement).closest("a")) return;
+                      openTransaction(item.id);
+                    }}
+                    onContextMenu={() => {
+                      if (!selectedTransactions.includes(item.id)) {
+                        selectOnlyTransaction(item.id);
+                      }
+                    }}
+                  >
+                    <TransactionLine
+                      transaction={item}
+                      currencyFormatter={currencyFormatter}
+                      checked={selectedTransactions.includes(item.id)}
+                      outlineSides={rowOutlines.get(item.id)}
+                      onCheckedChange={(event) =>
+                        toggleTransaction(item.id, event)
+                      }
+                    />
+                  </div>
+                </EntityContextMenu>
               )}
             </React.Fragment>
           ))}
@@ -206,7 +246,6 @@ function TransactionLine({
   currencyFormatter,
   checked,
   outlineSides,
-  rowRef,
   onCheckedChange,
 }: {
   transaction: AccountTransaction;
@@ -214,7 +253,6 @@ function TransactionLine({
   checked: boolean;
   /** Outline sides when the row is checked or focused; absent otherwise. */
   outlineSides?: { top: boolean; bottom: boolean };
-  rowRef?: (element: HTMLElement | null) => void;
   onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
   const accounts = useAccounts((state) => state.accounts);
@@ -234,7 +272,6 @@ function TransactionLine({
 
   return (
     <div
-      ref={rowRef}
       className={cn(
         "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
         outlineSides && rowOutlineClasses(outlineSides),

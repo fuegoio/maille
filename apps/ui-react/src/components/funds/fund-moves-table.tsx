@@ -119,6 +119,17 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
     [items],
   );
 
+  const openMove = (id: string) => {
+    const move = moves.find((m) => m.id === id);
+    if (!move?.activity) return;
+
+    void contextNavigate({
+      to: "/activities/$id",
+      params: { id: move.activity.id },
+      search: move.transaction ? { transaction: move.transaction } : undefined,
+    });
+  };
+
   const {
     rowOutlines,
     registerRow,
@@ -129,18 +140,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   } = useTableRows({
     rows: tableRows,
     checkable: true,
-    onOpen: (id) => {
-      const move = moves.find((m) => m.id === id);
-      if (!move?.activity) return;
-
-      void contextNavigate({
-        to: "/activities/$id",
-        params: { id: move.activity.id },
-        search: move.transaction
-          ? { transaction: move.transaction }
-          : undefined,
-      });
-    },
+    onOpen: openMove,
   });
 
   const entityActions = useFundMovesEntityActions(
@@ -203,6 +203,20 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
                 >
                   <div
                     ref={registerRow(item.id)}
+                    onClick={(event) => {
+                      if (event.defaultPrevented || event.button !== 0) return;
+                      if (
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey
+                      )
+                        return;
+                      // The activity name is its own link (and keeps
+                      // modifier-clicks for the browser)
+                      if ((event.target as HTMLElement).closest("a")) return;
+                      openMove(item.id);
+                    }}
                     onContextMenu={() => {
                       if (!selectedFundMoves.includes(item.id)) {
                         selectOnlyFundMove(item.id);
