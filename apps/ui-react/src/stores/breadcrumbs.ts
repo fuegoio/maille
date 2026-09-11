@@ -163,9 +163,17 @@ export function commitBreadcrumbs(
   const state = useBreadcrumbsStore.getState();
   const { context, entries } = resolveBreadcrumbs(page, entryKey, state);
 
+  // The commit effect runs on every render of a page, including renders
+  // that happen while navigating away: the router keeps the source page
+  // mounted until the target route is ready, and that re-commit would drop
+  // the context just captured by the link opening the target page. A
+  // commit from the page already recorded in `trail` is a re-render, not a
+  // navigation; only a commit from a different page makes `pending` stale.
+  const reCommit = state.trail?.routeKey === page.routeKey;
+
   useBreadcrumbsStore.setState({
     trail: { routeKey: page.routeKey, context, entries },
-    pending: null,
+    pending: reCommit ? state.pending : null,
   });
 
   if (page.contextual && context && entryKey) {

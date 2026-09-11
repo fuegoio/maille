@@ -96,6 +96,26 @@ describe("breadcrumb trails", () => {
     ]);
   });
 
+  it("keeps captured context when the source page re-commits mid-navigation", () => {
+    commitBreadcrumbs(accountPage, "k1");
+    captureBreadcrumbContext("/movements/$id");
+
+    // The source page stays mounted until the target route is ready, and
+    // its breadcrumb effect runs again in between.
+    commitBreadcrumbs(accountPage, "k1");
+
+    expect(useBreadcrumbsStore.getState().pending).toEqual({
+      routeKey: "/movements/$id",
+      context: [accountsEntry, accountEntry, movementsTabEntry],
+    });
+    expect(entries(movementPage, "k2")).toEqual([
+      accountsEntry,
+      accountEntry,
+      movementsTabEntry,
+      movementPage.own,
+    ]);
+  });
+
   it("keeps the context when navigating between pages of the same route", () => {
     commitBreadcrumbs(accountPage, "k1");
     captureBreadcrumbContext("/movements/$id");
