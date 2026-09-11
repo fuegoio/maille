@@ -152,7 +152,7 @@ export function useMovementsEntityActions(
         disabled: isTriggering || isReconciled,
         action: (value?: string) => {
           selectedMovementIds.forEach((movementId) => {
-            triggerWorkflow(movementId, value);
+            triggerWorkflow(movementId, value, { openOnStart: false });
           });
           clearAndComplete();
         },

@@ -66,7 +66,13 @@ export type TriggerWorkflowMutation = MutationType<
   typeof triggerWorkflowMutation,
   undefined,
   [CreateWorkflowEvent]
->;
+> & {
+  /**
+   * Whether the workflow tab opens when the mutation succeeds.
+   * Palettes and context menus set this to false.
+   */
+  openOnStart?: boolean;
+};
 
 export type AnswerWorkflowMutation = MutationType<
   "answerWorkflow",

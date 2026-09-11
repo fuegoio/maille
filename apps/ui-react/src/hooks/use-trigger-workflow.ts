@@ -5,7 +5,11 @@ import { useWorkflows } from "@/stores/workflows";
 export function useTriggerWorkflow() {
   const mutate = useSync((state) => state.mutate);
 
-  return (movementId: string, message?: string) => {
+  return (
+    movementId: string,
+    message?: string,
+    options?: { openOnStart?: boolean },
+  ) => {
     useWorkflows.getState().setTriggering(movementId);
     mutate({
       name: "triggerWorkflow",
@@ -16,6 +20,7 @@ export function useTriggerWorkflow() {
       },
       rollbackData: undefined,
       events: [],
+      openOnStart: options?.openOnStart ?? true,
     });
   };
 }

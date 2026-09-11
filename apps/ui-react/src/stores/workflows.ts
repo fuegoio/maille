@@ -248,7 +248,9 @@ export const useWorkflows = create<WorkflowsState>()(
             const workflow = deserializeWorkflow(raw);
             get().upsertWorkflow(workflow);
             if (event.name === "triggerWorkflow") {
-              get().openWorkflow(workflow.id);
+              if (event.openOnStart !== false) {
+                get().openWorkflow(workflow.id);
+              }
             }
           } catch (e) {
             console.error("Failed to deserialize workflow", e);
