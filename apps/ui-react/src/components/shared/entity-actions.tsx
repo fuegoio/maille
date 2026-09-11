@@ -18,6 +18,7 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
@@ -353,7 +354,7 @@ export function EntityContextMenu({
       <ContextMenu>
         <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
         {hasActions && (
-          <ContextMenuContent className="w-48">
+          <ContextMenuContent>
             {actions.map((action) => {
               if (action.type === "select" && action.getValues) {
                 const values = action.getValues();
@@ -382,25 +383,29 @@ export function EntityContextMenu({
               }
 
               return (
-                <ContextMenuItem
-                  key={action.value}
-                  variant={action.variant}
-                  disabled={action.disabled}
-                  onClick={() => {
-                    if (action.type === "input") {
-                      setInputAction(action);
-                      setInputValue(action.defaultValue || "");
-                    } else {
-                      handleDirectAction(action);
-                    }
-                  }}
-                >
-                  {action.icon}
-                  {action.label}
-                  {action.shortcut && (
-                    <ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>
-                  )}
-                </ContextMenuItem>
+                <React.Fragment key={action.value}>
+                  {action.variant === "destructive" && <ContextMenuSeparator />}
+                  <ContextMenuItem
+                    variant={action.variant}
+                    disabled={action.disabled}
+                    onClick={() => {
+                      if (action.type === "input") {
+                        setInputAction(action);
+                        setInputValue(action.defaultValue || "");
+                      } else {
+                        handleDirectAction(action);
+                      }
+                    }}
+                  >
+                    {action.icon}
+                    {action.label}
+                    {action.shortcut && (
+                      <ContextMenuShortcut>
+                        {action.shortcut}
+                      </ContextMenuShortcut>
+                    )}
+                  </ContextMenuItem>
+                </React.Fragment>
               );
             })}
           </ContextMenuContent>
