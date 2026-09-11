@@ -9,6 +9,7 @@ import {
   Settings,
   SquareChartGantt,
   Users,
+  X,
 } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -45,6 +46,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
+import { useFunds } from "@/stores/funds";
 import { useMovements } from "@/stores/movements";
 
 const ACCOUNT_TABS_NAMES = {
@@ -57,6 +59,8 @@ const searchParamsSchema = z.object({
   tab: z
     .enum(["transactions", "movements", "assets", "counterparties"])
     .optional(),
+  /** Filters the transactions by their fund on this account's side; "untracked" is Untracked. */
+  fund: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/accounts/$id")({
@@ -86,13 +90,35 @@ function AccountPageRoute() {
 function AccountPage({ account }: { account: Account }) {
   const accountId = account.id;
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
+  const { tab, fund } = Route.useSearch();
   const selectedTab = tab ?? "transactions";
+  // The URL carries the fund id or the "untracked" sentinel; null is Untracked
+  const fundFilter =
+    fund === undefined ? undefined : fund === "untracked" ? null : fund;
 
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
   const movements = useMovements((state) => state.movements);
+  const funds = useFunds((state) => state.funds);
+  const filterFund =
+    fundFilter != null
+      ? (funds.find((f) => f.id === fundFilter) ?? null)
+      : null;
+  const setFundFilter = (value: string | null | undefined) =>
+    navigate({
+      to: ".",
+      search: (prev) => ({
+        ...prev,
+        tab: "transactions",
+        fund:
+          value === undefined
+            ? undefined
+            : value === null
+              ? "untracked"
+              : value,
+      }),
+    });
 
   const viewMovements = movements.filter((m) => m.account === account.id);
 
@@ -223,7 +249,31 @@ function AccountPage({ account }: { account: Account }) {
               <div className="flex-1" />
 
               {selectedTab === "transactions" && (
-                <AddActivityButton size="sm" />
+                <>
+                  {fundFilter !== undefined && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setFundFilter(undefined)}
+                    >
+                      <div
+                        className="size-3 shrink-0 rounded-sm"
+                        style={
+                          filterFund
+                            ? { backgroundColor: filterFund.color }
+                            : {
+                                backgroundColor:
+                                  "color-mix(in srgb, currentColor 40%, transparent)",
+                              }
+                        }
+                      />
+                      {filterFund ? filterFund.name : "Untracked"}
+                      <X className="size-3.5" />
+                    </Button>
+                  )}
+                  <AddActivityButton size="sm" />
+                </>
               )}
               {selectedTab === "movements" && (
                 <>
@@ -252,7 +302,10 @@ function AccountPage({ account }: { account: Account }) {
             </header>
 
             <TabsContent value="transactions" className="flex h-full">
-              <AccountTransactionsTable accountId={account.id} />
+              <AccountTransactionsTable
+                accountId={account.id}
+                fundFilter={fundFilter}
+              />
             </TabsContent>
 
             <TabsContent value="movements" className="flex h-full">
@@ -279,7 +332,11 @@ function AccountPage({ account }: { account: Account }) {
         </div>
 
         <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-          <AccountSummary accountId={account.id} />
+          <AccountSummary
+            accountId={account.id}
+            fundFilter={fundFilter}
+            onFundFilter={setFundFilter}
+          />
         </SummaryPanel>
       </SidebarInset>
 

@@ -16,6 +16,7 @@ import {
   getFundTreeBalanceAtDate,
   getFundTreeFlowsBetweenDates,
   getFundsBalances,
+  getTransactionSideFund,
   getUntrackedBalanceAtDate,
   getUntrackedByAccountAtDate,
 } from "./funds";
@@ -447,5 +448,36 @@ describe("default fund classification (ui logic)", () => {
       defaultFundByAccount,
     });
     expect(moves).toHaveLength(0);
+  });
+});
+
+describe("transaction side funds (ui logic)", () => {
+  it("reads the from fund when the account sends", () => {
+    const t = transaction("t1", 10, "checking", "expense", [
+      move({ id: "m1", fromFund: "house", amount: 10 }),
+    ]);
+    expect(getTransactionSideFund(t, "checking")).toBe("house");
+  });
+
+  it("reads the to fund when the account receives", () => {
+    const t = transaction("t2", 10, "revenue", "checking", [
+      move({ id: "m2", toFund: "house", amount: 10 }),
+    ]);
+    expect(getTransactionSideFund(t, "checking")).toBe("house");
+  });
+
+  it("is untracked without legs or when the account is not on a side", () => {
+    expect(
+      getTransactionSideFund(
+        transaction("t3", 10, "checking", "expense"),
+        "checking",
+      ),
+    ).toBeNull();
+    expect(
+      getTransactionSideFund(
+        transaction("t4", 10, "savings", "expense"),
+        "checking",
+      ),
+    ).toBeNull();
   });
 });

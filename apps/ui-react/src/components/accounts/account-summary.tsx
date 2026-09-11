@@ -12,6 +12,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
 import { getAccountSpreadAcrossFunds } from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
@@ -22,9 +23,17 @@ import { useMovements } from "@/stores/movements";
 
 interface AccountSummaryProps {
   accountId: string;
+  /** The fund currently filtering the account's transactions; null is Untracked. */
+  fundFilter?: string | null;
+  /** Filter the account's transactions by a fund; null is Untracked. */
+  onFundFilter?: (fund: string | null) => void;
 }
 
-export function AccountSummary({ accountId }: AccountSummaryProps) {
+export function AccountSummary({
+  accountId,
+  fundFilter,
+  onFundFilter,
+}: AccountSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
   const account = useAccounts((state) => state.getAccountById(accountId));
   const accounts = useAccounts((state) => state.accounts);
@@ -116,7 +125,7 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
       startingDate: user.startingDate,
     });
     return [...composition.entries()]
-      .filter(([fundId, amount]) => Math.abs(amount) >= 0.01 || fundId === null)
+      .filter(([, amount]) => Math.abs(amount) >= 0.01)
       .sort(([a], [b]) => (a === null ? 1 : b === null ? -1 : 0))
       .map(([fundId, amount]) => ({
         fund:
@@ -239,53 +248,67 @@ export function AccountSummary({ accountId }: AccountSummaryProps) {
         </BarChart>
       </ChartContainer>
 
-      {fundSpread.length > 1 && (
+      {fundSpread.some(({ fund }) => fund !== null) && (
         <div className="border-t p-6">
           <div className="text-xs font-medium text-muted-foreground">
             Across funds
           </div>
           <div className="mt-1">
             {fundSpread.map(({ fund, amount }) => {
-              const rowContent = (
-                <>
-                  <div
-                    className="size-3 shrink-0 rounded-sm"
-                    style={
-                      fund
-                        ? { backgroundColor: fund.color }
-                        : {
-                            backgroundColor:
-                              "color-mix(in srgb, currentColor 40%, transparent)",
-                          }
+              const active = (fund?.id ?? null) === (fundFilter ?? null);
+              const selectFund = () => onFundFilter?.(fund?.id ?? null);
+
+              return (
+                <div
+                  key={fund?.id ?? "untracked"}
+                  role="button"
+                  tabIndex={0}
+                  onClick={selectFund}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      selectFund();
                     }
-                  />
-                  <div className="ml-2 truncate">
-                    {fund ? fund.name : "Untracked"}
-                  </div>
+                  }}
+                  className={cn(
+                    "flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50",
+                    active && "bg-muted",
+                  )}
+                >
+                  {fund ? (
+                    <Link
+                      to="/funds/$id"
+                      params={{ id: fund.id }}
+                      onClick={(event) => event.stopPropagation()}
+                      className="flex min-w-0 items-center"
+                    >
+                      <div
+                        className="size-3 shrink-0 rounded-sm"
+                        style={{ backgroundColor: fund.color }}
+                      />
+                      <div className="ml-2 truncate">{fund.name}</div>
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/funds/untracked"
+                      onClick={(event) => event.stopPropagation()}
+                      className="flex min-w-0 items-center"
+                    >
+                      <div
+                        className="size-3 shrink-0 rounded-sm"
+                        style={{
+                          backgroundColor:
+                            "color-mix(in srgb, currentColor 40%, transparent)",
+                        }}
+                      />
+                      <div className="ml-2 truncate">Untracked</div>
+                    </Link>
+                  )}
                   <div className="flex-1" />
                   <div className="font-mono">
                     {currencyFormatter.format(amount)}
                   </div>
-                </>
-              );
-
-              return fund ? (
-                <Link
-                  key={fund.id}
-                  to="/funds/$id"
-                  params={{ id: fund.id }}
-                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
-                >
-                  {rowContent}
-                </Link>
-              ) : (
-                <Link
-                  key="untracked"
-                  to="/funds/untracked"
-                  className="flex h-8 cursor-pointer items-center text-sm hover:bg-muted/50"
-                >
-                  {rowContent}
-                </Link>
+                </div>
               );
             })}
           </div>

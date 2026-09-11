@@ -1,5 +1,5 @@
 import type { Account } from "@maille/core/accounts";
-import type { Activity } from "@maille/core/activities";
+import type { Activity, Transaction } from "@maille/core/activities";
 import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 import type { PositionsInput } from "@maille/core/funds";
 
@@ -336,4 +336,20 @@ export function classifyFundMoves({
       transaction: null,
     },
   ];
+}
+
+/**
+ * The fund a transaction's money holds on one account's side: the fromFund
+ * its legs carry when the account sends it, the toFund when the account
+ * receives it. Null is Untracked.
+ */
+export function getTransactionSideFund(
+  transaction: Pick<Transaction, "fromAccount" | "toAccount" | "fundMoves">,
+  accountId: string,
+): string | null {
+  const legs = transaction.fundMoves ?? [];
+  if (transaction.fromAccount === accountId) {
+    return legs.find((leg) => leg.fromFund)?.fromFund ?? null;
+  }
+  return legs.find((leg) => leg.toFund)?.toFund ?? null;
 }

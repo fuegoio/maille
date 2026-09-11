@@ -19,6 +19,7 @@ import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { getTransactionSideFund } from "@/logic/funds";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useViewSearch } from "@/stores/search";
@@ -36,15 +37,20 @@ type AccountTransaction = {
   direction: "in" | "out";
   /** The account on the other side of the leg. */
   counterpart: string;
+  /** The fund this account's side holds; null is Untracked. */
+  fund: string | null;
   amount: number;
 };
 
 interface AccountTransactionsTableProps {
   accountId: string;
+  /** Keep only transactions holding this fund on the account's side; null is Untracked. */
+  fundFilter?: string | null;
 }
 
 export function AccountTransactionsTable({
   accountId,
+  fundFilter,
 }: AccountTransactionsTableProps) {
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
@@ -66,6 +72,7 @@ export function AccountTransactionsTable({
             activity,
             direction: "in",
             counterpart: transaction.fromAccount,
+            fund: getTransactionSideFund(transaction, accountId),
             amount: transaction.amount,
           });
         } else if (transaction.fromAccount === accountId) {
@@ -75,6 +82,7 @@ export function AccountTransactionsTable({
             activity,
             direction: "out",
             counterpart: transaction.toAccount,
+            fund: getTransactionSideFund(transaction, accountId),
             amount: transaction.amount,
           });
         }
@@ -94,8 +102,16 @@ export function AccountTransactionsTable({
     [transactions, search],
   );
 
+  const transactionsVisible = React.useMemo(
+    () =>
+      fundFilter === undefined
+        ? transactionsFiltered
+        : transactionsFiltered.filter((t) => t.fund === fundFilter),
+    [transactionsFiltered, fundFilter],
+  );
+
   const { items, isFolded, toggleGroup } = useGroupedRows(
-    transactionsFiltered,
+    transactionsVisible,
     true,
   );
 
@@ -138,7 +154,7 @@ export function AccountTransactionsTable({
     clearSelectedTransactions,
   );
 
-  if (transactionsFiltered.length === 0) {
+  if (transactionsVisible.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center overflow-hidden">
         <div className="text-sm text-muted-foreground">
@@ -336,8 +352,6 @@ function TransactionLine({
           )}
         </div>
       </ContextLink>
-
-      <div className="flex-1" />
 
       <div className="w-32 shrink-0 text-right font-mono whitespace-nowrap">
         {currencyFormatter.format(amount)}
