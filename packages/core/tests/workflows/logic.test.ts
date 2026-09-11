@@ -31,10 +31,10 @@ describe("workflow status machine", () => {
     expect(canTransitionWorkflow("queued", "queued")).toBe(false);
   });
 
-  it("running ends in pending, succeeded or failed", () => {
+  it("running ends in pending, succeeded, failed or cancelled, or re-queues on a retryable provider error", () => {
+    const allowed = ["pending", "succeeded", "failed", "cancelled", "queued"];
     for (const to of ALL_STATUSES) {
-      const allowed = ["pending", "succeeded", "failed", "cancelled"].includes(to);
-      expect(canTransitionWorkflow("running", to as WorkflowStatus)).toBe(allowed);
+      expect(canTransitionWorkflow("running", to as WorkflowStatus)).toBe(allowed.includes(to));
     }
   });
 
@@ -67,7 +67,9 @@ describe("workflow status machine", () => {
 
     expect(isRetryableWorkflowStatus("failed")).toBe(true);
     expect(isRetryableWorkflowStatus("cancelled")).toBe(true);
-    expect(isRetryableWorkflowStatus("succeeded")).toBe(false);
+    // A succeeded workflow can be re-run manually ("start new"): the retry
+    // resets it to queued as a new session.
+    expect(isRetryableWorkflowStatus("succeeded")).toBe(true);
     expect(isRetryableWorkflowStatus("pending")).toBe(false);
 
     expect(isCancelledByUserReconciliation("queued")).toBe(true);

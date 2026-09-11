@@ -10,20 +10,28 @@ const hasValue = (
   return filter.value !== undefined || OperatorsWithoutValue.includes(filter.operator as any);
 };
 
-export const verifyActivityFilter = (filter: ActivityFilter, activity: Activity): boolean => {
+export const verifyActivityFilter = (
+  filter: ActivityFilter,
+  activity: Activity,
+  now: Date = new Date(),
+): boolean => {
   if (filter.operator === undefined) return true;
   else if (!hasValue(filter)) return true;
 
   if (filter.field === "date") {
-    let comparator = startOfDay(new Date());
+    let comparator = startOfDay(now);
     if ((filter.value as string).includes("ago")) {
       const [number, period] = (filter.value as string).split(" ");
+      // date-fns durations use plural keys ("days", "weeks", "months"); the
+      // preset values use the singular for single units ("1 day ago").
+      const durationKey = period!.endsWith("s") ? period : `${period}s`;
       // @ts-ignore
-      comparator = sub(comparator, { [period]: parseInt(number!) });
+      comparator = sub(comparator, { [durationKey]: parseInt(number!) });
     } else if ((filter.value as string).includes("from now")) {
       const [number, period] = (filter.value as string).split(" ");
+      const durationKey = period!.endsWith("s") ? period : `${period}s`;
       // @ts-ignore
-      comparator = add(comparator, { [period]: parseInt(number!) });
+      comparator = add(comparator, { [durationKey]: parseInt(number!) });
     }
 
     if (filter.operator === "before") {

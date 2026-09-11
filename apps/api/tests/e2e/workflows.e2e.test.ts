@@ -159,20 +159,28 @@ const createMovement = async (
   name: string,
   amount: number,
   date = "2026-09-01",
-): Promise<{ movementId: string; workflowId: string }> => {
-  const data = await gql<{
-    createMovement: { id: string; workflow: { id: string } | null };
-  }>(user.token, CREATE_MOVEMENT, {
+): Promise<string> => {
+  const data = await gql<{ createMovement: { id: string } }>(user.token, CREATE_MOVEMENT, {
     id: crypto.randomUUID(),
     name,
     date,
     amount,
     account: user.bankAccountId,
   });
-  if (!data.createMovement.workflow) {
-    throw new Error("Movement was created without a workflow");
-  }
-  return { movementId: data.createMovement.id, workflowId: data.createMovement.workflow.id };
+  return data.createMovement.id;
+};
+
+const triggerWorkflowOnMovement = async (
+  user: TestUser,
+  movementId: string,
+  message?: string,
+): Promise<string> => {
+  const data = await gql<{ triggerWorkflow: { id: string } }>(
+    user.token,
+    TRIGGER_WORKFLOW,
+    message ? { movementId, message } : { movementId },
+  );
+  return data.triggerWorkflow.id;
 };
 
 const MOVEMENT_QUERY = /* GraphQL */ `
@@ -334,8 +342,8 @@ const linkMovementManually = async (
   });
 
 const TRIGGER_WORKFLOW = /* GraphQL */ `
-  mutation TriggerWorkflow($movementId: String!) {
-    triggerWorkflow(movementId: $movementId) {
+  mutation TriggerWorkflow($movementId: String!, $message: String) {
+    triggerWorkflow(movementId: $movementId, message: $message) {
       id
       status
     }
@@ -383,7 +391,7 @@ const waitForWorkflowStatus = async (
 //
 
 describe("AI workflows", () => {
-  it("auto-triggers a workflow on movement creation and creates an activity", async () => {
+  it("creates an activity when the workflow is manually triggered", async () => {
     const user = await createUser();
     mockMistral.enqueue(
       toolCallResponse("createActivity", {
@@ -393,12 +401,19 @@ describe("AI workflows", () => {
       }),
     );
 
-    const { movementId, workflowId } = await createMovement(user, "Spotify", -12.99);
+    const movementId = await createMovement(user, "Spotify", -12.99);
+
+    // Movement creation never auto-starts a workflow: the workflow is
+    // created (and run) only by the explicit manual trigger.
+    const beforeTrigger = await queryMovements(user);
+    expect(beforeTrigger.movements.find((m) => m.id === movementId)?.workflow).toBeNull();
+
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     const row = await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
     // The workflow reports what it did.
     expect(row.status).toBe("succeeded");
-    expect(row.trigger).toBe("auto");
+    expect(row.trigger).toBe("manual");
     expect(row.result?.createdActivities).toHaveLength(1);
     expect(row.result?.linkedActivities).toEqual([]);
     expect(row.error).toBeNull();
@@ -459,7 +474,8 @@ describe("AI workflows", () => {
     const activityId = await createActivityManually(user, "Spotify", -12.99);
     mockMistral.enqueue(toolCallResponse("linkMovement", { activityId, amount: -12.99 }));
 
-    const { movementId, workflowId } = await createMovement(user, "Spotify", -12.99);
+    const movementId = await createMovement(user, "Spotify", -12.99);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     const row = await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
     expect(row.result).toEqual({
@@ -482,7 +498,8 @@ describe("AI workflows", () => {
       toolCallResponse("createActivity", { name: "Pharmacy", type: "expense", amount: -5 }),
     );
 
-    const { movementId, workflowId } = await createMovement(user, "Supermarket", -20);
+    const movementId = await createMovement(user, "Supermarket", -20);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     const row = await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
     expect(row.result?.createdActivities).toHaveLength(2);
@@ -502,7 +519,8 @@ describe("AI workflows", () => {
     // Corrected attempt.
     mockMistral.enqueue(toolCallResponse("linkMovement", { activityId, amount: -20 }));
 
-    const { movementId, workflowId } = await createMovement(user, "Transfer", -20);
+    const movementId = await createMovement(user, "Transfer", -20);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
     // Only the corrected link exists.
@@ -531,7 +549,8 @@ describe("AI workflows", () => {
       }),
     );
 
-    const { movementId, workflowId } = await createMovement(user, "SUBSCRIPTION", -12.99);
+    const movementId = await createMovement(user, "SUBSCRIPTION", -12.99);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     await waitForWorkflowStatus(workflowId, ["pending"]);
 
     let row = await getWorkflowRow(workflowId);
@@ -554,7 +573,8 @@ describe("AI workflows", () => {
     await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
     row = await getWorkflowRow(workflowId);
-    expect(row?.messages).toHaveLength(3); // question, answer, summary
+    // question, answer, progress narration, summary.
+    expect(row?.messages).toHaveLength(4);
     expect(row?.messages[1]?.role).toBe("user");
     expect(row?.messages[1]?.content).toBe("It's Spotify");
     expect(row?.messages[1]?.optionId).toBe("option-0");
@@ -573,7 +593,8 @@ describe("AI workflows", () => {
     const user = await createUser();
     mockMistral.enqueue(toolCallResponse("giveUp", { reason: "Unknown merchant" }));
 
-    const { movementId, workflowId } = await createMovement(user, "MYSTERY PAYMENT", -99);
+    const movementId = await createMovement(user, "MYSTERY PAYMENT", -99);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     const row = await waitForWorkflowStatus(workflowId, ["failed"]);
 
     expect(row.result?.error?.kind).toBe("model_give_up");
@@ -604,29 +625,32 @@ describe("AI workflows", () => {
     mockMistral.enqueue(
       toolCallResponse("createActivity", { name: "Spotify", type: "expense", amount: -12.99 }),
     );
-    // Workflow B: tries to create the same activity — refused by the name
-    // collision guard.
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Spotify", type: "expense", amount: -12.99 }),
-    );
-    // Workflow B (second turn): the model reads the refusal, extracts the
-    // existing activity id from the tool result, and links instead.
+    // Workflow B: runs after A (runs are serialized per user), so its
+    // evidence pack carries A's Spotify activity — the model reads it and
+    // links to it instead of creating a duplicate.
     mockMistral.enqueue((request) => {
-      const toolResult = [...request.messages]
-        .reverse()
-        .find((message) => message.role === "tool" && message.content?.includes("already exists"));
-      const match = /id ([0-9a-f-]{36})\)/.exec(toolResult?.content ?? "");
-      if (!match) {
-        throw new Error("collision tool result not found in the conversation");
+      const taskMessage = request.messages.find(
+        (message) => message.role === "user" && message.content?.includes('"movement"'),
+      );
+      const evidence = JSON.parse(taskMessage?.content ?? "{}") as {
+        history: { activitiesByDateWindow: { id: string; name: string }[] };
+      };
+      const spotify = evidence.history.activitiesByDateWindow.find(
+        (activity) => activity.name === "Spotify",
+      );
+      if (!spotify) {
+        throw new Error("A's Spotify activity not found in B's evidence");
       }
-      return toolCallResponse("linkMovement", { activityId: match[1], amount: -12.99 });
+      return toolCallResponse("linkMovement", { activityId: spotify.id, amount: -12.99 });
     });
 
     const movementA = await createMovement(user, "Spotify", -12.99);
+    const workflowA = await triggerWorkflowOnMovement(user, movementA);
     const movementB = await createMovement(user, "Spotify", -12.99);
+    const workflowB = await triggerWorkflowOnMovement(user, movementB);
 
-    const rowA = await waitForWorkflowStatus(movementA.workflowId, ["succeeded"]);
-    const rowB = await waitForWorkflowStatus(movementB.workflowId, ["succeeded"]);
+    const rowA = await waitForWorkflowStatus(workflowA, ["succeeded"]);
+    const rowB = await waitForWorkflowStatus(workflowB, ["succeeded"]);
 
     // Exactly one activity named Spotify exists, and both movements link to it.
     const activities = await queryActivities(user);
@@ -648,7 +672,8 @@ describe("AI workflows", () => {
       toolCallResponse("askUser", { question: "Is this the usual subscription?" }),
     );
 
-    const { movementId, workflowId } = await createMovement(user, "Spotify", -12.99);
+    const movementId = await createMovement(user, "Spotify", -12.99);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     await waitForWorkflowStatus(workflowId, ["pending"]);
 
     // The user links the movement manually while the workflow waits.
@@ -664,7 +689,8 @@ describe("AI workflows", () => {
     const user = await createUser();
     // No scripted responses: MockMistral answers 500 on every call.
 
-    const { workflowId } = await createMovement(user, "Netflix", -15);
+    const movementId = await createMovement(user, "Netflix", -15);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     const row = await waitForWorkflowStatus(workflowId, ["failed"], 15000);
 
     expect(row.result?.error?.kind).toBe("provider_error");
@@ -747,10 +773,68 @@ describe("AI workflows", () => {
     expect(links).toHaveLength(1);
   });
 
+  it("records the initial hint message and replays it to the model", async () => {
+    const user = await createUser();
+    mockMistral.enqueue(
+      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
+    );
+
+    const movementId = await createMovement(user, "STANDING ORDER", -800);
+    const workflowId = await triggerWorkflowOnMovement(
+      user,
+      movementId,
+      "  This is the monthly rent  ",
+    );
+    await waitForWorkflowStatus(workflowId, ["succeeded"]);
+
+    // The hint is the first transcript message, trimmed.
+    const row = await getWorkflowRow(workflowId);
+    expect(row?.messages[0]?.role).toBe("user");
+    expect(row?.messages[0]?.content).toBe("This is the monthly rent");
+
+    // The run replayed the hint to the model, right after the task message.
+    const request = mockMistral.requests[0]!;
+    expect(request.messages[1]?.role).toBe("user");
+    expect(request.messages[2]?.role).toBe("user");
+    expect(request.messages[2]?.content).toBe("This is the monthly rent");
+  });
+
+  it("appends the hint to the transcript on a manual retry", async () => {
+    const user = await createUser();
+    mockMistral.enqueue(toolCallResponse("giveUp", { reason: "Unknown merchant" }));
+
+    const movementId = await createMovement(user, "MYSTERY PAYMENT", -42);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
+    await waitForWorkflowStatus(workflowId, ["failed"]);
+
+    // Retry with a hint: the transcript gains a separator and the hint.
+    mockMistral.enqueue(
+      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -42 }),
+    );
+    await triggerWorkflowOnMovement(user, movementId, "It is the rent");
+    await waitForWorkflowStatus(workflowId, ["succeeded"]);
+
+    const row = await getWorkflowRow(workflowId);
+    const messages = row?.messages ?? [];
+    const separatorIndex = messages.findIndex((m) => m.role === "separator");
+    const hintIndex = messages.findIndex((m) => m.role === "user");
+    // give-up message, session separator, hint, success summary.
+    expect(separatorIndex).toBe(1);
+    expect(hintIndex).toBe(2);
+    expect(messages[hintIndex]?.content).toBe("It is the rent");
+
+    // The retried run saw the previous give-up and the hint.
+    const retriedRequest = mockMistral.requests[1]!;
+    const contents = retriedRequest.messages.map((message) => message.content ?? "");
+    expect(contents.some((content) => content.includes("Unknown merchant"))).toBe(true);
+    expect(contents.some((content) => content.includes("It is the rent"))).toBe(true);
+  });
+
   it("exposes workflows through the workflows query with status filtering", async () => {
     const user = await createUser();
     mockMistral.enqueue(toolCallResponse("giveUp", { reason: "No clue" }));
-    const { workflowId } = await createMovement(user, "Unknown", -1);
+    const movementId = await createMovement(user, "Unknown", -1);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
     await waitForWorkflowStatus(workflowId, ["failed"]);
 
     const query = /* GraphQL */ `
