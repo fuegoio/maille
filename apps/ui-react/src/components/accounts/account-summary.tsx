@@ -128,6 +128,7 @@ export function AccountSummary({
       fundAllocations,
       accountId,
       startingDate: user.startingDate,
+      date: today,
     });
     return [...composition.entries()]
       .filter(([, amount]) => Math.abs(amount) >= 0.01)
@@ -146,6 +147,7 @@ export function AccountSummary({
     fundMoves,
     fundAllocations,
     accountId,
+    today,
   ]);
 
   const chartConfig = {

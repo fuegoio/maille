@@ -222,6 +222,7 @@ export function FundSummary({
             ...getFundSpreadAcrossAccounts({
               ...positionsInput,
               fundId,
+              date: today,
             }).entries(),
           ]
             .filter(([, amount]) => Math.abs(amount) >= 0.01)
