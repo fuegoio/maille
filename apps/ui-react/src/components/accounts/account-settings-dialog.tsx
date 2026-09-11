@@ -1,10 +1,19 @@
+import type { FundAllocation } from "@maille/core/funds";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type Account } from "@maille/core/accounts";
+import { AccountType, type Account } from "@maille/core/accounts";
 import { useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
 
+import {
+  accountAllocationRowsFrom,
+  AccountAllocationsEditor,
+  significantAccountAllocationRows,
+  type AccountAllocationRow,
+} from "@/components/funds/account-allocations-editor";
 import { AmountInput } from "@/components/ui/amount-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,7 +40,9 @@ import {
   deleteAccountMutation,
   updateAccountMutation,
 } from "@/mutations/accounts";
+import { setFundAllocationsMutation } from "@/mutations/funds";
 import { useAuth } from "@/stores/auth";
+import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
 import {
@@ -65,6 +76,35 @@ export function AccountSettingsDialog({
   const mutate = useSync((state) => state.mutate);
   const user = useAuth((state) => state.user);
   const navigate = useNavigate();
+
+  // Funds cannot hold P&L money, so the opening allocation editor only
+  // shows on balance accounts.
+  const isBalanceAccount =
+    account.type !== AccountType.EXPENSE &&
+    account.type !== AccountType.REVENUE;
+
+  const [allocationRows, setAllocationRows] = useState<AccountAllocationRow[]>(
+    () =>
+      accountAllocationRowsFrom(
+        useFunds.getState().fundAllocations,
+        account.id,
+      ),
+  );
+  const [allocationError, setAllocationError] = useState<string | null>(null);
+
+  // The dialog can stay mounted while the user navigates between accounts:
+  // resync the rows when the focused account actually changes.
+  const lastAccountId = useRef(account.id);
+  useEffect(() => {
+    if (lastAccountId.current === account.id) return;
+    lastAccountId.current = account.id;
+    setAllocationRows(
+      accountAllocationRowsFrom(
+        useFunds.getState().fundAllocations,
+        account.id,
+      ),
+    );
+  }, [account.id]);
 
   const {
     control,
@@ -102,6 +142,82 @@ export function AccountSettingsDialog({
         },
       ],
     });
+
+    // Replace this account's opening position across funds when it changed:
+    // each touched fund gets its whole allocation list back, this account's
+    // rows swapped for the draft. The server replays the ledger and rejects
+    // over-claiming.
+    if (isBalanceAccount) {
+      const currentAllocations = useFunds
+        .getState()
+        .fundAllocations.filter(
+          (allocation) => allocation.account === account.id,
+        );
+      const currentByFund = new Map<string, FundAllocation[]>();
+      for (const allocation of currentAllocations) {
+        const list = currentByFund.get(allocation.fund) ?? [];
+        list.push(allocation);
+        currentByFund.set(allocation.fund, list);
+      }
+      const nextByFund = new Map<string, FundAllocation[]>();
+      for (const row of significantAccountAllocationRows(allocationRows)) {
+        const list = nextByFund.get(row.fund) ?? [];
+        list.push({
+          id: row.id,
+          fund: row.fund,
+          account: account.id,
+          amount: row.amount,
+        });
+        nextByFund.set(row.fund, list);
+      }
+
+      const amountsOf = (rows: { amount: number }[]) =>
+        JSON.stringify(rows.map((row) => row.amount).sort((a, b) => a - b));
+
+      const touchedFunds = new Set([
+        ...currentByFund.keys(),
+        ...nextByFund.keys(),
+      ]);
+      for (const fundId of touchedFunds) {
+        const currentOnAccount = currentByFund.get(fundId) ?? [];
+        const nextOnAccount = nextByFund.get(fundId) ?? [];
+        if (amountsOf(currentOnAccount) === amountsOf(nextOnAccount)) {
+          continue;
+        }
+
+        const others = useFunds
+          .getState()
+          .fundAllocations.filter(
+            (allocation) =>
+              allocation.fund === fundId && allocation.account !== account.id,
+          );
+        const allocations = [
+          ...others.map((allocation) => ({
+            id: allocation.id,
+            account: allocation.account,
+            amount: allocation.amount,
+          })),
+          ...nextOnAccount.map((row) => ({
+            id: row.id,
+            account: row.account,
+            amount: row.amount,
+          })),
+        ];
+
+        mutate({
+          name: "setFundAllocations",
+          mutation: setFundAllocationsMutation,
+          variables: { fund: fundId, allocations },
+          rollbackData: [...others, ...currentOnAccount],
+          events: [
+            {
+              type: "updateFundAllocations",
+              payload: { fund: fundId, allocations },
+            },
+          ],
+        });
+      }
+    }
   };
 
   const handleDelete = async () => {
@@ -127,6 +243,7 @@ export function AccountSettingsDialog({
   };
 
   const movementsEnabled = watch("movements");
+  const draftStartingBalance = watch("startingBalance");
 
   return (
     <Dialog>
@@ -176,6 +293,16 @@ export function AccountSettingsDialog({
                 </FieldDescription>
               </FieldContent>
             </Field>
+
+            {isBalanceAccount && (
+              <AccountAllocationsEditor
+                accountId={account.id}
+                startingBalance={draftStartingBalance ?? 0}
+                rows={allocationRows}
+                onChange={setAllocationRows}
+                onErrorChange={setAllocationError}
+              />
+            )}
 
             <FieldSeparator />
             <Field orientation="horizontal">
@@ -260,7 +387,10 @@ export function AccountSettingsDialog({
               </Button>
             </DialogClose>
             <DialogClose asChild>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting || allocationError !== null}
+              >
                 {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
             </DialogClose>
