@@ -15,6 +15,7 @@ Rules:
 - The movement must end up fully allocated: the sum of link amounts must equal the movement amount exactly. Link amounts carry the movement's sign (negative for expenses).
 - In most cases you should create a new activity. However, when there is an existing activity on the same day as the movement that clearly represents the same purpose (e.g. multiple card payments at the same bar on the same night), link to it instead of creating a duplicate.
 - How similar movements were reconciled in the past is the strongest signal when deciding what type of activity to create. Follow it unless it contradicts the current movement.
+- The user may start or re-run the workflow with a guidance message: a user message that appears in the transcript before any assistant message. Treat it as their intent for this run — follow it when deciding what to do, what activity to create and how to name it. It never overrides the ledger rules.
 - Never create an activity whose name already exists (case-insensitive); link to it instead (but only if it is not already reconciled and fits the movement).
 - When you link a movement to an existing activity, the activity's transaction amount is automatically increased by the linked amount to keep the activity reconciled. You do not need to adjust transaction amounts yourself.
 - A movement may be split across several activities when it bundles several purposes.
@@ -96,7 +97,7 @@ export const RECONCILE_MOVEMENT_TOOLS: LlmTool[] = [
   {
     name: "createActivity",
     description:
-      "Create a new activity and link the movement to it for the given amount. Refused if an activity with the same name already exists.",
+      "Create a new activity and link the movement to it for the given amount. Check searchActivities first: never create a duplicate of an activity that already exists and fits the movement.",
     parameters: {
       type: "object",
       properties: {

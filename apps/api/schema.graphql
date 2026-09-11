@@ -276,9 +276,9 @@ type Mutation {
   shareActivity(id: String!, userId: String!): [ActivitySharing!]!
 
   """
-  Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise.
+  Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise. The optional message is recorded as the run's initial user guidance.
   """
-  triggerWorkflow(movementId: String!): MovementWorkflow!
+  triggerWorkflow(message: String, movementId: String!): MovementWorkflow!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
   updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!

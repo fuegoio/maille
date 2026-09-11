@@ -82,12 +82,16 @@ export const getWorkflowByMovement = async (
  * Claims the movement's workflow: inserts `queued` unless one already exists
  * (unique index on movement). Returns the new row, or null when a workflow
  * was already attached — one workflow per movement, ever.
+ *
+ * `messages` seeds the transcript (the user's initial guidance message,
+ * when the workflow was started manually with one).
  */
 export async function ensureWorkflow(
   userId: string,
   movementId: string,
   trigger: WorkflowTrigger,
   clientId: string,
+  messages: WorkflowMessage[] = [],
 ): Promise<WorkflowRow | null> {
   const rows = await db
     .insert(movementWorkflows)
@@ -97,7 +101,7 @@ export async function ensureWorkflow(
       movement: movementId,
       status: "queued",
       trigger,
-      messages: [],
+      messages,
     })
     .onConflictDoNothing({ target: movementWorkflows.movement })
     .returning();
@@ -133,14 +137,27 @@ export async function updateWorkflow(
 }
 
 /**
+ * The user's initial guidance message for a run: the first user message of
+ * the transcript, replayed to the model alongside the evidence.
+ */
+const hintMessage = (content: string): WorkflowMessage => ({
+  id: crypto.randomUUID(),
+  role: "user",
+  content,
+  createdAt: new Date().toISOString(),
+});
+
+/**
  * Manual (on-demand) trigger. Creates the workflow when absent, resets
  * `failed`/`cancelled` workflows to `queued` (keeping the transcript), and
- * leaves every other status untouched.
+ * leaves every other status untouched. When `message` is given, it is
+ * recorded as the run's initial user guidance message.
  */
 export async function triggerWorkflow(
   userId: string,
   movementId: string,
   clientId: string,
+  message?: string | null,
 ): Promise<WorkflowRow> {
   const movement = (
     await db
@@ -153,9 +170,17 @@ export async function triggerWorkflow(
     throw new GraphQLError("Movement not found");
   }
 
+  const hint = message?.trim() ? hintMessage(message.trim()) : null;
+
   const existing = await getWorkflowByMovement(userId, movement.id);
   if (!existing) {
-    const created = await ensureWorkflow(userId, movement.id, "manual", clientId);
+    const created = await ensureWorkflow(
+      userId,
+      movement.id,
+      "manual",
+      clientId,
+      hint ? [hint] : [],
+    );
     if (!created) {
       throw new GraphQLError("Movement already has a workflow");
     }
@@ -163,18 +188,19 @@ export async function triggerWorkflow(
   }
 
   if (isRetryableWorkflowStatus(existing.status)) {
-    const messages =
-      existing.messages.length > 0
-        ? [
-            ...existing.messages,
-            {
-              id: crypto.randomUUID(),
-              role: "separator" as const,
-              content: "",
-              createdAt: new Date().toISOString(),
-            },
-          ]
-        : existing.messages;
+    const nextMessages = [...existing.messages];
+    if (nextMessages.length > 0) {
+      nextMessages.push({
+        id: crypto.randomUUID(),
+        role: "separator" as const,
+        content: "",
+        createdAt: new Date().toISOString(),
+      });
+    }
+    if (hint) {
+      nextMessages.push(hint);
+    }
+    const messages = nextMessages.length > 0 ? nextMessages : existing.messages;
     return updateWorkflow(
       existing.id,
       { status: "queued", result: null, error: null, messages },

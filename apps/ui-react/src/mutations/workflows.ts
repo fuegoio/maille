@@ -8,8 +8,8 @@ import { graphql } from "@/gql";
 import type { MutationType } from "./type";
 
 export const triggerWorkflowMutation = graphql(/* GraphQL */ `
-  mutation TriggerWorkflow($movementId: String!) {
-    triggerWorkflow(movementId: $movementId) {
+  mutation TriggerWorkflow($movementId: String!, $message: String) {
+    triggerWorkflow(movementId: $movementId, message: $message) {
       id
       movement
       status

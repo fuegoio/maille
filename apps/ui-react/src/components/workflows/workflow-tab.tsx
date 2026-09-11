@@ -77,6 +77,11 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
     setInput("");
   };
 
+  const handleRetry = () => {
+    triggerWorkflow(workflow.movement, input);
+    setInput("");
+  };
+
   const handleSubmit = () => {
     if (!input.trim()) return;
     handleAnswer(input.trim());
@@ -219,11 +224,25 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
       {/* Input / action bar */}
       <div className="shrink-0 border-t p-2">
         {isTerminal ? (
-          <div className="flex items-center justify-center">
+          <div className="flex items-end gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleRetry();
+                }
+              }}
+              placeholder="Optional hint for the next run (empty to just retry)..."
+              disabled={isTriggering || isReconciled}
+              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
+              rows={1}
+            />
             <Button
               size="sm"
               variant="outline"
-              onClick={() => triggerWorkflow(workflow.movement)}
+              onClick={handleRetry}
               disabled={isTriggering || isReconciled}
               className="gap-1.5"
             >
