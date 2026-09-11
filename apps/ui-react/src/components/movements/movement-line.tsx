@@ -10,7 +10,7 @@ import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { WorkflowStatusBadge } from "@/components/workflows/workflow-status";
+import { WORKFLOW_STATUS_CONFIG } from "@/components/workflows/workflow-status";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useWorkflows } from "@/stores/workflows";
@@ -102,10 +102,12 @@ export function MovementLine({
 
       <div className="flex-1" />
 
-      {workflow && (
-        <WorkflowStatusBadge
-          status={workflow.status}
-          className="shrink-0 sm:mr-1"
+      {workflow?.status === "running" && (
+        <span
+          className={cn(
+            "size-1.5 shrink-0 animate-pulse rounded-full sm:mr-1",
+            WORKFLOW_STATUS_CONFIG.running.dotClass,
+          )}
         />
       )}
 
