@@ -44,6 +44,12 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
   const statusConfig = WORKFLOW_STATUS_CONFIG[workflow.status];
   const isReconciled = movement?.status === "completed";
 
+  // The input answers the workflow's question while pending, continues the
+  // conversation once the movement is reconciled, and is sent as a hint when
+  // retrying a terminal workflow.
+  const canAnswer = isPending || (isTerminal && isReconciled);
+  const canRetry = isTerminal && !isReconciled;
+
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
     const scrollEl = scrollRef.current?.querySelector(
@@ -83,7 +89,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
   };
 
   const handleSubmit = () => {
-    if (!input.trim()) return;
+    if (!canAnswer || !input.trim()) return;
     handleAnswer(input.trim());
   };
 
@@ -93,19 +99,11 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
       <div className="flex h-9 shrink-0 items-center gap-2 border-b px-3">
         <span
           className={cn(
-            "flex items-center gap-1 text-xs",
-            statusConfig.textClass,
+            "size-1.5 shrink-0 rounded-full",
+            statusConfig.dotClass,
+            workflow.status === "running" && "animate-pulse",
           )}
-        >
-          <span
-            className={cn(
-              "size-1.5 rounded-full",
-              statusConfig.dotClass,
-              workflow.status === "running" && "animate-pulse",
-            )}
-          />
-          {statusConfig.label}
-        </span>
+        />
         <div className="text-xs text-muted-foreground">
           {movement?.name ?? workflow.movement}
         </div>
@@ -222,99 +220,52 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
       </ScrollArea>
 
       {/* Input / action bar */}
-      <div className="shrink-0 border-t p-2">
-        {isTerminal && isReconciled ? (
-          // The movement is reconciled: the conversation continues with
-          // follow-up questions, answered without touching the ledger.
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              placeholder="Ask a follow-up question..."
-              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
-              rows={1}
-            />
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={!input.trim()}
-              className="h-9"
-            >
-              Send
-            </Button>
-          </div>
-        ) : isTerminal ? (
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleRetry();
-                }
-              }}
-              placeholder="Optional hint for the next run (empty to just retry)..."
-              disabled={isTriggering}
-              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
-              rows={1}
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleRetry}
-              disabled={isTriggering}
-              className="h-9 gap-1.5"
-            >
-              {isTriggering ? (
-                <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <Sparkles className="size-3.5" />
-              )}
-              {isTriggering
-                ? "Starting..."
-                : workflow.status === "succeeded"
-                  ? "Start new"
-                  : "Retry"}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-end gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              placeholder={
-                isPending
-                  ? "Type your answer..."
-                  : workflow.status === "queued"
-                    ? "Queued..."
-                    : "Working..."
+      <div className="flex shrink-0 items-end gap-2 border-t p-2">
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (canRetry) {
+                handleRetry();
+              } else {
+                handleSubmit();
               }
-              disabled={!isPending}
-              className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
-              rows={1}
-            />
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={!isPending || !input.trim()}
-              className="h-9"
-            >
-              Send
-            </Button>
-          </div>
+            }
+          }}
+          placeholder="Type a message..."
+          className="max-h-24 min-h-[36px] flex-1 resize-none text-sm"
+          rows={1}
+        />
+        {canRetry ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRetry}
+            disabled={isTriggering}
+            className="h-9 gap-1.5"
+          >
+            {isTriggering ? (
+              <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <Sparkles className="size-3.5" />
+            )}
+            {isTriggering
+              ? "Starting..."
+              : workflow.status === "succeeded"
+                ? "Start new"
+                : "Retry"}
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={!canAnswer || !input.trim()}
+            className="h-9"
+          >
+            Send
+          </Button>
         )}
       </div>
     </div>

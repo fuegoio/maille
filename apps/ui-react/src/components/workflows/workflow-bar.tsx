@@ -78,8 +78,18 @@ export function WorkflowBar() {
               }
             >
               {isUnread ? (
-                <span className="inline-flex h-4 items-center gap-1 rounded-full bg-orange-400/15 px-1.5 text-[0.65rem] font-medium text-orange-400">
-                  <span className="size-1.5 rounded-full bg-orange-400" />
+                <span
+                  className={cn(
+                    "inline-flex h-4 shrink-0 items-center gap-1 rounded-full bg-current/15 px-1.5 text-[0.65rem] font-medium",
+                    statusConfig.textClass,
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "size-1.5 rounded-full",
+                      statusConfig.dotClass,
+                    )}
+                  />
                   Needs input
                 </span>
               ) : (
