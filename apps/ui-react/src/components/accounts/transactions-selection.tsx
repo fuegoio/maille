@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { TransactionsCommandPalette } from "./transactions-command-palette";
 
 interface TransactionsSelectionProps {
+  accountId: string;
   selectedTransactions: string[];
   onClearSelection: () => void;
 }
 
 export function TransactionsSelection({
+  accountId,
   selectedTransactions,
   onClearSelection,
 }: TransactionsSelectionProps) {
@@ -65,6 +67,7 @@ export function TransactionsSelection({
           </div>
 
           <TransactionsCommandPalette
+            accountId={accountId}
             selectedTransactions={selectedTransactions}
             open={paletteOpened}
             onOpenChange={setPaletteOpened}

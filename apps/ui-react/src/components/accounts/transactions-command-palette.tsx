@@ -29,6 +29,8 @@ import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
 interface TransactionsCommandPaletteProps {
+  /** The account whose transactions view opened the palette. */
+  accountId: string;
   selectedTransactions: string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,6 +43,7 @@ type SelectedTransaction = {
 };
 
 export function TransactionsCommandPalette({
+  accountId,
   selectedTransactions,
   open,
   onOpenChange,
@@ -75,10 +78,10 @@ export function TransactionsCommandPalette({
   const updateTransactions = React.useCallback(
     (update: {
       amount?: number;
-      fromAccount?: string;
-      toAccount?: string;
-      fromFund?: string | null;
-      toFund?: string | null;
+      /** Retargets the counterpart account: the side that is not this view's. */
+      account?: string;
+      /** Sets this view's account-side fund; null means Untracked. */
+      fund?: string | null;
     }) => {
       selectedTransactionsData.forEach(({ transaction, activityId }) => {
         const activity = activities.find((a) => a.id === activityId);
@@ -91,43 +94,56 @@ export function TransactionsCommandPalette({
           "amount" | "fromAccount" | "toAccount"
         > = {};
         if (update.amount !== undefined) updateFields.amount = update.amount;
-        if (update.fromAccount !== undefined)
-          updateFields.fromAccount = update.fromAccount;
-        if (update.toAccount !== undefined)
-          updateFields.toAccount = update.toAccount;
+        if (update.account !== undefined) {
+          if (transaction.fromAccount === accountId) {
+            updateFields.toAccount = update.account;
+          } else {
+            updateFields.fromAccount = update.account;
+          }
+        }
 
-        const hasAmountChange = update.amount !== undefined;
-        const hasFundChange =
-          update.fromFund !== undefined || update.toFund !== undefined;
+        // Fund legs follow the transaction.tsx canonical shape: one leg
+        // holding the from and to funds, Untracked sides as null. A fund
+        // change keeps the other side's fund; an amount change carries
+        // over to the existing legs.
         const existingFundMoves = transaction.fundMoves ?? [];
-
-        const effectiveFundMoves: FundMove[] | undefined =
-          hasAmountChange && existingFundMoves.length > 0
-            ? existingFundMoves.map(
-                (move): FundMove => ({
-                  ...move,
-                  amount: update.amount as number,
-                  ...(update.fromFund !== undefined
-                    ? { fromFund: update.fromFund }
-                    : {}),
-                  ...(update.toFund !== undefined
-                    ? { toFund: update.toFund }
-                    : {}),
-                }),
-              )
-            : hasFundChange
-              ? existingFundMoves.map(
-                  (move): FundMove => ({
-                    ...move,
-                    ...(update.fromFund !== undefined
-                      ? { fromFund: update.fromFund }
-                      : {}),
-                    ...(update.toFund !== undefined
-                      ? { toFund: update.toFund }
-                      : {}),
-                  }),
-                )
-              : undefined;
+        let effectiveFundMoves: FundMove[] | undefined;
+        if (update.fund !== undefined) {
+          const trackedFromFund =
+            existingFundMoves.find((m) => m.fromFund)?.fromFund ?? null;
+          const trackedToFund =
+            existingFundMoves.find((m) => m.toFund)?.toFund ?? null;
+          const fromFund =
+            transaction.fromAccount === accountId
+              ? update.fund
+              : trackedFromFund;
+          const toFund =
+            transaction.fromAccount === accountId ? trackedToFund : update.fund;
+          effectiveFundMoves =
+            fromFund !== null || toFund !== null
+              ? [
+                  {
+                    id: crypto.randomUUID(),
+                    fromFund,
+                    toFund,
+                    amount: update.amount ?? transaction.amount,
+                    note: null,
+                    date: new Date(),
+                    transaction: null,
+                  },
+                ]
+              : [];
+        } else if (
+          update.amount !== undefined &&
+          existingFundMoves.length > 0
+        ) {
+          effectiveFundMoves = existingFundMoves.map(
+            (move): FundMove => ({
+              ...move,
+              amount: update.amount as number,
+            }),
+          );
+        }
 
         const historyEvent = updateTransactionHistoryEvent(
           activity,
@@ -188,7 +204,7 @@ export function TransactionsCommandPalette({
         });
       });
     },
-    [selectedTransactionsData, activities, mutate],
+    [selectedTransactionsData, activities, mutate, accountId],
   );
 
   const deleteTransactions = React.useCallback(() => {
@@ -237,67 +253,45 @@ export function TransactionsCommandPalette({
         },
       },
       {
-        value: "fromAccount",
-        label: "Change from account",
+        value: "account",
+        label: "Change account",
+        icon: <Tag />,
+        type: "select" as const,
+        shortcut: "C",
+        getValues: () => {
+          return accounts
+            .filter((account) => account.id !== accountId)
+            .map((account) => ({
+              value: `account-${account.id}`,
+              label: account.name,
+              icon: (
+                <div
+                  className={cn(
+                    "size-3 shrink-0 rounded-xl",
+                    ACCOUNT_TYPES_COLOR[account.type],
+                  )}
+                />
+              ),
+              action: () => {
+                updateTransactions({ account: account.id });
+              },
+            }));
+        },
+      },
+      {
+        value: "fund",
+        label: "Change fund",
         icon: <Tag />,
         type: "select" as const,
         shortcut: "F",
         getValues: () => {
-          return accounts.map((account) => ({
-            value: `fromAccount-${account.id}`,
-            label: account.name,
-            icon: (
-              <div
-                className={cn(
-                  "size-3 shrink-0 rounded-xl",
-                  ACCOUNT_TYPES_COLOR[account.type],
-                )}
-              />
-            ),
-            action: () => {
-              updateTransactions({ fromAccount: account.id });
-            },
-          }));
-        },
-      },
-      {
-        value: "toAccount",
-        label: "Change to account",
-        icon: <Tag />,
-        type: "select" as const,
-        shortcut: "T",
-        getValues: () => {
-          return accounts.map((account) => ({
-            value: `toAccount-${account.id}`,
-            label: account.name,
-            icon: (
-              <div
-                className={cn(
-                  "size-3 shrink-0 rounded-xl",
-                  ACCOUNT_TYPES_COLOR[account.type],
-                )}
-              />
-            ),
-            action: () => {
-              updateTransactions({ toAccount: account.id });
-            },
-          }));
-        },
-      },
-      {
-        value: "fromFund",
-        label: "Change from fund",
-        icon: <Tag />,
-        type: "select" as const,
-        shortcut: "G",
-        getValues: () => {
           const fundOptions: {
             value: string;
             label: string;
             icon: React.ReactNode;
             action: () => void;
           }[] = funds.map((fund: Fund) => ({
-            value: `fromFund-${fund.id}`,
+            value: `fund-${fund.id}`,
             label: fund.name,
             icon: (
               <div
@@ -306,55 +300,17 @@ export function TransactionsCommandPalette({
               />
             ),
             action: () => {
-              updateTransactions({ fromFund: fund.id });
+              updateTransactions({ fund: fund.id });
             },
           }));
           fundOptions.push({
-            value: "fromFund-null",
+            value: "fund-null",
             label: "Untracked",
             icon: (
               <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
             ),
             action: () => {
-              updateTransactions({ fromFund: null });
-            },
-          });
-          return fundOptions;
-        },
-      },
-      {
-        value: "toFund",
-        label: "Change to fund",
-        icon: <Tag />,
-        type: "select" as const,
-        shortcut: "H",
-        getValues: () => {
-          const fundOptions: {
-            value: string;
-            label: string;
-            icon: React.ReactNode;
-            action: () => void;
-          }[] = funds.map((fund: Fund) => ({
-            value: `toFund-${fund.id}`,
-            label: fund.name,
-            icon: (
-              <div
-                className="size-3 shrink-0 rounded-sm"
-                style={{ backgroundColor: fund.color }}
-              />
-            ),
-            action: () => {
-              updateTransactions({ toFund: fund.id });
-            },
-          }));
-          fundOptions.push({
-            value: "toFund-null",
-            label: "Untracked",
-            icon: (
-              <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
-            ),
-            action: () => {
-              updateTransactions({ toFund: null });
+              updateTransactions({ fund: null });
             },
           });
           return fundOptions;
@@ -378,6 +334,7 @@ export function TransactionsCommandPalette({
     funds,
     updateTransactions,
     deleteTransactions,
+    accountId,
   ]);
 
   const filteredActions = React.useMemo(() => {

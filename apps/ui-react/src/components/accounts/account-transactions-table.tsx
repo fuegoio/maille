@@ -193,6 +193,7 @@ export function AccountTransactionsTable({
       </div>
 
       <TransactionsSelection
+        accountId={accountId}
         selectedTransactions={selectedTransactions}
         onClearSelection={clearSelectedTransactions}
       />
