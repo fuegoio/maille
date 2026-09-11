@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import {
   ActivityFilterDateOperators,
@@ -16,6 +16,13 @@ describe("date filters on activity", () => {
     operator: (typeof ActivityFilterDateOperators)[number];
     value: (typeof ActivityFilterDateValues)[number];
     expected: boolean;
+  };
+
+  // Parse "YYYY-MM-DD" as a local-time midnight date: the filter compares
+  // dates on the startOfDay() basis, so the test must be timezone-stable.
+  const localDate = (iso: string) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Date(year!, month! - 1, day!);
   };
 
   (
@@ -68,7 +75,7 @@ describe("date filters on activity", () => {
       id: "0",
       name: "test activity",
       description: "test",
-      date: new Date(testCase.activityDate),
+      date: localDate(testCase.activityDate),
       type: ActivityType.EXPENSE,
       category: null,
       subcategory: null,
@@ -82,17 +89,13 @@ describe("date filters on activity", () => {
     };
 
     test(`${testCase.activityDate} ${testCase.operator} ${testCase.value} of ${testCase.date} should be ${testCase.expected}`, () => {
-      vi.useFakeTimers();
-
-      vi.setSystemTime(testCase.date);
       expect(
         verifyActivityFilter(
           { field: "date", operator: testCase.operator, value: testCase.value },
           activity,
+          localDate(testCase.date),
         ),
       ).toBe(testCase.expected);
-
-      vi.useRealTimers();
     });
   });
 });

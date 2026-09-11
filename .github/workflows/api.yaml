@@ -37,8 +37,39 @@ jobs:
         run: bun run fmt:check
         working-directory: apps/api
 
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: apps/api
+
+      - name: Test
+        run: bun test
+        working-directory: apps/api
+
   build-and-push:
-    needs: check
+    needs: [check, test]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 

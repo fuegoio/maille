@@ -37,6 +37,10 @@ jobs:
         run: bun run fmt:check
         working-directory: apps/ui-react
 
+      - name: Test
+        run: bun run test
+        working-directory: apps/ui-react
+
   build-and-push:
     needs: check
     if: github.event_name == 'push'
