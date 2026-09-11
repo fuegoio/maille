@@ -34,6 +34,12 @@ import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
+import {
+  LinkDateFilter,
+  matchesDateTolerance,
+  TOLERANCE_TEXT,
+  type DateTolerance,
+} from "./link-date-filter";
 import { LinkFilterChip } from "./link-filter-chip";
 
 interface LinkActivityButtonProps {
@@ -52,6 +58,8 @@ export function LinkActivityButton({
   const [filterAmount, setFilterAmount] = React.useState(false);
   const [filterAccount, setFilterAccount] = React.useState(true);
   const [filterUnreconciled, setFilterUnreconciled] = React.useState(true);
+  const [dateTolerance, setDateTolerance] =
+    React.useState<DateTolerance | null>(null);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listboxId = React.useId();
@@ -61,6 +69,7 @@ export function LinkActivityButton({
     setFilterAmount(false);
     setFilterAccount(true);
     setFilterUnreconciled(true);
+    setDateTolerance(null);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -78,6 +87,7 @@ export function LinkActivityButton({
     remainingAmount,
     amountMatchCount,
     reconciledCount,
+    dateMatchCount,
   } = React.useMemo(() => {
     // Amount still to reconcile on the movement:
     // total minus what linked activities already cover.
@@ -108,6 +118,11 @@ export function LinkActivityButton({
 
     const filtered = _.orderBy(
       baseActivities.filter((activity) => {
+        if (
+          dateTolerance !== null &&
+          !matchesDateTolerance(activity.date, movement.date, dateTolerance)
+        )
+          return false;
         if (filterAmount && !matchesAmount(activity)) return false;
         if (filterUnreconciled && activity.status === "completed") return false;
         if (search !== "" && !searchCompare(search, activity.name))
@@ -120,6 +135,12 @@ export function LinkActivityButton({
 
     return {
       filteredActivities: filtered,
+      dateMatchCount:
+        dateTolerance !== null
+          ? baseActivities.filter((activity) =>
+              matchesDateTolerance(activity.date, movement.date, dateTolerance),
+            ).length
+          : 0,
       remainingAmount,
       amountMatchCount: baseActivities.filter(matchesAmount).length,
       reconciledCount: baseActivities.filter(
@@ -133,12 +154,17 @@ export function LinkActivityButton({
     filterAccount,
     filterAmount,
     filterUnreconciled,
+    dateTolerance,
     search,
   ]);
 
   const accountName = accounts.find((a) => a.id === movement.account)?.name;
   const hasActiveFilters =
-    filterAmount || !filterAccount || filterUnreconciled || search !== "";
+    filterAmount ||
+    !filterAccount ||
+    filterUnreconciled ||
+    dateTolerance !== null ||
+    search !== "";
 
   const linkActivity = (activity: Activity) => {
     const newId = crypto.randomUUID();
@@ -177,7 +203,7 @@ export function LinkActivityButton({
     useListKeyboardNavigation({
       items: filteredActivities,
       onSelect: linkActivity,
-      resetKey: `${dialogOpen}|${search}|${filterAmount}|${filterAccount}|${filterUnreconciled}`,
+      resetKey: `${dialogOpen}|${search}|${filterAmount}|${filterAccount}|${filterUnreconciled}|${dateTolerance}`,
     });
 
   const toggleFilter = (toggle: () => void) => {
@@ -302,6 +328,22 @@ export function LinkActivityButton({
               >
                 To reconcile
               </LinkFilterChip>
+
+              <LinkDateFilter
+                tolerance={dateTolerance}
+                onChange={(value) =>
+                  toggleFilter(() => setDateTolerance(value))
+                }
+                tooltip={
+                  <p>
+                    {dateTolerance !== null
+                      ? dateMatchCount > 0
+                        ? `Date filter on — ${dateMatchCount} activit${dateMatchCount === 1 ? "y" : "ies"} dated ${TOLERANCE_TEXT[dateTolerance]} the movement (${movement.date.toLocaleDateString("fr-FR")}).`
+                        : `Date filter on — no activity dated ${TOLERANCE_TEXT[dateTolerance]} the movement (${movement.date.toLocaleDateString("fr-FR")}).`
+                      : "Show only activities dated the same day as the movement, or at most 1 or 2 days from it."}
+                  </p>
+                }
+              />
             </div>
           </DialogHeader>
 
