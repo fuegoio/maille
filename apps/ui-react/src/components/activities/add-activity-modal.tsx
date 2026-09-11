@@ -143,6 +143,7 @@ export function AddActivityModal({
   // Watch form values
   const type = watch("type");
   const category = watch("category");
+  const date = watch("date");
   const transactions = watch("transactions");
 
   // Filtered categories and subcategories
@@ -262,6 +263,7 @@ export function AddActivityModal({
             amount,
             accounts,
             defaultFundByAccount,
+            date: date ?? new Date(),
           }),
         },
       ]);
@@ -275,6 +277,7 @@ export function AddActivityModal({
       type,
       accounts,
       defaultFundByAccount,
+      date,
     ],
   );
 
@@ -335,7 +338,8 @@ export function AddActivityModal({
             fromFund: move.fromFund,
             toFund: move.toFund,
             amount: move.amount,
-            date: getGraphQLDate(move.date),
+            // Fund moves date with their activity, never the staging moment
+            date: newActivity.date,
             note: move.note,
             transaction: t.id,
           })),
@@ -459,6 +463,15 @@ export function AddActivityModal({
       : initialType;
     const bestTransaction = newType ? guessBestTransaction(newType) : undefined;
 
+    const getMovementDate = (m: Movement | undefined): Date => {
+      if (!m) return initialDate || new Date();
+      const extractedDate = extractDateFromMovementName(m.name, m.date);
+      return extractedDate || m.date;
+    };
+    const resetDate = movement
+      ? getMovementDate(movement)
+      : initialDate || new Date();
+
     const transactions = [];
     if (bestTransaction) {
       const amount = movement ? Math.abs(movement.amount) : initialAmount;
@@ -478,20 +491,15 @@ export function AddActivityModal({
           amount: amount ?? 0,
           accounts,
           defaultFundByAccount,
+          date: resetDate,
         }),
       });
     }
 
-    const getMovementDate = (m: Movement | undefined): Date => {
-      if (!m) return initialDate || new Date();
-      const extractedDate = extractDateFromMovementName(m.name, m.date);
-      return extractedDate || m.date;
-    };
-
     reset({
       name: movement ? movement.name : initialName || "",
       description: "",
-      date: movement ? getMovementDate(movement) : initialDate || new Date(),
+      date: resetDate,
       type: newType,
       category: initialCategory,
       subcategory: initialSubcategory,

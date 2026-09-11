@@ -160,6 +160,7 @@ export function ActivityTransactions({
         amount: transaction.amount,
         accounts,
         defaultFundByAccount,
+        date: activity.date,
       });
 
       mutate({
@@ -247,6 +248,7 @@ export function ActivityTransactions({
             amount: transaction.amount,
             accounts,
             defaultFundByAccount,
+            date: activity.date,
           });
 
     mutate({
@@ -337,6 +339,7 @@ export function ActivityTransactions({
         amount: 0,
         accounts,
         defaultFundByAccount,
+        date: activity.date,
       }),
     };
 

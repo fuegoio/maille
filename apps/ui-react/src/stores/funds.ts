@@ -201,6 +201,27 @@ export const useFunds = create<FundsState>()(
               get().addFundMove(toFundMove(move));
             });
           });
+        } else if (event.type === "updateActivity") {
+          // Fund moves date with their activity: a new date re-dates the
+          // legs of every transaction under it.
+          if (event.payload.date) {
+            const transactionIds = new Set(
+              useActivities
+                .getState()
+                .activities.find((a) => a.id === event.payload.id)
+                ?.transactions.map((t) => t.id),
+            );
+            if (transactionIds.size > 0) {
+              const date = new Date(event.payload.date);
+              set((state) => ({
+                fundMoves: state.fundMoves.map((move) =>
+                  move.transaction && transactionIds.has(move.transaction)
+                    ? { ...move, date }
+                    : move,
+                ),
+              }));
+            }
+          }
         } else if (event.type === "addTransaction") {
           event.payload.fundMoves?.forEach((move) => {
             get().addFundMove(toFundMove(move));

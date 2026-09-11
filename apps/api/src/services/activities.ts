@@ -6,7 +6,7 @@ import {
   type ActivityMovement,
 } from "@maille/core/activities";
 import { buildCreateEntry, buildLinkEntry, diffActivity } from "@maille/core/history";
-import { and, eq, like } from "drizzle-orm";
+import { and, eq, inArray, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { z } from "zod";
 import { db } from "@/database";
@@ -17,6 +17,7 @@ import {
   activitySubcategories,
   assets,
   counterparties,
+  fundMoves,
   movements,
   movementsActivities,
   projects,
@@ -500,6 +501,26 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
     activity = updatedActivities[0];
     if (!activity) {
       throw new GraphQLError("Failed to update activity");
+    }
+
+    // Fund moves date with their activity: a new date re-dates the legs
+    // of every transaction under it.
+    if (activityUpdates.date) {
+      const activityTransactions = await db
+        .select({ id: transactions.id })
+        .from(transactions)
+        .where(eq(transactions.activity, activity.id));
+      if (activityTransactions.length > 0) {
+        await db
+          .update(fundMoves)
+          .set({ date: activityUpdates.date })
+          .where(
+            inArray(
+              fundMoves.transaction,
+              activityTransactions.map(({ id }) => id),
+            ),
+          );
+      }
     }
   }
 

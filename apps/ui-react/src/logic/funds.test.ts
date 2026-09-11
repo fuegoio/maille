@@ -417,6 +417,7 @@ describe("default fund classification (ui logic)", () => {
       amount: 100,
       accounts,
       defaultFundByAccount,
+      date: new Date("2026-01-15"),
     });
     expect(moves).toHaveLength(1);
     expect(moves[0]).toMatchObject({
@@ -424,6 +425,8 @@ describe("default fund classification (ui logic)", () => {
       toFund: "house",
       amount: 100,
       note: null,
+      // Fund moves date with their activity, never the staging moment
+      date: new Date("2026-01-15"),
     });
   });
 
@@ -434,6 +437,7 @@ describe("default fund classification (ui logic)", () => {
       amount: 100,
       accounts,
       defaultFundByAccount,
+      date: new Date("2026-01-15"),
     });
     expect(moves).toHaveLength(1);
     expect(moves[0].fromFund).toBe("house");
@@ -447,6 +451,7 @@ describe("default fund classification (ui logic)", () => {
       amount: 100,
       accounts,
       defaultFundByAccount,
+      date: new Date("2026-01-15"),
     });
     expect(moves).toHaveLength(0);
   });

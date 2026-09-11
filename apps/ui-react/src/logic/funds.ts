@@ -291,7 +291,8 @@ export function getDefaultFundByAccount(
  * side is pinned to its account's default fund, exactly like setting the
  * side's fund chip by hand. Expense and revenue sides hold nothing, so
  * they stay out; with no default on either side the money is Untracked
- * (no leg).
+ * (no leg). A staged move carries its activity's date: fund moves always
+ * date with the activity they belong to, never the moment of staging.
  */
 export function classifyFundMoves({
   fromAccount,
@@ -299,12 +300,14 @@ export function classifyFundMoves({
   amount,
   accounts,
   defaultFundByAccount,
+  date,
 }: {
   fromAccount: string;
   toAccount: string;
   amount: number;
   accounts: Pick<Account, "id" | "type">[];
   defaultFundByAccount: Map<string, string | null>;
+  date: Date;
 }): FundMove[] {
   const balanceFund = (accountId: string): string | null => {
     const account = accounts.find((a) => a.id === accountId);
@@ -332,7 +335,7 @@ export function classifyFundMoves({
       toFund,
       amount,
       note: null,
-      date: new Date(),
+      date,
       transaction: null,
     },
   ];
