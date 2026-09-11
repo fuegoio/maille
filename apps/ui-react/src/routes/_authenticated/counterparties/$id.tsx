@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { CounterpartyPage } from "@/components/counterparties/counterparty";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { useCounterparties } from "@/stores/counterparties";
 
 export const Route = createFileRoute("/_authenticated/counterparties/$id")({
@@ -23,7 +24,7 @@ function CounterpartyPageRoute() {
     state.getCounterpartyById(id),
   );
   if (!counterparty) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/counterparties" }} />;
   }
 
   return <CounterpartyPage counterpartyId={id} />;

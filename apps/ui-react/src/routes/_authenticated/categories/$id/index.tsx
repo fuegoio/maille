@@ -1,3 +1,5 @@
+import type { ActivityCategory } from "@maille/core/activities";
+
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
@@ -13,6 +15,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -21,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
-  component: CategoryPage,
+  component: CategoryPageRoute,
   loader: async ({ params }) => {
     const activities = useActivities.getState();
     const category = activities.getActivityCategoryById(params.id);
@@ -33,15 +36,19 @@ export const Route = createFileRoute("/_authenticated/categories/$id/")({
   },
 });
 
-function CategoryPage() {
+function CategoryPageRoute() {
   const categoryId = Route.useParams().id;
   const category = useActivities((state) =>
     state.getActivityCategoryById(categoryId),
   );
   if (!category) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/categories" }} />;
   }
 
+  return <CategoryPage category={category} />;
+}
+
+function CategoryPage({ category }: { category: ActivityCategory }) {
   const activities = useActivities((state) => state.activities);
 
   const isMobile = useIsMobile();

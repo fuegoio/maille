@@ -1,3 +1,5 @@
+import type { Project } from "@maille/core/projects";
+
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +14,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -21,7 +24,7 @@ import { useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
 export const Route = createFileRoute("/_authenticated/projects/$id")({
-  component: ProjectPage,
+  component: ProjectPageRoute,
   loader: async ({ params }) => {
     const projects = useProjects.getState().projects;
     const project = projects.find((p) => p.id === params.id);
@@ -33,13 +36,18 @@ export const Route = createFileRoute("/_authenticated/projects/$id")({
   },
 });
 
-function ProjectPage() {
+function ProjectPageRoute() {
   const projectId = Route.useParams().id;
   const project = useProjects((state) => state.getProjectById(projectId));
   if (!project) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/projects" }} />;
   }
 
+  return <ProjectPage project={project} />;
+}
+
+function ProjectPage({ project }: { project: Project }) {
+  const projectId = project.id;
   const activities = useActivities((state) => state.activities);
   const projectActivities = activities.filter((a) => a.project === projectId);
 

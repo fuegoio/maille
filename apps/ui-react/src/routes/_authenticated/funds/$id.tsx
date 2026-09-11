@@ -1,7 +1,7 @@
 import { getFundAncestors } from "@maille/core/funds";
-import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
@@ -12,6 +12,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -31,17 +32,6 @@ export const Route = createFileRoute("/_authenticated/funds/$id")({
     return { fund };
   },
 });
-
-// Only reachable when the fund disappears while its page is open (deleted
-// from the settings dialog). Missing funds on direct URLs are handled by the
-// loader's notFound.
-function FundDeletedRedirect() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    void navigate({ to: "/funds" });
-  }, [navigate]);
-  return null;
-}
 
 function FundPage() {
   const fundId = Route.useParams().id;
@@ -96,7 +86,7 @@ function FundPage() {
   });
 
   if (!fund) {
-    return <FundDeletedRedirect />;
+    return <DeletedRedirect target={{ to: "/funds" }} />;
   }
 
   return (

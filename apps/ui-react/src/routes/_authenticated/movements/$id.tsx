@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 import { MovementPage } from "@/components/movements/movement";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { useMovements } from "@/stores/movements";
 
 export const Route = createFileRoute("/_authenticated/movements/$id")({
@@ -19,7 +20,7 @@ function MovementPageRoute() {
   const { id } = Route.useParams();
   const movement = useMovements((state) => state.getMovementById(id));
   if (!movement) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/movements" }} />;
   }
 
   return <MovementPage movementId={id} />;

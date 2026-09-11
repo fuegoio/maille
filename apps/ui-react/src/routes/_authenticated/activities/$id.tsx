@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import z from "zod";
 
 import { ActivityPage } from "@/components/activities/activity";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { useActivities } from "@/stores/activities";
 
 const searchParamsSchema = z.object({
@@ -26,7 +27,7 @@ function ActivityPageRoute() {
   const { transaction } = Route.useSearch();
   const activity = useActivities((state) => state.getActivityById(id));
   if (!activity) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/activities" }} />;
   }
 
   return (

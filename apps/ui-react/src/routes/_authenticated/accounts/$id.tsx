@@ -1,4 +1,4 @@
-import { AccountType } from "@maille/core/accounts";
+import { type Account, AccountType } from "@maille/core/accounts";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
@@ -33,6 +33,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -60,7 +61,7 @@ const searchParamsSchema = z.object({
 });
 
 export const Route = createFileRoute("/_authenticated/accounts/$id")({
-  component: AccountPage,
+  component: AccountPageRoute,
   validateSearch: searchParamsSchema,
   loader: async ({ params }) => {
     const accounts = useAccounts.getState().accounts;
@@ -73,13 +74,18 @@ export const Route = createFileRoute("/_authenticated/accounts/$id")({
   },
 });
 
-function AccountPage() {
+function AccountPageRoute() {
   const accountId = Route.useParams().id;
   const account = useAccounts((state) => state.getAccountById(accountId));
   if (!account) {
-    throw notFound();
+    return <DeletedRedirect target={{ to: "/accounts" }} />;
   }
 
+  return <AccountPage account={account} />;
+}
+
+function AccountPage({ account }: { account: Account }) {
+  const accountId = account.id;
   const navigate = useNavigate();
   const { tab } = Route.useSearch();
   const selectedTab = tab ?? "transactions";

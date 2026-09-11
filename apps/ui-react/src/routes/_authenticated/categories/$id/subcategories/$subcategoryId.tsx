@@ -1,3 +1,8 @@
+import type {
+  ActivityCategory,
+  ActivitySubCategory,
+} from "@maille/core/activities";
+
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import {
@@ -19,6 +24,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
@@ -35,7 +41,7 @@ import { useAuth } from "@/stores/auth";
 export const Route = createFileRoute(
   "/_authenticated/categories/$id/subcategories/$subcategoryId",
 )({
-  component: SubcategoryPage,
+  component: SubcategoryPageRoute,
   loader: async ({ params }) => {
     const activities = useActivities.getState();
     const subcategory = activities.getActivitySubcategoryById(
@@ -49,24 +55,45 @@ export const Route = createFileRoute(
   },
 });
 
-function SubcategoryPage() {
+function SubcategoryPageRoute() {
   const { id: categoryId, subcategoryId } = Route.useParams();
   const subcategory = useActivities((state) =>
     state.getActivitySubcategoryById(subcategoryId),
   );
+  const category = useActivities((state) =>
+    state.getActivityCategoryById(subcategory?.category ?? ""),
+  );
   if (!subcategory) {
-    throw notFound();
+    return (
+      <DeletedRedirect
+        target={{ to: "/categories/$id", params: { id: categoryId } }}
+      />
+    );
+  }
+  if (!category) {
+    return <DeletedRedirect target={{ to: "/categories" }} />;
   }
 
+  return (
+    <SubcategoryPage
+      categoryId={categoryId}
+      subcategory={subcategory}
+      category={category}
+    />
+  );
+}
+
+function SubcategoryPage({
+  categoryId,
+  subcategory,
+  category,
+}: {
+  categoryId: string;
+  subcategory: ActivitySubCategory;
+  category: ActivityCategory;
+}) {
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
-
-  const category = useActivities((state) =>
-    state.getActivityCategoryById(subcategory.category),
-  );
-  if (!category) {
-    throw notFound();
-  }
 
   const currencyFormatter = useCurrencyFormatter();
 
@@ -83,7 +110,7 @@ function SubcategoryPage() {
         target: { to: "/categories/$id", params: { id: categoryId } },
       },
       {
-        key: `subcategory:${subcategoryId}`,
+        key: `subcategory:${subcategory.id}`,
         label: (
           <>
             {subcategory.emoji && (
