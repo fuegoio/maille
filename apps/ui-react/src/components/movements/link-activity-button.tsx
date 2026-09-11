@@ -64,12 +64,84 @@ export function LinkActivityButton({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listboxId = React.useId();
 
+  const mutate = useSync((state) => state.mutate);
+  const activities = useActivities((state) => state.activities);
+  const accounts = useAccounts((state) => state.accounts);
+  const currencyFormatter = useCurrencyFormatter();
+
+  const { candidates, matchesAmount, involvesAccount, remainingAmount } =
+    React.useMemo(() => {
+      // Amount still to reconcile on the movement:
+      // total minus what linked activities already cover.
+      const remainingAmount = _.round(
+        movement.amount -
+          movement.activities.reduce((sum, ma) => sum + ma.amount, 0),
+        2,
+      );
+
+      const sumsOf = (activity: Activity) =>
+        getActivityTransactionsSumByAccount(activity.transactions, accounts);
+
+      const involvesAccount = (activity: Activity, accountId: string) =>
+        sumsOf(activity).some((sba) => sba.account === accountId);
+
+      // An activity matches when one of its account totals corresponds
+      // to what the movement still needs.
+      const matchesAmount = (activity: Activity) =>
+        sumsOf(activity).some(
+          (sba) => _.round(sba.total, 2) === remainingAmount,
+        );
+
+      const candidates = activities.filter(
+        (activity) =>
+          !activity.movements.some((am) => am.movement === movement.id),
+      );
+
+      return { candidates, matchesAmount, involvesAccount, remainingAmount };
+    }, [activities, accounts, movement]);
+
+  // Enable each filter by default only while at least one candidate
+  // still matches the filters enabled so far, so the dialog never
+  // opens on an empty list. The date filter starts at the tightest
+  // tolerance that keeps a match.
+  const computeDefaultFilters = () => {
+    let pool = candidates;
+    let date: DateTolerance | null = null;
+    for (const tolerance of [0, 1, 2] as DateTolerance[]) {
+      if (
+        pool.some((activity) =>
+          matchesDateTolerance(activity.date, movement.date, tolerance),
+        )
+      ) {
+        date = tolerance;
+        pool = pool.filter((activity) =>
+          matchesDateTolerance(activity.date, movement.date, tolerance),
+        );
+        break;
+      }
+    }
+    const amount = pool.some(matchesAmount);
+    if (amount) pool = pool.filter(matchesAmount);
+    const account = pool.some((activity) =>
+      involvesAccount(activity, movement.account),
+    );
+    if (account)
+      pool = pool.filter((activity) =>
+        involvesAccount(activity, movement.account),
+      );
+    const unreconciled = pool.some(
+      (activity) => activity.status !== "completed",
+    );
+    return { date, amount, account, unreconciled };
+  };
+
   const resetFilters = () => {
     setSearch("");
-    setFilterAmount(false);
-    setFilterAccount(true);
-    setFilterUnreconciled(true);
-    setDateTolerance(null);
+    const defaults = computeDefaultFilters();
+    setDateTolerance(defaults.date);
+    setFilterAmount(defaults.amount);
+    setFilterAccount(defaults.account);
+    setFilterUnreconciled(defaults.unreconciled);
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -77,44 +149,17 @@ export function LinkActivityButton({
     if (open) resetFilters();
   };
 
-  const mutate = useSync((state) => state.mutate);
-  const activities = useActivities((state) => state.activities);
-  const accounts = useAccounts((state) => state.accounts);
-  const currencyFormatter = useCurrencyFormatter();
-
   const {
     filteredActivities,
-    remainingAmount,
     amountMatchCount,
     reconciledCount,
     dateMatchCount,
   } = React.useMemo(() => {
-    // Amount still to reconcile on the movement:
-    // total minus what linked activities already cover.
-    const remainingAmount = _.round(
-      movement.amount -
-        movement.activities.reduce((sum, ma) => sum + ma.amount, 0),
-      2,
-    );
-
-    const sumsOf = (activity: Activity) =>
-      getActivityTransactionsSumByAccount(activity.transactions, accounts);
-
-    const involvesAccount = (activity: Activity, accountId: string) =>
-      sumsOf(activity).some((sba) => sba.account === accountId);
-
-    // An activity matches when one of its account totals corresponds
-    // to what the movement still needs.
-    const matchesAmount = (activity: Activity) =>
-      sumsOf(activity).some((sba) => _.round(sba.total, 2) === remainingAmount);
-
-    const baseActivities = activities.filter((activity) => {
-      if (activity.movements.some((am) => am.movement === movement.id))
-        return false;
-      if (filterAccount && !involvesAccount(activity, movement.account))
-        return false;
-      return true;
-    });
+    const baseActivities = filterAccount
+      ? candidates.filter((activity) =>
+          involvesAccount(activity, movement.account),
+        )
+      : candidates;
 
     const filtered = _.orderBy(
       baseActivities.filter((activity) => {
@@ -129,7 +174,7 @@ export function LinkActivityButton({
           return false;
         return true;
       }),
-      [(activity) => matchesAmount(activity), "date"],
+      [matchesAmount, "date"],
       ["desc", "desc"],
     );
 
@@ -141,15 +186,15 @@ export function LinkActivityButton({
               matchesDateTolerance(activity.date, movement.date, dateTolerance),
             ).length
           : 0,
-      remainingAmount,
       amountMatchCount: baseActivities.filter(matchesAmount).length,
       reconciledCount: baseActivities.filter(
         (activity) => activity.status === "completed",
       ).length,
     };
   }, [
-    activities,
-    accounts,
+    candidates,
+    matchesAmount,
+    involvesAccount,
     movement,
     filterAccount,
     filterAmount,

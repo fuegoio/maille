@@ -63,31 +63,12 @@ export function LinkMovementButton({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listboxId = React.useId();
 
-  const resetFilters = () => {
-    setSearch("");
-    setFilterAmount(true);
-    setFilterAccount(true);
-    setFilterUnreconciled(true);
-    setDateTolerance(null);
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    setDialogOpen(open);
-    if (open) resetFilters();
-  };
-
   const mutate = useSync((state) => state.mutate);
   const movements = useMovements((state) => state.movements);
   const accounts = useAccounts((state) => state.accounts);
   const currencyFormatter = useCurrencyFormatter();
 
-  const {
-    neededByAccount,
-    filteredMovements,
-    amountMatchCount,
-    reconciledCount,
-    dateMatchCount,
-  } = React.useMemo(() => {
+  const { candidates, matchesAmount, neededByAccount } = React.useMemo(() => {
     // Amount still needed on each of the activity's accounts:
     // transaction total minus what linked movements already cover.
     const reconciliatedByAccount = getActivityMovementsReconciliatedByAccount(
@@ -107,12 +88,67 @@ export function LinkMovementButton({
       neededByAccount.get(movement.account) !== undefined &&
       _.round(movement.amount, 2) === neededByAccount.get(movement.account);
 
-    const baseMovements = movements.filter((movement) => {
-      if (movement.activities.some((ma) => ma.activity === activity.id))
-        return false;
-      if (filterAccount && movement.account !== account) return false;
-      return true;
-    });
+    const candidates = movements.filter(
+      (movement) =>
+        !movement.activities.some((ma) => ma.activity === activity.id),
+    );
+
+    return { candidates, matchesAmount, neededByAccount };
+  }, [movements, accounts, activity]);
+
+  // Enable each filter by default only while at least one candidate
+  // still matches the filters enabled so far, so the dialog never
+  // opens on an empty list. The date filter starts at the tightest
+  // tolerance that keeps a match.
+  const computeDefaultFilters = () => {
+    let pool = candidates;
+    let date: DateTolerance | null = null;
+    for (const tolerance of [0, 1, 2] as DateTolerance[]) {
+      if (
+        pool.some((movement) =>
+          matchesDateTolerance(movement.date, activity.date, tolerance),
+        )
+      ) {
+        date = tolerance;
+        pool = pool.filter((movement) =>
+          matchesDateTolerance(movement.date, activity.date, tolerance),
+        );
+        break;
+      }
+    }
+    const amount = pool.some(matchesAmount);
+    if (amount) pool = pool.filter(matchesAmount);
+    const accountFilter = pool.some((movement) => movement.account === account);
+    if (accountFilter) pool = pool.filter((m) => m.account === account);
+    const unreconciled = pool.some(
+      (movement) => movement.status !== "completed",
+    );
+    return { date, amount, account: accountFilter, unreconciled };
+  };
+
+  const resetFilters = () => {
+    setSearch("");
+    const defaults = computeDefaultFilters();
+    setDateTolerance(defaults.date);
+    setFilterAmount(defaults.amount);
+    setFilterAccount(defaults.account);
+    setFilterUnreconciled(defaults.unreconciled);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (open) resetFilters();
+  };
+
+  const {
+    filteredMovements,
+    amountMatchCount,
+    reconciledCount,
+    dateMatchCount,
+  } = React.useMemo(() => {
+    const baseMovements = filterAccount
+      ? candidates.filter((movement) => movement.account === account)
+      : candidates;
 
     const filtered = _.orderBy(
       baseMovements.filter((movement) => {
@@ -127,7 +163,7 @@ export function LinkMovementButton({
           return false;
         return true;
       }),
-      [(movement) => matchesAmount(movement), "date"],
+      [matchesAmount, "date"],
       ["desc", "desc"],
     );
 
@@ -139,16 +175,14 @@ export function LinkMovementButton({
               matchesDateTolerance(movement.date, activity.date, dateTolerance),
             ).length
           : 0,
-      neededByAccount,
       amountMatchCount: baseMovements.filter(matchesAmount).length,
       reconciledCount: baseMovements.filter(
         (movement) => movement.status === "completed",
       ).length,
     };
   }, [
-    movements,
-    accounts,
-    activity,
+    candidates,
+    matchesAmount,
     account,
     filterAccount,
     filterAmount,
@@ -271,7 +305,7 @@ export function LinkMovementButton({
                       ? amountMatchCount > 0
                         ? `Amount filter on — ${amountMatchCount} movement${amountMatchCount === 1 ? "" : "s"} match${amountMatchCount === 1 ? "es" : ""} the needed amount.`
                         : `Amount filter on — no movement matches the ${currencyFormatter.format(neededAmount)} needed.`
-                      : `Show only movements matching the amount needed on their account.`}
+                      : "Show only movements matching the amount needed on their account."}
                   </p>
                 }
               >
