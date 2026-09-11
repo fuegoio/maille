@@ -7,12 +7,13 @@ import { AMOUNT_EPSILON, remainingAmount } from "@maille/core/workflows";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { addEvent } from "@/api/events";
-import { createActivity } from "@/services/activities";
+import { createActivity, updateActivity } from "@/services/activities";
 import { linkMovementToActivity } from "@/services/movements";
 import { findSimilarMovements, searchActivities } from "./evidence";
 import {
   AskUserArgs,
   CreateActivityArgs,
+  EditActivityArgs,
   FindSimilarMovementsArgs,
   GiveUpArgs,
   LinkMovementArgs,
@@ -347,6 +348,51 @@ export async function executeTool(
       };
     }
 
+    case "editActivity": {
+      const parsed = EditActivityArgs.safeParse(call.args);
+      if (!parsed.success) {
+        return { result: toolError("Invalid arguments for editActivity") };
+      }
+      const existing = (
+        await db
+          .select({ id: activities.id })
+          .from(activities)
+          .where(
+            and(
+              eq(activities.id, parsed.data.activityId),
+              eq(activities.user, state.workflow.user),
+            ),
+          )
+          .limit(1)
+      )[0];
+      if (!existing) {
+        return { result: toolError(`Activity ${parsed.data.activityId} does not exist`) };
+      }
+      let date: Date | undefined;
+      if (parsed.data.date) {
+        const parsedDate = new Date(parsed.data.date);
+        if (Number.isNaN(parsedDate.getTime())) {
+          return { result: toolError("Invalid date argument") };
+        }
+        date = parsedDate;
+      }
+      try {
+        await updateActivity(state.workflow.user, workflowClientId(state), {
+          id: existing.id,
+          name: parsed.data.name ?? undefined,
+          description: parsed.data.description,
+          date: date ?? undefined,
+          type: parsed.data.type ?? undefined,
+          category: parsed.data.category,
+          subcategory: parsed.data.subcategory,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { result: toolError(`Could not edit the activity: ${message}`) };
+      }
+      return { result: { ok: true, edited: true, activityId: existing.id } };
+    }
+
     case "askUser": {
       const parsed = AskUserArgs.safeParse(call.args);
       if (!parsed.success) {
@@ -389,6 +435,8 @@ export const describeToolCall = (call: {
         ? `Creating activity '${name}'...`
         : "Creating a new activity...";
     }
+    case "editActivity":
+      return "Editing the activity...";
     default:
       return null;
   }

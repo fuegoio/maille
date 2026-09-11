@@ -1,15 +1,9 @@
-import {
-  ActivityType,
-  getActivityStatus,
-  getActivityTransactionsReconciliationSum,
-  getActivitySharingsReconciliation,
-} from "@maille/core/activities";
+import { ActivityType, getActivitySharingsReconciliation } from "@maille/core/activities";
 import {
   buildAddTransactionEntry,
   buildRemoveTransactionEntry,
   buildUnlinkEntry,
   buildUpdateTransactionEntry,
-  diffActivity,
   diffTransaction,
 } from "@maille/core/history";
 import { builder } from "../builder";
@@ -34,7 +28,6 @@ import {
   fundMoves,
   movements,
   movementsActivities,
-  projects,
   transactions,
 } from "@/tables";
 import { db } from "@/database";
@@ -48,7 +41,7 @@ import { and, eq, like, ne } from "drizzle-orm";
 import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
-import { createActivity } from "@/services/activities";
+import { createActivity, updateActivity } from "@/services/activities";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -161,213 +154,7 @@ export const registerActivitiesMutations = () => {
           required: false,
         }),
       },
-      resolve: async (root, args, ctx) => {
-        let activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(and(like(activities.id, idPattern(args.id)), eq(activities.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!activity) {
-          throw new GraphQLError("Activity not found");
-        }
-
-        const activityUpdates: Partial<typeof activity> = {};
-        if (args.name) {
-          activityUpdates.name = args.name;
-        }
-        if (args.description !== undefined) {
-          activityUpdates.description = args.description;
-        }
-        if (args.date) {
-          activityUpdates.date = args.date;
-        }
-        if (args.type) {
-          const ActivityTypeEnum = z.enum(ActivityType);
-          activityUpdates.type = ActivityTypeEnum.parse(args.type);
-          activityUpdates.category = null;
-          activityUpdates.subcategory = null;
-        }
-
-        // Optional fields
-        if (args.category !== undefined) {
-          activityUpdates.category = args.category
-            ? ((
-                await db
-                  .select({ id: activityCategories.id })
-                  .from(activityCategories)
-                  .where(
-                    and(
-                      like(activityCategories.id, idPattern(args.category)),
-                      eq(activityCategories.user, ctx.user.id),
-                    ),
-                  )
-                  .limit(1)
-              )[0]?.id ?? null)
-            : args.category;
-          activityUpdates.subcategory = null;
-        }
-        if (args.subcategory !== undefined) {
-          activityUpdates.subcategory = args.subcategory
-            ? ((
-                await db
-                  .select({ id: activitySubcategories.id })
-                  .from(activitySubcategories)
-                  .where(
-                    and(
-                      like(activitySubcategories.id, idPattern(args.subcategory)),
-                      eq(activitySubcategories.user, ctx.user.id),
-                    ),
-                  )
-                  .limit(1)
-              )[0]?.id ?? null)
-            : args.subcategory;
-        }
-        if (args.project !== undefined) {
-          activityUpdates.project = args.project
-            ? ((
-                await db
-                  .select({ id: projects.id })
-                  .from(projects)
-                  .where(
-                    and(like(projects.id, idPattern(args.project)), eq(projects.user, ctx.user.id)),
-                  )
-                  .limit(1)
-              )[0]?.id ?? null)
-            : args.project;
-        }
-
-        // History: derive the diff from the before/after rows.
-        const labels = await loadHistoryLabels(ctx.user.id);
-        const after = { ...activity, ...activityUpdates };
-        const changes = diffActivity(
-          {
-            name: activity.name,
-            description: activity.description,
-            date: activity.date.toISOString(),
-            type: activity.type,
-            category: activity.category
-              ? { id: activity.category, label: labels.category(activity.category) }
-              : null,
-            subcategory: activity.subcategory
-              ? {
-                  id: activity.subcategory,
-                  label: labels.subcategory(activity.subcategory),
-                }
-              : null,
-            project: activity.project
-              ? { id: activity.project, label: labels.project(activity.project) }
-              : null,
-          },
-          {
-            name: after.name,
-            description: after.description,
-            date: after.date.toISOString(),
-            type: after.type,
-            category: after.category
-              ? { id: after.category, label: labels.category(after.category) }
-              : null,
-            subcategory: after.subcategory
-              ? {
-                  id: after.subcategory,
-                  label: labels.subcategory(after.subcategory),
-                }
-              : null,
-            project: after.project
-              ? { id: after.project, label: labels.project(after.project) }
-              : null,
-          },
-        );
-        const historyResult =
-          changes.length > 0
-            ? computeHistory(ctx, activity.history, [
-                {
-                  entityType: "activity",
-                  entityId: activity.id,
-                  action: "update",
-                  changes,
-                },
-              ])
-            : null;
-
-        if (Object.keys(activityUpdates).length > 0) {
-          const updatedActivities = await db
-            .update(activities)
-            .set({
-              ...activityUpdates,
-              ...(historyResult ? { history: historyResult.history } : {}),
-            })
-            .where(eq(activities.id, activity.id))
-            .returning();
-          activity = updatedActivities[0];
-          if (!activity) {
-            throw new GraphQLError("Failed to update activity");
-          }
-        }
-
-        await addEvent({
-          type: "updateActivity",
-          payload: {
-            id: activity.id,
-            ...activityUpdates,
-            date: activityUpdates.date?.toISOString(),
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-        if (historyResult) {
-          await emitHistoryEvents(ctx, historyResult.emitted);
-        }
-
-        const accountsQuery = await db.select().from(accounts);
-        const transactionsData = await db
-          .select()
-          .from(transactions)
-          .where(eq(transactions.activity, activity.id));
-        const movementsData = await db
-          .select()
-          .from(movementsActivities)
-          .where(eq(movementsActivities.activity, activity.id));
-
-        const userMovements = await db
-          .select()
-          .from(movements)
-          .where(eq(movements.user, ctx.user.id));
-
-        return {
-          ...activity,
-          date: activity.date,
-          transactions: transactionsData,
-          movements: movementsData,
-          amount: getActivityTransactionsReconciliationSum(
-            activity.type,
-            transactionsData,
-            accountsQuery,
-          ),
-          status: getActivityStatus(
-            activity.date,
-            transactionsData,
-            movementsData,
-            accountsQuery,
-            (id) => {
-              const movement = userMovements.find((m) => m.id === id);
-              if (!movement) return;
-              return {
-                ...movement,
-                date: movement.date,
-                status: "completed",
-                activities: [],
-              };
-            },
-          ),
-          sharing: getActivitySharingsReconciliation(
-            await getActivitySharings(activity.id, ctx.user.id),
-            ctx.user.id,
-          ),
-        };
-      },
+      resolve: (root, args, ctx) => updateActivity(ctx.user.id, ctx.session.id, args),
     }),
   );
 

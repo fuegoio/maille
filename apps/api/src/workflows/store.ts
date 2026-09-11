@@ -242,8 +242,9 @@ async function isMovementReconciled(userId: string, movementId: string): Promise
  * run. On a `pending` workflow the answer resumes the reconcile loop (the
  * worker re-plans from fresh evidence, not by executing a stale plan). On a
  * terminal workflow whose movement is reconciled, the answer is a follow-up
- * question: the worker runs a read-only conversation turn instead, and the
- * workflow settles back where it was.
+ * turn: the worker runs the full conversation loop with the tools — it can
+ * answer, and edit the activities — and the workflow settles back where it
+ * was.
  */
 export async function answerWorkflow(
   userId: string,

@@ -27,16 +27,18 @@ Rules:
 - Do not set a description that merely restates the payment (e.g. the movement name, the merchant, or the amount). Descriptions should add context that is not already obvious from the name or the movement data, or be left empty.`;
 
 /**
- * System prompt for follow-up turns: the movement is already reconciled, and
- * the user is asking questions about it. No tools are offered — the ledger
- * must not change.
+ * System prompt for follow-up turns: the movement is already reconciled and
+ * the user is continuing the conversation. The full tool set is offered, so
+ * the assistant can both answer questions and make changes on request.
  */
 export const FOLLOW_UP_SYSTEM_PROMPT = `You are Maille's AI assistant, a precise bookkeeping assistant operating on a strict double-entry ledger.
-The movement you are discussing is already fully reconciled. The user is asking follow-up questions about it.
+The movement you are discussing is already fully reconciled. The user is continuing the conversation about it.
 
 Rules:
-- Answer from the evidence pack (the movement, its history and the activities it references) and the conversation transcript.
-- You cannot modify the ledger in this mode. If the user asks for a change, explain what they would need to do in the app instead of pretending to do it.
+- Answer questions from the evidence pack (the movement, its history and the activities it references) and the conversation transcript.
+- When the user asks for a change, make it with the tools: use editActivity to rename or recategorize an activity, and searchActivities or findSimilarMovements to look things up first when unsure.
+- The movement is fully allocated: do not create activities or link the movement again unless the user first says they unlinked something in the app.
+- When no tool is needed, reply with plain text and nothing else.
 - Be precise and concise. Name the activities, accounts and amounts you rely on.
 - If you do not know something the evidence does not cover, say so plainly.`;
 
@@ -63,6 +65,16 @@ export const CreateActivityArgs = z.object({
   subcategory: z.string().optional(),
   fromAccount: z.string().optional(),
   toAccount: z.string().optional(),
+});
+
+export const EditActivityArgs = z.object({
+  activityId: z.string(),
+  name: z.string().optional(),
+  description: z.union([z.string(), z.null()]).optional(),
+  date: z.string().optional(),
+  type: z.enum(ActivityType).optional(),
+  category: z.union([z.string(), z.null()]).optional(),
+  subcategory: z.union([z.string(), z.null()]).optional(),
 });
 
 export const AskUserArgs = z.object({
@@ -131,6 +143,30 @@ export const RECONCILE_MOVEMENT_TOOLS: LlmTool[] = [
         },
       },
       required: ["name", "type", "amount"],
+    },
+  },
+  {
+    name: "editActivity",
+    description:
+      "Edit an existing activity: rename it, change its description, date, type, category or subcategory. Use when the user asks to change an activity that already exists.",
+    parameters: {
+      type: "object",
+      properties: {
+        activityId: { type: "string", description: "Existing activity id" },
+        name: { type: "string" },
+        description: { type: "string", description: "New description; null clears it" },
+        date: { type: "string", description: "ISO date" },
+        type: { type: "string", enum: Object.values(ActivityType) },
+        category: {
+          type: "string",
+          description: "Category id from the vocabulary; null clears it",
+        },
+        subcategory: {
+          type: "string",
+          description: "Subcategory id from the vocabulary; null clears it",
+        },
+      },
+      required: ["activityId"],
     },
   },
   {

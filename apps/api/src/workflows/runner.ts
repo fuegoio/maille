@@ -159,38 +159,21 @@ const lastMessageIsFromUser = (messages: WorkflowMessage[]): boolean => {
 const settledStatus = (state: RunState): WorkflowStatus =>
   state.workflow.error ? "failed" : state.workflow.result ? "succeeded" : "cancelled";
 
-/**
- * A follow-up conversation turn: the movement is already fully reconciled and
- * the user asked a question. The model answers from fresh evidence and the
- * transcript, with no tools — the ledger cannot change — and the workflow
- * settles back where it was.
- */
-async function answerFollowUp(state: RunState): Promise<void> {
-  const evidence = await buildEvidence(state.workflow.user, state.movement);
-  const response = await chatCompletion({
-    baseUrl: env.WORKFLOWS_LLM_BASE_URL,
-    apiKey: workflowApiKey(),
-    model: env.WORKFLOWS_LLM_MODEL,
-    messages: [
-      { role: "system", content: FOLLOW_UP_SYSTEM_PROMPT },
-      taskMessage(evidence, 0),
-      ...transcriptToLlmMessages(state.messages),
-    ],
-    timeoutMs: env.WORKFLOWS_TIMEOUT_MS,
-  });
-  const reply = response.content?.trim() || "I could not come up with an answer to that.";
-  state.messages = [...state.messages, assistantMessage(state, reply)];
-  await updateWorkflowIfRunning(state, {
-    status: settledStatus(state),
-    messages: state.messages,
-  });
-}
-
 //
 // Run lifecycle
 //
 
-async function executeRun(state: RunState): Promise<void> {
+/**
+ * The decision loop: evidence → model tool loop → terminal transition. In
+ * follow-up mode (the movement is already fully reconciled and the user sent
+ * another message), the same loop runs with the follow-up system prompt: the
+ * assistant can answer with plain text — the workflow settles back where it
+ * was — or make changes with the tools, e.g. editing the created activities.
+ */
+async function executeRun(
+  state: RunState,
+  { followUp = false }: { followUp?: boolean } = {},
+): Promise<void> {
   const evidence = await buildEvidence(state.workflow.user, state.movement);
 
   const runContext: RunContext = {
@@ -201,7 +184,7 @@ async function executeRun(state: RunState): Promise<void> {
   };
 
   const llmMessages: LlmMessage[] = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: followUp ? FOLLOW_UP_SYSTEM_PROMPT : SYSTEM_PROMPT },
     taskMessage(evidence, remainingAmount(state.movement.amount, state.linkAmounts)),
     ...transcriptToLlmMessages(state.messages),
   ];
@@ -217,6 +200,17 @@ async function executeRun(state: RunState): Promise<void> {
     });
 
     if (response.toolCalls.length === 0) {
+      if (followUp) {
+        // The model answered the user without acting: the turn is a plain
+        // conversation and the workflow settles back where it was.
+        const reply = response.content?.trim() || "I could not come up with an answer to that.";
+        state.messages = [...state.messages, assistantMessage(state, reply)];
+        await updateWorkflowIfRunning(state, {
+          status: settledStatus(state),
+          messages: state.messages,
+        });
+        return;
+      }
       await finishFailed(
         state,
         "model_give_up",
@@ -262,6 +256,21 @@ async function executeRun(state: RunState): Promise<void> {
     });
   }
 
+  if (followUp) {
+    // The turn ran out of steps: settle back where it was, untouched — the
+    // movement stays reconciled and the user can ask again.
+    await updateWorkflowIfRunning(state, {
+      status: settledStatus(state),
+      messages: [
+        ...state.messages,
+        assistantMessage(
+          state,
+          `I could not finish that within ${MAX_STEPS} steps; the workflow is back where it was.`,
+        ),
+      ],
+    });
+    return;
+  }
   await finishFailed(state, "max_steps", `The model did not finish within ${MAX_STEPS} steps`);
 }
 
@@ -345,11 +354,9 @@ export async function runWorkflow(workflowId: string): Promise<void> {
   }
 
   try {
-    if (remaining === 0) {
-      await answerFollowUp(state);
-    } else {
-      await executeRun(state);
-    }
+    // A queued workflow whose movement is still reconciled is a follow-up
+    // conversation turn; the full tool loop runs either way.
+    await executeRun(state, { followUp: remaining === 0 });
   } catch (error) {
     const kind = isTimeoutError(error) ? "timeout" : "provider_error";
     const message = error instanceof Error ? error.message : String(error);

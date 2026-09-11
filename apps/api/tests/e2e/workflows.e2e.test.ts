@@ -724,7 +724,7 @@ describe("AI workflows", () => {
     expect(succeeded.result?.createdActivities).toHaveLength(1);
 
     // The movement is reconciled: the user asks a follow-up question and the
-    // assistant answers without re-running the reconcile loop.
+    // assistant answers in a follow-up turn of the full conversation loop.
     mockMistral.enqueue(textResponse("I created the 'Rent' activity for the full -800."));
     await gql(user.token, ANSWER_WORKFLOW, {
       id: workflowId,
@@ -743,11 +743,12 @@ describe("AI workflows", () => {
     expect(messages.at(-1)?.role).toBe("assistant");
     expect(messages.at(-1)?.content).toBe("I created the 'Rent' activity for the full -800.");
 
-    // The follow-up turn is a plain conversation: no tools are offered, the
-    // follow-up system prompt is used, the evidence is replayed with zero
-    // remaining, and the transcript carries the question and the summary.
+    // The follow-up turn runs the full loop: the tools are offered (so the
+    // assistant can act when asked), the follow-up system prompt is used, the
+    // evidence is replayed with zero remaining, and the transcript carries
+    // the question and the summary.
     const followUp = mockMistral.requests[1]!;
-    expect(followUp.tools).toBeUndefined();
+    expect(followUp.tools?.map((tool) => tool.function.name)).toContain("editActivity");
     expect(followUp.messages[0]?.role).toBe("system");
     expect(followUp.messages[0]?.content).toContain("already fully reconciled");
     const task = JSON.parse(followUp.messages[1]?.content ?? "{}");
@@ -767,6 +768,38 @@ describe("AI workflows", () => {
     expect(links).toHaveLength(1);
     const activities = await queryActivities(user);
     expect(activities.activities.filter((activity) => activity.name === "Rent")).toHaveLength(1);
+  });
+
+  it("edits the created activity when the user asks for a change on a follow-up", async () => {
+    const user = await createUser();
+    mockMistral.enqueue(
+      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
+    );
+
+    const movementId = await createMovement(user, "STANDING ORDER", -800);
+    const workflowId = await triggerWorkflowOnMovement(user, movementId);
+    const succeeded = await waitForWorkflowStatus(workflowId, ["succeeded"]);
+    const createdActivityId = succeeded.result?.createdActivities[0];
+
+    // The user asks for a change: the follow-up turn offers the tools and
+    // the assistant renames the activity it created, then answers.
+    mockMistral.enqueue(
+      toolCallResponse("editActivity", { activityId: createdActivityId, name: "Housing" }),
+    );
+    mockMistral.enqueue(textResponse("I renamed 'Rent' to 'Housing'."));
+    await gql(user.token, ANSWER_WORKFLOW, {
+      id: workflowId,
+      content: "Rename the activity to Housing.",
+    });
+    const row = await waitForReply(workflowId, "I renamed 'Rent' to 'Housing'.");
+
+    // The activity was renamed and the workflow settles back to succeeded,
+    // keeping its original result.
+    expect(row.status).toBe("succeeded");
+    expect(row.result?.createdActivities).toHaveLength(1);
+    const activities = await queryActivities(user);
+    expect(activities.activities.filter((activity) => activity.name === "Housing")).toHaveLength(1);
+    expect(activities.activities.filter((activity) => activity.name === "Rent")).toHaveLength(0);
   });
 
   it("answers follow-ups on a workflow the user reconciled by hand, staying cancelled", async () => {

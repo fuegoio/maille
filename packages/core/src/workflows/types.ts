@@ -64,8 +64,9 @@ export type MovementWorkflow = {
  * workflow run always ends in `pending`, `succeeded` or `failed`, and only a
  * manual retry can revive a `failed`/`cancelled` workflow. A `succeeded`
  * workflow can also be revived by a user follow-up question: the run is a
- * read-only conversation turn (the movement is reconciled, the ledger is
- * not touched) and ends back in `succeeded`.
+ * full conversation turn with the tool set (the movement is reconciled, so
+ * changes are limited to things like editing the created activities) and
+ * settles back in `succeeded` when the turn is just a conversation.
  */
 export const WORKFLOW_TRANSITIONS: Record<WorkflowStatus, WorkflowStatus[]> = {
   queued: ["running", "cancelled"],
