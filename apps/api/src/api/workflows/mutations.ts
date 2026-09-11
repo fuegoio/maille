@@ -11,15 +11,21 @@ export const registerWorkflowsMutations = () => {
       type: MovementWorkflowSchema,
       args: {
         movementId: t.arg({ type: "String" }),
+        message: t.arg({ type: "String", required: false }),
       },
       description:
-        "Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise.",
+        "Runs (or re-runs) the movement's unique workflow. Creates it if missing, resets failed/cancelled workflows, no-op otherwise. The optional message is recorded as the run's initial user guidance.",
       resolve: async (root, args, ctx) => {
         if (!isWorkflowsConfigured()) {
           throw new GraphQLError("The AI workflows are not configured (MISTRAL_API_KEY missing)");
         }
 
-        const row = await triggerWorkflow(ctx.user.id, args.movementId, ctx.session.id);
+        const row = await triggerWorkflow(
+          ctx.user.id,
+          args.movementId,
+          ctx.session.id,
+          args.message,
+        );
         if (row.status === "queued") {
           enqueueWorkflow(row.id, row.user);
         }

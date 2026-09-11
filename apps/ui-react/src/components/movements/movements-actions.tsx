@@ -145,12 +145,14 @@ export function useMovementsEntityActions(
             ? "Starting..."
             : "Create activity (workflow)",
         icon: <Sparkles />,
-        type: null,
+        type: "input" as const,
+        placeholder:
+          'Optional hint for the assistant (e.g. "this is rent")... — empty to run without',
         shortcut: "W",
         disabled: isTriggering || isReconciled,
-        action: () => {
+        action: (value?: string) => {
           selectedMovementIds.forEach((movementId) => {
-            triggerWorkflow(movementId);
+            triggerWorkflow(movementId, value);
           });
           clearAndComplete();
         },

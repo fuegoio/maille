@@ -3,6 +3,7 @@ import { ArrowRight, Bot, Sparkles, User } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useTriggerWorkflow } from "@/hooks/use-trigger-workflow";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,8 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
   const triggerWorkflow = useTriggerWorkflow();
   const openWorkflow = useWorkflows((state) => state.openWorkflow);
 
+  const [hint, setHint] = React.useState("");
+
   const isTerminal =
     workflow?.status === "succeeded" ||
     workflow?.status === "failed" ||
@@ -48,6 +51,10 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
     .at(-1)?.createdAt;
 
   const handleTrigger = () => triggerWorkflow(movementId);
+  const handleTriggerWithHint = () => {
+    triggerWorkflow(movementId, hint);
+    setHint("");
+  };
   const handleOpen = () => workflow && openWorkflow(workflow.id);
 
   // Empty state: no workflow yet
@@ -55,7 +62,7 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
     return (
       <div className="border-t px-4 py-6 sm:px-8">
         <SectionHeader />
-        <div className="mt-3 flex items-center justify-between rounded-lg border border-dashed py-4 pr-3 pl-4">
+        <div className="mt-3 rounded-lg border border-dashed p-4">
           <div className="flex items-center gap-2.5">
             <div className="flex size-7 items-center justify-center rounded-md bg-muted">
               <Sparkles className="size-3.5 text-muted-foreground" />
@@ -67,23 +74,36 @@ export function WorkflowSection({ movementId }: WorkflowSectionProps) {
               </div>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleTrigger}
-            disabled={isTriggering || isReconciled}
-          >
-            {isTriggering ? (
-              <Spinner className="size-3.5" />
-            ) : (
-              <Sparkles className="size-3.5" />
-            )}
-            {isTriggering
-              ? "Starting..."
-              : isReconciled
-                ? "Already reconciled"
-                : "Create activity"}
-          </Button>
+          <div className="mt-3 flex items-center gap-2">
+            <Input
+              value={hint}
+              onChange={(e) => setHint(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleTriggerWithHint();
+              }}
+              placeholder="Optional hint: what kind of activity? (e.g. rent)"
+              disabled={isTriggering || isReconciled}
+              className="h-8 flex-1 text-sm"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleTriggerWithHint}
+              disabled={isTriggering || isReconciled}
+              className="shrink-0"
+            >
+              {isTriggering ? (
+                <Spinner className="size-3.5" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
+              {isTriggering
+                ? "Starting..."
+                : isReconciled
+                  ? "Already reconciled"
+                  : "Create activity"}
+            </Button>
+          </div>
         </div>
       </div>
     );
