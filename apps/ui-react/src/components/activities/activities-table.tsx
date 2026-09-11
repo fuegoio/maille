@@ -13,7 +13,7 @@ import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import { useActivitiesEntityActions } from "./activities-actions";
@@ -46,7 +46,7 @@ export function ActivitiesTable({
   const currencyFormatter = useCurrencyFormatter();
 
   const activityView = useViews((state) => state.getActivityView(viewId));
-  const search = useSearch((state) => state.search);
+  const { search } = useViewSearch();
   const scrollRef = useScrollRestoration<HTMLDivElement>(
     `activities:${viewId}`,
   );
@@ -154,7 +154,7 @@ export function ActivitiesTable({
 
       <div className="flex flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
-          <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
+          <ScrollArea className="flex-1" viewportRef={scrollRef}>
             {items.map((item) => (
               <React.Fragment key={item.id}>
                 {item.itemType === "group" ? (

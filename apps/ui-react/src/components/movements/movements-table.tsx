@@ -11,7 +11,7 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import { MovementsFilters } from "./filters/movements-filters";
@@ -33,7 +33,7 @@ export function MovementsTable({
   accountFilter = null,
 }: MovementsTableProps) {
   const contextNavigate = useContextNavigate();
-  const search = useSearch((state) => state.search);
+  const { search } = useViewSearch();
   const movementView = useViews((state) => state.getMovementView(viewId));
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
 
@@ -100,7 +100,7 @@ export function MovementsTable({
 
       <div className="flex flex-1 flex-col overflow-y-auto">
         {movementsFiltered.length !== 0 ? (
-          <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
+          <ScrollArea className="flex-1" viewportRef={scrollRef}>
             {items.map((item) => (
               <React.Fragment key={item.id}>
                 {item.itemType === "group" ? (

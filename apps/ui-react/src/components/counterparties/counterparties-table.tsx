@@ -10,7 +10,7 @@ import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { useAccounts, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { useCounterparties } from "@/stores/counterparties";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 
 interface CounterpartiesTableProps {
   grouping?: "account" | null;
@@ -21,7 +21,7 @@ export function CounterpartiesTable({
 }: CounterpartiesTableProps) {
   const counterparties = useCounterparties((state) => state.counterparties);
   const accounts = useAccounts((state) => state.accounts);
-  const search = useSearch((state) => state.search);
+  const { search } = useViewSearch();
   const scrollRef = useScrollRestoration<HTMLDivElement>("counterparties");
   const [groupsFolded, setGroupsFolded] = useState<string[]>([]);
 
@@ -91,7 +91,7 @@ export function CounterpartiesTable({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto">
         {counterpartiesFiltered.length !== 0 ? (
-          <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
+          <ScrollArea className="flex-1" viewportRef={scrollRef}>
             {grouping
               ? counterpartiesWithGroups.map((item) => (
                   <div key={item.id}>

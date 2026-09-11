@@ -20,7 +20,7 @@ import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 
 import { TransactionsSelection } from "./transactions-selection";
 
@@ -47,7 +47,7 @@ export function AccountTransactionsTable({
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
-  const search = useSearch((state) => state.search);
+  const { search } = useViewSearch();
   const scrollRef = useScrollRestoration<HTMLDivElement>(
     `transactions:${accountId}`,
   );
@@ -140,7 +140,7 @@ export function AccountTransactionsTable({
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <ScrollArea className="flex-1 pb-40" viewportRef={scrollRef}>
+        <ScrollArea className="flex-1" viewportRef={scrollRef}>
           {items.map((item) => (
             <React.Fragment key={item.id}>
               {item.itemType === "group" ? (

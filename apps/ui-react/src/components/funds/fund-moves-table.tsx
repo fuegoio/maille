@@ -23,7 +23,7 @@ import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 
 import { useFundMovesEntityActions } from "./fund-moves-actions";
 import { FundMovesSelection } from "./fund-moves-selection";
@@ -70,7 +70,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user);
-  const search = useSearch((state) => state.search);
+  const { search } = useViewSearch();
 
   const moves = React.useMemo<FundMoveWithActivity[]>(() => {
     // A move tied to a transaction belongs to the activity holding it
@@ -208,7 +208,7 @@ export function FundMovesTable({ fundId }: FundMovesTableProps) {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <ScrollArea className="flex-1 pb-40">
+        <ScrollArea className="flex-1">
           {items.map((item) => (
             <React.Fragment key={item.id}>
               {item.itemType === "group" ? (

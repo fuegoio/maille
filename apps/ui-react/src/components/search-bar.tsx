@@ -8,12 +8,10 @@ import {
   InputGroupInput,
   InputGroupAddon,
 } from "@/components/ui/input-group";
-import { useSearch } from "@/stores/search";
+import { useViewSearch } from "@/stores/search";
 
 export function SearchBar() {
-  const search = useSearch((state) => state.search);
-  const setSearch = useSearch((state) => state.setSearch);
-  const clearSearch = useSearch((state) => state.clearSearch);
+  const { search, setSearch, clearSearch } = useViewSearch();
 
   const [visible, setVisible] = React.useState(search !== "");
   const [inputRef, setInputRef] = React.useState<HTMLInputElement | null>(null);
