@@ -53,11 +53,18 @@ export function FundSelect({
       </SelectTrigger>
       <SelectContent>
         {nodes.map(({ fund, depth }) => (
-          <SelectItem key={fund.id} value={fund.id}>
-            <div
-              className="flex min-w-0 items-center"
-              style={depth > 0 ? { paddingLeft: `${depth * 12}px` } : undefined}
-            >
+          <SelectItem
+            key={fund.id}
+            value={fund.id}
+            // Indent on the item, not inside it: Radix clones the item's
+            // content into the trigger, which would carry the padding there.
+            style={
+              depth > 0
+                ? { paddingLeft: `${6 + depth * 12}px` } // 6px = item's pl-1.5
+                : undefined
+            }
+          >
+            <div className="flex min-w-0 items-center">
               <div
                 className="mr-1.5 size-3 shrink-0 rounded-sm"
                 style={{ backgroundColor: fund.color }}
