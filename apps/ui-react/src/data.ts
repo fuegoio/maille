@@ -8,7 +8,6 @@ import type {
 import type { MovementWorkflow } from "@maille/core/workflows";
 
 import { AccountType } from "@maille/core/accounts";
-import { ActivityType } from "@maille/core/activities";
 
 import { graphql } from "./gql";
 import { graphqlClient } from "./gql/client";
@@ -58,7 +57,6 @@ const userDataQuery = graphql(/* GraphQL */ `
       name
       description
       date
-      type
       category
       subcategory
       project
@@ -112,7 +110,6 @@ const userDataQuery = graphql(/* GraphQL */ `
     activityCategories {
       id
       name
-      type
       emoji
     }
 
@@ -275,7 +272,6 @@ export const fetchUserData = async () => {
     useActivities.getState().addActivity({
       ...activity,
       date: new Date(activity.date),
-      type: activity.type as ActivityType,
       history: activity.history.map(deserializeHistoryEntry),
       transactions: activity.transactions.map((transaction) => ({
         ...transaction,
@@ -291,7 +287,6 @@ export const fetchUserData = async () => {
   userData.activityCategories.forEach((category) => {
     useActivities.getState().addActivityCategory({
       ...category,
-      type: category.type as ActivityType,
     });
   });
 

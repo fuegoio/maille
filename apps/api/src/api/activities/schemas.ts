@@ -26,7 +26,14 @@ ActivitySchema.implement({
         return parent.date;
       },
     }),
-    type: t.exposeString("type"),
+    types: t.field({
+      type: ["String"],
+      resolve: (parent) => parent.types,
+    }),
+    amounts: t.field({
+      type: ActivityAmountsSchema,
+      resolve: (parent) => parent.amounts,
+    }),
     category: t.field({
       type: "String",
       resolve: (parent) => parent.category,
@@ -60,6 +67,22 @@ ActivitySchema.implement({
       type: [HistoryEntrySchema],
       resolve: (parent) => parent.history ?? [],
     }),
+  }),
+});
+
+export const ActivityAmountsSchema = builder.objectRef<{
+  expense: number;
+  revenue: number;
+  investment: number;
+  neutral: number;
+}>("ActivityAmounts");
+
+ActivityAmountsSchema.implement({
+  fields: (t) => ({
+    expense: t.exposeFloat("expense"),
+    revenue: t.exposeFloat("revenue"),
+    investment: t.exposeFloat("investment"),
+    neutral: t.exposeFloat("neutral"),
   }),
 });
 
@@ -164,7 +187,6 @@ ActivityCategorySchema.implement({
       resolve: (parent) => parent.id,
     }),
     name: t.exposeString("name"),
-    type: t.exposeString("type"),
     emoji: t.exposeString("emoji", {
       nullable: true,
     }),

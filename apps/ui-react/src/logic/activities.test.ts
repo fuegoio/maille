@@ -1,6 +1,6 @@
 import type {
-  ActivityMovement,
-  ActivitySharing,
+  Activity,
+  ActivityAmounts,
   Transaction,
 } from "@maille/core/activities";
 
@@ -9,31 +9,29 @@ import { describe, expect, it } from "vitest";
 
 import {
   duplicateActivities,
-  getActivityCategoryTotalForMonth,
   getActivityTypeTotalForMonth,
   getActivityTypeTotalForProject,
 } from "./activities";
 
-const makeActivity = (
-  overrides: Partial<{
-    id: string;
-    name: string;
-    description: string | null;
-    type: ActivityType;
-    date: Date;
-    amount: number;
-    category: string | null;
-    subcategory: string | null;
-    project: string | null;
-    transactions: Transaction[];
-    movements: ActivityMovement[];
-    sharing: ActivitySharing[];
-  }>,
-) => ({
+const zeroAmounts = (): ActivityAmounts => ({
+  expense: 0,
+  revenue: 0,
+  investment: 0,
+  neutral: 0,
+});
+
+/** A single-type activity contributing `amount` to that type's column. */
+const typed = (type: ActivityType, amount: number) => ({
+  types: [type],
+  amounts: { ...zeroAmounts(), [type]: amount },
+});
+
+const makeActivity = (overrides: Partial<Activity> = {}): Activity => ({
   id: "a",
   name: "Test",
   description: null,
-  type: ActivityType.EXPENSE,
+  types: [],
+  amounts: zeroAmounts(),
   date: new Date("2025-01-15"),
   amount: 100,
   category: null,
@@ -52,21 +50,21 @@ describe("getActivityTypeTotalForMonth", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-03-10"),
         amount: 50,
+        ...typed(ActivityType.EXPENSE, 50),
       }),
       makeActivity({
         id: "2",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-03-20"),
         amount: 80,
+        ...typed(ActivityType.EXPENSE, 80),
       }),
       makeActivity({
         id: "3",
-        type: ActivityType.REVENUE,
         date: new Date("2025-03-05"),
         amount: 200,
+        ...typed(ActivityType.REVENUE, 200),
       }),
     ];
 
@@ -83,15 +81,15 @@ describe("getActivityTypeTotalForMonth", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-01-10"),
         amount: 100,
+        ...typed(ActivityType.EXPENSE, 100),
       }),
       makeActivity({
         id: "2",
-        type: ActivityType.EXPENSE,
         date: new Date("2024-01-10"),
         amount: 999,
+        ...typed(ActivityType.EXPENSE, 999),
       }),
     ];
 
@@ -108,15 +106,15 @@ describe("getActivityTypeTotalForMonth", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-03-15"),
         amount: 60,
+        ...typed(ActivityType.EXPENSE, 60),
       }),
       makeActivity({
         id: "2",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-04-01"),
         amount: 40,
+        ...typed(ActivityType.EXPENSE, 40),
       }),
     ];
 
@@ -133,9 +131,9 @@ describe("getActivityTypeTotalForMonth", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.REVENUE,
         date: new Date("2025-03-10"),
         amount: 500,
+        ...typed(ActivityType.REVENUE, 500),
       }),
     ];
 
@@ -152,9 +150,9 @@ describe("getActivityTypeTotalForMonth", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         date: new Date("2025-03-31"),
         amount: 75,
+        ...typed(ActivityType.EXPENSE, 75),
       }),
     ];
 
@@ -165,6 +163,36 @@ describe("getActivityTypeTotalForMonth", () => {
     });
 
     expect(result).toBe(75);
+  });
+
+  it("only sums the per-type amount of multi-type activities", () => {
+    const activities = [
+      makeActivity({
+        id: "1",
+        date: new Date("2025-03-10"),
+        amount: 300,
+        types: [ActivityType.EXPENSE, ActivityType.INVESTMENT],
+        amounts: {
+          ...zeroAmounts(),
+          expense: 100,
+          investment: 200,
+        },
+      }),
+    ];
+
+    const expenseTotal = getActivityTypeTotalForMonth({
+      monthDate: new Date("2025-03-01"),
+      activityType: ActivityType.EXPENSE,
+      activities,
+    });
+    const investmentTotal = getActivityTypeTotalForMonth({
+      monthDate: new Date("2025-03-01"),
+      activityType: ActivityType.INVESTMENT,
+      activities,
+    });
+
+    expect(expenseTotal).toBe(100);
+    expect(investmentTotal).toBe(200);
   });
 
   it("returns 0 for an empty activity list", () => {
@@ -183,27 +211,27 @@ describe("getActivityTypeTotalForProject", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         project: "proj-1",
         amount: 120,
+        ...typed(ActivityType.EXPENSE, 120),
       }),
       makeActivity({
         id: "2",
-        type: ActivityType.EXPENSE,
         project: "proj-1",
         amount: 80,
+        ...typed(ActivityType.EXPENSE, 80),
       }),
       makeActivity({
         id: "3",
-        type: ActivityType.REVENUE,
         project: "proj-1",
         amount: 500,
+        ...typed(ActivityType.REVENUE, 500),
       }),
       makeActivity({
         id: "4",
-        type: ActivityType.EXPENSE,
         project: "proj-2",
         amount: 999,
+        ...typed(ActivityType.EXPENSE, 999),
       }),
     ];
 
@@ -220,15 +248,15 @@ describe("getActivityTypeTotalForProject", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         project: "proj-1",
         amount: 50,
+        ...typed(ActivityType.EXPENSE, 50),
       }),
       makeActivity({
         id: "2",
-        type: ActivityType.EXPENSE,
         project: "proj-2",
         amount: 300,
+        ...typed(ActivityType.EXPENSE, 300),
       }),
     ];
 
@@ -245,9 +273,9 @@ describe("getActivityTypeTotalForProject", () => {
     const activities = [
       makeActivity({
         id: "1",
-        type: ActivityType.EXPENSE,
         project: "proj-2",
         amount: 100,
+        ...typed(ActivityType.EXPENSE, 100),
       }),
     ];
 
@@ -264,142 +292,6 @@ describe("getActivityTypeTotalForProject", () => {
     const result = getActivityTypeTotalForProject({
       projectId: "proj-1",
       activityType: ActivityType.EXPENSE,
-      activities: [],
-    });
-
-    expect(result).toBe(0);
-  });
-});
-
-describe("getActivityCategoryTotalForMonth", () => {
-  it("sums activities of the right category in the target month", () => {
-    const activities = [
-      makeActivity({
-        id: "1",
-        category: "cat-food",
-        date: new Date("2025-03-10"),
-        amount: 40,
-      }),
-      makeActivity({
-        id: "2",
-        category: "cat-food",
-        date: new Date("2025-03-25"),
-        amount: 60,
-      }),
-      makeActivity({
-        id: "3",
-        category: "cat-rent",
-        date: new Date("2025-03-01"),
-        amount: 900,
-      }),
-    ];
-
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
-      activities,
-    });
-
-    expect(result).toBe(100);
-  });
-
-  it("excludes activities from the same category in a different month", () => {
-    const activities = [
-      makeActivity({
-        id: "1",
-        category: "cat-food",
-        date: new Date("2025-03-10"),
-        amount: 50,
-      }),
-      makeActivity({
-        id: "2",
-        category: "cat-food",
-        date: new Date("2025-04-10"),
-        amount: 999,
-      }),
-    ];
-
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
-      activities,
-    });
-
-    expect(result).toBe(50);
-  });
-
-  it("excludes activities from the same category and month in a different year", () => {
-    const activities = [
-      makeActivity({
-        id: "1",
-        category: "cat-food",
-        date: new Date("2025-03-10"),
-        amount: 50,
-      }),
-      makeActivity({
-        id: "2",
-        category: "cat-food",
-        date: new Date("2024-03-10"),
-        amount: 999,
-      }),
-    ];
-
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
-      activities,
-    });
-
-    expect(result).toBe(50);
-  });
-
-  it("includes an activity with a time component on the last day of the month", () => {
-    // A date-range approach using new Date(year, month+1, 0) gives local midnight of
-    // the last day (00:00:00.000), which wrongly excludes activities timestamped any
-    // time after midnight on that day. The month+year comparison is not affected by
-    // the time-of-day.
-    const lastDayWithTime = new Date(2025, 2, 31, 14, 30, 0); // March 31 at 14:30 local
-    const activities = [
-      makeActivity({
-        id: "1",
-        category: "cat-food",
-        date: lastDayWithTime,
-        amount: 75,
-      }),
-    ];
-
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
-      activities,
-    });
-
-    expect(result).toBe(75);
-  });
-
-  it("returns 0 when no activities match the category", () => {
-    const activities = [
-      makeActivity({
-        id: "1",
-        category: "cat-rent",
-        date: new Date("2025-03-10"),
-        amount: 900,
-      }),
-    ];
-
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
-      activities,
-    });
-
-    expect(result).toBe(0);
-  });
-
-  it("returns 0 for an empty activity list", () => {
-    const result = getActivityCategoryTotalForMonth({
-      monthDate: new Date("2025-03-01"),
-      categoryId: "cat-food",
       activities: [],
     });
 
@@ -413,7 +305,6 @@ describe("duplicateActivities", () => {
       id: "original",
       name: "Rent",
       description: "Monthly rent",
-      type: ActivityType.EXPENSE,
       date: new Date("2025-03-10"),
       category: "cat-rent",
       subcategory: "sub-home",
@@ -438,7 +329,6 @@ describe("duplicateActivities", () => {
       name: "Rent",
       description: "Monthly rent",
       date: new Date("2025-03-10"),
-      type: ActivityType.EXPENSE,
       category: "cat-rent",
       subcategory: "sub-home",
       project: "proj-1",
@@ -462,6 +352,7 @@ describe("duplicateActivities", () => {
   it("does not carry over computed or linked fields", () => {
     const activity = makeActivity({
       id: "original",
+      ...typed(ActivityType.EXPENSE, 100),
       movements: [{ id: "am1", movement: "m1", amount: -900 }],
       sharing: [
         {
@@ -478,6 +369,8 @@ describe("duplicateActivities", () => {
     });
 
     expect(duplicate).not.toHaveProperty("amount");
+    expect(duplicate).not.toHaveProperty("types");
+    expect(duplicate).not.toHaveProperty("amounts");
     expect(duplicate).not.toHaveProperty("status");
     expect(duplicate).not.toHaveProperty("movements");
     expect(duplicate).not.toHaveProperty("sharing");

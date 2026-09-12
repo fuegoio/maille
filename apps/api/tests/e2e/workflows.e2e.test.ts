@@ -254,7 +254,7 @@ const ACTIVITIES_QUERY = /* GraphQL */ `
     activities {
       id
       name
-      type
+      types
       date
       movements {
         id
@@ -270,7 +270,7 @@ const queryActivities = async (user: TestUser) =>
     activities: {
       id: string;
       name: string;
-      type: string;
+      types: string[];
       movements: { id: string; movement: string; amount: number }[];
     }[];
   }>(user.token, ACTIVITIES_QUERY, {});
@@ -291,14 +291,8 @@ const queryEvents = async (user: TestUser) =>
   });
 
 const CREATE_ACTIVITY = /* GraphQL */ `
-  mutation CreateActivity(
-    $id: String!
-    $name: String!
-    $date: Date!
-    $type: String!
-    $transactions: [TransactionInput!]
-  ) {
-    createActivity(id: $id, name: $name, date: $date, type: $type, transactions: $transactions) {
+  mutation CreateActivity($id: String!, $name: String!, $date: Date!, $transactions: [TransactionInput!]) {
+    createActivity(id: $id, name: $name, date: $date, transactions: $transactions) {
       id
     }
   }
@@ -313,7 +307,6 @@ const createActivityManually = async (
     id: crypto.randomUUID(),
     name,
     date: "2026-09-01",
-    type: "expense",
     transactions: [
       {
         id: crypto.randomUUID(),
@@ -423,7 +416,6 @@ describe("AI workflows", () => {
     mockMistral.enqueue(
       toolCallResponse("createActivity", {
         name: "Spotify",
-        type: "expense",
         amount: -12.99,
       }),
     );
@@ -449,7 +441,7 @@ describe("AI workflows", () => {
     const activities = await queryActivities(user);
     const created = activities.activities.filter((activity) => activity.name === "Spotify");
     expect(created).toHaveLength(1);
-    expect(created[0]!.type).toBe("expense");
+    expect(created[0]!.types).toEqual(["expense"]);
     expect(created[0]!.movements).toHaveLength(1);
     expect(created[0]!.movements[0]!.movement).toBe(movementId);
 
@@ -518,12 +510,8 @@ describe("AI workflows", () => {
 
   it("splits a movement across several activities", async () => {
     const user = await createUser();
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Groceries", type: "expense", amount: -15 }),
-    );
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Pharmacy", type: "expense", amount: -5 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Groceries", amount: -15 }));
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Pharmacy", amount: -5 }));
 
     const movementId = await createMovement(user, "Supermarket", -20);
     const workflowId = await triggerWorkflowOnMovement(user, movementId);
@@ -589,9 +577,7 @@ describe("AI workflows", () => {
       { id: "option-1", label: "Netflix" },
     ]);
 
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Spotify", type: "expense", amount: -12.99 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Spotify", amount: -12.99 }));
     await gql(user.token, ANSWER_WORKFLOW, {
       id: workflowId,
       content: "It's Spotify",
@@ -634,9 +620,7 @@ describe("AI workflows", () => {
     expect(movementsData.movements.find((m) => m.id === movementId)?.status).toBe("incomplete");
 
     // Manual trigger retries with a fresh run and succeeds.
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Mystery", type: "expense", amount: -99 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Mystery", amount: -99 }));
     await gql(user.token, TRIGGER_WORKFLOW, { movementId });
     await waitForWorkflowStatus(workflowId, ["succeeded"]);
 
@@ -649,9 +633,7 @@ describe("AI workflows", () => {
   it("processes two similar movements serially without creating a duplicate activity", async () => {
     const user = await createUser();
     // Workflow A: creates the activity.
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Spotify", type: "expense", amount: -12.99 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Spotify", amount: -12.99 }));
     // Workflow B: runs after A (runs are serialized per user), so its
     // evidence pack carries A's Spotify activity — the model reads it and
     // links to it instead of creating a duplicate.
@@ -714,9 +696,7 @@ describe("AI workflows", () => {
 
   it("answers follow-up questions after the movement is reconciled", async () => {
     const user = await createUser();
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Rent", amount: -800 }));
 
     const movementId = await createMovement(user, "STANDING ORDER", -800);
     const workflowId = await triggerWorkflowOnMovement(user, movementId);
@@ -772,9 +752,7 @@ describe("AI workflows", () => {
 
   it("edits the created activity when the user asks for a change on a follow-up", async () => {
     const user = await createUser();
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Rent", amount: -800 }));
 
     const movementId = await createMovement(user, "STANDING ORDER", -800);
     const workflowId = await triggerWorkflowOnMovement(user, movementId);
@@ -922,9 +900,7 @@ describe("AI workflows", () => {
       messages: [],
     });
 
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Leftover", type: "expense", amount: -42 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Leftover", amount: -42 }));
 
     const { startWorkflows } = await import("@/workflows/queue");
     await startWorkflows();
@@ -945,9 +921,7 @@ describe("AI workflows", () => {
 
   it("records the initial hint message and replays it to the model", async () => {
     const user = await createUser();
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -800 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Rent", amount: -800 }));
 
     const movementId = await createMovement(user, "STANDING ORDER", -800);
     const workflowId = await triggerWorkflowOnMovement(
@@ -978,9 +952,7 @@ describe("AI workflows", () => {
     await waitForWorkflowStatus(workflowId, ["failed"]);
 
     // Retry with a hint: the transcript gains a separator and the hint.
-    mockMistral.enqueue(
-      toolCallResponse("createActivity", { name: "Rent", type: "expense", amount: -42 }),
-    );
+    mockMistral.enqueue(toolCallResponse("createActivity", { name: "Rent", amount: -42 }));
     await triggerWorkflowOnMovement(user, movementId, "It is the rent");
     await waitForWorkflowStatus(workflowId, ["succeeded"]);
 

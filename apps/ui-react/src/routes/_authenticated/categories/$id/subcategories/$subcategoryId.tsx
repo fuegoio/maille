@@ -35,7 +35,7 @@ import {
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
-import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
 export const Route = createFileRoute(
@@ -176,8 +176,7 @@ function SubcategoryPage({
     views: { label: "Total" },
     value: {
       label: "Amount",
-      color:
-        ACTIVITY_TYPES_CHART_COLOR[category.type] ?? "var(--color-red-400)",
+      color: "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 
@@ -200,7 +199,6 @@ function SubcategoryPage({
           <div className="flex-1" />
           <SearchBar />
           <AddActivityButton
-            type={category.type}
             category={category.id}
             subcategory={subcategory.id}
           />

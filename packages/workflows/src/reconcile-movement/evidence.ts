@@ -7,7 +7,6 @@
 export type EvidenceActivity = {
   id: string;
   name: string;
-  type: string;
   date: string;
   category: string | null;
   subcategory: string | null;
@@ -21,7 +20,7 @@ export type EvidenceSimilarMovement = {
   name: string;
   amount: number;
   date: string;
-  links: { activityId: string; activityName: string; activityType: string; amount: number }[];
+  links: { activityId: string; activityName: string; amount: number }[];
 };
 
 export type Evidence = {
@@ -37,7 +36,7 @@ export type Evidence = {
   activitiesByName: EvidenceActivity[];
   vocabulary: {
     accounts: { id: string; name: string; type: string }[];
-    categories: { id: string; name: string; type: string }[];
+    categories: { id: string; name: string }[];
     subcategories: { id: string; name: string; category: string | null }[];
     projects: { id: string; name: string }[];
     funds: { id: string; name: string; parentFund: string | null }[];

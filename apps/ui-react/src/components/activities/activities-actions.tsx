@@ -1,6 +1,5 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { type Activity } from "@maille/core/activities";
 import {
-  ArrowRightLeft,
   Copy,
   Tag,
   TentTree,
@@ -24,11 +23,7 @@ import {
   deleteActivityMutation,
   updateActivityMutation,
 } from "@/mutations/activities";
-import {
-  ACTIVITY_TYPES_COLOR,
-  ACTIVITY_TYPES_NAME,
-  useActivities,
-} from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
@@ -49,12 +44,6 @@ export function useActivitiesEntityActions(
       .filter(Boolean) as Activity[];
   }, [selectedActivityIds, activities]);
 
-  const filteredCategories = React.useMemo(() => {
-    if (selectedActivitiesData.length === 0) return categories;
-    const firstActivity = selectedActivitiesData[0];
-    return categories.filter((c) => c.type === firstActivity.type);
-  }, [selectedActivitiesData, categories]);
-
   const filteredSubcategories = React.useMemo(() => {
     if (selectedActivitiesData.length === 0) return [];
     const firstActivity = selectedActivitiesData[0];
@@ -66,7 +55,6 @@ export function useActivitiesEntityActions(
       name?: string;
       description?: string | null;
       date?: Date;
-      type?: ActivityType;
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
@@ -202,38 +190,13 @@ export function useActivitiesEntityActions(
         },
       },
       {
-        value: "type",
-        label: "Change activity type",
-        icon: <ArrowRightLeft />,
-        type: "select" as const,
-        shortcut: "T",
-        getValues: () =>
-          Object.values(ActivityType).map((activityType) => ({
-            value: `type-${activityType}`,
-            label: ACTIVITY_TYPES_NAME[activityType],
-            icon: (
-              <div
-                className={`h-4 w-4 rounded-full ${ACTIVITY_TYPES_COLOR[activityType]}`}
-              />
-            ),
-            action: () => {
-              updateActivities({
-                type: activityType,
-                category: null,
-                subcategory: null,
-              });
-              clearAndComplete();
-            },
-          })),
-      },
-      {
         value: "category",
         label: "Change category",
         icon: <Tag />,
         type: "select" as const,
         shortcut: "Y",
         getValues: () => [
-          ...filteredCategories.map((category) => ({
+          ...categories.map((category) => ({
             value: `category-${category.id}`,
             label: category.name,
             icon: category.emoji ? <span>{category.emoji}</span> : null,
@@ -333,7 +296,7 @@ export function useActivitiesEntityActions(
     ];
   }, [
     selectedActivitiesData,
-    filteredCategories,
+    categories,
     filteredSubcategories,
     projects,
     updateActivities,

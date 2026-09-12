@@ -14,11 +14,12 @@ import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
+import { ActivityAmountsValue } from "./activity-amounts";
 
 interface ActivityLineProps {
   activity: Activity;
@@ -90,11 +91,9 @@ export function ActivityLine({
   };
 
   return (
-    <ContextLink
-      to="/activities/$id"
-      params={{ id: activity.id }}
+    <div
       className={cn(
-        "group block shrink border-b pl-1 transition-colors hover:bg-accent",
+        "group relative block shrink border-b pl-1 transition-colors hover:bg-accent",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
       style={{
@@ -103,6 +102,14 @@ export function ActivityLine({
           : "40px",
       }}
     >
+      {/* Stretched link: the row itself must not be an anchor, because the
+          category/subcategory/project badges below are links too. */}
+      <ContextLink
+        to="/activities/$id"
+        params={{ id: activity.id }}
+        aria-label={activity.name}
+        className="absolute inset-0"
+      />
       <div className="flex h-10 items-center gap-2 pr-2 pl-4.5 text-sm lg:pr-6">
         <Checkbox
           checked={checked}
@@ -115,15 +122,8 @@ export function ActivityLine({
             onCheckedChange(e);
           }}
           className={cn(
-            "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+            "relative z-10 mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
             checked && "opacity-100",
-          )}
-        />
-
-        <div
-          className={cn(
-            "size-2 shrink-0 rounded-lg",
-            ACTIVITY_TYPES_COLOR[activity.type],
           )}
         />
 
@@ -147,7 +147,7 @@ export function ActivityLine({
             <Badge
               variant="outline"
               asChild
-              className="h-6 [a]:hover:bg-border/50"
+              className="relative z-10 h-6 [a]:hover:bg-border/50"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -165,7 +165,7 @@ export function ActivityLine({
                 variant="outline"
                 asChild
                 onClick={(e) => e.stopPropagation()}
-                className="h-6 [a]:hover:bg-border/50"
+                className="relative z-10 h-6 [a]:hover:bg-border/50"
               >
                 <Link
                   to={`/categories/$id/subcategories/$subcategoryId`}
@@ -188,7 +188,7 @@ export function ActivityLine({
                 <Badge
                   variant="secondary"
                   asChild
-                  className="h-6 [a]:hover:bg-border/50"
+                  className="relative z-10 h-6 [a]:hover:bg-border/50"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
@@ -204,17 +204,7 @@ export function ActivityLine({
             )}
         </div>
 
-        <div
-          className={cn(
-            "text-right font-mono font-medium whitespace-nowrap sm:min-w-16",
-            {
-              "text-muted-foreground":
-                accountFilter !== null || showTransactions,
-            },
-          )}
-        >
-          {currencyFormatter.format(activity.amount)}
-        </div>
+        <ActivityAmountsValue amounts={activity.amounts} className="text-sm" />
       </div>
 
       {showTransactions && (
@@ -238,6 +228,6 @@ export function ActivityLine({
           ))}
         </div>
       )}
-    </ContextLink>
+    </div>
   );
 }

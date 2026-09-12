@@ -11,7 +11,6 @@ globalThis.localStorage = {
 } as unknown as Storage;
 
 const { AccountType } = await import("@maille/core/accounts");
-const { ActivityType } = await import("@maille/core/activities");
 const { useAccounts } = await import("./accounts");
 const { useActivities } = await import("./activities");
 
@@ -47,7 +46,6 @@ function seedActivity(id: string, fromAccount: string) {
     name: id,
     description: null,
     date: new Date("2024-01-15T12:00:00Z"),
-    type: ActivityType.EXPENSE,
     category: null,
     subcategory: null,
     project: null,

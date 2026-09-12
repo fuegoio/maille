@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActivityType } from "@maille/core/activities";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm, Controller } from "react-hook-form";
 import z from "zod";
@@ -22,21 +21,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import { createActivityCategoryMutation } from "@/mutations/activities";
-import { ACTIVITY_TYPES_COLOR, ACTIVITY_TYPES_NAME } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
 const createCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(ActivityType),
   emoji: z.string().nullable().optional(),
 });
 
@@ -47,7 +36,6 @@ interface CreateCategoryDialogProps {
   onOpenChange?: (open: boolean) => void;
   children?: ReactNode;
   initialName?: string;
-  initialType?: ActivityType;
   onCategoryCreated?: (categoryId: string) => void;
 }
 
@@ -56,7 +44,6 @@ export function CreateCategoryDialog({
   onOpenChange,
   children,
   initialName = "",
-  initialType = ActivityType.EXPENSE,
   onCategoryCreated,
 }: CreateCategoryDialogProps) {
   const mutate = useSync((state) => state.mutate);
@@ -72,7 +59,6 @@ export function CreateCategoryDialog({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
       name: initialName,
-      type: initialType,
       emoji: null,
     },
   });
@@ -80,15 +66,13 @@ export function CreateCategoryDialog({
   // Update form values when props change
   useEffect(() => {
     setValue("name", initialName);
-    setValue("type", initialType);
-  }, [initialName, initialType, setValue]);
+  }, [initialName, setValue]);
 
   const onSubmit = async (data: CreateCategoryFormValues) => {
     try {
       const category = {
         id: crypto.randomUUID(),
         name: data.name,
-        type: data.type,
         emoji: data.emoji || null,
       };
 
@@ -170,41 +154,6 @@ export function CreateCategoryDialog({
               </FieldContent>
             </Field>
           </div>
-
-          <Field>
-            <FieldLabel>Activity Type</FieldLabel>
-            <FieldContent>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select activity type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(ActivityType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          <div
-                            className={cn(
-                              "mr-2 h-3 w-3 shrink-0 rounded-xl",
-                              ACTIVITY_TYPES_COLOR[type],
-                            )}
-                          />
-                          <div className="text-sm font-medium">
-                            {ACTIVITY_TYPES_NAME[type]}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FieldContent>
-          </Field>
 
           <DialogFooter>
             <DialogClose asChild>

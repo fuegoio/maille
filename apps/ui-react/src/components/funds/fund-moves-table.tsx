@@ -9,12 +9,12 @@ import {
   ContextLink,
   useContextNavigate,
 } from "@/components/navigation/breadcrumbs";
+import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
@@ -58,7 +58,6 @@ export function FundMovesTable({
   subtree = false,
 }: FundMovesTableProps) {
   const contextNavigate = useContextNavigate();
-  const currencyFormatter = useCurrencyFormatter();
   const funds = useFunds((state) => state.funds);
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
@@ -218,31 +217,15 @@ export function FundMovesTable({
                   month={item.month}
                   year={item.year}
                 >
-                  {(
-                    [
-                      ["in", "bg-green-400"],
-                      ["out", "bg-red-400"],
-                    ] as const
-                  ).map(([direction, color]) => {
-                    const total = item.rows
-                      .filter((row) => row.direction === direction)
-                      .reduce((sum, row) => sum + row.amount, 0);
-
-                    return total > 0 ? (
-                      <div
-                        key={direction}
-                        className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
-                      >
-                        <div
-                          className={cn(
-                            "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
-                            color,
-                          )}
-                        />
-                        {currencyFormatter.format(total)}
-                      </div>
-                    ) : null;
-                  })}
+                  <AmountPairsValue
+                    pairs={(["in", "out"] as const).map((direction) => ({
+                      dot: direction === "in" ? "bg-green-400" : "bg-red-400",
+                      amount: item.rows
+                        .filter((row) => row.direction === direction)
+                        .reduce((sum, row) => sum + row.amount, 0),
+                    }))}
+                    className="text-sm"
+                  />
                 </TableGroupHeader>
               ) : (
                 <EntityContextMenu
@@ -274,7 +257,6 @@ export function FundMovesTable({
                     <FundMoveLine
                       move={item}
                       funds={funds}
-                      currencyFormatter={currencyFormatter}
                       to={item.activity ? "/activities/$id" : undefined}
                       params={
                         item.activity ? { id: item.activity.id } : undefined
@@ -310,7 +292,6 @@ export function FundMovesTable({
 function FundMoveLine({
   move,
   funds,
-  currencyFormatter,
   to,
   params,
   search,
@@ -320,7 +301,6 @@ function FundMoveLine({
 }: {
   move: FundMoveWithActivity;
   funds: { id: string; name: string; color: string }[];
-  currencyFormatter: Intl.NumberFormat;
   to?: string;
   params?: Record<string, string>;
   search?: Record<string, string>;
@@ -396,13 +376,6 @@ function FundMoveLine({
       />
 
       <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
-        <div
-          className={cn(
-            "size-2 shrink-0 rounded-lg",
-            isInflow ? "bg-green-400" : "bg-red-400",
-          )}
-        />
-
         <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
           {format(move.date, "dd EEE")}
         </div>
@@ -438,16 +411,17 @@ function FundMoveLine({
                   {move.note}
                 </div>
               )}
-              <div className="flex-1" />
 
               {/* The transaction's account movement, when the row is wide */}
               {move.accounts && (
-                <div className="hidden shrink-0 items-center gap-1.5 text-muted-foreground @3xl:flex">
+                <div className="hidden shrink-0 items-center gap-1.5 border-l px-2 text-muted-foreground @3xl:flex">
                   <AccountFlowLabel accountId={move.accounts.from} />
                   <MoveRight className="size-3.5 shrink-0" />
                   <AccountFlowLabel accountId={move.accounts.to} />
                 </div>
               )}
+
+              <div className="flex-1" />
             </ContextLink>
           </>
         ) : (
@@ -472,9 +446,10 @@ function FundMoveLine({
         )}
       </div>
 
-      <div className="mr-1 flex h-10 w-32 shrink-0 items-center justify-end font-mono whitespace-nowrap">
-        {currencyFormatter.format(amount)}
-      </div>
+      <AmountPairsValue
+        pairs={[{ dot: isInflow ? "bg-green-400" : "bg-red-400", amount }]}
+        hideZeros={false}
+      />
     </>
   );
 

@@ -1,14 +1,8 @@
-import { ActivityType } from "@maille/core/activities";
-import Color from "colorjs.io";
+import { ActivityType, sumActivityAmounts } from "@maille/core/activities";
 import { useMemo } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import {
@@ -32,146 +26,110 @@ export function ProjectActivitiesSummary({
 }: ProjectActivitiesSummaryProps) {
   const categories = useActivities((state) => state.activityCategories);
   const activities = useActivities((state) => state.activities);
+  const currencyFormatter = useCurrencyFormatter();
 
   const projectActivities = useMemo(
     () => activities.filter((a) => a.project === projectId),
     [activities, projectId],
   );
 
-  const getCategories = (activityType: ActivityType) =>
-    categories
-      .filter((c) => c.type === activityType)
-      .filter((c) => projectActivities.some((a) => a.category === c.id))
-      .sort((a, b) => a.name.localeCompare(b.name));
+  // Types are derived from the accounts, not a property of categories, so
+  // categories are listed flat — each line carries its per-type amounts.
+  // The type totals stay as a filterable overview of the project's flows.
+  const projectAmounts = useMemo(
+    () => sumActivityAmounts(projectActivities),
+    [projectActivities],
+  );
 
-  const getTypeTotal = (activityType: ActivityType) =>
-    projectActivities
-      .filter((a) => a.type === activityType)
-      .reduce((total, a) => total + a.amount, 0);
+  const usedCategories = useMemo(
+    () =>
+      categories
+        .filter((category) =>
+          projectActivities.some(
+            (a) =>
+              a.category === category.id &&
+              Object.values(a.amounts).some((amount) => amount !== 0),
+          ),
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [categories, projectActivities],
+  );
 
-  const getCategoryTotal = (categoryId: string) =>
-    projectActivities
-      .filter((a) => a.category === categoryId)
-      .reduce((total, a) => total + a.amount, 0);
-
-  const getProgressBarColor = (index: number, activityType: ActivityType) => {
-    const color = new Color(
-      {
-        [ActivityType.REVENUE]: "#4ade80",
-        [ActivityType.EXPENSE]: "#f87171",
-        [ActivityType.INVESTMENT]: "#fb923c",
-        [ActivityType.NEUTRAL]: "#9ca3af",
-      }[activityType],
-    );
-    color.lch.l =
-      80 +
-      (index / categories.filter((c) => c.type === activityType).length) * -50;
-    return color;
+  const selectType = (activityType: ActivityType) => {
+    onActivitiesFiltersChange({
+      ...activitiesFilters,
+      activityType:
+        activitiesFilters.activityType === activityType
+          ? undefined
+          : activityType,
+    });
   };
-
-  const currencyFormatter = useCurrencyFormatter();
-
-  const activityTypes = [
-    ActivityType.REVENUE,
-    ActivityType.EXPENSE,
-    ActivityType.INVESTMENT,
-    ActivityType.NEUTRAL,
-  ].map((type) => ({ type, value: getTypeTotal(type) }));
 
   return (
     <div>
-      {activityTypes.map((activityType) => (
-        <div key={activityType.type} className="w-full border-b px-3 py-4">
+      <div className="w-full border-b px-3 py-4">
+        {[
+          ActivityType.REVENUE,
+          ActivityType.EXPENSE,
+          ActivityType.INVESTMENT,
+          ActivityType.NEUTRAL,
+        ].map((activityType) => (
           <div
+            key={activityType}
             className={cn(
               "group flex h-9 cursor-pointer items-center justify-between rounded px-3 transition-colors",
               {
-                "bg-muted":
-                  activitiesFilters.activityType === activityType.type,
+                "bg-muted": activitiesFilters.activityType === activityType,
                 "hover:bg-muted/50":
-                  activitiesFilters.activityType !== activityType.type,
+                  activitiesFilters.activityType !== activityType,
               },
             )}
-            onClick={() => {
-              onActivitiesFiltersChange({
-                ...activitiesFilters,
-                activityType:
-                  activitiesFilters.activityType === activityType.type
-                    ? undefined
-                    : activityType.type,
-              });
-            }}
+            onClick={() => selectType(activityType)}
           >
             <div className="flex items-center">
               <div
                 className={cn(
                   "mr-2 size-3 shrink-0 rounded-full",
-                  ACTIVITY_TYPES_COLOR[activityType.type],
+                  ACTIVITY_TYPES_COLOR[activityType],
                 )}
               />
-              <span className="text-sm font-medium text-white">
-                {ACTIVITY_TYPES_NAME[activityType.type]}
+              <span className="text-sm font-medium">
+                {ACTIVITY_TYPES_NAME[activityType]}
               </span>
             </div>
 
             <div className="flex items-center">
               <div
-                className={`text-primary-200 mr-4 text-sm ${
-                  activitiesFilters.activityType === activityType.type
+                className={`mr-4 text-sm text-muted-foreground ${
+                  activitiesFilters.activityType === activityType
                     ? ""
                     : "hidden group-hover:block"
                 }`}
               >
-                {activitiesFilters.activityType === activityType.type
+                {activitiesFilters.activityType === activityType
                   ? "Clear filter"
                   : "Filter"}
               </div>
-              <div className="text-right font-mono text-sm font-medium whitespace-nowrap text-white">
-                {currencyFormatter.format(activityType.value)}
+
+              <div className="text-right font-mono text-sm font-medium whitespace-nowrap tabular-nums">
+                {currencyFormatter.format(projectAmounts[activityType])}
               </div>
             </div>
           </div>
+        ))}
+      </div>
 
-          {activityType.value !== 0 && (
-            <div className="mt-1 mb-2 px-2">
-              <div className="flex h-2 w-full items-center overflow-hidden rounded-md bg-muted transition-all hover:h-4">
-                {getCategories(activityType.type).map((category, index) => {
-                  const categoryValue = getCategoryTotal(category.id);
-                  const percentage = (categoryValue / activityType.value) * 100;
-                  const color = getProgressBarColor(index, activityType.type);
-
-                  return (
-                    <Tooltip key={category.id}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="h-full transition-all hover:opacity-50"
-                          style={{
-                            background: color.toString(),
-                            width: `${percentage}%`,
-                          }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {category.name} ({Math.round(percentage * 100) / 100}%)
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {getCategories(activityType.type).map((category) => (
-            <ProjectActivityCategoryLine
-              key={category.id}
-              projectId={projectId}
-              category={category}
-              activitiesFilters={activitiesFilters}
-              onActivitiesFiltersChange={onActivitiesFiltersChange}
-            />
-          ))}
-        </div>
-      ))}
+      <div className="w-full px-3 py-4">
+        {usedCategories.map((category) => (
+          <ProjectActivityCategoryLine
+            key={category.id}
+            projectId={projectId}
+            category={category}
+            activitiesFilters={activitiesFilters}
+            onActivitiesFiltersChange={onActivitiesFiltersChange}
+          />
+        ))}
+      </div>
     </div>
   );
 }

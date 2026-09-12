@@ -3,7 +3,6 @@ import type { Activity, Transaction } from "@maille/core/activities";
 import type { Fund, FundAllocation, FundMove } from "@maille/core/funds";
 
 import { AccountType } from "@maille/core/accounts";
-import { ActivityType } from "@maille/core/activities";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -88,7 +87,13 @@ const activity = (
   name: id,
   description: null,
   date: new Date(date),
-  type: ActivityType.NEUTRAL,
+  types: [],
+  amounts: {
+    expense: 0,
+    revenue: 0,
+    investment: 0,
+    neutral: 0,
+  },
   category: null,
   subcategory: null,
   project: null,

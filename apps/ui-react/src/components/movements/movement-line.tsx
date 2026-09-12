@@ -7,11 +7,11 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
+import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { WORKFLOW_STATUS_CONFIG } from "@/components/workflows/workflow-status";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useWorkflows } from "@/stores/workflows";
 
@@ -29,7 +29,6 @@ export function MovementLine({
   outlineSides,
   onCheckedChange,
 }: MovementLineProps) {
-  const currencyFormatter = useCurrencyFormatter();
   const workflow = useWorkflows((state) =>
     state.getWorkflowByMovement(movement.id),
   );
@@ -57,15 +56,8 @@ export function MovementLine({
           onCheckedChange(e);
         }}
         className={cn(
-          "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+          "mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
           checked && "opacity-100",
-        )}
-      />
-
-      <div
-        className={cn(
-          "size-2 shrink-0 rounded-lg",
-          movement.amount > 0 ? "bg-green-400" : "bg-red-400",
         )}
       />
 
@@ -112,9 +104,15 @@ export function MovementLine({
         />
       )}
 
-      <div className="text-right font-mono whitespace-nowrap text-white">
-        {currencyFormatter.format(movement.amount)}
-      </div>
+      <AmountPairsValue
+        pairs={[
+          {
+            dot: movement.amount > 0 ? "bg-green-400" : "bg-red-400",
+            amount: movement.amount,
+          },
+        ]}
+        hideZeros={false}
+      />
     </ContextLink>
   );
 }

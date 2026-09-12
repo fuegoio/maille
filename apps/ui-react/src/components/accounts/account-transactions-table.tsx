@@ -8,12 +8,12 @@ import {
   ContextLink,
   useContextNavigate,
 } from "@/components/navigation/breadcrumbs";
+import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
@@ -53,7 +53,6 @@ export function AccountTransactionsTable({
   fundFilter,
 }: AccountTransactionsTableProps) {
   const contextNavigate = useContextNavigate();
-  const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
   const scrollRef = useScrollRestoration<HTMLDivElement>(
@@ -178,31 +177,15 @@ export function AccountTransactionsTable({
                   month={item.month}
                   year={item.year}
                 >
-                  {(
-                    [
-                      ["in", "bg-green-400"],
-                      ["out", "bg-red-400"],
-                    ] as const
-                  ).map(([direction, color]) => {
-                    const total = item.rows
-                      .filter((row) => row.direction === direction)
-                      .reduce((sum, row) => sum + row.amount, 0);
-
-                    return total > 0 ? (
-                      <div
-                        key={direction}
-                        className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
-                      >
-                        <div
-                          className={cn(
-                            "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
-                            color,
-                          )}
-                        />
-                        {currencyFormatter.format(total)}
-                      </div>
-                    ) : null;
-                  })}
+                  <AmountPairsValue
+                    pairs={(["in", "out"] as const).map((direction) => ({
+                      dot: direction === "in" ? "bg-green-400" : "bg-red-400",
+                      amount: item.rows
+                        .filter((row) => row.direction === direction)
+                        .reduce((sum, row) => sum + row.amount, 0),
+                    }))}
+                    className="text-sm"
+                  />
                 </TableGroupHeader>
               ) : (
                 <EntityContextMenu
@@ -233,7 +216,6 @@ export function AccountTransactionsTable({
                   >
                     <TransactionLine
                       transaction={item}
-                      currencyFormatter={currencyFormatter}
                       checked={selectedTransactions.includes(item.id)}
                       outlineSides={rowOutlines.get(item.id)}
                       onCheckedChange={(event) =>
@@ -259,13 +241,11 @@ export function AccountTransactionsTable({
 
 function TransactionLine({
   transaction,
-  currencyFormatter,
   checked,
   outlineSides,
   onCheckedChange,
 }: {
   transaction: AccountTransaction;
-  currencyFormatter: Intl.NumberFormat;
   checked: boolean;
   /** Outline sides when the row is checked or focused; absent otherwise. */
   outlineSides?: { top: boolean; bottom: boolean };
@@ -304,15 +284,8 @@ function TransactionLine({
           onCheckedChange(e);
         }}
         className={cn(
-          "mr-3.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+          "mr-1.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
           checked && "opacity-100",
-        )}
-      />
-
-      <div
-        className={cn(
-          "size-2 shrink-0 rounded-lg",
-          isInflow ? "bg-green-400" : "bg-red-400",
         )}
       />
 
@@ -353,9 +326,10 @@ function TransactionLine({
         </div>
       </ContextLink>
 
-      <div className="w-32 shrink-0 text-right font-mono whitespace-nowrap">
-        {currencyFormatter.format(amount)}
-      </div>
+      <AmountPairsValue
+        pairs={[{ dot: isInflow ? "bg-green-400" : "bg-red-400", amount }]}
+        hideZeros={false}
+      />
     </div>
   );
 }

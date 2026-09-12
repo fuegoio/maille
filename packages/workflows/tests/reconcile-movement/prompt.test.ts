@@ -56,9 +56,7 @@ describe("taskMessage", () => {
           name: "Spotify",
           amount: -12.99,
           date: "2026-08-01T00:00:00.000Z",
-          links: [
-            { activityId: "a1", activityName: "Spotify", activityType: "expense", amount: -12.99 },
-          ],
+          links: [{ activityId: "a1", activityName: "Spotify", amount: -12.99 }],
         },
       ],
     });

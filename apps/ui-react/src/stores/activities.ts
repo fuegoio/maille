@@ -3,8 +3,10 @@ import type { SyncEvent } from "@maille/core/sync";
 
 import {
   ActivityType,
+  deriveActivityTypes,
+  getActivityAmounts,
+  getActivityAmountsTotal,
   getActivityStatus,
-  getActivityTransactionsReconciliationSum,
   type Activity,
   type ActivityCategory,
   type ActivityMovement,
@@ -76,7 +78,10 @@ interface ActivitiesState {
   ) => void;
 
   addActivity: (
-    activity: Omit<Activity, "amount" | "status" | "history"> & {
+    activity: Omit<
+      Activity,
+      "types" | "amounts" | "amount" | "status" | "history"
+    > & {
       history?: SerializedHistoryEntry[];
     },
   ) => Activity;
@@ -86,7 +91,6 @@ interface ActivitiesState {
       name?: string;
       description?: string | null;
       date?: Date;
-      type?: ActivityType;
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
@@ -106,7 +110,6 @@ interface ActivitiesState {
     categoryId: string,
     update: {
       name?: string;
-      type?: ActivityType;
       emoji?: string | null;
     },
   ) => void;
@@ -137,6 +140,31 @@ interface ActivitiesState {
   handleEvent: (event: SyncEvent) => void;
   handleMutationSuccess: (event: any) => void;
   handleMutationError: (event: any) => void;
+}
+
+/**
+ * The derived fields of an activity, computed from its transactions and the
+ * accounts they touch: types, per-type amounts, total amount and
+ * reconciliation status. Types are never stored — they follow the accounts.
+ */
+function activityDerivedFields(
+  activity: Pick<Activity, "date" | "transactions" | "movements">,
+  getMovementById: ReturnType<typeof useMovements.getState>["getMovementById"],
+): Pick<Activity, "types" | "amounts" | "amount" | "status"> {
+  const accounts = useAccounts.getState().accounts;
+  const amounts = getActivityAmounts(activity.transactions, accounts);
+  return {
+    types: deriveActivityTypes(activity.transactions, accounts),
+    amounts,
+    amount: getActivityAmountsTotal(amounts),
+    status: getActivityStatus(
+      activity.date,
+      activity.transactions,
+      activity.movements,
+      accounts,
+      getMovementById,
+    ),
+  };
 }
 
 /**
@@ -213,16 +241,8 @@ export const useActivities = create<ActivitiesState>()(
               return {
                 ...activity,
                 transactions: newTransactions,
-                amount: getActivityTransactionsReconciliationSum(
-                  activity.type,
-                  newTransactions,
-                  useAccounts.getState().accounts,
-                ),
-                status: getActivityStatus(
-                  activity.date,
-                  newTransactions,
-                  activity.movements,
-                  useAccounts.getState().accounts,
+                ...activityDerivedFields(
+                  { ...activity, transactions: newTransactions },
                   useMovements.getState().getMovementById,
                 ),
               };
@@ -249,16 +269,8 @@ export const useActivities = create<ActivitiesState>()(
               return {
                 ...activity,
                 transactions: newTransactions,
-                amount: getActivityTransactionsReconciliationSum(
-                  activity.type,
-                  newTransactions,
-                  useAccounts.getState().accounts,
-                ),
-                status: getActivityStatus(
-                  activity.date,
-                  newTransactions,
-                  activity.movements,
-                  useAccounts.getState().accounts,
+                ...activityDerivedFields(
+                  { ...activity, transactions: newTransactions },
                   useMovements.getState().getMovementById,
                 ),
               };
@@ -278,16 +290,8 @@ export const useActivities = create<ActivitiesState>()(
               return {
                 ...activity,
                 transactions: newTransactions,
-                amount: getActivityTransactionsReconciliationSum(
-                  activity.type,
-                  newTransactions,
-                  useAccounts.getState().accounts,
-                ),
-                status: getActivityStatus(
-                  activity.date,
-                  newTransactions,
-                  activity.movements,
-                  useAccounts.getState().accounts,
+                ...activityDerivedFields(
+                  { ...activity, transactions: newTransactions },
                   useMovements.getState().getMovementById,
                 ),
               };
@@ -383,24 +387,12 @@ export const useActivities = create<ActivitiesState>()(
       },
 
       addActivity: (activity) => {
-        const accounts = useAccounts.getState().accounts;
         const getMovementById = useMovements.getState().getMovementById;
 
         const newActivity: Activity = {
           ...activity,
           history: activity.history ?? [],
-          amount: getActivityTransactionsReconciliationSum(
-            activity.type,
-            activity.transactions,
-            accounts,
-          ),
-          status: getActivityStatus(
-            activity.date,
-            activity.transactions,
-            activity.movements,
-            accounts,
-            getMovementById,
-          ),
+          ...activityDerivedFields(activity, getMovementById),
         };
 
         set((state) => ({
@@ -416,10 +408,10 @@ export const useActivities = create<ActivitiesState>()(
           name?: string;
           description?: string | null;
           date?: Date;
-          type?: ActivityType;
           category?: string | null;
           subcategory?: string | null;
           project?: string | null;
+          sharing?: ActivitySharing[];
           history?: SerializedHistoryEntry[];
         },
       ) => {
@@ -447,16 +439,8 @@ export const useActivities = create<ActivitiesState>()(
                       ),
                     }
                   : {}),
-                amount: getActivityTransactionsReconciliationSum(
-                  update.type ?? activity.type,
-                  activity.transactions,
-                  useAccounts.getState().accounts,
-                ),
-                status: getActivityStatus(
-                  update.date ?? activity.date,
-                  activity.transactions,
-                  activity.movements,
-                  useAccounts.getState().accounts,
+                ...activityDerivedFields(
+                  { ...activity, ...filteredUpdate },
                   useMovements.getState().getMovementById,
                 ),
               };
@@ -507,7 +491,6 @@ export const useActivities = create<ActivitiesState>()(
         categoryId: string,
         update: {
           name?: string;
-          type?: ActivityType;
           emoji?: string | null;
         },
       ) => {
@@ -517,7 +500,6 @@ export const useActivities = create<ActivitiesState>()(
               return {
                 ...category,
                 name: update.name !== undefined ? update.name : category.name,
-                type: update.type !== undefined ? update.type : category.type,
                 emoji:
                   update.emoji !== undefined ? update.emoji : category.emoji,
               };
@@ -790,7 +772,6 @@ export const useActivities = create<ActivitiesState>()(
           get().updateActivity(mutation.variables.id, {
             ...mutation.rollbackData,
             date: new Date(mutation.rollbackData.date),
-            type: mutation.rollbackData.type as ActivityType,
           });
         } else if (mutation.name === "deleteActivity") {
           get().restoreActivity(mutation.rollbackData);
@@ -862,16 +843,16 @@ export const useActivities = create<ActivitiesState>()(
     }),
     {
       name: "activities",
-      version: 1,
+      version: 2,
       storage: storage,
       migrate: (persisted) => {
         const state = persisted as { activities?: Activity[] };
-        if (state.activities) {
-          state.activities = state.activities.map((activity) =>
-            activity.history ? activity : { ...activity, history: [] },
-          );
-        }
+        // v2: activity types and amounts are derived from the accounts in
+        // the transactions, never stored. Persisted rows predate them and
+        // would crash the UI before the refetch replaces them, so they are
+        // dropped; the flag below triggers an immediate refetch.
         migrationFlags.refetchUserData = true;
+        state.activities = [];
         return state;
       },
     },

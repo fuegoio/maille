@@ -8,7 +8,7 @@ import { randomUUID } from "node:crypto";
 const ACTIVITIES_QUERY = `
   query {
     activities {
-      id name date type status amount description
+      id name date types status amount description
       category subcategory project
       transactions { id amount fromAccount toAccount }
     }
@@ -17,7 +17,7 @@ const ACTIVITIES_QUERY = `
 
 const CATEGORIES_QUERY = `
   query {
-    activityCategories { id name type emoji }
+    activityCategories { id name emoji }
     activitySubcategories { id name category emoji }
   }
 `;
@@ -46,12 +46,12 @@ activitiesCommand
         return;
       }
       printTable(
-        ["ID", "NAME", "DATE", "TYPE", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
+        ["ID", "NAME", "DATE", "TYPES", "AMOUNT", "STATUS", "CATEGORY", "SUBCATEGORY", "PROJECT"],
         activities.map((a) => [
           String(a.id).slice(0, 8),
           String(a.name),
           new Date(String(a.date)).toLocaleDateString(),
-          String(a.type),
+          (a.types as string[]).join("|"),
           formatCurrency(Number(a.amount)),
           String(a.status),
           String(a.category ?? "-"),
@@ -81,7 +81,7 @@ activitiesCommand
       console.log(`${chalk.bold("ID:")}          ${activity.id}`);
       console.log(`${chalk.bold("Name:")}        ${activity.name}`);
       console.log(`${chalk.bold("Date:")}        ${new Date(String(activity.date)).toLocaleDateString()}`);
-      console.log(`${chalk.bold("Type:")}        ${activity.type}`);
+      console.log(`${chalk.bold("Types:")}       ${(activity.types as string[]).join(", ")}`);
       console.log(`${chalk.bold("Status:")}      ${activity.status}`);
       console.log(`${chalk.bold("Amount:")}      ${formatCurrency(Number(activity.amount))}`);
       if (activity.description) console.log(`${chalk.bold("Description:")} ${activity.description}`);
@@ -108,15 +108,6 @@ activitiesCommand
   .command("create")
   .description("Create a new activity")
   .requiredOption("--name <name>", "Activity name")
-  .requiredOption("--type <type>", "Type: expense|revenue|investment|neutral")
-  .hook("preAction", (cmd) => {
-    const type = cmd.opts().type as string;
-    const valid = ["expense", "revenue", "investment", "neutral"];
-    if (!valid.includes(type)) {
-      console.error(`error: invalid type '${type}'. Valid values: ${valid.join("|")}`);
-      process.exit(1);
-    }
-  })
   .option("--date <date>", "Date (YYYY-MM-DD), defaults to today")
   .option("--description <desc>", "Description")
   .option("--category <id>", "Category ID")
@@ -136,7 +127,6 @@ activitiesCommand
         id: randomUUID(),
         name: opts.name,
         date,
-        type: opts.type,
         description: opts.description ?? null,
         category: opts.category ?? null,
         subcategory: opts.subcategory ?? null,
@@ -146,8 +136,8 @@ activitiesCommand
         variables.movement = { id: randomUUID(), movement: opts.movement, amount: Number(opts.movementAmount) };
       }
       const data = await gql<{ createActivity: { id: string; name: string } }>(
-        `mutation CreateActivity($id: String!, $name: String!, $date: Date!, $type: String!, $description: String, $category: String, $subcategory: String, $project: String, $movement: ActivityMovementInput) {
-          createActivity(id: $id, name: $name, date: $date, type: $type, description: $description, category: $category, subcategory: $subcategory, project: $project, movement: $movement) {
+        `mutation CreateActivity($id: String!, $name: String!, $date: Date!, $description: String, $category: String, $subcategory: String, $project: String, $movement: ActivityMovementInput) {
+          createActivity(id: $id, name: $name, date: $date, description: $description, category: $category, subcategory: $subcategory, project: $project, movement: $movement) {
             id name
           }
         }`,
@@ -231,8 +221,8 @@ categoriesCommand
       if (opts.json) { console.log(JSON.stringify(data, null, 2)); return; }
       console.log(chalk.bold("\nCategories"));
       printTable(
-        ["ID", "NAME", "TYPE", "EMOJI"],
-        data.activityCategories.map((c) => [String(c.id).slice(0, 8), String(c.name), String(c.type), String(c.emoji ?? "")])
+        ["ID", "NAME", "EMOJI"],
+        data.activityCategories.map((c) => [String(c.id).slice(0, 8), String(c.name), String(c.emoji ?? "")])
       );
       console.log(chalk.bold("\nSubcategories"));
       printTable(
@@ -250,24 +240,15 @@ categoriesCommand
   .command("create")
   .description("Create a category")
   .requiredOption("--name <name>", "Category name")
-  .requiredOption("--type <type>", "Type: expense|revenue|investment|neutral")
-  .hook("preAction", (cmd) => {
-    const type = cmd.opts().type as string;
-    const valid = ["expense", "revenue", "investment", "neutral"];
-    if (!valid.includes(type)) {
-      console.error(`error: invalid type '${type}'. Valid values: ${valid.join("|")}`);
-      process.exit(1);
-    }
-  })
   .option("--emoji <emoji>", "Emoji")
   .action(async (opts) => {
     const spinner = ora("Creating category...").start();
     try {
       const data = await gql<{ createActivityCategory: { id: string; name: string } }>(
-        `mutation CreateActivityCategory($id: String!, $name: String!, $type: String!, $emoji: String) {
-          createActivityCategory(id: $id, name: $name, type: $type, emoji: $emoji) { id name }
+        `mutation CreateActivityCategory($id: String!, $name: String!, $emoji: String) {
+          createActivityCategory(id: $id, name: $name, emoji: $emoji) { id name }
         }`,
-        { id: randomUUID(), name: opts.name, type: opts.type, emoji: opts.emoji ?? null }
+        { id: randomUUID(), name: opts.name, emoji: opts.emoji ?? null }
       );
       spinner.succeed(`Category created: ${chalk.cyan(data.createActivityCategory.name)}`);
     } catch (err) {

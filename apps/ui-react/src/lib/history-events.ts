@@ -1,8 +1,4 @@
-import type {
-  Activity,
-  ActivityType,
-  Transaction,
-} from "@maille/core/activities";
+import type { Activity, Transaction } from "@maille/core/activities";
 import type {
   HistoryEntity,
   NewHistoryEntry,
@@ -88,7 +84,6 @@ function toActivitySnapshot(activity: {
   name: string;
   description: string | null;
   date: Date;
-  type: ActivityType;
   category: string | null;
   subcategory: string | null;
   project: string | null;
@@ -100,7 +95,6 @@ function toActivitySnapshot(activity: {
     name: activity.name,
     description: activity.description,
     date: activity.date.toISOString(),
-    type: activity.type,
     category: historyEntity(
       activity.category,
       (id) => categories.find((c) => c.id === id)?.name,
@@ -211,7 +205,6 @@ export function activityUpdateHistoryEvent(
     name?: string;
     description?: string | null;
     date?: Date;
-    type?: ActivityType;
     category?: string | null;
     subcategory?: string | null;
     project?: string | null;

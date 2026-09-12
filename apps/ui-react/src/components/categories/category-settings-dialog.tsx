@@ -1,5 +1,6 @@
+import type { ActivityCategory } from "@maille/core/activities";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActivityType, type ActivityCategory } from "@maille/core/activities";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -44,7 +45,6 @@ import {
 
 const updateCategorySchema = z.object({
   name: z.string().min(1, "Name is required"),
-  type: z.enum(ActivityType),
   emoji: z.string().nullable().optional(),
 });
 
@@ -71,7 +71,6 @@ export function CategorySettingsDialog({
     resolver: zodResolver(updateCategorySchema),
     defaultValues: {
       name: category.name,
-      type: category.type,
       emoji: category.emoji,
     },
   });

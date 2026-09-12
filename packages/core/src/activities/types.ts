@@ -20,10 +20,12 @@ export enum ActivityType {
   NEUTRAL = "neutral",
 }
 
+/** An activity's amounts per type, derived from its transactions' accounts. */
+export type ActivityAmounts = Record<ActivityType, number>;
+
 export type ActivityCategory = {
   id: string;
   name: string;
-  type: ActivityType;
   emoji: string | null;
 };
 
@@ -56,7 +58,6 @@ export type BaseActivity = {
   name: string;
   description: string | null;
   date: Date;
-  type: ActivityType;
   category: string | null;
   subcategory: string | null;
   project: string | null;
@@ -66,7 +67,11 @@ export type BaseActivity = {
 };
 
 export type Activity = BaseActivity & {
-  // Computed
+  // Computed: types are derived from the accounts involved in the
+  // transactions, and amounts are the per-type sums of the legs touching
+  // typed accounts (neutral: transactions with no typed account side).
+  types: ActivityType[];
+  amounts: ActivityAmounts;
   amount: number;
   sharing: ActivitySharing[];
   status: ActivityStatus;

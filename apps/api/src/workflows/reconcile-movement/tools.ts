@@ -1,6 +1,5 @@
 import { db } from "@/database";
 import { accounts, activities, transactions } from "@/tables";
-import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import { extractDateFromMovementName } from "@maille/core/movements";
 import { AMOUNT_EPSILON, remainingAmount } from "@maille/core/workflows";
@@ -73,10 +72,12 @@ const firstAccountOfType = async (userId: string, type: AccountType): Promise<st
 };
 
 /**
- * Builds the transaction legs for a new activity the way the UI does:
- * expense: movement account → expense account, revenue: revenue account →
- * movement account, investment: movement account → investment account,
- * neutral: both legs explicit.
+ * Builds the transaction legs for a new activity the way the UI does: by
+ * default the movement's account is one leg and the counter-leg is the
+ * user's expense account for negative amounts (money out) or revenue
+ * account for positive amounts (money in). Explicit fromAccount/toAccount
+ * override the defaults — used for investments, transfers or specific
+ * accounts.
  */
 async function buildTransactionLegs(
   state: RunState,
@@ -85,7 +86,17 @@ async function buildTransactionLegs(
   const userId = state.workflow.user;
   const movementAccount = state.movement.account;
 
-  if (args.type === ActivityType.EXPENSE) {
+  // A transfer: both legs must be explicit.
+  if (args.fromAccount && args.toAccount) {
+    const from = await resolveAccount(userId, args.fromAccount);
+    const to = await resolveAccount(userId, args.toAccount);
+    if (!from || !to) {
+      return toolError("Unknown fromAccount or toAccount id.");
+    }
+    return { ok: true, fromAccount: from, toAccount: to };
+  }
+
+  if (state.movement.amount < 0) {
     const to = args.toAccount
       ? ((await resolveAccount(userId, args.toAccount)) ?? null)
       : await firstAccountOfType(userId, AccountType.EXPENSE);
@@ -97,39 +108,15 @@ async function buildTransactionLegs(
     return { ok: true, fromAccount: movementAccount, toAccount: to };
   }
 
-  if (args.type === ActivityType.REVENUE) {
-    const from = args.fromAccount
-      ? ((await resolveAccount(userId, args.fromAccount)) ?? null)
-      : await firstAccountOfType(userId, AccountType.REVENUE);
-    if (!from) {
-      return toolError(
-        "No revenue account found for this user; ask the user how to record this revenue.",
-      );
-    }
-    return { ok: true, fromAccount: from, toAccount: movementAccount };
+  const from = args.fromAccount
+    ? ((await resolveAccount(userId, args.fromAccount)) ?? null)
+    : await firstAccountOfType(userId, AccountType.REVENUE);
+  if (!from) {
+    return toolError(
+      "No revenue account found for this user; ask the user how to record this revenue.",
+    );
   }
-
-  if (args.type === ActivityType.INVESTMENT) {
-    const to = args.toAccount
-      ? ((await resolveAccount(userId, args.toAccount)) ?? null)
-      : await firstAccountOfType(userId, AccountType.INVESTMENT_ACCOUNT);
-    if (!to) {
-      return toolError(
-        "No investment account found for this user; ask the user how to record this investment.",
-      );
-    }
-    return { ok: true, fromAccount: movementAccount, toAccount: to };
-  }
-
-  if (!args.fromAccount || !args.toAccount) {
-    return toolError("Neutral activities need explicit fromAccount and toAccount account ids.");
-  }
-  const from = await resolveAccount(userId, args.fromAccount);
-  const to = await resolveAccount(userId, args.toAccount);
-  if (!from || !to) {
-    return toolError("Unknown fromAccount or toAccount id.");
-  }
-  return { ok: true, fromAccount: from, toAccount: to };
+  return { ok: true, fromAccount: from, toAccount: movementAccount };
 }
 
 /**
@@ -319,7 +306,6 @@ export async function executeTool(
         date:
           extractDateFromMovementName(state.movement.name, state.movement.date) ??
           state.movement.date,
-        type: parsed.data.type,
         category: parsed.data.category ?? null,
         subcategory: parsed.data.subcategory ?? null,
         transactions: [
@@ -382,7 +368,6 @@ export async function executeTool(
           name: parsed.data.name ?? undefined,
           description: parsed.data.description,
           date: date ?? undefined,
-          type: parsed.data.type ?? undefined,
           category: parsed.data.category,
           subcategory: parsed.data.subcategory,
         });

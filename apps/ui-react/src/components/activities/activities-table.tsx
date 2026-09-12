@@ -1,24 +1,26 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
-import { verifyActivityFilter } from "@maille/core/activities";
+import {
+  ActivityType,
+  sumActivityAmounts,
+  verifyActivityFilter,
+  type Activity,
+} from "@maille/core/activities";
 import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
-import { cn } from "@/lib/utils";
 import { activityTouchesFund } from "@/logic/funds";
-import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import { useActivitiesEntityActions } from "./activities-actions";
 import { ActivitiesSelection } from "./activities-selection";
+import { ActivityAmountsValue } from "./activity-amounts";
 import { ActivityLine } from "./activity-line";
 import { ActivitiesFilters } from "./filters/activities-filters";
 
@@ -47,7 +49,6 @@ export function ActivitiesTable({
   hideProject = false,
 }: ActivitiesTableProps) {
   const contextNavigate = useContextNavigate();
-  const currencyFormatter = useCurrencyFormatter();
 
   const activityView = useViews((state) => state.getActivityView(viewId));
   const { search } = useViewSearch();
@@ -84,7 +85,7 @@ export function ActivitiesTable({
       })
       .filter((activity) =>
         activityTypeFilter !== null
-          ? activity.type === activityTypeFilter
+          ? activity.types.includes(activityTypeFilter)
           : true,
       )
       .filter((activity) =>
@@ -175,30 +176,10 @@ export function ActivitiesTable({
                     month={item.month}
                     year={item.year}
                   >
-                    {[
-                      ActivityType.INVESTMENT,
-                      ActivityType.REVENUE,
-                      ActivityType.EXPENSE,
-                    ].map((activityType) => {
-                      const total = item.rows
-                        .filter((activity) => activity.type === activityType)
-                        .reduce((sum, activity) => sum + activity.amount, 0);
-
-                      return total !== 0 ? (
-                        <div
-                          key={activityType}
-                          className="flex items-center pl-1 text-right font-mono text-sm sm:pl-4"
-                        >
-                          <div
-                            className={cn(
-                              "mr-2 size-2.5 shrink-0 rounded-lg sm:mr-3",
-                              ACTIVITY_TYPES_COLOR[activityType],
-                            )}
-                          />
-                          {currencyFormatter.format(total)}
-                        </div>
-                      ) : null;
-                    })}
+                    <ActivityAmountsValue
+                      amounts={sumActivityAmounts(item.rows)}
+                      className="text-sm"
+                    />
                   </TableGroupHeader>
                 ) : (
                   <EntityContextMenu

@@ -1,4 +1,5 @@
-import { ActivityType, type ActivityStatus } from "@maille/core/activities";
+import type { ActivityStatus } from "@maille/core/activities";
+
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useRouter } from "@tanstack/react-router";
 import {
@@ -54,25 +55,15 @@ import {
   updateActivityMutation,
   deleteActivityMutation,
 } from "@/mutations/activities";
-import {
-  ACTIVITY_TYPES_COLOR,
-  ACTIVITY_TYPES_NAME,
-  useActivities,
-} from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useSync } from "@/stores/sync";
 
 import { HistoryTimeline } from "../history/history-timeline";
 import { ProjectSelect } from "../projects/project-select";
 import { DatePicker } from "../ui/date-picker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
+import { ActivityAmountsValue } from "./activity-amounts";
 import { ActivityCategorySelect } from "./activity-category-select";
 import { ActivityMovements } from "./activity-movements";
 import { ActivitySharing } from "./activity-sharing";
@@ -166,11 +157,6 @@ export function ActivityPage({
     ],
   });
 
-  const filteredCategories = React.useMemo(() => {
-    if (!activity?.type) return categories;
-    return categories.filter((c) => c.type === activity.type);
-  }, [activity?.type, categories]);
-
   const currencyFormatter = useCurrencyFormatter();
 
   const goBack = () => {
@@ -260,7 +246,6 @@ export function ActivityPage({
     name?: string;
     description?: string | null;
     date?: Date;
-    type?: ActivityType;
     category?: string | null;
     subcategory?: string | null;
     project?: string | null;
@@ -427,9 +412,18 @@ export function ActivityPage({
                   placeholder="Activity name"
                   className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
                 />
-                <div className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap">
-                  {currencyFormatter.format(activity.amount)}
-                </div>
+                {Object.values(activity.amounts).every(
+                  (amount) => amount === 0,
+                ) ? (
+                  <div className="font-mono text-2xl font-semibold whitespace-nowrap tabular-nums">
+                    {currencyFormatter.format(activity.amount)}
+                  </div>
+                ) : (
+                  <ActivityAmountsValue
+                    amounts={activity.amounts}
+                    className="text-2xl font-semibold"
+                  />
+                )}
               </div>
 
               <DebouncedTextarea
@@ -446,42 +440,12 @@ export function ActivityPage({
               />
 
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Select
-                  value={activity.type}
-                  onValueChange={(value) =>
-                    updateActivity({
-                      type: value as ActivityType,
-                      category: null,
-                      subcategory: null,
-                    })
-                  }
-                >
-                  <SelectTrigger id="type" aria-label="Activity type">
-                    <SelectValue placeholder="Activity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(ActivityType).map((activityType) => (
-                      <SelectItem key={activityType} value={activityType}>
-                        <div className="flex items-center py-1">
-                          <div
-                            className={cn(
-                              "mr-2 h-3 w-3 rounded-full",
-                              ACTIVITY_TYPES_COLOR[activityType],
-                            )}
-                          />
-                          <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <ActivityCategorySelect
                   value={activity.category || null}
                   onValueChange={(value) =>
                     updateActivity({ category: value, subcategory: null })
                   }
-                  type={activity.type}
-                  categories={filteredCategories}
+                  categories={categories}
                   placeholder="Category"
                 />
                 <ActivitySubcategorySelect

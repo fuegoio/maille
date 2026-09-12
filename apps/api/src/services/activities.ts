@@ -1,14 +1,14 @@
 import {
-  ActivityType,
+  deriveActivityTypes,
+  getActivityAmounts,
+  getActivityAmountsTotal,
   getActivitySharingsReconciliation,
   getActivityStatus,
-  getActivityTransactionsReconciliationSum,
   type ActivityMovement,
 } from "@maille/core/activities";
 import { buildCreateEntry, buildLinkEntry, diffActivity } from "@maille/core/history";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { z } from "zod";
 import { db } from "@/database";
 import {
   accounts,
@@ -58,7 +58,6 @@ export type CreateActivityArgs = {
   name: string;
   description?: string | null;
   date: Date;
-  type: string;
   category?: string | null;
   subcategory?: string | null;
   project?: string | null;
@@ -70,13 +69,11 @@ export type CreateActivityArgs = {
  * Creates an activity with its transactions and optional movement link. The
  * canonical implementation shared by the `createActivity` GraphQL mutation
  * and the AI workflows, so both go through the same history, sync events and
- * workflow hooks.
+ * workflow hooks. The activity's types and amounts are derived from the
+ * accounts involved in its transactions, never stored.
  */
 export async function createActivity(userId: string, clientId: string, args: CreateActivityArgs) {
   const writer = { user: { id: userId }, session: { id: clientId } };
-
-  const ActivityTypeEnum = z.enum(ActivityType);
-  const activityType = ActivityTypeEnum.parse(args.type);
 
   const accountsQuery = await db.select().from(accounts).where(eq(accounts.user, userId));
 
@@ -126,7 +123,6 @@ export async function createActivity(userId: string, clientId: string, args: Cre
     name: args.name,
     description: args.description,
     date: new Date(args.date),
-    type: activityType,
     category,
     subcategory,
     project,
@@ -296,7 +292,6 @@ export async function createActivity(userId: string, clientId: string, args: Cre
       name: args.name,
       description: args.description ?? null,
       date: new Date(args.date).toISOString(),
-      type: activityType,
       category: category ?? null,
       subcategory: subcategory ?? null,
       project: project ?? null,
@@ -322,20 +317,23 @@ export async function createActivity(userId: string, clientId: string, args: Cre
 
   const userMovements = await db.select().from(movements).where(eq(movements.user, userId));
 
+  const createdAmounts = getActivityAmounts(newTransactions, accountsQuery);
+
   return {
     id: args.id,
     users: [userId],
     name: args.name,
     description: args.description ?? null,
     date: args.date,
-    type: activityType,
     category: category ?? null,
     subcategory: subcategory ?? null,
     project: project ?? null,
     transactions: newTransactions,
     movements: newMovements,
     history: createHistory.history,
-    amount: getActivityTransactionsReconciliationSum(activityType, newTransactions, accountsQuery),
+    types: deriveActivityTypes(newTransactions, accountsQuery),
+    amounts: createdAmounts,
+    amount: getActivityAmountsTotal(createdAmounts),
     status: getActivityStatus(args.date, newTransactions, newMovements, accountsQuery, (id) => {
       const movement = userMovements.find((m) => m.id === id);
       if (!movement) return;
@@ -355,7 +353,6 @@ export type UpdateActivityArgs = {
   name?: string | null;
   description?: string | null;
   date?: Date | null;
-  type?: string | null;
   category?: string | null;
   subcategory?: string | null;
   project?: string | null;
@@ -389,12 +386,6 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
   }
   if (args.date) {
     activityUpdates.date = args.date;
-  }
-  if (args.type) {
-    const ActivityTypeEnum = z.enum(ActivityType);
-    activityUpdates.type = ActivityTypeEnum.parse(args.type);
-    activityUpdates.category = null;
-    activityUpdates.subcategory = null;
   }
 
   // Optional fields
@@ -451,7 +442,6 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
       name: activity.name,
       description: activity.description,
       date: activity.date.toISOString(),
-      type: activity.type,
       category: activity.category
         ? { id: activity.category, label: labels.category(activity.category) }
         : null,
@@ -469,7 +459,6 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
       name: after.name,
       description: after.description,
       date: after.date.toISOString(),
-      type: after.type,
       category: after.category
         ? { id: after.category, label: labels.category(after.category) }
         : null,
@@ -559,16 +548,16 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
 
   const userMovements = await db.select().from(movements).where(eq(movements.user, userId));
 
+  const updatedAmounts = getActivityAmounts(transactionsData, accountsQuery);
+
   return {
     ...activity,
     date: activity.date,
     transactions: transactionsData,
     movements: movementsData,
-    amount: getActivityTransactionsReconciliationSum(
-      activity.type,
-      transactionsData,
-      accountsQuery,
-    ),
+    types: deriveActivityTypes(transactionsData, accountsQuery),
+    amounts: updatedAmounts,
+    amount: getActivityAmountsTotal(updatedAmounts),
     status: getActivityStatus(
       activity.date,
       transactionsData,

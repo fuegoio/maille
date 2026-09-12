@@ -46,7 +46,7 @@ import {
   deleteMovementMutation,
   updateMovementMutation,
 } from "@/mutations/movements";
-import { ACTIVITY_TYPES_COLOR, useActivities } from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 import { useProjects } from "@/stores/projects";
 import { useSync } from "@/stores/sync";
@@ -448,13 +448,6 @@ export function MovementPage({ movementId }: MovementPageProps) {
                           index !== movementActivities.length - 1 && "border-b",
                         )}
                       >
-                        <div
-                          className={cn(
-                            "size-2 shrink-0 rounded-lg",
-                            ACTIVITY_TYPES_COLOR[activity.type],
-                          )}
-                        />
-
                         <div className="hidden w-12 shrink-0 text-muted-foreground lg:block">
                           {format(activity.date, "dd MMM")}
                         </div>

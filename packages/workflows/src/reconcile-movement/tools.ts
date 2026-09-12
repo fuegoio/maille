@@ -1,4 +1,3 @@
-import { ActivityType } from "@maille/core/activities";
 import { z } from "zod";
 import type { LlmTool } from "../llm";
 
@@ -18,6 +17,7 @@ Rules:
 - The user may start or re-run the workflow with a guidance message: a user message that appears in the transcript before any assistant message. Treat it as their intent for this run — follow it when deciding what to do, what activity to create and how to name it. It never overrides the ledger rules.
 - Never create an activity whose name already exists (case-insensitive); link to it instead (but only if it is not already reconciled and fits the movement).
 - When you link a movement to an existing activity, the activity's transaction amount is automatically increased by the linked amount to keep the activity reconciled. You do not need to adjust transaction amounts yourself.
+- When you create an activity, its transaction's counter-leg is chosen automatically: the user's expense account for negative amounts, their revenue account for positive amounts. To record an investment or a transfer, pass the counter-leg account id (fromAccount or toAccount) from the vocabulary instead. An activity's types (expense/revenue/investment/neutral) are derived from these accounts, never set manually.
 - A movement may be split across several activities when it bundles several purposes.
 - If the evidence is ambiguous, ask the user one precise question with concrete options instead of guessing.
 - If you have no reasonable clue, give up: a failed workflow is better than a wrong activity.
@@ -58,7 +58,6 @@ export const LinkMovementArgs = z.object({ activityId: z.string(), amount: z.num
 
 export const CreateActivityArgs = z.object({
   name: z.string(),
-  type: z.enum(ActivityType),
   amount: z.number(),
   description: z.string().optional(),
   category: z.string().optional(),
@@ -72,7 +71,6 @@ export const EditActivityArgs = z.object({
   name: z.string().optional(),
   description: z.union([z.string(), z.null()]).optional(),
   date: z.string().optional(),
-  type: z.enum(ActivityType).optional(),
   category: z.union([z.string(), z.null()]).optional(),
   subcategory: z.union([z.string(), z.null()]).optional(),
 });
@@ -123,32 +121,32 @@ export const RECONCILE_MOVEMENT_TOOLS: LlmTool[] = [
   {
     name: "createActivity",
     description:
-      "Create a new activity and link the movement to it for the given amount. Check searchActivities first: never create a duplicate of an activity that already exists and fits the movement.",
+      "Create a new activity and link the movement to it for the given amount. Check searchActivities first: never create a duplicate of an activity that already exists and fits the movement. The activity's types (expense/revenue/investment/neutral) are derived from the accounts in its transactions: by default the counter-leg uses the user's expense account for negative amounts and revenue account for positive amounts. To record an investment or a transfer, set the counter-leg account explicitly (fromAccount or toAccount, ids from the vocabulary).",
     parameters: {
       type: "object",
       properties: {
         name: { type: "string" },
-        type: { type: "string", enum: Object.values(ActivityType) },
         amount: { type: "number", description: "Link amount, same sign as the movement" },
         description: { type: "string" },
         category: { type: "string", description: "Category id from the vocabulary" },
         subcategory: { type: "string", description: "Subcategory id from the vocabulary" },
         fromAccount: {
           type: "string",
-          description: "Override the default source account id (optional)",
+          description: "Source account id (defaults by movement sign; set for transfers)",
         },
         toAccount: {
           type: "string",
-          description: "Override the default destination account id (optional)",
+          description:
+            "Destination account id (defaults by movement sign; set for investments or transfers)",
         },
       },
-      required: ["name", "type", "amount"],
+      required: ["name", "amount"],
     },
   },
   {
     name: "editActivity",
     description:
-      "Edit an existing activity: rename it, change its description, date, type, category or subcategory. Use when the user asks to change an activity that already exists.",
+      "Edit an existing activity: rename it, change its description, date, category or subcategory. Use when the user asks to change an activity that already exists.",
     parameters: {
       type: "object",
       properties: {
@@ -156,7 +154,6 @@ export const RECONCILE_MOVEMENT_TOOLS: LlmTool[] = [
         name: { type: "string" },
         description: { type: "string", description: "New description; null clears it" },
         date: { type: "string", description: "ISO date" },
-        type: { type: "string", enum: Object.values(ActivityType) },
         category: {
           type: "string",
           description: "Category id from the vocabulary; null clears it",

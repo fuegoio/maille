@@ -17,6 +17,7 @@ type AccountSharing {
 
 type Activity {
   amount: Float!
+  amounts: ActivityAmounts!
   category: String
   date: Date!
   description: String
@@ -29,14 +30,20 @@ type Activity {
   status: String!
   subcategory: String
   transactions: [Transaction!]!
-  type: String!
+  types: [String!]!
+}
+
+type ActivityAmounts {
+  expense: Float!
+  investment: Float!
+  neutral: Float!
+  revenue: Float!
 }
 
 type ActivityCategory {
   emoji: String
   id: String!
   name: String!
-  type: String!
 }
 
 type ActivityMovement {
@@ -246,8 +253,8 @@ type Mutation {
   """
   answerWorkflow(content: String!, id: String!, optionId: String): MovementWorkflow!
   createAccount(id: String!, movements: Boolean, name: String!, startingBalance: Float, startingCashBalance: Float, type: String!): Account!
-  createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!], type: String!): Activity!
-  createActivityCategory(emoji: String, id: String!, name: String!, type: String!): ActivityCategory!
+  createActivity(category: String, date: Date!, description: String, id: String!, movement: ActivityMovementInput, name: String!, project: String, subcategory: String, transactions: [TransactionInput!]): Activity!
+  createActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   createActivitySubCategory(category: String!, emoji: String, id: String!, name: String!): ActivitySubCategory!
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
   createContact(contact: String!, id: String!): Contact!
@@ -282,7 +289,7 @@ type Mutation {
   """
   triggerWorkflow(message: String, movementId: String!): MovementWorkflow!
   updateAccount(id: String!, movements: Boolean, name: String, startingBalance: Float, startingCashBalance: Float): Account!
-  updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String, type: String): Activity!
+  updateActivity(category: String, date: Date, description: String, id: String!, name: String, project: String, subcategory: String): Activity!
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!

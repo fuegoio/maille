@@ -1,4 +1,3 @@
-import type { ActivityType } from "@maille/core/activities";
 import type { Movement } from "@maille/core/movements";
 
 import { useHotkey } from "@tanstack/react-hotkeys";
@@ -18,7 +17,6 @@ interface AddActivityButtonProps {
   subcategory?: string;
   project?: string;
   date?: Date;
-  type?: ActivityType;
   iconOnly?: boolean;
 }
 
@@ -31,7 +29,6 @@ export function AddActivityButton({
   subcategory,
   project,
   date,
-  type,
   iconOnly = false,
 }: AddActivityButtonProps) {
   const [showModal, setShowModal] = useState(false);
@@ -68,7 +65,6 @@ export function AddActivityButton({
         subcategory={subcategory}
         project={project}
         date={date}
-        type={type}
       />
     </>
   );

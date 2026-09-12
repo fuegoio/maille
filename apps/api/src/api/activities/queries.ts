@@ -13,9 +13,11 @@ import {
 } from "@/tables";
 import { eq } from "drizzle-orm";
 import {
+  deriveActivityTypes,
+  getActivityAmounts,
+  getActivityAmountsTotal,
   getActivitySharingsReconciliation,
   getActivityStatus,
-  getActivityTransactionsReconciliationSum,
 } from "@maille/core/activities";
 import { getActivitySharings } from "@/services/sharing";
 
@@ -57,15 +59,15 @@ export const registerActivitiesQueries = () => {
             fundMoves: toFundMoves(transaction.id, transaction.fundMoves),
           }));
 
+          const amounts = getActivityAmounts(transactionsWithMoves, accountsQuery);
+
           return {
             ...activity,
             transactions: transactionsWithMoves,
             movements: activityMovements,
-            amount: getActivityTransactionsReconciliationSum(
-              activity.type,
-              transactionsWithMoves,
-              accountsQuery,
-            ),
+            types: deriveActivityTypes(transactionsWithMoves, accountsQuery),
+            amounts,
+            amount: getActivityAmountsTotal(amounts),
             status: getActivityStatus(
               activity.date,
               transactionsWithMoves,
