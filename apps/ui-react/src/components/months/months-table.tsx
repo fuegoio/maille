@@ -47,9 +47,12 @@ export function MonthsTable() {
     return months;
   }, [user.startingDate]);
 
-  const periodFormatter = (date: Date): string => {
+  const periodFormatter = (
+    date: Date,
+    monthStyle: "long" | "short" = "long",
+  ): string => {
     return date.toLocaleString("default", {
-      month: "long",
+      month: monthStyle,
       year: "numeric",
     });
   };
@@ -106,11 +109,16 @@ export function MonthsTable() {
 
                 <div
                   className={cn(
-                    "text-sm font-medium",
+                    "min-w-0 truncate text-sm font-medium",
                     monthDate > today && "text-muted-foreground",
                   )}
                 >
-                  {periodFormatter(monthDate)}
+                  <span className="md:hidden">
+                    {periodFormatter(monthDate, "short")}
+                  </span>
+                  <span className="hidden md:inline">
+                    {periodFormatter(monthDate)}
+                  </span>
                 </div>
                 <div className="flex-1" />
 
@@ -123,7 +131,7 @@ export function MonthsTable() {
                 </div>
 
                 {/* Revenue */}
-                <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+                <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm md:flex">
                   <div
                     className={cn(
                       "mr-3 size-2.5 shrink-0 rounded-lg",
@@ -136,7 +144,7 @@ export function MonthsTable() {
                 </div>
 
                 {/* Investment */}
-                <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+                <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm md:flex">
                   <div
                     className={cn(
                       "mr-3 size-2.5 shrink-0 rounded-lg",
@@ -149,7 +157,7 @@ export function MonthsTable() {
                 </div>
 
                 {/* Expense */}
-                <div className="flex w-32 items-center pl-4 text-right font-mono text-sm">
+                <div className="hidden w-32 items-center pl-4 text-right font-mono text-sm md:flex">
                   <div
                     className={cn(
                       "mr-3 size-2.5 shrink-0 rounded-lg",

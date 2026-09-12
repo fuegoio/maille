@@ -33,11 +33,19 @@ export function TableGroupHeader({
         onClick={() => onToggle(id)}
       />
       <Calendar className="hidden size-4 sm:block" />
-      <div className="text-sm">
-        {new Date(year, month).toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        })}
+      <div className="min-w-0 truncate text-sm">
+        <span className="sm:hidden">
+          {new Date(year, month).toLocaleString("default", {
+            month: "short",
+            year: "numeric",
+          })}
+        </span>
+        <span className="hidden sm:inline">
+          {new Date(year, month).toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
       </div>
       <div className="flex-1" />
       {children}

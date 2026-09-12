@@ -131,7 +131,7 @@ export function ActivityLine({
           {format(activity.date, "dd MMM")}
         </div>
         <div className="ml-1 w-8 shrink-0 text-muted-foreground lg:hidden">
-          {format(activity.date, "dd MMM")}
+          {format(activity.date, "dd")}
         </div>
 
         {getStatusIcon()}

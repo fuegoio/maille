@@ -205,7 +205,7 @@ export function FundsTable() {
             </div>
 
             {(fund.startDate || fund.endDate) && (
-              <div className="ml-4 text-sm text-muted-foreground">
+              <div className="ml-4 hidden text-sm text-muted-foreground sm:block">
                 {fund.startDate && (
                   <span>{format(new Date(fund.startDate), "dd/MM/yyyy")}</span>
                 )}

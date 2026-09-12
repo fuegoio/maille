@@ -46,7 +46,7 @@ export function ProjectsTable() {
           </div>
 
           {project.startDate || project.endDate ? (
-            <div className="ml-4 text-sm text-muted-foreground">
+            <div className="ml-4 hidden text-sm text-muted-foreground sm:block">
               {project.startDate ? (
                 <span>
                   {project.startDate instanceof Date
@@ -68,13 +68,13 @@ export function ProjectsTable() {
           <div className="flex-1" />
 
           {/* Activities count */}
-          <div className="mr-4 flex w-32 items-center justify-end text-right font-mono text-sm text-muted-foreground">
+          <div className="mr-4 hidden w-32 items-center justify-end text-right font-mono text-sm text-muted-foreground lg:flex">
             {activities.filter((a) => a.project === project.id).length}{" "}
             activities
           </div>
 
           {/* Revenue */}
-          <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+          <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm sm:flex">
             <div
               className={cn(
                 "mr-3 size-2.5 shrink-0 rounded-lg",
@@ -93,7 +93,7 @@ export function ProjectsTable() {
           </div>
 
           {/* Investment */}
-          <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
+          <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm lg:flex">
             <div
               className={cn(
                 "mr-3 size-2.5 shrink-0 rounded-lg",
@@ -131,7 +131,7 @@ export function ProjectsTable() {
           </div>
 
           {/* Neutral */}
-          <div className="flex w-32 items-center pl-4 text-right font-mono text-sm">
+          <div className="hidden w-32 items-center pl-4 text-right font-mono text-sm lg:flex">
             <div
               className={cn(
                 "mr-3 size-2.5 shrink-0 rounded-lg",

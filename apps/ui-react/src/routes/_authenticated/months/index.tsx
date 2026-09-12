@@ -30,9 +30,9 @@ function RouteComponent() {
           <div>Month</div>
           <div className="flex-1" />
           <div className="w-32 text-right">Balance</div>
-          <div className="w-32 text-right">Revenue</div>
-          <div className="w-32 text-right">Investment</div>
-          <div className="w-32 text-right">Expenses</div>
+          <div className="hidden w-32 text-right md:block">Revenue</div>
+          <div className="hidden w-32 text-right md:block">Investment</div>
+          <div className="hidden w-32 text-right md:block">Expenses</div>
         </header>
 
         <MonthsTable />
