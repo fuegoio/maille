@@ -61,9 +61,13 @@ export const verifyActivityFilter = (
     else throw Error("operator not valid");
   } else if (filter.field === "type") {
     if (filter.operator === "is any of")
-      return filter.value.length > 0 ? filter.value.includes(activity.type) : true;
+      return filter.value.length > 0
+        ? filter.value.some((type) => activity.types.includes(type))
+        : true;
     else if (filter.operator === "is not")
-      return filter.value.length > 0 ? !filter.value.includes(activity.type) : true;
+      return filter.value.length > 0
+        ? filter.value.every((type) => !activity.types.includes(type))
+        : true;
     else throw Error("operator not valid");
   } else if (filter.field === "category" || filter.field === "subcategory") {
     const value = activity[filter.field];

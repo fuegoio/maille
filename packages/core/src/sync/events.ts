@@ -1,5 +1,5 @@
 import type { Account, AccountSharing, AccountType } from "#accounts/index.ts";
-import type { ActivitySharing, ActivityType, Transaction } from "#activities/types.ts";
+import type { ActivitySharing, Transaction } from "#activities/types.ts";
 import type { ContactUser } from "#contacts/index.ts";
 import type { FundMove } from "#funds/types.ts";
 import type { SerializedHistoryEntry } from "#history/types.ts";
@@ -23,7 +23,6 @@ export interface CreateActivityEvent extends BaseSyncEvent {
     name: string;
     description: string | null;
     date: string;
-    type: ActivityType;
     category: string | null;
     subcategory: string | null;
     project: string | null;
@@ -47,7 +46,6 @@ export interface UpdateActivityEvent extends BaseSyncEvent {
     users?: string[];
     description?: string | null;
     date?: string;
-    type?: ActivityType;
     category?: string | null;
     subcategory?: string | null;
     project?: string | null;
@@ -206,7 +204,6 @@ export interface CreateActivityCategoryEvent extends BaseSyncEvent {
   payload: {
     id: string;
     name: string;
-    type: ActivityType;
     emoji: string | null;
   };
 }

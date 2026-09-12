@@ -33,14 +33,13 @@ export function ProjectSummary({
 
   const total = useMemo(
     () =>
-      projectActivities.reduce((sum, a) => {
-        if (a.type === ActivityType.EXPENSE) {
-          return sum - a.amount;
-        } else if (a.type === ActivityType.REVENUE) {
-          return sum + a.amount;
-        }
-        return sum;
-      }, 0),
+      projectActivities.reduce(
+        (sum, a) =>
+          sum +
+          a.amounts[ActivityType.REVENUE] -
+          a.amounts[ActivityType.EXPENSE],
+        0,
+      ),
     [projectActivities],
   );
 

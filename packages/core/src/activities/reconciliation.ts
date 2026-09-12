@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import {
   ActivityType,
+  type ActivityAmounts,
   type ActivityStatus,
   type ActivityMovement,
   type Transaction,
@@ -14,6 +15,140 @@ type SimpleAccount = {
   id: string;
   type: AccountType;
   movements: boolean;
+};
+
+// Maps an account type to the activity type derived from it, if any: the
+// activity's types are the set of typed accounts involved in its
+// transactions.
+const accountTypeToActivityType = (accountType: AccountType): ActivityType | null => {
+  if (accountType === AccountType.EXPENSE) {
+    return ActivityType.EXPENSE;
+  } else if (accountType === AccountType.REVENUE) {
+    return ActivityType.REVENUE;
+  } else if (accountType === AccountType.INVESTMENT_ACCOUNT) {
+    return ActivityType.INVESTMENT;
+  }
+  return null;
+};
+
+/**
+ * The activity's derived types: every type whose account kind is involved in
+ * at least one transaction leg. Neutral is attached when a transaction has no
+ * typed account on either side, or when there are no transactions at all.
+ */
+export const deriveActivityTypes = (
+  transactions: Transaction[],
+  accounts: SimpleAccount[],
+): ActivityType[] => {
+  const types = new Set<ActivityType>();
+  let hasNeutral = transactions.length === 0;
+
+  for (const transaction of transactions) {
+    const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
+    const toAccount = accounts.find((a) => a.id === transaction.toAccount);
+    const fromType = fromAccount ? accountTypeToActivityType(fromAccount.type) : null;
+    const toType = toAccount ? accountTypeToActivityType(toAccount.type) : null;
+
+    if (fromType) {
+      types.add(fromType);
+    }
+    if (toType) {
+      types.add(toType);
+    }
+    if (!fromType && !toType) {
+      hasNeutral = true;
+    }
+  }
+
+  if (types.size === 0 || hasNeutral) {
+    types.add(ActivityType.NEUTRAL);
+  }
+
+  return Object.values(ActivityType).filter((activityType) => types.has(activityType));
+};
+
+/**
+ * The activity's amounts per type. Typed legs contribute to their type:
+ * money flowing into an expense or investment account counts positively,
+ * money coming from a revenue account counts positively, and the reverse
+ * directions negatively. Transactions with no typed account on either side
+ * contribute their face amount to neutral.
+ */
+export const getActivityAmounts = (
+  transactions: Transaction[],
+  accounts: SimpleAccount[],
+): ActivityAmounts => {
+  const amounts: ActivityAmounts = {
+    [ActivityType.EXPENSE]: 0,
+    [ActivityType.REVENUE]: 0,
+    [ActivityType.INVESTMENT]: 0,
+    [ActivityType.NEUTRAL]: 0,
+  };
+
+  for (const transaction of transactions) {
+    const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
+    const toAccount = accounts.find((a) => a.id === transaction.toAccount);
+    const fromType = fromAccount ? accountTypeToActivityType(fromAccount.type) : null;
+    const toType = toAccount ? accountTypeToActivityType(toAccount.type) : null;
+
+    if (fromType === ActivityType.EXPENSE) {
+      amounts[ActivityType.EXPENSE] -= transaction.amount;
+    } else if (fromType === ActivityType.REVENUE) {
+      amounts[ActivityType.REVENUE] += transaction.amount;
+    } else if (fromType === ActivityType.INVESTMENT) {
+      amounts[ActivityType.INVESTMENT] -= transaction.amount;
+    }
+
+    if (toType === ActivityType.EXPENSE) {
+      amounts[ActivityType.EXPENSE] += transaction.amount;
+    } else if (toType === ActivityType.REVENUE) {
+      amounts[ActivityType.REVENUE] -= transaction.amount;
+    } else if (toType === ActivityType.INVESTMENT) {
+      amounts[ActivityType.INVESTMENT] += transaction.amount;
+    }
+
+    if (!fromType && !toType) {
+      amounts[ActivityType.NEUTRAL] += transaction.amount;
+    }
+  }
+
+  return {
+    [ActivityType.EXPENSE]: _.round(amounts[ActivityType.EXPENSE], 2),
+    [ActivityType.REVENUE]: _.round(amounts[ActivityType.REVENUE], 2),
+    [ActivityType.INVESTMENT]: _.round(amounts[ActivityType.INVESTMENT], 2),
+    [ActivityType.NEUTRAL]: _.round(amounts[ActivityType.NEUTRAL], 2),
+  };
+};
+
+/**
+ * The activity's single total amount: the sum of its per-type amounts. Used
+ * for sorting and amount comparisons.
+ */
+export const getActivityAmountsTotal = (amounts: ActivityAmounts): number => {
+  return _.round(
+    Object.values(amounts).reduce((total, amount) => total + amount, 0),
+    2,
+  );
+};
+
+/**
+ * The per-type sums of a set of activities, in the same shape as a single
+ * activity's amounts. Used for group and filtered totals.
+ */
+export const sumActivityAmounts = (activities: { amounts: ActivityAmounts }[]): ActivityAmounts => {
+  const sums: ActivityAmounts = {
+    [ActivityType.EXPENSE]: 0,
+    [ActivityType.REVENUE]: 0,
+    [ActivityType.INVESTMENT]: 0,
+    [ActivityType.NEUTRAL]: 0,
+  };
+  for (const { amounts } of activities) {
+    sums.expense += amounts.expense;
+    sums.revenue += amounts.revenue;
+    sums.investment += amounts.investment;
+    sums.neutral += amounts.neutral;
+  }
+  return sums;
 };
 
 export const getActivityStatus = (
@@ -32,60 +167,6 @@ export const getActivityStatus = (
   } else {
     return "completed";
   }
-};
-
-export const getActivityTransactionsReconciliationSum = (
-  activityType: ActivityType,
-  transactions: Transaction[],
-  accounts: SimpleAccount[],
-): number => {
-  return _.round(
-    transactions.reduce((s, transaction) => {
-      let amountTakenIntoAccount = 0;
-      if (activityType === ActivityType.NEUTRAL) {
-        amountTakenIntoAccount = transaction.amount;
-      } else {
-        if (transaction.fromAccount === undefined) return s;
-        const fromAccount = accounts.find((a) => a.id === transaction.fromAccount);
-        if (!fromAccount) return s;
-
-        if (activityType === ActivityType.EXPENSE && fromAccount.type === AccountType.EXPENSE) {
-          amountTakenIntoAccount += transaction.amount * -1;
-        } else if (
-          activityType === ActivityType.REVENUE &&
-          fromAccount.type === AccountType.REVENUE
-        ) {
-          amountTakenIntoAccount += transaction.amount;
-        } else if (
-          activityType === ActivityType.INVESTMENT &&
-          fromAccount.type === AccountType.INVESTMENT_ACCOUNT
-        ) {
-          amountTakenIntoAccount += transaction.amount * -1;
-        }
-
-        if (transaction.toAccount === undefined) return s;
-        const toAccount = accounts.find((a) => a.id === transaction.toAccount);
-        if (!toAccount) return s;
-
-        if (activityType === ActivityType.EXPENSE && toAccount.type === AccountType.EXPENSE) {
-          amountTakenIntoAccount += transaction.amount;
-        } else if (
-          activityType === ActivityType.REVENUE &&
-          toAccount.type === AccountType.REVENUE
-        ) {
-          amountTakenIntoAccount += transaction.amount * -1;
-        } else if (
-          activityType === ActivityType.INVESTMENT &&
-          toAccount.type === AccountType.INVESTMENT_ACCOUNT
-        ) {
-          amountTakenIntoAccount += transaction.amount;
-        }
-      }
-
-      return s + amountTakenIntoAccount;
-    }, 0),
-    2,
-  );
 };
 
 export const getActivityMovementsByAccount = (

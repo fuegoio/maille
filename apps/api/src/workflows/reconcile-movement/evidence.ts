@@ -50,7 +50,6 @@ export async function findSimilarMovements(
       linkAmount: movementsActivities.amount,
       activityId: activities.id,
       activityName: activities.name,
-      activityType: activities.type,
     })
     .from(movements)
     .leftJoin(movementsActivities, eq(movementsActivities.movement, movements.id))
@@ -78,11 +77,10 @@ export async function findSimilarMovements(
       };
       byMovement.set(row.movementId, movement);
     }
-    if (row.activityId && row.activityName && row.activityType) {
+    if (row.activityId && row.activityName) {
       movement.links.push({
         activityId: row.activityId,
         activityName: row.activityName,
-        activityType: row.activityType,
         amount: row.linkAmount ?? 0,
       });
     }
@@ -116,7 +114,6 @@ export async function searchActivities(
     .select({
       id: activities.id,
       name: activities.name,
-      type: activities.type,
       date: activities.date,
       category: activityCategories.name,
       subcategory: activitySubcategories.name,
@@ -136,7 +133,6 @@ const hydrateActivity = async (
   row: {
     id: string;
     name: string;
-    type: string;
     date: Date;
     category: string | null;
     subcategory: string | null;
@@ -193,7 +189,6 @@ const hydrateActivity = async (
   return {
     id: row.id,
     name: row.name,
-    type: row.type,
     date: row.date.toISOString(),
     category: row.category,
     subcategory: row.subcategory,
@@ -254,7 +249,6 @@ export async function buildEvidence(userId: string, movement: Movement): Promise
       .select({
         id: activityCategories.id,
         name: activityCategories.name,
-        type: activityCategories.type,
       })
       .from(activityCategories)
       .where(eq(activityCategories.user, userId)),

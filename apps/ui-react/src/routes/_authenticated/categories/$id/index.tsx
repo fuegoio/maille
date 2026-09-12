@@ -87,7 +87,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           />
           <div className="flex-1" />
           <SearchBar />
-          <AddActivityButton type={category.type} category={category.id} />
+          <AddActivityButton category={category.id} />
           {!summaryOpen && (
             <Button variant="outline" onClick={() => setSummaryOpen(true)}>
               <SquareChartGantt />

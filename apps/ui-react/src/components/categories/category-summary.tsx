@@ -15,7 +15,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { useActivities, ACTIVITY_TYPES_CHART_COLOR } from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 
 interface CategorySummaryProps {
@@ -72,8 +72,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
     views: { label: "Total" },
     value: {
       label: "Amount",
-      color:
-        ACTIVITY_TYPES_CHART_COLOR[category.type] ?? "var(--color-red-400)",
+      color: "var(--color-red-400)",
     },
   } satisfies ChartConfig;
 

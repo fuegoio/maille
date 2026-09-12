@@ -1,16 +1,19 @@
 import type {
+  ActivityAmounts,
   ActivityCategory,
   ActivitySubCategory,
 } from "@maille/core/activities";
 
+import { sumActivityAmounts } from "@maille/core/activities";
+import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
+import { ActivityAmountsValue } from "@/components/activities/activity-amounts";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { Button } from "@/components/ui/button";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
@@ -30,19 +33,20 @@ export function ProjectActivityCategoryLine({
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
-  const currencyFormatter = useCurrencyFormatter();
 
-  const projectActivities = useMemo(
-    () => activities.filter((a) => a.project === projectId),
-    [activities, projectId],
+  const projectCategoryActivities = useMemo(
+    () =>
+      activities.filter(
+        (a) => a.project === projectId && a.category === category.id,
+      ),
+    [activities, projectId, category.id],
   );
 
-  const categoryTotal = useMemo(
-    () =>
-      projectActivities
-        .filter((a) => a.category === category.id)
-        .reduce((total, a) => total + a.amount, 0),
-    [projectActivities, category.id],
+  // The category's amounts per type in the project — types are derived from
+  // the accounts, so one category can carry several.
+  const categoryAmounts = useMemo(
+    () => sumActivityAmounts(projectCategoryActivities),
+    [projectCategoryActivities],
   );
 
   const categorySubcategories = useMemo(
@@ -50,22 +54,19 @@ export function ProjectActivityCategoryLine({
     [subcategories, category.id],
   );
 
-  const subcategoriesValues = useMemo(() => {
-    const values: Record<string, number> = {};
-    categorySubcategories.forEach((sc) => {
-      values[sc.id] = 0;
-    });
-    projectActivities
-      .filter((a) => a.category === category.id && a.subcategory !== null)
-      .forEach((a) => {
-        if (values[a.subcategory!] !== undefined) {
-          values[a.subcategory!] += a.amount;
-        }
-      });
+  const subcategoriesAmounts = useMemo(() => {
+    const values: Record<string, ActivityAmounts> = {};
+    for (const subcategory of categorySubcategories) {
+      values[subcategory.id] = sumActivityAmounts(
+        projectCategoryActivities.filter(
+          (a) => a.subcategory === subcategory.id,
+        ),
+      );
+    }
     return values;
-  }, [projectActivities, category.id, categorySubcategories]);
+  }, [projectCategoryActivities, categorySubcategories]);
 
-  const selectCategory = () => {
+  const selectCategoryToFilterActivities = () => {
     onActivitiesFiltersChange({
       activityType: undefined,
       category:
@@ -74,7 +75,9 @@ export function ProjectActivityCategoryLine({
     });
   };
 
-  const selectSubcategory = (subcategory: ActivitySubCategory) => {
+  const selectSubcategoryToFilterActivities = (
+    subcategory: ActivitySubCategory,
+  ) => {
     onActivitiesFiltersChange({
       activityType: undefined,
       category: undefined,
@@ -95,7 +98,7 @@ export function ProjectActivityCategoryLine({
             "hover:bg-muted/50": activitiesFilters.category !== category.id,
           },
         )}
-        onClick={selectCategory}
+        onClick={selectCategoryToFilterActivities}
       >
         <div className="group flex items-center text-xs font-medium">
           {categorySubcategories.length > 0 && (
@@ -137,6 +140,9 @@ export function ProjectActivityCategoryLine({
               ? "Clear filter"
               : "Filter"}
           </div>
+
+          <ActivityAmountsValue amounts={categoryAmounts} className="text-sm" />
+
           <div
             className="mr-2 hidden group-hover:block"
             onClick={(e) => e.stopPropagation()}
@@ -146,53 +152,66 @@ export function ProjectActivityCategoryLine({
               size="sm"
               category={category.id}
               project={projectId}
-              type={category.type}
             />
           </div>
 
-          <div className="font-mono text-sm whitespace-nowrap text-white">
-            {currencyFormatter.format(categoryTotal)}
-          </div>
+          <Link
+            to="/categories/$id"
+            params={{ id: category.id }}
+            onClick={(event) => event.stopPropagation()}
+            aria-label={`Open ${category.name}`}
+            className="w-0 overflow-hidden text-muted-foreground opacity-0 transition-all duration-200 group-focus-within:w-6 group-focus-within:opacity-100 group-hover:w-6 group-hover:opacity-100"
+          >
+            <ChevronRight className="ml-2 size-4" />
+          </Link>
         </div>
       </div>
 
       {expanded && (
         <div className="space-y-1 border-b pb-2">
-          {categorySubcategories.map((subcategory) => (
-            <div
-              key={subcategory.id}
-              className={cn(
-                "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
-                {
-                  "bg-muted": activitiesFilters.subcategory === subcategory.id,
-                  "hover:bg-muted/50":
-                    activitiesFilters.subcategory !== subcategory.id,
-                },
-              )}
-              onClick={() => selectSubcategory(subcategory)}
-            >
-              <div className="flex items-center text-xs font-medium">
-                {subcategory.name}
-              </div>
-              <div className="flex items-center">
-                <div
-                  className={cn("mr-4 text-sm text-muted-foreground", {
-                    "hidden group-hover:block":
+          {categorySubcategories
+            .filter((subcategory) =>
+              Object.values(subcategoriesAmounts[subcategory.id]).some(
+                (amount) => amount !== 0,
+              ),
+            )
+            .map((subcategory) => (
+              <div
+                key={subcategory.id}
+                className={cn(
+                  "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
+                  {
+                    "bg-muted":
+                      activitiesFilters.subcategory === subcategory.id,
+                    "hover:bg-muted/50":
                       activitiesFilters.subcategory !== subcategory.id,
-                  })}
-                >
-                  {activitiesFilters.subcategory === subcategory.id
-                    ? "Clear filter"
-                    : "Filter"}
+                  },
+                )}
+                onClick={() => selectSubcategoryToFilterActivities(subcategory)}
+              >
+                <div className="flex items-center text-xs font-medium">
+                  {subcategory.name}
                 </div>
-                <div className="font-mono text-xs whitespace-nowrap">
-                  {currencyFormatter.format(
-                    subcategoriesValues[subcategory.id],
-                  )}
+
+                <div className="flex items-center">
+                  <div
+                    className={cn("mr-4 text-sm text-muted-foreground", {
+                      "hidden group-hover:block":
+                        activitiesFilters.subcategory !== subcategory.id,
+                    })}
+                  >
+                    {activitiesFilters.subcategory === subcategory.id
+                      ? "Clear filter"
+                      : "Filter"}
+                  </div>
+
+                  <ActivityAmountsValue
+                    amounts={subcategoriesAmounts[subcategory.id]}
+                    className="text-xs"
+                  />
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>

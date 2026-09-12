@@ -120,6 +120,13 @@
       "when": 1789167736577,
       "tag": "0016_demonic_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789202604030,
+      "tag": "0017_easy_zaladane",
+      "breakpoints": true
     }
   ]
 }

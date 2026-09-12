@@ -1,4 +1,3 @@
-import type { ActivityType } from "../activities/types";
 import type {
   HistoryChange,
   HistoryRef,
@@ -34,7 +33,6 @@ export interface ActivityHistorySnapshot {
   name: string;
   description: string | null;
   date: string;
-  type: ActivityType;
   category: HistoryEntity | null;
   subcategory: HistoryEntity | null;
   project: HistoryEntity | null;
@@ -103,7 +101,6 @@ export function diffActivity(
     valueChange("name", before.name, after.name),
     valueChange("description", before.description, after.description),
     valueChange("date", before.date, after.date),
-    valueChange("type", before.type, after.type),
     refChange("category", before.category, after.category, "category"),
     refChange("subcategory", before.subcategory, after.subcategory, "subcategory"),
     refChange("project", before.project, after.project, "project"),

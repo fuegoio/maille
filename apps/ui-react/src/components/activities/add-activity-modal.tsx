@@ -4,7 +4,6 @@ import type { Movement } from "@maille/core/movements";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AccountType } from "@maille/core/accounts";
-import { ActivityType } from "@maille/core/activities";
 import { extractDateFromMovementName } from "@maille/core/movements";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -22,13 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAccountDefaultFunds } from "@/hooks/use-account-default-funds";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -37,15 +29,10 @@ import {
   activityCreateHistoryEvent,
   linkMovementHistoryEvent,
 } from "@/lib/history-events";
-import { cn } from "@/lib/utils";
 import { classifyFundMoves } from "@/logic/funds";
 import { createActivityMutation } from "@/mutations/activities";
 import { useAccounts } from "@/stores/accounts";
-import {
-  ACTIVITY_TYPES_COLOR,
-  ACTIVITY_TYPES_NAME,
-  useActivities,
-} from "@/stores/activities";
+import { useActivities } from "@/stores/activities";
 import { useSync } from "@/stores/sync";
 
 import { ProjectSelect } from "../projects/project-select";
@@ -60,7 +47,6 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   date: z.date(),
-  type: z.enum(ActivityType),
   category: z.string().optional(),
   subcategory: z.string().optional(),
   project: z.string().optional(),
@@ -98,7 +84,6 @@ interface AddActivityModalProps {
   amount?: number;
   name?: string;
   date?: Date;
-  type?: ActivityType;
   category?: string;
   subcategory?: string;
   project?: string;
@@ -112,7 +97,6 @@ export function AddActivityModal({
   amount: initialAmount,
   name: initialName,
   date: initialDate,
-  type: initialType,
   category: initialCategory,
   subcategory: initialSubcategory,
   project: initialProject,
@@ -141,16 +125,9 @@ export function AddActivityModal({
   const nameInputRef = React.useRef<HTMLInputElement>(null);
 
   // Watch form values
-  const type = watch("type");
   const category = watch("category");
   const date = watch("date");
   const transactions = watch("transactions");
-
-  // Filtered categories and subcategories
-  const filteredCategories = React.useMemo(() => {
-    if (!type) return categories;
-    return categories.filter((c) => c.type === type);
-  }, [type, categories]);
 
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -184,102 +161,94 @@ export function AddActivityModal({
     setValue("transactions", updatedTransactions);
   };
 
-  // Guess best transaction accounts based on type
-  const guessBestTransaction = React.useCallback(
-    (type: ActivityType) => {
-      let fromAccount: string | undefined;
-      let toAccount: string | undefined;
+  // Guess best transaction accounts: money out goes bank -> expense,
+  // money in goes revenue -> bank (the movement's account takes one leg).
+  const guessBestTransaction = React.useCallback(() => {
+    const movementAmount = movement
+      ? movement.amount
+      : movements && movements.length > 0
+        ? movements[0].amount
+        : undefined;
+    const isRevenue = movementAmount !== undefined ? movementAmount > 0 : false;
 
-      if (type === ActivityType.EXPENSE) {
-        fromAccount = accounts.find(
-          (a) => a.type === AccountType.BANK_ACCOUNT,
-        )?.id;
-        toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
+    let fromAccount: string | undefined;
+    let toAccount: string | undefined;
 
-        if (movement) {
-          fromAccount = movement.account;
-        } else if (movements) {
-          const firstMovement = movements[0];
-          if (movements.every((m) => m.account === firstMovement.account)) {
-            fromAccount = firstMovement.account;
-          }
-        }
-      } else if (type === ActivityType.REVENUE) {
-        fromAccount = accounts.find((a) => a.type === AccountType.REVENUE)?.id;
-        toAccount = accounts.find(
-          (a) => a.type === AccountType.BANK_ACCOUNT,
-        )?.id;
-
-        if (movement) {
-          toAccount = movement.account;
-        } else if (movements) {
-          const firstMovement = movements[0];
-          if (movements.every((m) => m.account === firstMovement.account)) {
-            toAccount = firstMovement.account;
-          }
-        }
-      } else if (type === ActivityType.INVESTMENT) {
-        fromAccount = accounts.find(
-          (a) => a.type === AccountType.BANK_ACCOUNT,
-        )?.id;
-        toAccount = accounts.find(
-          (a) => a.type === AccountType.INVESTMENT_ACCOUNT,
-        )?.id;
-      }
-
-      return { fromAccount, toAccount };
-    },
-    [movement, movements, accounts],
-  );
-
-  // Add a new transaction
-  const addTransaction = React.useCallback(
-    (type: ActivityType) => {
-      const { fromAccount, toAccount } = guessBestTransaction(type);
-      let amount = 0;
+    if (!isRevenue) {
+      fromAccount = accounts.find(
+        (a) => a.type === AccountType.BANK_ACCOUNT,
+      )?.id;
+      toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
 
       if (movement) {
-        amount = Math.abs(movement.amount);
-      } else if (movements && movements.length > 0) {
+        fromAccount = movement.account;
+      } else if (movements) {
         const firstMovement = movements[0];
-        amount = Math.abs(firstMovement.amount);
+        if (movements.every((m) => m.account === firstMovement.account)) {
+          fromAccount = firstMovement.account;
+        }
       }
+    } else {
+      fromAccount = accounts.find((a) => a.type === AccountType.REVENUE)?.id;
+      toAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
 
-      setValue("transactions", [
-        ...transactions,
-        {
+      if (movement) {
+        toAccount = movement.account;
+      } else if (movements) {
+        const firstMovement = movements[0];
+        if (movements.every((m) => m.account === firstMovement.account)) {
+          toAccount = firstMovement.account;
+        }
+      }
+    }
+
+    return { fromAccount, toAccount };
+  }, [movement, movements, accounts]);
+
+  // Add a new transaction
+  const addTransaction = React.useCallback(() => {
+    const { fromAccount, toAccount } = guessBestTransaction();
+    let amount = 0;
+
+    if (movement) {
+      amount = Math.abs(movement.amount);
+    } else if (movements && movements.length > 0) {
+      const firstMovement = movements[0];
+      amount = Math.abs(firstMovement.amount);
+    }
+
+    setValue("transactions", [
+      ...transactions,
+      {
+        fromAccount: fromAccount || "",
+        fromAsset: null,
+        fromCounterparty: null,
+        toAccount: toAccount || "",
+        toAsset: null,
+        toCounterparty: null,
+        amount,
+        // Each side lands in its account's default fund, so the activity
+        // is classified from the start
+        fundMoves: classifyFundMoves({
           fromAccount: fromAccount || "",
-          fromAsset: null,
-          fromCounterparty: null,
           toAccount: toAccount || "",
-          toAsset: null,
-          toCounterparty: null,
           amount,
-          // Each side lands in its account's default fund, so the activity
-          // is classified from the start
-          fundMoves: classifyFundMoves({
-            fromAccount: fromAccount || "",
-            toAccount: toAccount || "",
-            amount,
-            accounts,
-            defaultFundByAccount,
-            date: date ?? new Date(),
-          }),
-        },
-      ]);
-    },
-    [
-      movement,
-      movements,
-      guessBestTransaction,
-      transactions,
-      setValue,
-      type,
-      accounts,
-      defaultFundByAccount,
-      date,
-    ],
-  );
+          accounts,
+          defaultFundByAccount,
+          date: date ?? new Date(),
+        }),
+      },
+    ]);
+  }, [
+    movement,
+    movements,
+    guessBestTransaction,
+    transactions,
+    setValue,
+    accounts,
+    defaultFundByAccount,
+    date,
+  ]);
 
   // Handle form submission
   const onSubmit = (data: FormValues) => {
@@ -304,7 +273,6 @@ export function AddActivityModal({
       name: data.name,
       description: data.description || null,
       date: getGraphQLDate(data.date),
-      type: data.type,
       category: data.category || null,
       subcategory: data.subcategory || null,
       project: data.project || null,
@@ -400,7 +368,7 @@ export function AddActivityModal({
     if (!movements) return;
 
     movements.forEach((movement) => {
-      const { fromAccount, toAccount } = guessBestTransaction(type);
+      const { fromAccount, toAccount } = guessBestTransaction();
 
       const extractedDate = extractDateFromMovementName(
         movement.name,
@@ -413,7 +381,6 @@ export function AddActivityModal({
         name: movement.name,
         description: data.description || null,
         date: getGraphQLDate(activityDate),
-        type: movement.amount < 0 ? ActivityType.EXPENSE : ActivityType.REVENUE,
         category: data.category || null,
         subcategory: data.subcategory || null,
         project: data.project || null,
@@ -456,12 +423,7 @@ export function AddActivityModal({
   };
 
   React.useEffect(() => {
-    const newType = movement
-      ? movement.amount < 0
-        ? ActivityType.EXPENSE
-        : ActivityType.REVENUE
-      : initialType;
-    const bestTransaction = newType ? guessBestTransaction(newType) : undefined;
+    const bestTransaction = guessBestTransaction();
 
     const getMovementDate = (m: Movement | undefined): Date => {
       if (!m) return initialDate || new Date();
@@ -474,7 +436,9 @@ export function AddActivityModal({
 
     const transactions = [];
     if (bestTransaction) {
-      const amount = movement ? Math.abs(movement.amount) : initialAmount;
+      const amount = movement
+        ? Math.abs(movement.amount)
+        : (initialAmount ?? 0);
       transactions.push({
         fromAccount: bestTransaction.fromAccount,
         fromAsset: null,
@@ -500,7 +464,6 @@ export function AddActivityModal({
       name: movement ? movement.name : initialName || "",
       description: "",
       date: resetDate,
-      type: newType,
       category: initialCategory,
       subcategory: initialSubcategory,
       project: initialProject,
@@ -512,7 +475,6 @@ export function AddActivityModal({
     initialAmount,
     initialName,
     initialDate,
-    initialType,
     initialCategory,
     initialSubcategory,
     initialProject,
@@ -607,45 +569,8 @@ export function AddActivityModal({
             )}
           />
 
-          {/* Type, Category, Subcategory, Project selectors */}
+          {/* Category, Subcategory, Project selectors */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value as ActivityType);
-                    setValue("category", ""); // Reset category when type changes
-                    setValue("subcategory", "");
-                    if (transactions.length === 0) {
-                      addTransaction(value as ActivityType);
-                    }
-                  }}
-                  value={field.value || ""}
-                >
-                  <SelectTrigger aria-label="Activity type">
-                    <SelectValue placeholder="Activity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(ActivityType).map((activityType) => (
-                      <SelectItem key={activityType} value={activityType}>
-                        <div className="flex items-center py-1">
-                          <div
-                            className={cn(
-                              "mr-2 h-3 w-3 rounded-full",
-                              ACTIVITY_TYPES_COLOR[activityType],
-                            )}
-                          />
-                          <span>{ACTIVITY_TYPES_NAME[activityType]}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-
             <Controller
               name="category"
               control={control}
@@ -656,9 +581,8 @@ export function AddActivityModal({
                     field.onChange(value ?? "");
                     setValue("subcategory", "");
                   }}
-                  type={type}
-                  categories={filteredCategories}
-                  disabled={!type || filteredCategories.length === 0}
+                  categories={categories}
+                  disabled={categories.length === 0}
                   placeholder="Category"
                 />
               )}
@@ -719,7 +643,7 @@ export function AddActivityModal({
                         })),
                       );
                     }}
-                    onAddTransaction={() => addTransaction(type)}
+                    onAddTransaction={() => addTransaction()}
                   />
                 )}
               </div>

@@ -1,10 +1,8 @@
-import { ActivityType, type Activity } from "@maille/core/activities";
+import { sumActivityAmounts, type Activity } from "@maille/core/activities";
 import * as React from "react";
 
+import { ActivityAmountsValue } from "@/components/activities/activity-amounts";
 import { Button } from "@/components/ui/button";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { cn } from "@/lib/utils";
-import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 import { useViews } from "@/stores/views";
 
 import { ActivityFilter } from "./activity-filter";
@@ -21,21 +19,11 @@ export function ActivitiesFilters({
 }: ActivitiesFiltersProps) {
   const activityView = useViews((state) => state.getActivityView(viewId));
   const setActivityView = useViews((state) => state.setActivityView);
-  const currencyFormatter = useCurrencyFormatter();
 
-  const activitiesTotal = React.useMemo(() => {
-    const totals: Partial<Record<ActivityType, number>> = {};
-
-    activities.forEach((a) => {
-      if (totals[a.type] === undefined) {
-        totals[a.type] = a.amount;
-      } else {
-        totals[a.type]! += a.amount;
-      }
-    });
-
-    return totals;
-  }, [activities]);
+  const activitiesTotal = React.useMemo(
+    () => sumActivityAmounts(activities),
+    [activities],
+  );
 
   const clearFilters = () => {
     setActivityView(viewId, {
@@ -84,30 +72,13 @@ export function ActivitiesFilters({
         >
           Clear
         </Button>
-        <div className="flex flex-col pr-2 sm:flex-row">
-          {[
-            ActivityType.INVESTMENT,
-            ActivityType.REVENUE,
-            ActivityType.EXPENSE,
-          ].map((activityType) => {
-            return (
-              activitiesTotal[activityType] && (
-                <div
-                  key={activityType}
-                  className="my-1 flex items-center px-2 text-right font-mono text-sm"
-                >
-                  <div
-                    className={cn(
-                      `mr-3 size-2.5 shrink-0 rounded-full`,
-                      ACTIVITY_TYPES_COLOR[activityType],
-                    )}
-                  />
-                  {currencyFormatter.format(activitiesTotal[activityType])}
-                </div>
-              )
-            );
-          })}
-        </div>
+
+        {/* Right edge matches the row amounts below: rows inset an extra
+         * 16px at lg via lg:pr-6 on top of the header's px-2. */}
+        <ActivityAmountsValue
+          amounts={activitiesTotal}
+          className="text-sm lg:pr-4"
+        />
       </div>
     </header>
   );

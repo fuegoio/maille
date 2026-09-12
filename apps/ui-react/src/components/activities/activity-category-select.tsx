@@ -1,4 +1,3 @@
-import { ActivityType } from "@maille/core/activities";
 import { Plus, Search, X } from "lucide-react";
 import * as React from "react";
 
@@ -21,11 +20,9 @@ import {
 interface ActivityCategorySelectProps {
   value?: string | null;
   onValueChange?: (value: string | null) => void;
-  type?: ActivityType;
   categories: Array<{
     id: string;
     name: string;
-    type: ActivityType;
     emoji: string | null;
   }>;
   disabled?: boolean;
@@ -35,7 +32,6 @@ interface ActivityCategorySelectProps {
 export function ActivityCategorySelect({
   value,
   onValueChange,
-  type,
   categories,
   disabled,
   placeholder = "Category",
@@ -83,16 +79,12 @@ export function ActivityCategorySelect({
     }
   };
 
-  // Filter categories based on search term and type
+  // Filter categories based on the search term
   const filteredCategories = React.useMemo(() => {
-    return categories.filter((category) => {
-      const matchesType = type ? category.type === type : true;
-      const matchesSearch = category.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      return matchesType && matchesSearch;
-    });
-  }, [categories, type, searchTerm]);
+    return categories.filter((category) =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [categories, searchTerm]);
 
   const handleCategoryChange = (categoryId: string) => {
     if (categoryId === "create-new") {
@@ -143,29 +135,27 @@ export function ActivityCategorySelect({
           </InputGroupAddon>
         </InputGroup>
 
-        {categories
-          .filter((c) => (type ? c.type === type : true))
-          .map((cat) => {
-            const visibleIndex = filteredCategories.findIndex(
-              (f) => f.id === cat.id,
-            );
-            const isHidden = visibleIndex === -1;
-            const isHighlighted = visibleIndex === highlightedIndex;
-            return (
-              <SelectItem
-                key={cat.id}
-                value={cat.id}
-                className={cn(
-                  "px-2",
-                  isHidden && "hidden",
-                  isHighlighted && "bg-accent text-accent-foreground",
-                )}
-              >
-                {cat.emoji && <span className="mr-1">{cat.emoji}</span>}
-                <span>{cat.name}</span>
-              </SelectItem>
-            );
-          })}
+        {categories.map((cat) => {
+          const visibleIndex = filteredCategories.findIndex(
+            (f) => f.id === cat.id,
+          );
+          const isHidden = visibleIndex === -1;
+          const isHighlighted = visibleIndex === highlightedIndex;
+          return (
+            <SelectItem
+              key={cat.id}
+              value={cat.id}
+              className={cn(
+                "px-2",
+                isHidden && "hidden",
+                isHighlighted && "bg-accent text-accent-foreground",
+              )}
+            >
+              {cat.emoji && <span className="mr-1">{cat.emoji}</span>}
+              <span>{cat.name}</span>
+            </SelectItem>
+          );
+        })}
 
         {/* Categories list */}
         {filteredCategories.length === 0 && (
@@ -197,7 +187,6 @@ export function ActivityCategorySelect({
           open={openCreate}
           onOpenChange={setOpenCreate}
           initialName={searchTerm}
-          initialType={type}
           onCategoryCreated={handleCategoryCreated}
         />
       )}

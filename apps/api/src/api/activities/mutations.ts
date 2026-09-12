@@ -1,4 +1,4 @@
-import { ActivityType, getActivitySharingsReconciliation } from "@maille/core/activities";
+import { getActivitySharingsReconciliation } from "@maille/core/activities";
 import {
   buildAddTransactionEntry,
   buildRemoveTransactionEntry,
@@ -42,7 +42,6 @@ import {
 } from "@/api/funds/transactions";
 import type { FundMove } from "@maille/core/funds";
 import { and, eq, like, ne } from "drizzle-orm";
-import { z } from "zod";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
 import { createActivity, updateActivity } from "@/services/activities";
@@ -96,7 +95,6 @@ export const registerActivitiesMutations = () => {
         name: t.arg.string(),
         description: t.arg.string({ required: false }),
         date: t.arg({ type: "Date" }),
-        type: t.arg.string(),
         category: t.arg({
           type: "String",
           required: false,
@@ -139,10 +137,6 @@ export const registerActivitiesMutations = () => {
         }),
         date: t.arg({
           type: "Date",
-          required: false,
-        }),
-        type: t.arg({
-          type: "String",
           required: false,
         }),
         category: t.arg({
@@ -344,7 +338,6 @@ export const registerActivitiesMutations = () => {
               name: activity.name,
               description: activity.description,
               date: activity.date,
-              type: activity.type,
             })
             .returning()
         )[0];
@@ -1039,18 +1032,13 @@ export const registerActivitiesMutations = () => {
           type: "String",
         }),
         name: t.arg.string(),
-        type: t.arg.string(),
         emoji: t.arg.string({ required: false }),
       },
       resolve: async (root, args, ctx) => {
-        const activityTypeSchema = z.enum(ActivityType);
-        const parsedType = activityTypeSchema.parse(args.type);
-
         const category = {
           id: args.id,
           user: ctx.user.id,
           name: args.name,
-          type: parsedType,
           emoji: args.emoji ?? null,
         };
         await db.insert(activityCategories).values(category);

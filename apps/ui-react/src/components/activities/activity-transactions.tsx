@@ -1,11 +1,6 @@
+import type { Activity, Transaction } from "@maille/core/activities";
 import type { FundMove } from "@maille/core/funds";
 
-import { AccountType } from "@maille/core/accounts";
-import {
-  ActivityType,
-  type Activity,
-  type Transaction,
-} from "@maille/core/activities";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 
@@ -210,35 +205,9 @@ export function ActivityTransactions({
     });
   };
 
-  // Guess best transaction accounts based on type
-  const guessBestTransaction = () => {
-    const type = activity.type;
-    let fromAccount: string | undefined;
-    let toAccount: string | undefined;
-
-    if (type === ActivityType.EXPENSE) {
-      fromAccount = accounts.find(
-        (a) => a.type === AccountType.BANK_ACCOUNT,
-      )?.id;
-      toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
-    } else if (type === ActivityType.REVENUE) {
-      fromAccount = accounts.find((a) => a.type === AccountType.REVENUE)?.id;
-      toAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
-    } else if (type === ActivityType.INVESTMENT) {
-      fromAccount = accounts.find(
-        (a) => a.type === AccountType.BANK_ACCOUNT,
-      )?.id;
-      toAccount = accounts.find(
-        (a) => a.type === AccountType.INVESTMENT_ACCOUNT,
-      )?.id;
-    }
-
-    return { fromAccount, toAccount };
-  };
-
   const commitTransaction = (transaction: StagedTransaction) => {
-    // Neutral activities stage without accounts, so their legs classify
-    // here, once both sides are known; legs set by hand win over defaults.
+    // Staged legs have no accounts until both sides are known; the
+    // classification happens here, and legs set by hand win over defaults.
     const fundMoves =
       transaction.fundMoves && transaction.fundMoves.length > 0
         ? transaction.fundMoves
@@ -301,17 +270,20 @@ export function ActivityTransactions({
     id: string,
     updateData: Partial<Transaction>,
   ) => {
-    setStagedTransactions((prev) => {
-      const updated = prev.map((t) =>
-        t.id === id ? { ...t, ...updateData } : t,
+    // Side effects stay out of the state updater — StrictMode double-invokes
+    // updaters in dev, which would queue the commit mutation twice and fail
+    // the second insert on the client-generated transaction id.
+    const staged = stagedTransactions.find((t) => t.id === id);
+    if (!staged) return;
+    const transaction = { ...staged, ...updateData };
+    if (transaction.fromAccount && transaction.toAccount) {
+      commitTransaction(transaction);
+      setStagedTransactions((prev) => prev.filter((t) => t.id !== id));
+    } else {
+      setStagedTransactions((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, ...updateData } : t)),
       );
-      const transaction = updated.find((t) => t.id === id);
-      if (transaction?.fromAccount && transaction?.toAccount) {
-        commitTransaction(transaction);
-        return prev.filter((t) => t.id !== id);
-      }
-      return updated;
-    });
+    }
   };
 
   const handleStagedTransactionDelete = (id: string) => {
@@ -319,13 +291,11 @@ export function ActivityTransactions({
   };
 
   const addTransaction = () => {
-    const { fromAccount, toAccount } = guessBestTransaction();
-
     const transactionId = crypto.randomUUID();
     const transaction: StagedTransaction = {
       id: transactionId,
-      fromAccount: fromAccount || "",
-      toAccount: toAccount || "",
+      fromAccount: "",
+      toAccount: "",
       amount: 0,
       fromAsset: null,
       fromCounterparty: null,
@@ -334,8 +304,8 @@ export function ActivityTransactions({
       // Each side lands in its account's default fund, so the new leg is
       // classified from the start
       fundMoves: classifyFundMoves({
-        fromAccount: fromAccount || "",
-        toAccount: toAccount || "",
+        fromAccount: "",
+        toAccount: "",
         amount: 0,
         accounts,
         defaultFundByAccount,
@@ -343,13 +313,9 @@ export function ActivityTransactions({
       }),
     };
 
-    // For Neutral activities, accounts are unknown — stage locally until complete
-    if (activity.type === ActivityType.NEUTRAL) {
-      setStagedTransactions((prev) => [...prev, transaction]);
-      return;
-    }
-
-    commitTransaction(transaction);
+    // Accounts are unknown for a new leg — stage locally until both sides
+    // are set, then commit
+    setStagedTransactions((prev) => [...prev, transaction]);
   };
 
   return (

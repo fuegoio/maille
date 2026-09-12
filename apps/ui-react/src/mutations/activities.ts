@@ -36,7 +36,6 @@ export const createActivityMutation = graphql(/* GraphQL */ `
     $project: String
     $subcategory: String
     $transactions: [TransactionInput!]
-    $type: String!
   ) {
     createActivity(
       category: $category
@@ -48,7 +47,6 @@ export const createActivityMutation = graphql(/* GraphQL */ `
       project: $project
       subcategory: $subcategory
       transactions: $transactions
-      type: $type
     ) {
       id
     }
@@ -64,7 +62,6 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
     $name: String
     $project: String
     $subcategory: String
-    $type: String
   ) {
     updateActivity(
       id: $id
@@ -74,7 +71,6 @@ export const updateActivityMutation = graphql(/* GraphQL */ `
       name: $name
       project: $project
       subcategory: $subcategory
-      type: $type
     ) {
       id
     }
@@ -104,7 +100,6 @@ export type UpdateActivityMutation = MutationType<
     name: string;
     description: string | null;
     date: string;
-    type: string;
     category: string | null;
     subcategory: string | null;
     project: string | null;
@@ -237,10 +232,9 @@ export const createActivityCategoryMutation = graphql(/* GraphQL */ `
   mutation CreateActivityCategory(
     $id: String!
     $name: String!
-    $type: String!
     $emoji: String
   ) {
-    createActivityCategory(id: $id, name: $name, type: $type, emoji: $emoji) {
+    createActivityCategory(id: $id, name: $name, emoji: $emoji) {
       id
     }
   }

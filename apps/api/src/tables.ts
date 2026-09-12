@@ -11,7 +11,6 @@ import {
   jsonb,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { ActivityType } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import type { SerializedHistoryEntry } from "@maille/core/history";
 import { DEFAULT_FUND_COLOR } from "@maille/core/funds";
@@ -133,8 +132,6 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
-export const activityTypeEnum = pgEnum("activity_type", ActivityType);
-
 export const activities = pgTable("activities", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -143,7 +140,6 @@ export const activities = pgTable("activities", {
   user: text("user")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  type: activityTypeEnum("type").notNull(),
   category: text("category").references(() => activityCategories.id, { onDelete: "set null" }),
   subcategory: text("subcategory").references(() => activitySubcategories.id, {
     onDelete: "set null",
@@ -170,7 +166,6 @@ export const activityCategories = pgTable("activity_categories", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  type: activityTypeEnum("type").notNull(),
   emoji: text("emoji"),
 });
 

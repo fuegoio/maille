@@ -1,18 +1,19 @@
 import type {
+  ActivityAmounts,
   ActivityCategory,
   ActivitySubCategory,
 } from "@maille/core/activities";
 
+import { sumActivityAmounts } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
+import { ActivityAmountsValue } from "@/components/activities/activity-amounts";
 import { Button } from "@/components/ui/button";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
-import { getActivityCategoryTotalForMonth } from "@/logic/activities";
 import { useActivities } from "@/stores/activities";
 
 interface MonthActivityCategoryLineProps {
@@ -31,44 +32,39 @@ export function MonthActivityCategoryLine({
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const [expanded, setExpanded] = useState(false);
-  const currencyFormatter = useCurrencyFormatter();
 
-  const monthActivityCategoryValue = useMemo<number>(
+  const monthCategoryActivities = useMemo(
     () =>
-      getActivityCategoryTotalForMonth({
-        monthDate,
-        categoryId: category.id,
-        activities,
-      }),
-    [monthDate, category.id, activities],
+      activities.filter(
+        (a) =>
+          a.date.getMonth() === monthDate.getMonth() &&
+          a.date.getFullYear() === monthDate.getFullYear() &&
+          a.category === category.id,
+      ),
+    [activities, monthDate, category.id],
   );
 
-  const categorySubcategories = useMemo(() => {
-    return subcategories.filter((sc) => sc.category === category.id);
-  }, [subcategories, category.id]);
+  // The category's amounts per type in the month — types are derived from
+  // the accounts, so one category can carry several.
+  const categoryAmounts = useMemo(
+    () => sumActivityAmounts(monthCategoryActivities),
+    [monthCategoryActivities],
+  );
 
-  const subcategoriesValues = useMemo(() => {
-    const values: Record<string, number> = {};
-    categorySubcategories.forEach((subcategory) => {
-      values[subcategory.id] = 0;
-    });
+  const categorySubcategories = useMemo(
+    () => subcategories.filter((sc) => sc.category === category.id),
+    [subcategories, category.id],
+  );
 
-    activities
-      .filter(
-        (activity) =>
-          activity.date.getMonth() === monthDate.getMonth() &&
-          activity.date.getFullYear() === monthDate.getFullYear() &&
-          activity.category === category.id &&
-          activity.subcategory !== null,
-      )
-      .forEach((activity) => {
-        if (values[activity.subcategory!] !== undefined) {
-          values[activity.subcategory!] += activity.amount;
-        }
-      });
-
+  const subcategoriesAmounts = useMemo(() => {
+    const values: Record<string, ActivityAmounts> = {};
+    for (const subcategory of categorySubcategories) {
+      values[subcategory.id] = sumActivityAmounts(
+        monthCategoryActivities.filter((a) => a.subcategory === subcategory.id),
+      );
+    }
     return values;
-  }, [activities, monthDate, category.id, categorySubcategories]);
+  }, [monthCategoryActivities, categorySubcategories]);
 
   const selectCategoryToFilterActivities = () => {
     onActivitiesFiltersChange({
@@ -145,9 +141,7 @@ export function MonthActivityCategoryLine({
               : "Filter"}
           </div>
 
-          <div className="font-mono text-sm whitespace-nowrap text-white">
-            {currencyFormatter.format(monthActivityCategoryValue)}
-          </div>
+          <ActivityAmountsValue amounts={categoryAmounts} className="text-sm" />
 
           <Link
             to="/categories/$id"
@@ -163,43 +157,49 @@ export function MonthActivityCategoryLine({
 
       {expanded && (
         <div className="space-y-1 border-b pb-2">
-          {categorySubcategories.map((subcategory) => (
-            <div
-              key={subcategory.id}
-              className={cn(
-                "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
-                {
-                  "bg-muted": activitiesFilters.subcategory === subcategory.id,
-                  "hover:bg-muted/50":
-                    activitiesFilters.subcategory !== subcategory.id,
-                },
-              )}
-              onClick={() => selectSubcategoryToFilterActivities(subcategory)}
-            >
-              <div className="flex items-center text-xs font-medium">
-                {subcategory.name}
-              </div>
-
-              <div className="flex items-center">
-                <div
-                  className={cn("mr-4 text-sm text-muted-foreground", {
-                    "hidden group-hover:block":
+          {categorySubcategories
+            .filter((subcategory) =>
+              Object.values(subcategoriesAmounts[subcategory.id]).some(
+                (amount) => amount !== 0,
+              ),
+            )
+            .map((subcategory) => (
+              <div
+                key={subcategory.id}
+                className={cn(
+                  "group ml-4 flex h-7 cursor-pointer items-center justify-between rounded pr-3 pl-5 transition-colors",
+                  {
+                    "bg-muted":
+                      activitiesFilters.subcategory === subcategory.id,
+                    "hover:bg-muted/50":
                       activitiesFilters.subcategory !== subcategory.id,
-                  })}
-                >
-                  {activitiesFilters.subcategory === subcategory.id
-                    ? "Clear filter"
-                    : "Filter"}
+                  },
+                )}
+                onClick={() => selectSubcategoryToFilterActivities(subcategory)}
+              >
+                <div className="flex items-center text-xs font-medium">
+                  {subcategory.name}
                 </div>
 
-                <div className="font-mono text-xs whitespace-nowrap">
-                  {currencyFormatter.format(
-                    subcategoriesValues[subcategory.id],
-                  )}
+                <div className="flex items-center">
+                  <div
+                    className={cn("mr-4 text-sm text-muted-foreground", {
+                      "hidden group-hover:block":
+                        activitiesFilters.subcategory !== subcategory.id,
+                    })}
+                  >
+                    {activitiesFilters.subcategory === subcategory.id
+                      ? "Clear filter"
+                      : "Filter"}
+                  </div>
+
+                  <ActivityAmountsValue
+                    amounts={subcategoriesAmounts[subcategory.id]}
+                    className="text-xs"
+                  />
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       )}
     </div>

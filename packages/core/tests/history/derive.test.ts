@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { ActivityType } from "@maille/core/activities";
 import {
   buildAddTransactionEntry,
   buildUpdateLinkEntry,
@@ -20,7 +19,6 @@ const activitySnapshot = (
   name: "Lunch",
   description: null,
   date: "2026-09-08T00:00:00.000Z",
-  type: ActivityType.EXPENSE,
   category: null,
   subcategory: null,
   project: null,

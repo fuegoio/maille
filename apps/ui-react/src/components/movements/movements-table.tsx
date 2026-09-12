@@ -4,6 +4,7 @@ import { verifyMovementFilter } from "@maille/core/movements";
 import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
+import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -110,7 +111,31 @@ export function MovementsTable({
                     onToggle={toggleGroup}
                     month={item.month}
                     year={item.year}
-                  />
+                  >
+                    {/* Movements are signed: in sums the positives, out the
+                     * negatives, displayed positively with its dot. */}
+                    <AmountPairsValue
+                      pairs={[
+                        {
+                          dot: "bg-green-400",
+                          amount: item.rows.reduce(
+                            (sum, movement) =>
+                              sum + Math.max(movement.amount, 0),
+                            0,
+                          ),
+                        },
+                        {
+                          dot: "bg-red-400",
+                          amount: -item.rows.reduce(
+                            (sum, movement) =>
+                              sum + Math.min(movement.amount, 0),
+                            0,
+                          ),
+                        },
+                      ]}
+                      className="text-sm"
+                    />
+                  </TableGroupHeader>
                 ) : (
                   <EntityContextMenu
                     actions={entityActions}
