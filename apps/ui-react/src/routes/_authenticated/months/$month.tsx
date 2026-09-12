@@ -138,10 +138,14 @@ function MonthPage() {
 
           <SearchBar />
           {!summaryOpen && (
-            <Button variant="default" onClick={() => setSummaryOpen(true)}>
+            <Button
+              variant="default"
+              aria-label="Show summary"
+              onClick={() => setSummaryOpen(true)}
+            >
               <SquareChartGantt />
-              Summary
-              <ChevronRight />
+              <span className="hidden sm:inline">Summary</span>
+              <ChevronRight className="hidden sm:block" />
             </Button>
           )}
         </header>

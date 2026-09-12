@@ -89,10 +89,14 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           <SearchBar />
           <AddActivityButton category={category.id} />
           {!summaryOpen && (
-            <Button variant="outline" onClick={() => setSummaryOpen(true)}>
+            <Button
+              variant="outline"
+              aria-label="Show summary"
+              onClick={() => setSummaryOpen(true)}
+            >
               <SquareChartGantt />
-              Summary
-              <ChevronRight />
+              <span className="hidden sm:inline">Summary</span>
+              <ChevronRight className="hidden sm:block" />
             </Button>
           )}
           <CategorySettingsDialog category={category}>

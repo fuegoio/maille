@@ -30,9 +30,13 @@ function CategoriesPage() {
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateCategoryDialog>
-          <Button variant="default">
+          <Button
+            variant="outline"
+            aria-label="Create category"
+            className="w-8 px-0 sm:w-auto sm:px-2.5"
+          >
             <Plus />
-            Create category
+            <span className="hidden sm:inline">Create category</span>
           </Button>
         </CreateCategoryDialog>
       </header>

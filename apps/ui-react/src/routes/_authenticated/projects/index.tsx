@@ -30,9 +30,13 @@ function ProjectsPage() {
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateProjectDialog>
-          <Button>
+          <Button
+            variant="outline"
+            aria-label="New project"
+            className="w-8 px-0 sm:w-auto sm:px-2.5"
+          >
             <Plus />
-            <span>New project</span>
+            <span className="hidden sm:inline">New project</span>
           </Button>
         </CreateProjectDialog>
       </header>
