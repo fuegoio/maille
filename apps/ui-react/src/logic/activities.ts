@@ -1,5 +1,31 @@
 import type { ActivityType, Activity } from "@maille/core/activities";
 
+export function getActivityCategoryTotalForMonth({
+  monthDate,
+  categoryId,
+  activityType,
+  activities,
+}: {
+  monthDate: Date;
+  categoryId: string;
+  /** The derived type to total; undefined sums the activity totals. */
+  activityType?: ActivityType;
+  activities: Activity[];
+}) {
+  return activities
+    .filter((a) => a.category === categoryId)
+    .filter(
+      (a) =>
+        a.date.getMonth() === monthDate.getMonth() &&
+        a.date.getFullYear() === monthDate.getFullYear(),
+    )
+    .reduce(
+      (acc, a) =>
+        acc + (activityType !== undefined ? a.amounts[activityType] : a.amount),
+      0,
+    );
+}
+
 export function getActivityTypeTotalForMonth({
   monthDate,
   activityType,
