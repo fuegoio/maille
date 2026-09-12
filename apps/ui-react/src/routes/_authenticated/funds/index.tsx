@@ -28,7 +28,11 @@ function FundsPage() {
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateFundDialog>
-          <Button aria-label="New fund">
+          <Button
+            variant="outline"
+            aria-label="New fund"
+            className="w-8 px-0 sm:w-auto sm:px-2.5"
+          >
             <Plus />
             <span className="hidden sm:inline">New fund</span>
           </Button>

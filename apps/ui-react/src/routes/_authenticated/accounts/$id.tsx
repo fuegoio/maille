@@ -292,17 +292,27 @@ function AccountPage({ account }: { account: Account }) {
               )}
               {selectedTab === "assets" && (
                 <AddAssetModal accountId={accountId}>
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    aria-label="Add asset"
+                    className="w-7 px-0 sm:w-auto sm:px-2.5"
+                  >
                     <Plus />
-                    Add asset
+                    <span className="hidden sm:inline">Add asset</span>
                   </Button>
                 </AddAssetModal>
               )}
               {selectedTab === "counterparties" && (
                 <AddCounterpartyModal accountId={accountId}>
-                  <Button size="sm">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    aria-label="Add counterparty"
+                    className="w-7 px-0 sm:w-auto sm:px-2.5"
+                  >
                     <Plus />
-                    Add counterparty
+                    <span className="hidden sm:inline">Add counterparty</span>
                   </Button>
                 </AddCounterpartyModal>
               )}

@@ -121,7 +121,11 @@ function FundPage() {
             </Button>
           )}
           <CreateFundDialog defaultParent={fund.id}>
-            <Button aria-label="New subfund">
+            <Button
+              variant="outline"
+              aria-label="New subfund"
+              className="w-8 px-0 sm:w-auto sm:px-2.5"
+            >
               <Plus />
               <span className="hidden sm:inline">New subfund</span>
             </Button>

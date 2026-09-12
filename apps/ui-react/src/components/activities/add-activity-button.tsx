@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { AddActivityModal } from "./add-activity-modal";
 
@@ -49,16 +50,19 @@ export function AddActivityButton({
     <>
       <Button
         onClick={handleClick}
-        className={className}
-        variant="default"
+        className={cn(
+          className,
+          !iconOnly &&
+            (size === "sm"
+              ? "w-7 px-0 sm:w-auto sm:px-2.5"
+              : "w-8 px-0 sm:w-auto sm:px-2.5"),
+        )}
+        variant="outline"
         size={iconOnly ? "icon" : size}
         aria-label="Add activity"
       >
         <Plus />
-        {!iconOnly && size === "default" && (
-          <span className="hidden sm:inline">Add activity</span>
-        )}
-        {!iconOnly && size !== "default" && "Add activity"}
+        {!iconOnly && <span className="hidden sm:inline">Add activity</span>}
       </Button>
 
       <AddActivityModal
