@@ -84,6 +84,7 @@ function FundPage() {
                 </span>
               ),
               title: fund.name,
+              target: { to: "/funds/$id", params: { id: fund.id } },
             },
           ]
         : []),

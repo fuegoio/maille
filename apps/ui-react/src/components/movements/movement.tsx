@@ -131,6 +131,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
       key: `movement:${movementId}`,
       label: movement?.name ?? "",
       title: movement?.name,
+      target: { to: "/movements/$id", params: { id: movementId } },
     },
     fallback: [
       { key: "movements", label: "Movements", target: { to: "/movements" } },

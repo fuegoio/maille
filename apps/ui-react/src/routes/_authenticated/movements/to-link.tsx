@@ -33,7 +33,11 @@ function ToLinkPage() {
     routeKey: "/movements/to-link",
     entries: [
       { key: "movements", label: "Movements", target: { to: "/movements" } },
-      { key: "to-link", label: "To link" },
+      {
+        key: "to-link",
+        label: "To link",
+        target: { to: "/movements/to-link" },
+      },
     ],
   });
 

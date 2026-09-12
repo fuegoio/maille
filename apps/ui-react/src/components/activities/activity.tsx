@@ -159,6 +159,7 @@ export function ActivityPage({
       key: `activity:${activityId}`,
       label: activity?.name ?? "",
       title: activity?.name,
+      target: { to: "/activities/$id", params: { id: activityId } },
     },
     fallback: [
       { key: "activities", label: "Activities", target: { to: "/activities" } },

@@ -71,6 +71,7 @@ export const Route = createFileRoute("/_authenticated/months/$month")({
 
 function MonthPage() {
   const { month, year, monthDate } = Route.useLoaderData();
+  const { month: monthParam } = Route.useParams();
   const navigate = useNavigate();
   const { tab } = Route.useSearch();
   const selectedTab = tab ?? "activities";
@@ -113,7 +114,11 @@ function MonthPage() {
     routeKey: "/months/$month",
     entries: [
       { key: "months", label: "Months", target: { to: "/months" } },
-      { key: `month:${month}`, label: monthFormatter(monthDate) },
+      {
+        key: `month:${month}`,
+        label: monthFormatter(monthDate),
+        target: { to: "/months/$month", params: { month: monthParam } },
+      },
     ],
   });
 

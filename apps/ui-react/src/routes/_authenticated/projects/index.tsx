@@ -18,7 +18,9 @@ function ProjectsPage() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/projects",
-    entries: [{ key: "projects", label: "Projects" }],
+    entries: [
+      { key: "projects", label: "Projects", target: { to: "/projects" } },
+    ],
   });
 
   return (

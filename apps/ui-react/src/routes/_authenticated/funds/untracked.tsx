@@ -38,6 +38,7 @@ function UntrackedFundPage() {
             <span className="text-muted-foreground">Untracked</span>
           </span>
         ),
+        target: { to: "/funds/untracked" },
       },
     ],
   });

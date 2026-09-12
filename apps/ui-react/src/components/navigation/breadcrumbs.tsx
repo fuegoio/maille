@@ -6,7 +6,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
@@ -76,21 +75,24 @@ export function PageBreadcrumbs({
             <Fragment key={entry.key}>
               {index > 0 && <BreadcrumbSeparator className="shrink-0" />}
               <BreadcrumbItem className={isCurrent ? "min-w-0" : "shrink-0"}>
-                {!isCurrent && entry.target ? (
-                  <BreadcrumbLink asChild>
-                    <Link
-                      to={entry.target.to as never}
-                      params={entry.target.params as never}
-                      search={entry.target.search as never}
-                    >
-                      {entry.label}
-                    </Link>
-                  </BreadcrumbLink>
-                ) : (
-                  <BreadcrumbPage className="truncate" title={entry.title}>
+                <BreadcrumbLink
+                  asChild
+                  // The current crumb keeps its foreground color so it
+                  // still reads as "you are here", but is clickable like
+                  // every other step.
+                  className={isCurrent ? "text-foreground" : undefined}
+                >
+                  <Link
+                    to={entry.target.to as never}
+                    params={entry.target.params as never}
+                    search={entry.target.search as never}
+                    aria-current={isCurrent ? "page" : undefined}
+                    className={isCurrent ? "truncate" : undefined}
+                    title={entry.title}
+                  >
                     {entry.label}
-                  </BreadcrumbPage>
-                )}
+                  </Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </Fragment>
           );

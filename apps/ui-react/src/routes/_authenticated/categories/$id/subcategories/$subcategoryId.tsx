@@ -120,6 +120,10 @@ function SubcategoryPage({
           </>
         ),
         title: subcategory.name,
+        target: {
+          to: "/categories/$id/subcategories/$subcategoryId",
+          params: { id: categoryId, subcategoryId: subcategory.id },
+        },
       },
     ],
   });

@@ -62,6 +62,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
       key: `counterparty:${counterpartyId}`,
       label: counterparty?.name ?? "",
       title: counterparty?.name,
+      target: { to: "/counterparties/$id", params: { id: counterpartyId } },
     },
     fallback: [
       {

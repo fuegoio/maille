@@ -15,7 +15,7 @@ function RouteComponent() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/months",
-    entries: [{ key: "months", label: "Months" }],
+    entries: [{ key: "months", label: "Months", target: { to: "/months" } }],
   });
 
   return (

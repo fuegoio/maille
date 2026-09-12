@@ -40,7 +40,11 @@ function ToReconciliatePage() {
     routeKey: "/activities/to-reconciliate",
     entries: [
       { key: "activities", label: "Activities", target: { to: "/activities" } },
-      { key: "to-reconciliate", label: "To reconciliate" },
+      {
+        key: "to-reconciliate",
+        label: "To reconciliate",
+        target: { to: "/activities/to-reconciliate" },
+      },
     ],
   });
 

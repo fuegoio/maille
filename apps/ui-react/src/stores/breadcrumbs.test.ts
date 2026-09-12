@@ -43,7 +43,11 @@ const accountPage = {
 const movementPage = {
   contextual: true as const,
   routeKey: "/movements/$id",
-  own: { key: "movement:m1", label: "Groceries" },
+  own: {
+    key: "movement:m1",
+    label: "Groceries",
+    target: { to: "/movements/$id", params: { id: "m1" } },
+  },
   fallback: [movementsIndexEntry],
 };
 
@@ -123,7 +127,11 @@ describe("breadcrumb trails", () => {
 
     const nextMovement = {
       ...movementPage,
-      own: { key: "movement:m2", label: "Rent" },
+      own: {
+        key: "movement:m2",
+        label: "Rent",
+        target: { to: "/movements/$id", params: { id: "m2" } },
+      },
     };
     expect(entries(nextMovement, "k3")).toEqual([
       accountsEntry,

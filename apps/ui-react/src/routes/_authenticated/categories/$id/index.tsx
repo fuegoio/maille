@@ -62,6 +62,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
       {
         key: `category:${category.id}`,
         label: <CategoryLabel categoryId={category.id} />,
+        target: { to: "/categories/$id", params: { id: category.id } },
       },
     ],
   });

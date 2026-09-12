@@ -32,7 +32,9 @@ function ActivitiesPage() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/activities",
-    entries: [{ key: "activities", label: "Activities" }],
+    entries: [
+      { key: "activities", label: "Activities", target: { to: "/activities" } },
+    ],
   });
 
   return (

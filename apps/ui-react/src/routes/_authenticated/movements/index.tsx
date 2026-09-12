@@ -34,7 +34,9 @@ function MovementsPage() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/movements",
-    entries: [{ key: "movements", label: "Movements" }],
+    entries: [
+      { key: "movements", label: "Movements", target: { to: "/movements" } },
+    ],
   });
 
   return (

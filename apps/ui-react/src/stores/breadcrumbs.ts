@@ -24,8 +24,13 @@ export interface BreadcrumbEntry {
   /** Stable identity of the crumb, e.g. "account:<id>". */
   key: string;
   label: ReactNode;
-  /** Absent on the crumb for the current page. */
-  target?: BreadcrumbTarget;
+  /**
+   * Every entry carries its target, including the crumb for the current
+   * page: the trail renders as clickable links end to end, and the target
+   * also keeps the crumb clickable once the trail is captured as another
+   * page's context.
+   */
+  target: BreadcrumbTarget;
   /** Tooltip when the label is truncated. */
   title?: string;
 }

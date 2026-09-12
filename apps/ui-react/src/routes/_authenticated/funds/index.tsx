@@ -18,7 +18,7 @@ function FundsPage() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/funds",
-    entries: [{ key: "funds", label: "Funds" }],
+    entries: [{ key: "funds", label: "Funds", target: { to: "/funds" } }],
   });
 
   return (

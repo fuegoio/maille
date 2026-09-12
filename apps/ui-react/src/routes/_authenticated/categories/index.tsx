@@ -18,7 +18,9 @@ function CategoriesPage() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/categories",
-    entries: [{ key: "categories", label: "Categories" }],
+    entries: [
+      { key: "categories", label: "Categories", target: { to: "/categories" } },
+    ],
   });
 
   return (

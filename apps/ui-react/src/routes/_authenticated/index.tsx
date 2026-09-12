@@ -156,7 +156,7 @@ function RouteComponent() {
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/",
-    entries: [{ key: "dashboard", label: "Dashboard" }],
+    entries: [{ key: "dashboard", label: "Dashboard", target: { to: "/" } }],
   });
 
   return (

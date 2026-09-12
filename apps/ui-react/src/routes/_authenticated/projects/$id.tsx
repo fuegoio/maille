@@ -72,6 +72,7 @@ function ProjectPage({ project }: { project: Project }) {
           </>
         ),
         title: project.name,
+        target: { to: "/projects/$id", params: { id: projectId } },
       },
     ],
   });
