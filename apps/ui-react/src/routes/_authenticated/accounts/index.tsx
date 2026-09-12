@@ -30,9 +30,9 @@ function AccountsPage() {
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateAccountDialog>
-          <Button variant="default">
+          <Button variant="default" aria-label="Create account">
             <Plus />
-            Create account
+            <span className="hidden sm:inline">Create account</span>
           </Button>
         </CreateAccountDialog>
       </header>

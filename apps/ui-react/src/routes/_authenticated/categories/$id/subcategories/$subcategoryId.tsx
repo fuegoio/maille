@@ -203,10 +203,14 @@ function SubcategoryPage({
             subcategory={subcategory.id}
           />
           {!summaryOpen && (
-            <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
+            <Button
+              variant="secondary"
+              aria-label="Show summary"
+              onClick={() => setSummaryOpen(true)}
+            >
               <SquareChartGantt />
-              Summary
-              <ChevronRight />
+              <span className="hidden sm:inline">Summary</span>
+              <ChevronRight className="hidden sm:block" />
             </Button>
           )}
           <SubcategorySettingsDialog subcategory={subcategory}>

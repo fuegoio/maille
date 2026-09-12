@@ -52,9 +52,13 @@ export function AddActivityButton({
         className={className}
         variant="default"
         size={iconOnly ? "icon" : size}
+        aria-label="Add activity"
       >
         <Plus />
-        {!iconOnly && "Add activity"}
+        {!iconOnly && size === "default" && (
+          <span className="hidden sm:inline">Add activity</span>
+        )}
+        {!iconOnly && size !== "default" && "Add activity"}
       </Button>
 
       <AddActivityModal

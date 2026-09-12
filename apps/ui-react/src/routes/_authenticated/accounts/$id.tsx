@@ -168,19 +168,26 @@ function AccountPage({ account }: { account: Account }) {
             <div className="flex-1" />
             <SearchBar />
             {!summaryOpen && (
-              <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
+              <Button
+                variant="secondary"
+                aria-label="Show summary"
+                onClick={() => setSummaryOpen(true)}
+              >
                 <SquareChartGantt />
-                Summary
-                <ChevronRight />
+                <span className="hidden sm:inline">Summary</span>
+                <ChevronRight className="hidden sm:block" />
               </Button>
             )}
             <ShareAccountDialog account={account}>
               <Button
                 variant={account.sharing.length > 0 ? "default" : "ghost"}
                 size={account.sharing.length > 0 ? "default" : "icon"}
+                aria-label="Share account"
               >
                 <Users />
-                {account.sharing.length > 0 && "Shared"}
+                {account.sharing.length > 0 && (
+                  <span className="hidden sm:inline">Shared</span>
+                )}
               </Button>
             </ShareAccountDialog>
             <AccountSettingsDialog account={account}>

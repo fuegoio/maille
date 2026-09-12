@@ -110,16 +110,20 @@ function FundPage() {
           <div className="flex-1" />
           <SearchBar />
           {!summaryOpen && (
-            <Button variant="secondary" onClick={() => setSummaryOpen(true)}>
+            <Button
+              variant="secondary"
+              aria-label="Show summary"
+              onClick={() => setSummaryOpen(true)}
+            >
               <SquareChartGantt />
-              Summary
-              <ChevronRight />
+              <span className="hidden sm:inline">Summary</span>
+              <ChevronRight className="hidden sm:block" />
             </Button>
           )}
           <CreateFundDialog defaultParent={fund.id}>
-            <Button>
+            <Button aria-label="New subfund">
               <Plus />
-              New subfund
+              <span className="hidden sm:inline">New subfund</span>
             </Button>
           </CreateFundDialog>
           <FundSettingsDialog fund={fund}>

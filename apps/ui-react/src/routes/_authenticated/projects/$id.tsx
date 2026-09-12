@@ -90,16 +90,24 @@ function ProjectPage({ project }: { project: Project }) {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <AddActivityButton project={projectId} />
-          <Button variant="outline" onClick={() => setShowSettingsDialog(true)}>
+          <Button
+            variant="outline"
+            aria-label="Edit project"
+            onClick={() => setShowSettingsDialog(true)}
+          >
             <Settings />
-            Edit
+            <span className="hidden sm:inline">Edit</span>
           </Button>
 
           {!summaryOpen && (
-            <Button variant="default" onClick={() => setSummaryOpen(true)}>
+            <Button
+              variant="default"
+              aria-label="Show summary"
+              onClick={() => setSummaryOpen(true)}
+            >
               <SquareChartGantt />
-              Summary
-              <ChevronRight />
+              <span className="hidden sm:inline">Summary</span>
+              <ChevronRight className="hidden sm:block" />
             </Button>
           )}
 
