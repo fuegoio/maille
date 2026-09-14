@@ -37,7 +37,9 @@ function RouteComponent() {
         ? "Revenue history"
         : "Expense history";
 
+  const sameYear = range.from.getFullYear() === range.to.getFullYear();
   const rangeLabel = `${format(range.from, "d MMM yyyy")} – ${format(range.to, "d MMM yyyy")}`;
+  const rangeLabelShort = `${format(range.from, sameYear ? "d MMM" : "d MMM yy")} – ${format(range.to, sameYear ? "d MMM" : "d MMM yy")}`;
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -47,19 +49,26 @@ function RouteComponent() {
 
   return (
     <SidebarInset>
-      <PageBar>
-        <SidebarTrigger className="mr-1" />
-        <PageBreadcrumbs entries={breadcrumbs} />
-        <div className="flex-1" />
-        <span className="mr-1 font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase">
-          {rangeLabel}
-        </span>
-        <DateRangePicker
-          range={range}
-          startingDate={user.startingDate}
-          onPreset={setPreset}
-          onCustomRange={setCustomRange}
-        />
+      <PageBar className="flex h-auto flex-col items-stretch gap-1.5 py-2 sm:h-12 sm:flex-row sm:items-center sm:gap-2 sm:py-0">
+        <div className="flex min-w-0 items-center gap-2 sm:contents">
+          <SidebarTrigger className="mr-1" />
+          <PageBreadcrumbs entries={breadcrumbs} />
+          <div className="hidden flex-1 sm:block" />
+          <span className="mr-1 hidden font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase sm:inline">
+            {rangeLabel}
+          </span>
+        </div>
+        <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 sm:contents">
+          <span className="min-w-0 truncate font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase sm:hidden">
+            {rangeLabelShort}
+          </span>
+          <DateRangePicker
+            range={range}
+            startingDate={user.startingDate}
+            onPreset={setPreset}
+            onCustomRange={setCustomRange}
+          />
+        </div>
       </PageBar>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

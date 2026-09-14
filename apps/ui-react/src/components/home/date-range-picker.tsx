@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 import {
@@ -25,7 +26,9 @@ import {
  * and the chart together. Presets that would reach back past the ledger's
  * start are hidden — their windows clamp to the same no-op range — and
  * the desktop-only hiding below sm keeps the top bar fitting on small
- * screens, where the calendar popover still reaches every window.
+ * screens, where the calendar popover still reaches every window. On
+ * mobile the segments grow to button height for touch and the popover
+ * shows a single month so it fits the viewport.
  */
 export function DateRangePicker({
   range,
@@ -44,6 +47,7 @@ export function DateRangePicker({
    * would make the first click complete a window against the old start. */
   const [selection, setSelection] = useState<DateRange | undefined>();
   const isCustom = range.preset === "custom";
+  const isMobile = useIsMobile();
 
   const today = startOfDay(new Date());
   const presets = HOME_RANGE_PRESETS.filter((preset) => {
@@ -52,7 +56,7 @@ export function DateRangePicker({
   });
 
   return (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 shrink-0 items-center gap-2">
       <ToggleGroup
         type="single"
         variant="outline"
@@ -73,7 +77,7 @@ export function DateRangePicker({
             value={preset.value}
             aria-label={`Range: ${preset.label}`}
             className={cn(
-              "px-2.5 text-xs",
+              "px-2.5 text-xs max-sm:h-9 max-sm:min-w-9 max-sm:px-3",
               (preset.value === "ytd" ||
                 preset.value === "1y" ||
                 preset.value === "all") &&
@@ -103,7 +107,7 @@ export function DateRangePicker({
             <ToggleGroupItem
               value="custom"
               aria-label="Range: custom"
-              className="gap-1.5 px-2.5 text-xs"
+              className="gap-1.5 px-2.5 text-xs max-sm:h-9 max-sm:min-w-9"
             >
               {isCustom ? (
                 <>
@@ -120,7 +124,7 @@ export function DateRangePicker({
           <PopoverContent align="end" className="w-auto p-0">
             <Calendar
               mode="range"
-              numberOfMonths={2}
+              numberOfMonths={isMobile ? 1 : 2}
               defaultMonth={range.from}
               selected={selection}
               disabled={{ before: startingDate, after: today }}
