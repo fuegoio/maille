@@ -1,24 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { startOfDay } from "date-fns";
-import { format } from "date-fns";
-import { CircleCheck, CircleDotDashed } from "lucide-react";
 import { useMemo } from "react";
 
-import { AccountLabel } from "@/components/accounts/account-label";
-import { ContextLink } from "@/components/navigation/breadcrumbs";
-import { AmountPairsValue } from "@/components/shared/amount-pairs";
-import {
-  ledgerHeaderClassName,
-  ledgerRowClassName,
-} from "@/components/shared/ledger-table";
+import { MovementLine } from "@/components/movements/movement-line";
+import { ledgerHeaderClassName } from "@/components/shared/ledger-table";
 import { cn } from "@/lib/utils";
 import { useMovements } from "@/stores/movements";
 
 const RECENT_COUNT = 8;
 
 /**
- * The latest bank movements: the money that landed on accounts, with
- * their linked status marks, in the shared table vocabulary.
+ * The latest bank movements, rendered by the movements table's own row
+ * component so the vocabulary stays identical.
  */
 export function RecentMovements() {
   const movements = useMovements((state) => state.movements);
@@ -55,46 +48,13 @@ export function RecentMovements() {
       ) : (
         <div>
           {recent.map((movement) => (
-            <ContextLink
+            <MovementLine
               key={movement.id}
-              to="/movements/$id"
-              params={{ id: movement.id }}
-              aria-label={movement.name}
-              className={cn(
-                ledgerRowClassName,
-                "flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6",
-              )}
-            >
-              <div className="w-12 shrink-0 text-muted-foreground">
-                {format(movement.date, "dd EEE")}
-              </div>
-
-              {movement.status === "incomplete" ? (
-                <CircleDotDashed className="size-4 shrink-0 text-warning" />
-              ) : (
-                <CircleCheck className="size-4 shrink-0 text-primary" />
-              )}
-
-              <div className="min-w-0 truncate text-foreground">
-                {movement.name}
-              </div>
-
-              <div className="hidden min-w-0 truncate text-muted-foreground sm:block">
-                · <AccountLabel accountId={movement.account} />
-              </div>
-
-              <div className="flex-1" />
-
-              <AmountPairsValue
-                pairs={[
-                  {
-                    dot: movement.amount > 0 ? "bg-green-400" : "bg-red-400",
-                    amount: movement.amount,
-                  },
-                ]}
-                hideZeros={false}
-              />
-            </ContextLink>
+              movement={movement}
+              checked={false}
+              showCheckbox={false}
+              onCheckedChange={() => {}}
+            />
           ))}
         </div>
       )}
