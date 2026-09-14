@@ -29,6 +29,10 @@
   --activity-expense: oklch(0.62 0.17 28);
   --activity-investment: oklch(75% 0.183 55.934);
   --activity-neutral: oklch(0.5 0.025 145);
+  --account-bank: oklch(0.62 0.17 276.935);
+  --account-cash: oklch(0.62 0.015 145);
+  --account-liabilities: oklch(0.62 0.14 232.661);
+  --account-assets: oklch(0.62 0.17 293.541);
   --border: oklch(0.86 0.012 145);
   --input: oklch(0.82 0.016 145);
   --ring: oklch(0.46 0.105 150);
@@ -71,6 +75,10 @@
   --activity-expense: oklch(0.7 0.17 25);
   --activity-investment: oklch(75% 0.183 55.934);
   --activity-neutral: oklch(0.72 0.018 145);
+  --account-bank: oklch(0.72 0.17 276.935);
+  --account-cash: oklch(0.72 0.015 145);
+  --account-liabilities: oklch(0.72 0.14 232.661);
+  --account-assets: oklch(0.72 0.17 293.541);
   --border: oklch(0.96 0.006 145 / 14%);
   --input: oklch(0.96 0.006 145 / 22%);
   --ring: oklch(0.7 0.12 150);
@@ -116,6 +124,10 @@
   --color-activity-expense: var(--activity-expense);
   --color-activity-investment: var(--activity-investment);
   --color-activity-neutral: var(--activity-neutral);
+  --color-account-bank: var(--account-bank);
+  --color-account-cash: var(--account-cash);
+  --color-account-liabilities: var(--account-liabilities);
+  --color-account-assets: var(--account-assets);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);

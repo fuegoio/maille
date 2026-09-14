@@ -9,13 +9,13 @@ import type { Mutation } from "@/mutations";
 import { storage } from "./storage";
 
 export const ACCOUNT_TYPES_COLOR = {
-  [AccountType.BANK_ACCOUNT]: "bg-indigo-400",
+  [AccountType.BANK_ACCOUNT]: "bg-account-bank",
   [AccountType.INVESTMENT_ACCOUNT]: "bg-activity-investment",
-  [AccountType.CASH]: "bg-stone-200",
-  [AccountType.LIABILITIES]: "bg-sky-400",
+  [AccountType.CASH]: "bg-account-cash",
+  [AccountType.LIABILITIES]: "bg-account-liabilities",
   [AccountType.EXPENSE]: "bg-activity-expense",
   [AccountType.REVENUE]: "bg-activity-revenue",
-  [AccountType.ASSETS]: "bg-violet-400",
+  [AccountType.ASSETS]: "bg-account-assets",
 };
 
 export const ACCOUNT_TYPES_NAME = {
