@@ -55,7 +55,7 @@ const data = {
       icon: BookMarked,
       items: [
         {
-          title: "To reconciliate",
+          title: "Needs reconciliation",
           url: "/activities/to-reconciliate",
         },
       ],
@@ -125,7 +125,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             aria-label="Maille dashboard"
           >
             <Logo className="h-4 w-7 shrink-0 text-sidebar-primary" />
-            <span className="font-serif text-lg leading-none tracking-[-0.01em] group-data-[collapsible=icon]:hidden">
+            <span className="font-serif text-xl leading-none tracking-[-0.01em] group-data-[collapsible=icon]:hidden">
               Maille
             </span>
           </Link>

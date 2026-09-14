@@ -24,17 +24,17 @@ import { useMovements } from "./movements";
 import { migrationFlags, storage } from "./storage";
 
 export const ACTIVITY_TYPES_COLOR = {
-  [ActivityType.EXPENSE]: "bg-red-400",
-  [ActivityType.REVENUE]: "bg-green-400",
-  [ActivityType.INVESTMENT]: "bg-orange-400",
-  [ActivityType.NEUTRAL]: "bg-slate-400",
+  [ActivityType.EXPENSE]: "bg-activity-expense",
+  [ActivityType.REVENUE]: "bg-activity-revenue",
+  [ActivityType.INVESTMENT]: "bg-activity-investment",
+  [ActivityType.NEUTRAL]: "bg-activity-neutral",
 };
 
 export const ACTIVITY_TYPES_CHART_COLOR = {
-  [ActivityType.EXPENSE]: "var(--color-red-400)",
-  [ActivityType.REVENUE]: "var(--color-green-400)",
-  [ActivityType.INVESTMENT]: "var(--color-orange-400)",
-  [ActivityType.NEUTRAL]: "var(--color-slate-400)",
+  [ActivityType.EXPENSE]: "var(--color-activity-expense)",
+  [ActivityType.REVENUE]: "var(--color-activity-revenue)",
+  [ActivityType.INVESTMENT]: "var(--color-activity-investment)",
+  [ActivityType.NEUTRAL]: "var(--color-activity-neutral)",
 };
 
 // Activity type names mapping

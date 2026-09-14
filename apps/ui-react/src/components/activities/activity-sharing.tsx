@@ -137,7 +137,9 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
         <div>
           <div className="flex items-center gap-1.5">
             <Users className="size-3.5 text-muted-foreground" />
-            <div className="text-base font-medium">Sharing</div>
+            <div className="font-serif text-xl leading-none font-normal">
+              Sharing
+            </div>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             People this activity is shared with, and the liability owed to each.
@@ -178,9 +180,9 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
         </Dialog>
 
         {!isReconciled ? (
-          <TriangleAlert className="size-5 text-orange-300" />
+          <TriangleAlert className="size-5 text-warning" />
         ) : (
-          <CircleCheck className="size-5 text-indigo-400" />
+          <CircleCheck className="size-5 text-primary" />
         )}
       </div>
 
@@ -217,8 +219,8 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
                         className={cn(
                           "px-2 font-mono text-sm whitespace-nowrap",
                           userAmountReconciled
-                            ? "text-indigo-400"
-                            : "text-orange-300",
+                            ? "text-primary"
+                            : "text-warning",
                         )}
                       >
                         {currencyFormatter.format(currentAmount)}/
@@ -257,8 +259,8 @@ export function ActivitySharing({ activity }: ActivitySharingProps) {
                                 className={cn(
                                   "px-2 font-mono text-xs whitespace-nowrap",
                                   accountReconciled
-                                    ? "text-indigo-400"
-                                    : "text-orange-300",
+                                    ? "text-primary"
+                                    : "text-warning",
                                 )}
                               >
                                 {currencyFormatter.format(currentAccountAmount)}
