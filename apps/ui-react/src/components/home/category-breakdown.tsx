@@ -1,3 +1,4 @@
+import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { startOfDay } from "date-fns";
 import { useMemo } from "react";
@@ -18,38 +19,41 @@ interface CategoryRow {
   id: string | null;
   name: string;
   emoji: string | null;
+  /** The category's balance in the range: revenue minus expense. */
   amount: number;
 }
 
 /**
- * Where the money moved in the selected range: the top categories by total
- * transaction amount, as compact ledger rows.
+ * The balance by category over the selected range: revenue counts as
+ * plus, expense as minus, investment and neutral stay out. Compact
+ * ledger rows, most significant categories first.
  */
 export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   const currencyFormatter = useCurrencyFormatter();
   const activities = useActivities((state) => state.activities);
   const categories = useActivities((state) => state.activityCategories);
 
-  const { rows, remainder, total } = useMemo(() => {
+  const { rows, remainder } = useMemo(() => {
     const from = startOfDay(range.from);
     const to = startOfDay(range.to);
 
-    const totals = new Map<string | null, number>();
+    const balances = new Map<string | null, number>();
     for (const activity of activities) {
-      const amount = activity.amount;
-      if (amount <= 0) continue;
       const day = startOfDay(activity.date);
       if (day < from || day > to) continue;
-      totals.set(
+      const net =
+        activity.amounts[ActivityType.REVENUE] -
+        activity.amounts[ActivityType.EXPENSE];
+      if (net === 0) continue;
+      balances.set(
         activity.category,
-        (totals.get(activity.category) ?? 0) + amount,
+        (balances.get(activity.category) ?? 0) + net,
       );
     }
 
-    const total = [...totals.values()].reduce((sum, amount) => sum + amount, 0);
-
     const byId = new Map(categories.map((category) => [category.id, category]));
-    const all = [...totals.entries()]
+    const all = [...balances.entries()]
+      .filter(([, amount]) => amount !== 0)
       .map(([id, amount]) => {
         const category = id !== null ? byId.get(id) : undefined;
         return {
@@ -59,12 +63,12 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
           emoji: category?.emoji ?? null,
         } satisfies CategoryRow;
       })
-      .sort((a, b) => b.amount - a.amount);
+      .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
 
     const rows = all.slice(0, MAX_CATEGORIES);
     const remainder = all.slice(MAX_CATEGORIES).length;
 
-    return { rows, remainder, total };
+    return { rows, remainder };
   }, [activities, categories, range.from, range.to]);
 
   return (
@@ -84,9 +88,9 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
         </Link>
       </div>
 
-      {total <= 0 ? (
+      {rows.length === 0 ? (
         <p className="px-4 py-8 text-sm text-muted-foreground lg:px-6">
-          No activities in this range.
+          No revenue or expenses in this range.
         </p>
       ) : (
         <div>
@@ -96,7 +100,12 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                 {row.emoji && <span aria-hidden>{row.emoji}</span>}
                 <span className="min-w-0 truncate">{row.name}</span>
                 <span className="flex-1" />
-                <span className="font-mono text-sm font-medium tabular-nums">
+                <span
+                  className={cn(
+                    "font-mono text-sm font-medium tabular-nums",
+                    row.amount < 0 && "text-destructive",
+                  )}
+                >
                   {currencyFormatter.format(row.amount)}
                 </span>
               </>
