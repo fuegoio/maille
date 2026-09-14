@@ -157,8 +157,8 @@ export function Transaction({
           ref={rootRef}
           className={cn(
             "@container relative text-sm",
-            variant === "card" && "rounded-lg border bg-muted/30 p-3 shadow-md",
-            variant === "flat" && "rounded-lg border bg-muted/30 p-3",
+            variant === "card" && "rounded-lg border bg-muted/20 p-3 shadow-md",
+            variant === "flat" && "rounded-lg border bg-muted/20 p-3",
             isStaged && variant === "card" && "border-dashed opacity-70",
             isStaged && variant === "flat" && "border-dashed",
             isFocused && "border-primary",
@@ -169,7 +169,7 @@ export function Transaction({
             {/* From side: its account, and its metadata grouped under it */}
             <div className="flex min-w-0 flex-col gap-2">
               <AccountSelect
-                className="w-full min-w-0"
+                className="w-full min-w-0 bg-popover hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                 value={transaction.fromAccount}
                 onChange={(account) =>
                   onUpdate?.({
@@ -186,7 +186,7 @@ export function Transaction({
                       <MetadataChip label="Counterparty">
                         <CounterpartiesSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           accountId={transaction.fromAccount}
                           value={transaction.fromCounterparty || ""}
                           onValueChange={(counterparty) =>
@@ -201,7 +201,7 @@ export function Transaction({
                       <MetadataChip label="Asset">
                         <AssetSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           accountId={transaction.fromAccount}
                           value={transaction.fromAsset || ""}
                           onValueChange={(asset) =>
@@ -220,7 +220,7 @@ export function Transaction({
                       <MetadataChip label="Fund">
                         <FundSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           value={trackedFromFund?.id ?? null}
                           onValueChange={(fundId) =>
                             handleFundChange("from", fundId)
@@ -247,7 +247,7 @@ export function Transaction({
             {/* To side: its account, and its metadata grouped under it */}
             <div className="flex min-w-0 flex-col gap-2">
               <AccountSelect
-                className="w-full min-w-0"
+                className="w-full min-w-0 bg-popover hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                 value={transaction.toAccount}
                 onChange={(account) =>
                   onUpdate?.({
@@ -264,7 +264,7 @@ export function Transaction({
                       <MetadataChip label="Counterparty">
                         <CounterpartiesSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           accountId={transaction.toAccount}
                           value={transaction.toCounterparty || ""}
                           onValueChange={(counterparty) =>
@@ -279,7 +279,7 @@ export function Transaction({
                       <MetadataChip label="Asset">
                         <AssetSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           accountId={transaction.toAccount}
                           value={transaction.toAsset || ""}
                           onValueChange={(asset) =>
@@ -298,7 +298,7 @@ export function Transaction({
                       <MetadataChip label="Fund">
                         <FundSelect
                           size="sm"
-                          className="w-fit text-xs"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
                           value={trackedToFund?.id ?? null}
                           onValueChange={(fundId) =>
                             handleFundChange("to", fundId)

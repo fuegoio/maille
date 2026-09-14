@@ -89,9 +89,9 @@ const MOVEMENT_STATUS_ALERT: Record<
 > = {
   incomplete: {
     icon: CircleDotDashed,
-    className: "border-warning/40 bg-warning/10 text-foreground",
-    iconClassName: "!text-warning",
-    descriptionClassName: "text-foreground/85",
+    className: "border-warning/60 bg-warning/15 text-foreground",
+    iconClassName: "!text-warning stroke-[2.25]",
+    descriptionClassName: "text-foreground/90",
   },
   completed: {
     icon: CircleCheck,
@@ -112,7 +112,11 @@ function MovementStatusAlert({ status }: { status: MovementStatus }) {
   return (
     <Alert role="status" aria-live="polite" className={cn("mt-6", className)}>
       <Icon className={iconClassName} />
-      <AlertTitle>{MOVEMENT_STATUS_NAME[status]}</AlertTitle>
+      <AlertTitle
+        className={status === "incomplete" ? "font-semibold" : undefined}
+      >
+        {MOVEMENT_STATUS_NAME[status]}
+      </AlertTitle>
       <AlertDescription className={descriptionClassName}>
         {MOVEMENT_STATUS_DESCRIPTION[status]}
       </AlertDescription>
