@@ -25,9 +25,9 @@
   --accent-foreground: oklch(0.22 0.015 145);
   --destructive: oklch(0.54 0.2 27);
   --warning: oklch(0.47 0.12 70);
-  --activity-revenue: oklch(0.5 0.12 150);
-  --activity-expense: oklch(0.56 0.18 28);
-  --activity-investment: oklch(0.62 0.15 95);
+  --activity-revenue: oklch(87.1% 0.15 154.449);
+  --activity-expense: oklch(80.8% 0.114 19.571);
+  --activity-investment: oklch(75% 0.183 55.934);
   --activity-neutral: oklch(0.5 0.025 145);
   --border: oklch(0.86 0.012 145);
   --input: oklch(0.82 0.016 145);
@@ -67,9 +67,9 @@
   --accent-foreground: oklch(0.96 0.006 145);
   --destructive: oklch(0.68 0.18 25);
   --warning: oklch(0.78 0.12 78);
-  --activity-revenue: oklch(0.72 0.12 150);
-  --activity-expense: oklch(0.7 0.17 25);
-  --activity-investment: oklch(0.8 0.15 98);
+  --activity-revenue: oklch(87.1% 0.15 154.449);
+  --activity-expense: oklch(80.8% 0.114 19.571);
+  --activity-investment: oklch(75% 0.183 55.934);
   --activity-neutral: oklch(0.72 0.018 145);
   --border: oklch(0.96 0.006 145 / 14%);
   --input: oklch(0.96 0.006 145 / 22%);
