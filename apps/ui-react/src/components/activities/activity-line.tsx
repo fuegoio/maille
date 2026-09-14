@@ -28,6 +28,8 @@ interface ActivityLineProps {
   checked?: boolean;
   /** Outline sides when the row is checked or focused; absent otherwise. */
   outlineSides?: { top: boolean; bottom: boolean };
+  /** Hide the checkbox in summary contexts; selection stays a table-only concern. */
+  showCheckbox?: boolean;
   accountFilter?: string | null;
   hideProject?: boolean;
 }
@@ -37,6 +39,7 @@ export function ActivityLine({
   onCheckedChange,
   checked = false,
   outlineSides,
+  showCheckbox = true,
   accountFilter = null,
   hideProject = false,
 }: ActivityLineProps) {
@@ -113,21 +116,23 @@ export function ActivityLine({
         className="absolute inset-0 focus-visible:ring-1 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
       />
       <div className="flex h-10 items-center gap-2 pr-2 pl-4.5 text-sm lg:pr-6">
-        <Checkbox
-          checked={checked}
-          onCheckedChange={(checked) =>
-            checked != "indeterminate" && onCheckedChange()
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onCheckedChange(e);
-          }}
-          className={cn(
-            "relative z-10 mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
-            checked && "opacity-100",
-          )}
-        />
+        {showCheckbox && (
+          <Checkbox
+            checked={checked}
+            onCheckedChange={(checked) =>
+              checked != "indeterminate" && onCheckedChange()
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onCheckedChange(e);
+            }}
+            className={cn(
+              "relative z-10 mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+              checked && "opacity-100",
+            )}
+          />
+        )}
 
         <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
           {format(activity.date, "dd EEE")}

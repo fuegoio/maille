@@ -21,6 +21,8 @@ interface MovementLineProps {
   checked: boolean;
   /** Outline sides when the row is checked or focused; absent otherwise. */
   outlineSides?: { top: boolean; bottom: boolean };
+  /** Hide the checkbox in summary contexts; selection stays a table-only concern. */
+  showCheckbox?: boolean;
   onCheckedChange: (event?: React.MouseEvent) => void;
 }
 
@@ -28,6 +30,7 @@ export function MovementLine({
   movement,
   checked,
   outlineSides,
+  showCheckbox = true,
   onCheckedChange,
 }: MovementLineProps) {
   const workflow = useWorkflows((state) =>
@@ -47,21 +50,23 @@ export function MovementLine({
         outlineSides && rowOutlineClasses(outlineSides),
       )}
     >
-      <Checkbox
-        checked={checked}
-        onCheckedChange={(checked) =>
-          checked != "indeterminate" && onCheckedChange()
-        }
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onCheckedChange(e);
-        }}
-        className={cn(
-          "mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
-          checked && "opacity-100",
-        )}
-      />
+      {showCheckbox && (
+        <Checkbox
+          checked={checked}
+          onCheckedChange={(checked) =>
+            checked != "indeterminate" && onCheckedChange()
+          }
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onCheckedChange(e);
+          }}
+          className={cn(
+            "mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+            checked && "opacity-100",
+          )}
+        />
+      )}
 
       <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
         {format(movement.date, "dd EEE")}

@@ -49,29 +49,29 @@ function RouteComponent() {
         <PageBreadcrumbs entries={breadcrumbs} />
       </PageBar>
 
-      <section aria-label="Ledger history" className="border-b">
-        <HomeKpis
-          range={range}
-          activeChart={activeChart}
-          onActiveChartChange={setActiveChart}
-        />
-
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 sm:px-6">
-          <h2 className="font-serif text-xl leading-none tracking-[-0.01em]">
-            {chartTitle}
-          </h2>
-          <DateRangePicker
-            range={range}
-            startingDate={user.startingDate}
-            onPreset={setPreset}
-            onCustomRange={setCustomRange}
-          />
-        </div>
-
-        <HomeChart range={range} activeChart={activeChart} />
-      </section>
-
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <section aria-label="Ledger history" className="border-b">
+          <HomeKpis
+            range={range}
+            activeChart={activeChart}
+            onActiveChartChange={setActiveChart}
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 sm:px-6">
+            <h2 className="font-serif text-xl leading-none tracking-[-0.01em]">
+              {chartTitle}
+            </h2>
+            <DateRangePicker
+              range={range}
+              startingDate={user.startingDate}
+              onPreset={setPreset}
+              onCustomRange={setCustomRange}
+            />
+          </div>
+
+          <HomeChart range={range} activeChart={activeChart} />
+        </section>
+
         <div className="grid flex-1 grid-cols-1 lg:grid-cols-6 lg:grid-rows-[auto_1fr]">
           <section className="border-t lg:col-span-3 lg:border-t-0 lg:border-r">
             <RecentActivities />

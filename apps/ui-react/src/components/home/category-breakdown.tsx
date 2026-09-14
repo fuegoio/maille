@@ -1,4 +1,3 @@
-import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { startOfDay } from "date-fns";
 import { useMemo } from "react";
@@ -23,8 +22,8 @@ interface CategoryRow {
 }
 
 /**
- * Where the money went in the selected range: the top expense categories,
- * each carrying its share of the range's expense total.
+ * Where the money moved in the selected range: the top categories by total
+ * transaction amount, each carrying its share of the range's total.
  */
 export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   const currencyFormatter = useCurrencyFormatter();
@@ -37,7 +36,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
 
     const totals = new Map<string | null, number>();
     for (const activity of activities) {
-      const amount = activity.amounts[ActivityType.EXPENSE];
+      const amount = activity.amount;
       if (amount <= 0) continue;
       const day = startOfDay(activity.date);
       if (day < from || day > to) continue;
@@ -69,17 +68,14 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   }, [activities, categories, range.from, range.to]);
 
   return (
-    <section
-      aria-label="Expenses by category"
-      className="flex min-w-0 flex-col"
-    >
+    <section aria-label="By category" className="flex min-w-0 flex-col">
       <div
         className={cn(
           ledgerHeaderClassName,
           "flex h-9 shrink-0 items-center justify-between px-4 lg:px-6",
         )}
       >
-        <span>Expenses by category</span>
+        <span>By category</span>
         <Link
           to="/categories"
           className="text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none"
@@ -90,7 +86,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
 
       {total <= 0 ? (
         <p className="px-4 py-8 text-sm text-muted-foreground lg:px-6">
-          No expenses in this range.
+          No activities in this range.
         </p>
       ) : (
         <div>
@@ -108,9 +104,9 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                     {currencyFormatter.format(row.amount)}
                   </span>
                 </div>
-                <span className="mt-1.5 block h-1 w-full overflow-hidden rounded-full bg-muted">
+                <span className="mt-2 block h-1 w-full overflow-hidden rounded-full bg-muted">
                   <span
-                    className="block h-full bg-activity-expense/70"
+                    className="block h-full bg-foreground/25"
                     style={{ width: `${share}%` }}
                   />
                 </span>
@@ -125,7 +121,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                 aria-label={`Open ${row.name}`}
                 className={cn(
                   ledgerRowClassName,
-                  "flex flex-col border-b py-2 pr-2 pl-4 text-sm last:border-b-0 lg:px-6",
+                  "flex flex-col border-b px-4 py-3 last:border-b-0 lg:px-6",
                 )}
               >
                 {body}
@@ -133,7 +129,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
             ) : (
               <div
                 key="uncategorized"
-                className="border-b py-2 pr-2 pl-4 text-sm last:border-b-0 lg:px-6"
+                className="border-b px-4 py-3 last:border-b-0 lg:px-6"
               >
                 {body}
               </div>
@@ -141,7 +137,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
           })}
 
           {remainder > 0 && (
-            <p className="px-4 py-2 text-xs text-muted-foreground lg:px-6">
+            <p className="px-4 py-2.5 text-xs text-muted-foreground lg:px-6">
               + {remainder} more{remainder === 1 ? " category" : " categories"}
             </p>
           )}
