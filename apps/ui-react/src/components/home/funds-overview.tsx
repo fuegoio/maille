@@ -112,7 +112,7 @@ export function FundsOverview() {
           No funds yet.
         </p>
       ) : (
-        <div className="py-4">
+        <div className="py-3">
           {rows.map((row) => (
             <Link
               key={row.id ?? "untracked"}

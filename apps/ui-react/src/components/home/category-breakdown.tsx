@@ -86,7 +86,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
           No revenue or expenses in this range.
         </p>
       ) : (
-        <div className="py-4">
+        <div className="py-3">
           {rows.map((row) => {
             const body = (
               <>
