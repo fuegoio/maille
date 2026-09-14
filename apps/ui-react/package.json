@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/source-serif-4": "^5.3.0",
     "@hookform/resolvers": "5.2.0",
     "@maille/core": "*",
     "@tanstack/react-hotkeys": "^0.1.3",

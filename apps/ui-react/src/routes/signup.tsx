@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { Logo } from "@/components/logo";
+import { AuthLayout } from "@/components/auth/auth-layout";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -101,194 +101,185 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-sidebar">
-      <Logo className="size-12 text-muted" />
-      <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">
-            Create an account
-          </h1>
-          <div className="mt-2 text-sm text-muted-foreground">
-            Welcome! Create an account to get started.
-          </div>
-        </div>
-
-        <AnimatePresence mode="wait">
-          {!needsVerify && (
-            <motion.div
-              key="signup-form"
-              exit={{ opacity: 0 }}
-              className="space-y-5"
-            >
-              <FieldGroup>
-                <Controller
-                  name="firstName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="firstName">First name</FieldLabel>
-                      <Input
-                        {...field}
-                        id="firstName"
-                        aria-invalid={fieldState.invalid}
-                        className="h-9"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="lastName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="lastName">Last name</FieldLabel>
-                      <Input
-                        {...field}
-                        id="lastName"
-                        aria-invalid={fieldState.invalid}
-                        className="h-9"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="email"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="email">Email</FieldLabel>
-                      <Input
-                        {...field}
-                        id="email"
-                        aria-invalid={fieldState.invalid}
-                        autoComplete="email"
-                        className="h-9"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="password"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="password">Password</FieldLabel>
-                      <Input
-                        {...field}
-                        id="password"
-                        type="password"
-                        aria-invalid={fieldState.invalid}
-                        autoComplete="new-password"
-                        className="h-9"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="terms"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="terms"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        <Label htmlFor="terms" className="text-sm">
-                          I agree to the Terms and Conditions
-                        </Label>
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-                size="lg"
-                onClick={form.handleSubmit(onSubmit)}
-              >
-                {loading ? (
-                  <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Create account"
+    <AuthLayout
+      title="Create your ledger"
+      description="Start with a correct foundation for every account, movement, and allocation."
+    >
+      <AnimatePresence mode="wait">
+        {!needsVerify && (
+          <motion.div
+            key="signup-form"
+            exit={{ opacity: 0 }}
+            className="space-y-5"
+          >
+            <FieldGroup>
+              <Controller
+                name="firstName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="firstName">First name</FieldLabel>
+                    <Input
+                      {...field}
+                      id="firstName"
+                      aria-invalid={fieldState.invalid}
+                      className="h-9"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
-              </Button>
+              />
 
-              <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                <span className="relative z-10 bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
+              <Controller
+                name="lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="lastName">Last name</FieldLabel>
+                    <Input
+                      {...field}
+                      id="lastName"
+                      aria-invalid={fieldState.invalid}
+                      className="h-9"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-              <Button
-                variant="outline"
-                type="button"
-                className="w-full"
-                disabled={loading}
-                onClick={handleGoogleLogin}
-                size="lg"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path
-                    d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                    fill="currentColor"
-                  />
-                </svg>
-                Sign up with Google
-              </Button>
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      id="email"
+                      aria-invalid={fieldState.invalid}
+                      autoComplete="email"
+                      className="h-9"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-              <div className="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <Link
-                  to="/login"
-                  className="ml-1 underline underline-offset-4"
-                  search={{ redirect }}
-                >
-                  Login
-                </Link>
-              </div>
-            </motion.div>
-          )}
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <Input
+                      {...field}
+                      id="password"
+                      type="password"
+                      aria-invalid={fieldState.invalid}
+                      autoComplete="new-password"
+                      className="h-9"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-          {needsVerify && (
-            <motion.div
-              key="verify-email"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-4"
+              <Controller
+                name="terms"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="terms"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-invalid={fieldState.invalid}
+                      />
+                      <Label htmlFor="terms" className="text-sm">
+                        I agree to the Terms and Conditions
+                      </Label>
+                    </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+              size="lg"
+              onClick={form.handleSubmit(onSubmit)}
             >
-              <div className="text-center text-sm text-foreground">
-                We sent you an email with a link to verify your email address.
-                Please check your inbox and click the link to verify your email.
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
+              {loading ? (
+                <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Create account"
+              )}
+            </Button>
+
+            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+              <span className="relative z-10 bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full"
+              disabled={loading}
+              onClick={handleGoogleLogin}
+              size="lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                  fill="currentColor"
+                />
+              </svg>
+              Sign up with Google
+            </Button>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Already have an account?
+              <Link
+                to="/login"
+                className="ml-1 underline underline-offset-4"
+                search={{ redirect }}
+              >
+                Login
+              </Link>
+            </div>
+          </motion.div>
+        )}
+
+        {needsVerify && (
+          <motion.div
+            key="verify-email"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            <div className="text-center text-sm text-foreground">
+              We sent you an email with a link to verify your email address.
+              Please check your inbox and click the link to verify your email.
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </AuthLayout>
   );
 }

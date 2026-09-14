@@ -3,44 +3,44 @@ name: Maille
 description: A precise, double-entry personal ledger — developer-grade bookkeeping with zero approximation.
 colors:
   # Light theme (canonical tokens live in apps/ui-react/src/index.css as OKLCH)
-  background: "#ffffff"
-  foreground: "#262626"
-  card: "#ffffff"
-  primary: "#7048e8" # Signal Violet, light theme
-  primary-foreground: "#f4f0ff"
-  secondary: "#f4f4f5"
-  muted: "#f4f4f5"
-  muted-foreground: "#737380"
-  accent: "#f4f4f5"
-  destructive: "#d6453d"
-  border: "#e9e9ea"
-  chart-1: "#8c9cd1"
-  chart-2: "#7048e8"
-  chart-3: "#7048e8"
-  chart-4: "#6447c4"
-  chart-5: "#5a3ea6"
-  sidebar: "#fafafa"
+  background: "#f8fbf8"
+  foreground: "#0e130e"
+  card: "#fdfefd"
+  primary: "#226837" # Ledger Green, light theme
+  primary-foreground: "#f8fbf8"
+  secondary: "#ebf0eb"
+  muted: "#ebf0eb"
+  muted-foreground: "#535e53"
+  accent: "#e1ebe1"
+  destructive: "#c92324"
+  border: "#ccd3cc"
+  chart-1: "#93c69d"
+  chart-2: "#5a9e6a"
+  chart-3: "#226837"
+  chart-4: "#154f27"
+  chart-5: "#11371b"
+  sidebar: "#f1f5f1"
   # Dark theme
-  background-dark: "#262626"
-  foreground-dark: "#fafafa"
-  card-dark: "#262626"
-  primary-dark: "#8250f0" # Signal Violet, dark theme
-  secondary-dark: "#3a3a3e"
-  muted-dark: "#3a3a3e"
-  muted-foreground-dark: "#a0a0ab"
-  destructive-dark: "#e5484d"
-  border-dark: "#ffffff1a"
-  sidebar-dark: "#333333"
+  background-dark: "#0e130e"
+  foreground-dark: "#eff3ef"
+  card-dark: "#131813"
+  primary-dark: "#63b376" # Ledger Green, dark theme
+  secondary-dark: "#202620"
+  muted-dark: "#202620"
+  muted-foreground-dark: "#9ea89e"
+  destructive-dark: "#f3625d"
+  border-dark: "#eff3ef24"
+  sidebar-dark: "#090e09"
 typography:
   display:
-    fontFamily: "Geist Variable, sans-serif"
+    fontFamily: "Source Serif 4 Variable, Georgia, serif"
     fontSize: "2.25rem"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1
   headline:
-    fontFamily: "Geist Variable, sans-serif"
+    fontFamily: "Source Serif 4 Variable, Georgia, serif"
     fontSize: "1.5rem"
-    fontWeight: 600
+    fontWeight: 400
     lineHeight: 1
   title:
     fontFamily: "Geist Variable, sans-serif"
@@ -64,11 +64,11 @@ typography:
     fontWeight: 500
     lineHeight: 1
 rounded:
-  sm: "2.4px"
-  md: "5.4px"
-  lg: "6.8px"
-  xl: "10.8px"
-  2xl: "14.8px"
+  sm: "0px"
+  md: "2px"
+  lg: "4px"
+  xl: "8px"
+  2xl: "12px"
   full: "9999px"
 spacing:
   xs: "1px"
@@ -126,7 +126,7 @@ components:
 
 Maille is a double-entry personal ledger for developers, and the interface commits to the accountant's discipline updated for a screen: ruled hairlines instead of printed grid paper, tabular numerals aligned in columns, status carried by quiet marks rather than loud badges. Every surface should feel like a page in a well-kept ledger — orderly, dense where density aids scanning, and completely trustworthy.
 
-The system is deliberately quiet. Signal Violet appears only where the user acts (primary buttons, active nav, focus) or where the interface must assert state; everything else is near-monochrome neutrals. Amounts are always monospaced and right-aligned — alignment is correctness made visible, and in a bookkeeping tool a misaligned number column is a defect. Density is tuned to the compact type scale (base 0.9375rem), which fits the instrument register: more rows visible, less scrolling, more context per screen.
+The system is deliberately quiet. Ledger Green appears only where the user acts (primary buttons, active nav, focus) or where the interface must assert state; everything else is a near-monochrome, green-tinted neutral. Source Serif 4 gives brand and authentication moments an archival ledger voice, while Geist remains the workhorse for product UI. Amounts are always monospaced and right-aligned — alignment is correctness made visible, and in a bookkeeping tool a misaligned number column is a defect. Density is tuned to the compact type scale (base 0.9375rem), which fits the instrument register: more rows visible, less scrolling, more context per screen.
 
 This system explicitly rejects generic SaaS-admin chrome — identical KPI card grids, hero metrics with gradient accents, dashboard decoration for its own sake — and consumer-fintech cuteness (pastel gradients, mascots, confetti on financial events). Maille surfaces ledger structure: which accounts, which fund, reconciled or not.
 
@@ -140,45 +140,45 @@ This system explicitly rejects generic SaaS-admin chrome — identical KPI card 
 
 ## 2. Colors
 
-The palette is a near-monochrome neutral ramp with one saturated voice: Signal Violet, the color of a marking pen on ledger paper.
+The palette is a near-monochrome, green-tinted neutral ramp with one saturated voice: Ledger Green, the color of an archival account book.
 
 ### Primary
 
-- **Signal Violet** (light `oklch(0.541 0.281 293)` / `#7048e8`; dark `oklch(0.606 0.25 292.7)` / `#8250f0`): the single action color. Primary buttons, active navigation, focus rings, selection. Used on well under 10% of any screen — its rarity is what makes it legible.
-- **Signal Violet Foreground** (`oklch(0.969 0.016 293.8)` / `#f4f0ff`): text on Signal Violet fills.
+- **Ledger Green** (light `oklch(0.46 0.105 150)` / `#226837`; dark `oklch(0.7 0.12 150)` / `#63b376`): the single action color. Primary buttons, active navigation, focus rings, selection, and balance charts. Used on well under 10% of any screen — its rarity is what makes it legible.
+- **Ledger Green Foreground** (light `oklch(0.985 0.004 145)` / `#f8fbf8`; dark `oklch(0.18 0.012 145)` / `#0e130e`): text on Ledger Green fills.
 
 ### Neutral
 
-- **Background** (light `oklch(1 0 0)`; dark `oklch(0.21 0.006 285.9)`): app canvas.
-- **Card / Popover** (light white; dark `oklch(0.21 0.006 285.9)`, popover slightly lifted `oklch(0.23 …)`): raised surfaces.
-- **Foreground** (light `oklch(0.141 0.005 285.8)`; dark `oklch(0.985 0 0)`): body text.
-- **Muted** (light `oklch(0.967 0.001 286.4)`; dark `oklch(0.274 0.006 286)`) with **Muted Foreground** (light `oklch(0.552 0.016 285.9)`; dark `oklch(0.705 0.015 286.1)`): secondary text, table headers, metadata. Muted foreground is the default quiet voice; it must still meet AA (4.5:1) against its actual background.
-- **Border** (light `oklch(0.92 0.004 286.3)`; dark `oklch(1 0 0 / 10%)`): the 1px ruled line — the most important mark in the system.
+- **Background** (light `oklch(0.985 0.004 145)`; dark `oklch(0.18 0.012 145)`): subtly green-tinted app canvas.
+- **Card / Popover** (light `oklch(0.995 0.002 145)`; dark `oklch(0.2 0.012 145)`, popover slightly lifted): raised surfaces.
+- **Foreground** (light `oklch(0.18 0.012 145)`; dark `oklch(0.96 0.006 145)`): warm-black body text.
+- **Muted** (light `oklch(0.95 0.008 145)`; dark `oklch(0.26 0.014 145)`) with **Muted Foreground** (light `oklch(0.47 0.022 145)`; dark `oklch(0.72 0.018 145)`): secondary text, table headers, metadata. Both combinations exceed WCAG AA.
+- **Border** (light `oklch(0.86 0.012 145)`; dark `oklch(0.96 0.006 145 / 14%)`): the 1px ruled line — the most important mark in the system.
 
 ### Semantic
 
 - **Destructive** (light `oklch(0.577 0.245 27.3)`; dark `oklch(0.704 0.191 22.2)`): delete, over-drawn funds, negative remaining balances. Negative amounts also use it in tables.
-- **Chart ramp** (chart-1 through chart-5): violet monochrome ramp from `oklch(0.811 0.111 293.6)` to `oklch(0.432 0.232 292.8)`, for data visualization only.
+- **Chart ramp** (chart-1 through chart-5): green monochrome ramp from `oklch(0.78 0.08 150)` to `oklch(0.3 0.065 150)`, for data visualization only.
 - **Activity type colors** (used sparingly in charts and marks): revenue `bg-green-400`, expense `bg-red-400`, investment `bg-orange-400`, neutral `bg-slate-400`.
 
 ### Named Rules
 
-**The One Voice Rule.** Signal Violet is the only saturated voice on a screen. If a design needs a second saturated color, it is a status (destructive, activity-type) — never a decoration.
+**The One Voice Rule.** Ledger Green is the only saturated brand voice on a screen. If a design needs a second saturated color, it is a status (destructive, activity-type) — never a decoration.
 
 **The Ruled-Line Rule.** Structure comes from 1px `--border` hairlines, not background fills or shadows. When in doubt, add a hairline, not a tint.
 
 ## 3. Typography
 
-**Display Font:** Geist Variable (fallback: sans-serif)
-**Body Font:** Geist Variable (fallback: sans-serif)
+**Brand Display Font:** Source Serif 4 Variable (fallback: Georgia, serif)
+**Body / Product Font:** Geist Variable (fallback: sans-serif)
 **Numeric Font:** system monospace (`ui-monospace, SFMono-Regular, Menlo, monospace`) — via Tailwind `font-mono`
 
-**Character:** A single family in multiple weights — geometric, technical, slightly engineered. Geist reads as precision without cosplay; the monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
+**Character:** Source Serif 4 is competent, archival, and restrained; it appears only in brand moments, authentication headings, and the wordmark. Geist remains geometric, technical, and slightly engineered across product UI. The monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
 
 ### Hierarchy
 
-- **Display** (600, 2.25rem, lh 1): dashboard numbers, empty-state titles. Rare in a tool.
-- **Headline** (600, 1.5rem, lh 1): page-level titles, dialog headers.
+- **Brand Display** (400, 2.25rem–4.5rem, lh 0.95–1, Source Serif 4): authentication and brand statements only.
+- **Headline** (400, 1.5rem, lh 1, Source Serif 4): authentication and rare page-level brand titles. Dialog headers remain Geist.
 - **Title** (600, 1.25rem, lh 1): card and section headers, page subtitles (e.g. "New fund").
 - **Body** (400, 0.9375rem, lh 1.5): primary reading size. Longest prose stays within 65–75ch.
 - **Label / table text** (400–500, 0.8125rem–0.875rem, lh 1): table rows, form labels, metadata — the workhorse register of the app. Table headers use `text-xs font-medium text-muted-foreground`.
@@ -210,8 +210,8 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 
 ### Buttons
 
-- **Shape:** rounded `{rounded.md}` (~5.4px), height 36px (`size-sm` 32px, `size-icon-xs` 28px for table row actions).
-- **Primary:** Signal Violet fill, white foreground, `gap-2` icon+label.
+- **Shape:** rounded `{rounded.md}` (2px), height 36px (`size-sm` 32px, `size-icon-xs` 28px for table row actions).
+- **Primary:** Ledger Green fill, high-contrast foreground, `gap-2` icon+label.
 - **Hover:** primary darkens slightly (default shadcn `hover:opacity-90` treatment); ghost/outline use `hover:bg-muted/50`.
 - **Secondary / Outline:** `border` hairline + transparent bg; **Ghost:** transparent, text-only, used in table rows where hover reveals actions (`opacity-0 group-hover:opacity-100`).
 - **Focus:** `ring` at 50% opacity, no custom glow.
@@ -222,7 +222,7 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 
 ### Cards / Containers
 
-- **Corner:** `{rounded.xl}` (~10.8px).
+- **Corner:** `{rounded.xl}` (8px); dense controls and charts use 0–2px corners.
 - **Background:** `card` token; in dense table views, skip the card — the table IS the page, with `border-b` row dividers.
 - **Border:** 1px `--border` on tables (`border-b` per row), full borders on isolated cards.
 - **Shadow:** none in-page (see Elevation).
@@ -239,7 +239,7 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 
 - **Sidebar** (`--sidebar` token): app shell with grouped sections (Analysis / Foundations), 36px item rows, `hover:bg-sidebar-accent`, active item `bg-sidebar-accent font-medium`. Triggers collapse on mobile.
 - **Header strip:** `h-8 border-b bg-muted/50 text-xs font-medium text-muted-foreground` column header row above tables — the ledger's ruled header.
-- **Page header:** `h-12 border-b` with breadcrumb left, actions right (primary action last, Signal Violet).
+- **Page header:** `h-12 border-b` with breadcrumb left, actions right (primary action last, Ledger Green).
 
 ### Tables (the primary component)
 
@@ -253,11 +253,22 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 
 - Activity status and reconciliation state render as quiet text or small marks, consistent per state across every surface (scheduled / incomplete / completed). Never invent a new visual per screen.
 
+### Charts
+
+- Treat charts as ruled analytical surfaces: fine gridlines, monospaced labels, square tooltips, and no decorative shadows.
+- Cumulative balances use thin step lines because ledger values change at discrete transactions. Daily flows remain narrow bars.
+- Chart motion is disabled; interaction feedback comes from the cursor, active point, and metric controls.
+
+### Authentication
+
+- Desktop authentication uses a Ledger Green brand field beside an unboxed form. Mobile collapses to a compact wordmark above the form.
+- Source Serif 4 is reserved for the wordmark and authentication statements; form controls remain Geist.
+
 ## 6. Do's and Don'ts
 
 **Do:**
 
-- Use Signal Violet only for primary actions, active state, and selection.
+- Use Ledger Green only for primary actions, active state, selection, and balance charts.
 - Right-align every amount in monospace; align totals under their columns.
 - Structure with 1px hairlines; tint on hover (`bg-muted/50`), never fill to group.
 - Keep dialogs compact; forms stack vertically with `space-y-4` and 16px gaps.
@@ -270,6 +281,6 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 - Don't add card grids of KPI tiles, gradient text, or decorative shadows on in-page surfaces.
 - Don't use saturated color for anything that isn't an action or a status.
 - Don't wrap or truncate money figures; use fewer decimals or a smaller mono size instead.
-- Don't introduce a second display font; Geist weights and mono carry the hierarchy.
+- Don't use Source Serif 4 in labels, controls, tables, or data; Geist and mono carry the product hierarchy.
 - Don't celebrate financial events with confetti, illustrations, or animation flourishes — the ledger marks, it doesn't cheer.
 - Don't replace the table with cards for primary data views. Tables are the product.
