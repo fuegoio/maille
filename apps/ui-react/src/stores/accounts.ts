@@ -10,11 +10,11 @@ import { storage } from "./storage";
 
 export const ACCOUNT_TYPES_COLOR = {
   [AccountType.BANK_ACCOUNT]: "bg-indigo-400",
-  [AccountType.INVESTMENT_ACCOUNT]: "bg-orange-400",
+  [AccountType.INVESTMENT_ACCOUNT]: "bg-activity-investment",
   [AccountType.CASH]: "bg-stone-200",
   [AccountType.LIABILITIES]: "bg-sky-400",
-  [AccountType.EXPENSE]: "bg-red-300",
-  [AccountType.REVENUE]: "bg-green-300",
+  [AccountType.EXPENSE]: "bg-activity-expense",
+  [AccountType.REVENUE]: "bg-activity-revenue",
   [AccountType.ASSETS]: "bg-violet-400",
 };
 
