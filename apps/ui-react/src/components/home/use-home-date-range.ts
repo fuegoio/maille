@@ -26,6 +26,32 @@ export const HOME_RANGE_PRESETS: { value: HomeRangePreset; label: string }[] = [
   { value: "all", label: "All" },
 ];
 
+/**
+ * A preset's window start, or null for "all" (the ledger's start) and
+ * "custom" (wherever the picked window starts). Shared by the range hook
+ * and the picker, which hides presets that would reach past the ledger's
+ * start — with them every window clamps to the same no-op range.
+ */
+export function getPresetFrom(
+  preset: HomeRangePreset,
+  today: Date,
+): Date | null {
+  switch (preset) {
+    case "1m":
+      return startOfDay(subMonths(today, 1));
+    case "3m":
+      return startOfDay(subMonths(today, 3));
+    case "6m":
+      return startOfDay(subMonths(today, 6));
+    case "ytd":
+      return startOfYear(today);
+    case "1y":
+      return startOfDay(subYears(today, 1));
+    default:
+      return null;
+  }
+}
+
 export interface HomeDateRange {
   preset: HomeRangePreset;
   from: Date;
@@ -54,36 +80,18 @@ export function useHomeDateRange(startingDate: Date): {
 
     let from: Date;
     let to: Date = today;
-    switch (preset) {
-      case "1m":
-        from = startOfDay(subMonths(today, 1));
-        break;
-      case "6m":
-        from = startOfDay(subMonths(today, 6));
-        break;
-      case "ytd":
-        from = startOfYear(today);
-        break;
-      case "1y":
-        from = startOfDay(subYears(today, 1));
-        break;
-      case "all":
-        from = start;
-        break;
-      case "custom": {
-        if (!custom) {
-          from = startOfDay(subMonths(today, 3));
-          break;
-        }
+    if (preset === "custom") {
+      if (!custom) {
+        from = getPresetFrom("3m", today) ?? start;
+      } else {
         let a = startOfDay(custom.from);
         let b = startOfDay(custom.to);
         if (a > b) [a, b] = [b, a];
         from = a < start ? start : a;
         to = b > today ? today : b;
-        break;
       }
-      default:
-        from = startOfDay(subMonths(today, 3));
+    } else {
+      from = getPresetFrom(preset, today) ?? start;
     }
 
     if (from < start) from = start;
