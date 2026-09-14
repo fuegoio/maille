@@ -65,7 +65,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   }, [activities, categories, range.from, range.to]);
 
   return (
-    <section aria-label="By category" className="flex min-w-0 flex-col py-4">
+    <section aria-label="By category" className="flex min-w-0 flex-col">
       <div
         className={cn(
           ledgerHeaderClassName,
@@ -86,7 +86,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
           No revenue or expenses in this range.
         </p>
       ) : (
-        <div>
+        <div className="py-4">
           {rows.map((row) => {
             const body = (
               <>

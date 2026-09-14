@@ -91,7 +91,7 @@ export function FundsOverview() {
   }, [funds, fundAllocations, fundMoves, accounts, activities, user]);
 
   return (
-    <section aria-label="Funds" className="flex min-w-0 flex-col py-4">
+    <section aria-label="Funds" className="flex min-w-0 flex-col">
       <div
         className={cn(
           ledgerHeaderClassName,
@@ -112,7 +112,7 @@ export function FundsOverview() {
           No funds yet.
         </p>
       ) : (
-        <div>
+        <div className="py-4">
           {rows.map((row) => (
             <Link
               key={row.id ?? "untracked"}

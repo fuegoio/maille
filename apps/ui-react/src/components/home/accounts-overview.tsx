@@ -78,7 +78,7 @@ export function AccountsOverview() {
   }, [accounts, activities, user.startingDate]);
 
   return (
-    <section aria-label="Accounts" className="flex min-w-0 flex-col py-4">
+    <section aria-label="Accounts" className="flex min-w-0 flex-col">
       <div
         className={cn(
           ledgerHeaderClassName,
@@ -99,7 +99,7 @@ export function AccountsOverview() {
           No accounts yet.
         </p>
       ) : (
-        <div>
+        <div className="py-4">
           {groups.map((group) => (
             <div key={group.type} className="min-w-0">
               <div className="flex h-9 items-center gap-2 px-4 lg:px-6">
