@@ -51,6 +51,9 @@ function RouteComponent() {
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
+        <span className="mr-1 font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase">
+          {rangeLabel}
+        </span>
         <DateRangePicker
           range={range}
           startingDate={user.startingDate}
@@ -71,9 +74,6 @@ function RouteComponent() {
             <h2 className="font-serif text-xl leading-none tracking-[-0.01em]">
               {chartTitle}
             </h2>
-            <span className="font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase">
-              {rangeLabel}
-            </span>
           </div>
 
           <HomeChart range={range} activeChart={activeChart} />
