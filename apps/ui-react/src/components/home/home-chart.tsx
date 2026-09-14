@@ -195,7 +195,7 @@ export function HomeChart({
           }
           content={
             <ChartTooltipContent
-              className="w-[176px]"
+              className="w-auto whitespace-nowrap"
               nameKey="views"
               indicator="line"
               formatter={(value) => currencyFormatter.format(value as number)}
