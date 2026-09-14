@@ -127,7 +127,7 @@ export function AccountsOverview() {
                   aria-label={`Open ${account.name}`}
                   className={cn(
                     ledgerRowClassName,
-                    "flex h-9 shrink-0 items-center gap-2 border-b pr-2 pl-9 text-sm last:border-b-0 lg:pr-6 lg:pl-11",
+                    "flex h-9 shrink-0 items-center gap-2 pr-2 pl-9 text-sm lg:pr-6 lg:pl-11",
                   )}
                 >
                   <span className="min-w-0 truncate">{account.name}</span>
