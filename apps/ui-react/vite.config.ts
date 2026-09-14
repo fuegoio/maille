@@ -35,8 +35,8 @@ export default defineConfig({
         dir: "ltr",
         display: "standalone",
         start_url: "/",
-        theme_color: "#16161C",
-        background_color: "#16161C",
+        theme_color: "#226837",
+        background_color: "#f8fbf8",
         icons: [
           {
             src: "pwa-64x64.png",
@@ -55,7 +55,7 @@ export default defineConfig({
             purpose: "any",
           },
           {
-            src: "png",
+            src: "maskable-icon-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
