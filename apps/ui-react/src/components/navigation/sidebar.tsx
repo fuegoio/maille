@@ -118,10 +118,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader className="border-b border-sidebar-border pb-2">
-        <div className="flex h-9 items-center gap-1">
+        <div className="flex h-8 items-center gap-1">
           <Link
             to="/"
-            className="flex h-9 min-w-0 flex-1 items-center gap-2 px-2 text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
+            className="flex h-8 min-w-0 flex-1 items-center gap-2 px-2 text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
             aria-label="Maille dashboard"
           >
             <Logo className="h-4 w-7 shrink-0 text-sidebar-primary" />
