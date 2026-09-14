@@ -119,7 +119,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                 aria-label={`Open ${row.name}`}
                 className={cn(
                   ledgerRowClassName,
-                  "flex h-9 shrink-0 items-center gap-1.5 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6",
+                  "flex h-9 shrink-0 items-center gap-1.5 pr-2 pl-4 text-sm lg:px-6",
                 )}
               >
                 {body}
@@ -127,7 +127,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
             ) : (
               <div
                 key="uncategorized"
-                className="flex h-9 shrink-0 items-center gap-1.5 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6"
+                className="flex h-9 shrink-0 items-center gap-1.5 pr-2 pl-4 text-sm lg:px-6"
               >
                 {body}
               </div>
