@@ -3,7 +3,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import {
   PageBreadcrumbs,
@@ -126,9 +134,8 @@ function RouteComponent() {
             : "Expense",
       color:
         activeChart === "balance"
-          ? "var(--color-indigo-400)"
-          : (ACTIVITY_TYPES_CHART_COLOR[activeChart] ??
-            "var(--color-indigo-400)"),
+          ? "var(--color-primary)"
+          : (ACTIVITY_TYPES_CHART_COLOR[activeChart] ?? "var(--color-primary)"),
     },
   } satisfies ChartConfig;
 
@@ -153,6 +160,15 @@ function RouteComponent() {
     },
   ];
 
+  const activeKpi = kpis.find((kpi) => kpi.id === activeChart)!;
+  const chartRange = `${user.startingDate.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  })} — ${new Date().toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  })}`;
+
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/",
@@ -166,72 +182,128 @@ function RouteComponent() {
         <PageBreadcrumbs entries={breadcrumbs} />
       </header>
 
-      <div className="grid grid-cols-3 border-b">
-        {kpis.map((kpi) => (
-          <button
-            key={kpi.id}
-            data-active={activeChart === kpi.id}
-            className="flex flex-1 cursor-pointer flex-col justify-center gap-1 border-r px-6 py-8
-              text-left transition-colors last:border-r-0 hover:bg-muted/50 data-[active=true]:bg-muted/40"
-            onClick={() => setActiveChart(kpi.id)}
+      <section className="border-b" aria-label="Ledger history">
+        <div className="flex min-w-0 flex-col border-b sm:flex-row sm:items-stretch">
+          <div
+            className="flex min-w-0 flex-1 overflow-x-auto p-2"
+            role="group"
+            aria-label="Chart metric"
           >
-            <div className="flex items-center text-xs text-muted-foreground">
-              <kpi.icon className="mr-2 size-4" />
-              {kpi.name}
-            </div>
-            <span className="font-mono text-lg leading-none font-semibold sm:text-3xl">
-              {currencyFormatter.format(kpi.value)}
-            </span>
-          </button>
-        ))}
-      </div>
+            {kpis.map((kpi) => {
+              const active = activeChart === kpi.id;
 
-      <ChartContainer
-        config={chartConfig}
-        className="aspect-auto h-[250px] w-full border-b py-4"
-      >
-        <BarChart
-          accessibilityLayer
-          data={chartData}
-          margin={{ left: 12, right: 12 }}
-        >
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="date"
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            minTickGap={32}
-            tickFormatter={(value) => {
-              const date = new Date(value);
-              return date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              });
-            }}
-          />
-          <ChartTooltip
-            content={
-              <ChartTooltipContent
-                className="w-[160px]"
-                nameKey="views"
-                formatter={(value) => currencyFormatter.format(value as number)}
-                labelFormatter={(value) => {
-                  return new Date(value).toLocaleString("default", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  });
-                }}
+              return (
+                <button
+                  key={kpi.id}
+                  type="button"
+                  aria-pressed={active}
+                  data-active={active}
+                  className="flex min-w-36 cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-left
+                    transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none
+                    data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                  onClick={() => setActiveChart(kpi.id)}
+                >
+                  <kpi.icon className="size-3.5 shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block font-mono text-[0.6875rem] leading-none tracking-[0.04em] uppercase opacity-70">
+                      {kpi.name}
+                    </span>
+                    <span className="mt-1 block truncate font-mono text-sm leading-none font-medium tabular-nums">
+                      {currencyFormatter.format(kpi.value)}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex shrink-0 items-center justify-between gap-4 border-t px-4 py-3 font-mono text-[0.6875rem] tracking-[0.04em] text-muted-foreground uppercase sm:border-t-0 sm:border-l">
+            <span className="flex items-center gap-2">
+              <span
+                className="size-1.5 rounded-[1px]"
+                style={{ backgroundColor: chartConfig.value.color }}
               />
-            }
-          />
-          {activeChart === "balance" && (
-            <YAxis domain={["auto", "auto"]} hide />
-          )}
-          <Bar dataKey={activeChart} fill="var(--color-value)" />
-        </BarChart>
-      </ChartContainer>
+              {activeKpi.name} history
+            </span>
+            <span>{chartRange}</span>
+          </div>
+        </div>
+
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[300px] w-full px-2 pt-6 pb-2 sm:px-4"
+        >
+          <ComposedChart
+            accessibilityLayer
+            data={chartData}
+            margin={{ top: 4, right: 8, bottom: 0, left: 8 }}
+          >
+            <CartesianGrid vertical strokeDasharray="2 3" />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
+              minTickGap={48}
+              tickFormatter={(value) => {
+                const date = new Date(value);
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "2-digit",
+                });
+              }}
+            />
+            <YAxis
+              domain={["auto", "auto"]}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              width={76}
+              tickFormatter={(value) => currencyFormatter.format(value)}
+            />
+            <ReferenceLine y={0} stroke="var(--color-border)" />
+            <ChartTooltip
+              cursor={{ stroke: "var(--color-border)" }}
+              content={
+                <ChartTooltipContent
+                  className="w-[176px]"
+                  nameKey="views"
+                  indicator="line"
+                  formatter={(value) =>
+                    currencyFormatter.format(value as number)
+                  }
+                  labelFormatter={(value) => {
+                    return new Date(value).toLocaleString("default", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    });
+                  }}
+                />
+              }
+            />
+            {activeChart === "balance" ? (
+              <Line
+                type="stepAfter"
+                dataKey="balance"
+                stroke="var(--color-value)"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3, strokeWidth: 0 }}
+                isAnimationActive={false}
+              />
+            ) : (
+              <Bar
+                dataKey={activeChart}
+                fill="var(--color-value)"
+                maxBarSize={18}
+                radius={[2, 2, 0, 0]}
+                isAnimationActive={false}
+              />
+            )}
+          </ComposedChart>
+        </ChartContainer>
+      </section>
     </SidebarInset>
   );
 }

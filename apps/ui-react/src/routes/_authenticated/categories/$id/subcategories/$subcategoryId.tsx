@@ -269,7 +269,7 @@ function SubcategoryPage({
                 data={chartData}
                 margin={{ left: 12, right: 12 }}
               >
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical strokeDasharray="2 3" />
                 <XAxis
                   dataKey="date"
                   tickLine={false}
@@ -302,7 +302,13 @@ function SubcategoryPage({
                     />
                   }
                 />
-                <Bar dataKey="value" fill="var(--color-value)" />
+                <Bar
+                  dataKey="value"
+                  fill="var(--color-value)"
+                  maxBarSize={18}
+                  radius={[2, 2, 0, 0]}
+                  isAnimationActive={false}
+                />
               </BarChart>
             </ChartContainer>
           </div>

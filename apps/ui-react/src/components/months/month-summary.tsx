@@ -7,7 +7,7 @@ import {
 } from "date-fns";
 import { ArrowRight, Minus, Plus } from "lucide-react";
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   ChartContainer,
@@ -99,7 +99,7 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
     views: { label: "Balance" },
     balance: {
       label: "Balance",
-      color: "var(--color-indigo-400)",
+      color: "var(--color-primary)",
     },
   } satisfies ChartConfig;
 
@@ -150,15 +150,15 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
         config={chartConfig}
         className="aspect-auto h-[180px] w-full border-t p-3"
       >
-        <BarChart
+        <LineChart
           accessibilityLayer
           data={chartData}
           margin={{ left: 12, right: 12 }}
         >
-          <CartesianGrid vertical={false} />
+          <CartesianGrid vertical strokeDasharray="2 3" />
           <XAxis
             dataKey="date"
-            tickLine={true}
+            tickLine={false}
             axisLine={false}
             tickMargin={4}
             minTickGap={10}
@@ -184,8 +184,16 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
             }
           />
           <YAxis domain={["auto", "auto"]} hide />
-          <Bar dataKey="balance" fill="var(--color-balance)" />
-        </BarChart>
+          <Line
+            type="stepAfter"
+            dataKey="balance"
+            stroke="var(--color-balance)"
+            strokeWidth={1.5}
+            dot={false}
+            activeDot={{ r: 3, strokeWidth: 0 }}
+            isAnimationActive={false}
+          />
+        </LineChart>
       </ChartContainer>
     </div>
   );
