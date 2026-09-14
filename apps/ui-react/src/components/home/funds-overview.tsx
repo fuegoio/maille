@@ -85,8 +85,6 @@ export function FundsOverview() {
     return fundRows;
   }, [funds, fundAllocations, fundMoves, accounts, activities, user]);
 
-  const total = rows.reduce((sum, row) => sum + row.balance, 0);
-
   return (
     <section aria-label="Funds" className="flex min-w-0 flex-col">
       <div
@@ -133,14 +131,6 @@ export function FundsOverview() {
               </span>
             </Link>
           ))}
-
-          <div className="flex h-10 shrink-0 items-center gap-2 pr-2 pl-4 text-sm lg:px-6">
-            <span className="font-medium">Total</span>
-            <span className="flex-1" />
-            <span className="font-mono text-sm font-semibold tabular-nums">
-              {currencyFormatter.format(total)}
-            </span>
-          </div>
         </div>
       )}
     </section>
