@@ -99,9 +99,9 @@ export function AccountsOverview() {
           No accounts yet.
         </p>
       ) : (
-        <div className="columns-1 break-inside-avoid md:columns-2 md:gap-0 md:[column-rule:1px_solid_var(--color-border)] lg:columns-3">
+        <div>
           {groups.map((group) => (
-            <div key={group.type} className="min-w-0 break-inside-avoid">
+            <div key={group.type} className="min-w-0">
               <div className="flex h-8 items-center gap-2 px-4 text-xs font-medium text-muted-foreground lg:px-6">
                 <span
                   className={cn(

@@ -8,6 +8,7 @@ import { FundsOverview } from "@/components/home/funds-overview";
 import { HomeChart } from "@/components/home/home-chart";
 import { HomeKpis, type Kpi } from "@/components/home/home-kpis";
 import { RecentActivities } from "@/components/home/recent-activities";
+import { RecentMovements } from "@/components/home/recent-movements";
 import { useHomeDateRange } from "@/components/home/use-home-date-range";
 import {
   PageBreadcrumbs,
@@ -70,19 +71,24 @@ function RouteComponent() {
         <HomeChart range={range} activeChart={activeChart} />
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3">
-        <section className="border-t lg:col-span-2 lg:border-t-0 lg:border-r">
-          <RecentActivities />
-        </section>
-        <section className="border-t lg:border-t-0">
-          <FundsOverview />
-        </section>
-        <section className="border-t lg:border-r">
-          <CategoryBreakdown range={range} />
-        </section>
-        <section className="border-t lg:col-span-2">
-          <AccountsOverview />
-        </section>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <div className="grid flex-1 grid-cols-1 lg:grid-cols-6 lg:grid-rows-[auto_1fr]">
+          <section className="border-t lg:col-span-3 lg:border-t-0 lg:border-r">
+            <RecentActivities />
+          </section>
+          <section className="border-t lg:col-span-3 lg:border-t-0">
+            <RecentMovements />
+          </section>
+          <section className="border-t lg:col-span-2 lg:border-r">
+            <CategoryBreakdown range={range} />
+          </section>
+          <section className="border-t lg:col-span-2 lg:border-r">
+            <AccountsOverview />
+          </section>
+          <section className="border-t lg:col-span-2">
+            <FundsOverview />
+          </section>
+        </div>
       </div>
     </SidebarInset>
   );
