@@ -1,3 +1,4 @@
+import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
@@ -27,9 +28,13 @@ export function CategoriesTable() {
   const getTotalOfCategory = (categoryId: string) => {
     return activities
       .filter((a) => a.category === categoryId)
-      .reduce((acc, a) => {
-        return acc + a.amount;
-      }, 0);
+      .reduce(
+        (acc, a) =>
+          acc +
+          a.amounts[ActivityType.REVENUE] -
+          a.amounts[ActivityType.EXPENSE],
+        0,
+      );
   };
 
   return (

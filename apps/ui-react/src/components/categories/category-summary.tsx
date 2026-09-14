@@ -1,10 +1,11 @@
 import type { ActivityCategory } from "@maille/core/activities";
 
+import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import { CreateSubcategoryDialog } from "@/components/categories/create-subcategory-dialog";
 import { Button } from "@/components/ui/button";
@@ -33,46 +34,63 @@ export function CategorySummary({ category }: CategorySummaryProps) {
     [activities, category.id],
   );
 
-  const totalOverall = useMemo(
-    () => categoryActivities.reduce((acc, a) => acc + a.amount, 0),
-    [categoryActivities],
-  );
+  const today = startOfDay(new Date());
+  const thirtyDaysAgo = subDays(today, 29);
 
-  const total30Days = useMemo(() => {
-    const cutoff = startOfDay(subDays(new Date(), 30));
-    return categoryActivities
-      .filter((a) => startOfDay(a.date) >= cutoff)
-      .reduce((acc, a) => acc + a.amount, 0);
-  }, [categoryActivities]);
+  // The category's balance: revenue counted as plus, expense as minus,
+  // investment and neutral stay out, mirroring the accounts and funds
+  // summaries.
+  const getBalanceAtDate = (date: Date) =>
+    categoryActivities
+      .filter((a) => a.date >= user.startingDate)
+      .filter((a) => startOfDay(a.date) <= date)
+      .reduce(
+        (acc, a) =>
+          acc +
+          a.amounts[ActivityType.REVENUE] -
+          a.amounts[ActivityType.EXPENSE],
+        0,
+      );
+
+  const balance = getBalanceAtDate(today);
+  const balancePrev = getBalanceAtDate(thirtyDaysAgo);
+
+  const last30 = categoryActivities.filter(
+    (a) => startOfDay(a.date) >= thirtyDaysAgo,
+  );
+  const last30In = last30.reduce(
+    (acc, a) => acc + a.amounts[ActivityType.REVENUE],
+    0,
+  );
+  const last30Out = Math.abs(
+    last30.reduce((acc, a) => acc + a.amounts[ActivityType.EXPENSE], 0),
+  );
 
   const days = useMemo(
     () =>
       eachDayOfInterval({
-        start: user.startingDate,
-        end: new Date(),
+        start: thirtyDaysAgo,
+        end: today,
       }),
-    [user.startingDate],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const chartData = useMemo(
     () =>
-      days.map((date) => {
-        const d = startOfDay(date);
-        return {
-          date: date.toISOString(),
-          value: categoryActivities
-            .filter((a) => startOfDay(a.date).getTime() === d.getTime())
-            .reduce((acc, a) => acc + a.amount, 0),
-        };
-      }),
+      days.map((date) => ({
+        date: date.toISOString(),
+        balance: getBalanceAtDate(startOfDay(date)),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [days, categoryActivities],
   );
 
   const chartConfig = {
-    views: { label: "Total" },
-    value: {
-      label: "Amount",
-      color: "var(--color-red-400)",
+    views: { label: "Balance" },
+    balance: {
+      label: "Balance",
+      color: "var(--color-primary)",
     },
   } satisfies ChartConfig;
 
@@ -89,7 +107,13 @@ export function CategorySummary({ category }: CategorySummaryProps) {
     categorySubcategories.forEach((sc) => {
       totals[sc.id] = activities
         .filter((a) => a.subcategory === sc.id)
-        .reduce((acc, a) => acc + a.amount, 0);
+        .reduce(
+          (acc, a) =>
+            acc +
+            a.amounts[ActivityType.REVENUE] -
+            a.amounts[ActivityType.EXPENSE],
+          0,
+        );
     });
     return totals;
   }, [activities, categorySubcategories]);
@@ -100,18 +124,32 @@ export function CategorySummary({ category }: CategorySummaryProps) {
       <div className="w-full border-b">
         <div className="p-6">
           <div className="flex items-center gap-3">
-            <div className="font-semibold">Last 30 days</div>
+            <div className="font-semibold">Balance</div>
             <div className="flex-1" />
+            <span className="font-mono text-muted-foreground">
+              {currencyFormatter.format(balancePrev)}
+            </span>
+            <ArrowRight className="size-4 text-muted-foreground" />
             <span className="font-mono">
-              {currencyFormatter.format(total30Days)}
+              {currencyFormatter.format(balance)}
             </span>
           </div>
 
-          <div className="mt-3 flex items-center text-sm">
-            <div className="font-medium text-muted-foreground">Total</div>
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <TrendingUp className="size-3" />
+            <div className="font-medium">In</div>
             <div className="flex-1" />
-            <span className="font-mono text-muted-foreground">
-              {currencyFormatter.format(totalOverall)}
+            <span className="flex items-center gap-1 font-mono font-medium">
+              {currencyFormatter.format(last30In)}
+            </span>
+          </div>
+
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <TrendingDown className="size-3" />
+            <div className="font-medium">Out</div>
+            <div className="flex-1" />
+            <span className="flex items-center gap-1 font-mono font-medium">
+              {currencyFormatter.format(last30Out)}
             </span>
           </div>
         </div>
@@ -120,7 +158,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
           config={chartConfig}
           className="aspect-auto h-[180px] w-full border-t p-3"
         >
-          <BarChart
+          <LineChart
             accessibilityLayer
             data={chartData}
             margin={{ left: 12, right: 12 }}
@@ -130,7 +168,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={4}
               minTickGap={20}
               tickFormatter={(value) => {
                 const date = new Date(value);
@@ -143,7 +181,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[150px]"
+                  className="w-[160px]"
                   nameKey="views"
                   formatter={(value) =>
                     currencyFormatter.format(value as number)
@@ -158,14 +196,17 @@ export function CategorySummary({ category }: CategorySummaryProps) {
                 />
               }
             />
-            <Bar
-              dataKey="value"
-              fill="var(--color-value)"
-              maxBarSize={18}
-              radius={[2, 2, 0, 0]}
+            <YAxis domain={["auto", "auto"]} hide />
+            <Line
+              type="stepAfter"
+              dataKey="balance"
+              stroke="var(--color-balance)"
+              strokeWidth={1.5}
+              dot={false}
+              activeDot={{ r: 3, strokeWidth: 0 }}
               isAnimationActive={false}
             />
-          </BarChart>
+          </LineChart>
         </ChartContainer>
       </div>
 
