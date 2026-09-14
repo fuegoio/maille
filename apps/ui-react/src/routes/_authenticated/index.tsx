@@ -70,7 +70,7 @@ function RouteComponent() {
             onActiveChartChange={setActiveChart}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2.5 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-6 sm:px-6">
             <h2 className="font-serif text-xl leading-none tracking-[-0.01em]">
               {chartTitle}
             </h2>
