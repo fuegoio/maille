@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Calendar, CalendarClock } from "lucide-react";
 import { useMemo } from "react";
 
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getBalanceForMonth } from "@/logic/accounts";
@@ -92,11 +93,11 @@ export function MonthsTable() {
                   month: format(monthDate, "MM-yyyy"),
                 }}
                 className={cn(
-                  "flex h-12 shrink-0 items-center gap-2 border-b pr-6 hover:bg-muted/50",
+                  ledgerRowClassName,
+                  "flex h-12 shrink-0 items-center gap-2 border-b px-4 sm:px-6",
                   monthDate.getMonth() === today.getMonth() &&
-                    monthDate.getFullYear() === today.getFullYear()
-                    ? "border-l-4 border-l-primary pl-5"
-                    : "pl-6",
+                    monthDate.getFullYear() === today.getFullYear() &&
+                    "bg-accent/50",
                 )}
               >
                 {monthDate > today && (
@@ -104,7 +105,7 @@ export function MonthsTable() {
                 )}
                 {monthDate.getMonth() === today.getMonth() &&
                   monthDate.getFullYear() === today.getFullYear() && (
-                    <Calendar className="size-4" />
+                    <Calendar className="size-4 text-primary" />
                   )}
 
                 <div
@@ -124,7 +125,7 @@ export function MonthsTable() {
 
                 {/* Balance */}
                 <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
-                  <div className="mr-3 size-2.5 shrink-0 rounded-lg bg-indigo-400" />
+                  <div className="mr-3 size-2.5 shrink-0 rounded-sm bg-primary" />
                   <div className="flex-1">
                     {currencyFormatter.format(balance)}
                   </div>

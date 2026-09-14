@@ -5,6 +5,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { LedgerHeaderStrip, PageBar } from "@/components/shared/page-bars";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 export const Route = createFileRoute("/_authenticated/months/")({
@@ -21,19 +22,19 @@ function RouteComponent() {
   return (
     <>
       <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+        <PageBar>
           <SidebarTrigger className="mr-1" />
           <PageBreadcrumbs entries={breadcrumbs} />
-        </header>
+        </PageBar>
 
-        <header className="flex h-8 items-center gap-6 border-b bg-muted/50 pr-6 pl-6 text-xs font-medium text-muted-foreground">
+        <LedgerHeaderStrip className="gap-6">
           <div>Month</div>
           <div className="flex-1" />
           <div className="w-32 text-right">Balance</div>
           <div className="hidden w-32 text-right md:block">Revenue</div>
           <div className="hidden w-32 text-right md:block">Investment</div>
           <div className="hidden w-32 text-right md:block">Expenses</div>
-        </header>
+        </LedgerHeaderStrip>
 
         <MonthsTable />
       </SidebarInset>

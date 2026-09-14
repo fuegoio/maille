@@ -11,6 +11,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -352,7 +353,8 @@ function FundMoveLine({
   );
 
   const className = cn(
-    "group @container flex h-10 shrink-0 items-center border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+    ledgerRowClassName,
+    "group @container flex h-10 shrink-0 items-center border-b pr-2 pl-5 text-sm lg:pr-6",
     outlineSides && rowOutlineClasses(outlineSides),
     to && "cursor-pointer",
   );

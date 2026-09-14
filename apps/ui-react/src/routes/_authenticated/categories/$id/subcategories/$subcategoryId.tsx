@@ -5,12 +5,7 @@ import type {
 
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Settings,
-  SquareChartGantt,
-} from "lucide-react";
+import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
@@ -25,6 +20,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
+import { PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
@@ -33,6 +29,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -188,7 +185,7 @@ function SubcategoryPage({
           summaryOpen && "hidden md:flex",
         )}
       >
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+        <PageBar>
           <SidebarTrigger className="mr-1" />
 
           <PageBreadcrumbs entries={breadcrumbs} />
@@ -218,7 +215,7 @@ function SubcategoryPage({
               <Settings />
             </Button>
           </SubcategorySettingsDialog>
-        </header>
+        </PageBar>
 
         <ActivitiesTable
           viewId={`subcategory-${subcategory.id}`}
@@ -227,93 +224,80 @@ function SubcategoryPage({
         />
       </div>
 
-      {summaryOpen && (
-        <div className="h-full w-full max-w-md overflow-y-auto border-l bg-muted/30">
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSummaryOpen(false)}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <div className="text-sm font-medium">Summary</div>
-          </div>
-
-          {/* KPIs + chart */}
-          <div className="w-full border-b">
-            <div className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="font-semibold">Last 30 days</div>
-                <div className="flex-1" />
-                <span className="font-mono">
-                  {currencyFormatter.format(total30Days)}
-                </span>
-              </div>
-
-              <div className="mt-3 flex items-center text-sm">
-                <div className="font-medium text-muted-foreground">Total</div>
-                <div className="flex-1" />
-                <span className="font-mono text-muted-foreground">
-                  {currencyFormatter.format(totalOverall)}
-                </span>
-              </div>
+      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+        {/* KPIs + chart */}
+        <div className="w-full border-b">
+          <div className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="font-semibold">Last 30 days</div>
+              <div className="flex-1" />
+              <span className="font-mono">
+                {currencyFormatter.format(total30Days)}
+              </span>
             </div>
 
-            <ChartContainer
-              config={chartConfig}
-              className="aspect-auto h-[180px] w-full border-t p-3"
-            >
-              <BarChart
-                accessibilityLayer
-                data={chartData}
-                margin={{ left: 12, right: 12 }}
-              >
-                <CartesianGrid vertical strokeDasharray="2 3" />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      className="w-[150px]"
-                      nameKey="views"
-                      formatter={(value) =>
-                        currencyFormatter.format(value as number)
-                      }
-                      labelFormatter={(value) =>
-                        new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })
-                      }
-                    />
-                  }
-                />
-                <Bar
-                  dataKey="value"
-                  fill="var(--color-value)"
-                  maxBarSize={18}
-                  radius={[2, 2, 0, 0]}
-                  isAnimationActive={false}
-                />
-              </BarChart>
-            </ChartContainer>
+            <div className="mt-3 flex items-center text-sm">
+              <div className="font-medium text-muted-foreground">Total</div>
+              <div className="flex-1" />
+              <span className="font-mono text-muted-foreground">
+                {currencyFormatter.format(totalOverall)}
+              </span>
+            </div>
           </div>
+
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[180px] w-full border-t p-3"
+          >
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              margin={{ left: 12, right: 12 }}
+            >
+              <CartesianGrid vertical strokeDasharray="2 3" />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    className="w-[150px]"
+                    nameKey="views"
+                    formatter={(value) =>
+                      currencyFormatter.format(value as number)
+                    }
+                    labelFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    }
+                  />
+                }
+              />
+              <Bar
+                dataKey="value"
+                fill="var(--color-value)"
+                maxBarSize={18}
+                radius={[2, 2, 0, 0]}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          </ChartContainer>
         </div>
-      )}
+      </SummaryPanel>
     </SidebarInset>
   );
 }

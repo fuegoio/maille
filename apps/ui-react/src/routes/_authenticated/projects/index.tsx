@@ -7,6 +7,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectsTable } from "@/components/projects/projects-table";
+import { LedgerHeaderStrip, PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -25,13 +26,12 @@ function ProjectsPage() {
 
   return (
     <SidebarInset>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+      <PageBar>
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateProjectDialog>
           <Button
-            variant="outline"
             aria-label="New project"
             className="w-8 px-0 sm:w-auto sm:px-2.5"
           >
@@ -39,9 +39,9 @@ function ProjectsPage() {
             <span className="hidden sm:inline">New project</span>
           </Button>
         </CreateProjectDialog>
-      </header>
+      </PageBar>
 
-      <header className="flex h-8 items-center gap-4 border-b bg-muted/50 pr-6 pl-6 text-xs font-medium text-muted-foreground">
+      <LedgerHeaderStrip>
         <div>Project</div>
         <div className="flex-1" />
         <div className="hidden w-32 text-right lg:block">Activities</div>
@@ -49,7 +49,7 @@ function ProjectsPage() {
         <div className="hidden w-32 text-right lg:block">Investment</div>
         <div className="w-32 text-right">Expenses</div>
         <div className="hidden w-32 text-right lg:block">Neutral</div>
-      </header>
+      </LedgerHeaderStrip>
 
       <ProjectsTable />
     </SidebarInset>

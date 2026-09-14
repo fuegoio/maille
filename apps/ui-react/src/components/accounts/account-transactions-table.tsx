@@ -10,6 +10,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -262,14 +263,15 @@ function TransactionLine({
     } else if (transaction.activity.status === "incomplete") {
       return <CircleDotDashed className="size-4 shrink-0 text-orange-300" />;
     } else {
-      return <CircleCheck className="size-4 shrink-0 text-indigo-300" />;
+      return <CircleCheck className="size-4 shrink-0 text-primary" />;
     }
   };
 
   return (
     <div
       className={cn(
-        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        ledgerRowClassName,
+        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm lg:pr-6",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
     >

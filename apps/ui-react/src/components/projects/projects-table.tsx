@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { TentTree } from "lucide-react";
 import { useMemo } from "react";
 
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -38,7 +39,10 @@ export function ProjectsTable() {
           key={project.id}
           to="/projects/$id"
           params={{ id: project.id }}
-          className="group flex h-12 w-full items-center border-b pr-6 pl-6 hover:bg-muted/50"
+          className={cn(
+            ledgerRowClassName,
+            "group flex h-12 w-full items-center border-b px-4 sm:px-6",
+          )}
         >
           <div className="flex items-center gap-2">
             {project.emoji && <span className="text-xl">{project.emoji}</span>}

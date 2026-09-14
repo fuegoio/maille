@@ -1,7 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
+import {
+  ledgerAmountClassName,
+  ledgerRowClassName,
+} from "@/components/shared/ledger-table";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
 export function CategoriesTable() {
@@ -34,7 +39,10 @@ export function CategoriesTable() {
           key={category.id}
           to="/categories/$id"
           params={{ id: category.id }}
-          className="group flex h-10 w-full items-center border-b pr-6 pl-6 hover:bg-muted/50"
+          className={cn(
+            ledgerRowClassName,
+            "group flex h-11 w-full items-center border-b px-4 sm:h-10 sm:px-6",
+          )}
         >
           <div className="flex items-center gap-2">
             {category.emoji && (
@@ -49,7 +57,7 @@ export function CategoriesTable() {
             {getNumberOfActivities(category.id)} activities
           </div>
 
-          <div className="font-mono text-sm">
+          <div className={cn(ledgerAmountClassName, "w-32 text-sm")}>
             {currencyFormatter.format(getTotalOfCategory(category.id))}
           </div>
         </Link>
