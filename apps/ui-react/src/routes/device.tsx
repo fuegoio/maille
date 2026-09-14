@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { Logo } from "@/components/logo";
+import { AuthLayout } from "@/components/auth/auth-layout";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -111,100 +111,90 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-sidebar">
-      <Logo className="size-12 text-muted" />
-      <div className="flex w-full max-w-sm flex-col justify-center gap-6 rounded-xl border bg-card p-6">
-        <div className="text-center">
-          <h1 className="text-xl font-medium text-foreground">Authorize CLI</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {step === "enter-code"
-              ? "Enter the code displayed in your terminal."
-              : "A device is requesting access to your account."}
-          </p>
+    <AuthLayout
+      title="Authorize CLI"
+      description={
+        step === "enter-code"
+          ? "Enter the code displayed in your terminal."
+          : "A device is requesting access to your account."
+      }
+    >
+      {done ? (
+        <div className="text-center text-sm text-muted-foreground">
+          Authorization successful. You can close this tab and return to your
+          terminal.
         </div>
+      ) : step === "enter-code" ? (
+        <form
+          onSubmit={form.handleSubmit(handleVerifyCode)}
+          className="space-y-5"
+        >
+          <FieldGroup>
+            <Controller
+              name="user_code"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="user_code">Device code</FieldLabel>
+                  <Input
+                    {...field}
+                    id="user_code"
+                    placeholder="ABCD1234"
+                    autoComplete="off"
+                    autoFocus
+                    className="h-9 font-mono tracking-widest"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </FieldGroup>
 
-        {done ? (
-          <div className="text-center text-sm text-muted-foreground">
-            Authorization successful. You can close this tab and return to your
-            terminal.
-          </div>
-        ) : step === "enter-code" ? (
-          <form
-            onSubmit={form.handleSubmit(handleVerifyCode)}
-            className="space-y-5"
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Button type="submit" className="w-full" disabled={loading} size="lg">
+            {loading ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              "Continue"
+            )}
+          </Button>
+        </form>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-center font-mono text-lg font-semibold tracking-widest text-foreground">
+            {userCode.length === 8
+              ? `${userCode.slice(0, 4)}-${userCode.slice(4)}`
+              : userCode}
+          </p>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <Button
+            className="w-full"
+            disabled={loading}
+            size="lg"
+            onClick={handleApprove}
           >
-            <FieldGroup>
-              <Controller
-                name="user_code"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="user_code">Device code</FieldLabel>
-                    <Input
-                      {...field}
-                      id="user_code"
-                      placeholder="ABCD1234"
-                      autoComplete="off"
-                      autoFocus
-                      className="h-9 font-mono tracking-widest"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              size="lg"
-            >
-              {loading ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                "Continue"
-              )}
-            </Button>
-          </form>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-center font-mono text-lg font-semibold tracking-widest text-foreground">
-              {userCode.length === 8
-                ? `${userCode.slice(0, 4)}-${userCode.slice(4)}`
-                : userCode}
-            </p>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <Button
-              className="w-full"
-              disabled={loading}
-              size="lg"
-              onClick={handleApprove}
-            >
-              {loading ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                "Approve"
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={loading}
-              size="lg"
-              onClick={handleDeny}
-            >
-              Deny
-            </Button>
-          </div>
-        )}
-      </div>
-    </div>
+            {loading ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              "Approve"
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={loading}
+            size="lg"
+            onClick={handleDeny}
+          >
+            Deny
+          </Button>
+        </div>
+      )}
+    </AuthLayout>
   );
 }

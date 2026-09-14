@@ -205,7 +205,7 @@ function RouteComponent() {
                 >
                   <kpi.icon className="size-3.5 shrink-0" />
                   <span className="min-w-0">
-                    <span className="block font-mono text-[0.6875rem] leading-none tracking-[0.04em] uppercase opacity-70">
+                    <span className="block font-mono text-xs leading-none tracking-[0.04em] uppercase opacity-70">
                       {kpi.name}
                     </span>
                     <span className="mt-1 block truncate font-mono text-sm leading-none font-medium tabular-nums">
@@ -217,7 +217,7 @@ function RouteComponent() {
             })}
           </div>
 
-          <div className="flex shrink-0 items-center justify-between gap-4 border-t px-4 py-3 font-mono text-[0.6875rem] tracking-[0.04em] text-muted-foreground uppercase sm:border-t-0 sm:border-l">
+          <div className="flex shrink-0 items-center justify-between gap-4 border-t px-4 py-3 font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase sm:border-t-0 sm:border-l">
             <span className="flex items-center gap-2">
               <span
                 className="size-1.5 rounded-[1px]"
@@ -249,7 +249,9 @@ function RouteComponent() {
                 const date = new Date(value);
                 return date.toLocaleDateString("en-US", {
                   month: "short",
-                  year: "2-digit",
+                  ...(days.length <= 120
+                    ? { day: "numeric" }
+                    : { year: "2-digit" }),
                 });
               }}
             />

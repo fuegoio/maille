@@ -64,6 +64,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@fontsource-variable/geist": "^5.2.8",
+        "@fontsource-variable/source-serif-4": "^5.3.0",
         "@hookform/resolvers": "5.2.0",
         "@maille/core": "*",
         "@tanstack/react-hotkeys": "^0.1.3",
@@ -450,6 +451,8 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "https://socket-registry.mistralai.com/npm/@floating-ui/utils/-/utils-0.2.10.tgz", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
 
     "@fontsource-variable/geist": ["@fontsource-variable/geist@5.2.8", "https://socket-registry.mistralai.com/npm/@fontsource-variable/geist/-/geist-5.2.8.tgz", {}, "sha512-cJ6m9e+8MQ5dCYJsLylfZrgBh6KkG4bOLckB35Tr9J/EqdkEM6QllH5PxqP1dhTvFup+HtMRPuz9xOjxXJggxw=="],
+
+    "@fontsource-variable/source-serif-4": ["@fontsource-variable/source-serif-4@5.3.0", "https://socket-registry.mistralai.com/npm/@fontsource-variable/source-serif-4/-/source-serif-4-5.3.0.tgz", {}, "sha512-9vch9WqxjaaA+1o9Ur8pOgIGbCYLjRReOUel23A6lOpD1syptgjtkORevvNmldJ5kGXQL29onQUqI5Ltz0s3bQ=="],
 
     "@graphql-codegen/add": ["@graphql-codegen/add@5.0.3", "https://socket-registry.mistralai.com/npm/@graphql-codegen/add/-/add-5.0.3.tgz", { "dependencies": { "@graphql-codegen/plugin-helpers": "^5.0.3", "tslib": "~2.6.0" }, "peerDependencies": { "graphql": "^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0" } }, "sha512-SxXPmramkth8XtBlAHu4H4jYcYXM/o3p01+psU+0NADQowA8jtYkK6MW5rV6T+CxkEaNZItfSmZRPgIuypcqnA=="],
 

@@ -7,6 +7,7 @@ export function Logo({ ...props }: ComponentProps<"svg">) {
       height="223"
       viewBox="0 0 363 223"
       fill="none"
+      aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
@@ -14,7 +15,6 @@ export function Logo({ ...props }: ComponentProps<"svg">) {
         cx="111.5"
         cy="111.5"
         r="106.5"
-        fill="white"
         stroke="currentColor"
         strokeWidth="10"
       />
@@ -22,7 +22,8 @@ export function Logo({ ...props }: ComponentProps<"svg">) {
         cx="251.5"
         cy="111.5"
         r="106.5"
-        fill="var(--primary)"
+        fill="currentColor"
+        fillOpacity="0.16"
         stroke="currentColor"
         strokeWidth="10"
       />
