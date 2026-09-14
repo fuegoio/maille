@@ -22,7 +22,9 @@ import {
 /**
  * The home page's range control: preset windows as a segmented control,
  * plus a calendar popover for any custom window. Both drive the KPIs
- * and the chart together.
+ * and the chart together. Presets past 6M are desktop-only to fit the
+ * top bar on small screens, where the calendar popover still reaches
+ * every window.
  */
 export function DateRangePicker({
   range,
@@ -39,7 +41,7 @@ export function DateRangePicker({
   const isCustom = range.preset === "custom";
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <ToggleGroup
         type="single"
         variant="outline"
@@ -55,7 +57,13 @@ export function DateRangePicker({
             key={preset.value}
             value={preset.value}
             aria-label={`Range: ${preset.label}`}
-            className="px-2.5 text-xs"
+            className={cn(
+              "px-2.5 text-xs",
+              (preset.value === "ytd" ||
+                preset.value === "1y" ||
+                preset.value === "all") &&
+                "hidden sm:inline-flex",
+            )}
           >
             {preset.label}
           </ToggleGroupItem>
@@ -69,7 +77,7 @@ export function DateRangePicker({
             size="sm"
             aria-pressed={isCustom}
             className={cn(
-              "h-7 gap-1.5 px-2.5 text-xs",
+              "h-7 shrink-0 gap-1.5 px-2.5 text-xs",
               isCustom && "bg-muted hover:bg-muted",
             )}
           >
