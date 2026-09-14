@@ -13,8 +13,6 @@ import { useActivities } from "@/stores/activities";
 
 import type { HomeDateRange } from "./use-home-date-range";
 
-const MAX_CATEGORIES = 6;
-
 interface CategoryRow {
   id: string | null;
   name: string;
@@ -33,7 +31,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   const activities = useActivities((state) => state.activities);
   const categories = useActivities((state) => state.activityCategories);
 
-  const { rows, remainder } = useMemo(() => {
+  const rows = useMemo(() => {
     const from = startOfDay(range.from);
     const to = startOfDay(range.to);
 
@@ -52,7 +50,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
     }
 
     const byId = new Map(categories.map((category) => [category.id, category]));
-    const all = [...balances.entries()]
+    return [...balances.entries()]
       .filter(([, amount]) => amount !== 0)
       .map(([id, amount]) => {
         const category = id !== null ? byId.get(id) : undefined;
@@ -64,11 +62,6 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
         } satisfies CategoryRow;
       })
       .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
-
-    const rows = all.slice(0, MAX_CATEGORIES);
-    const remainder = all.slice(MAX_CATEGORIES).length;
-
-    return { rows, remainder };
   }, [activities, categories, range.from, range.to]);
 
   return (
@@ -128,12 +121,6 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
               </div>
             );
           })}
-
-          {remainder > 0 && (
-            <p className="px-4 py-2 text-xs text-muted-foreground lg:px-6">
-              + {remainder} more{remainder === 1 ? " category" : " categories"}
-            </p>
-          )}
         </div>
       )}
     </section>
