@@ -65,7 +65,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   }, [activities, categories, range.from, range.to]);
 
   return (
-    <section aria-label="By category" className="flex min-w-0 flex-col">
+    <section aria-label="By category" className="flex min-w-0 flex-col py-4">
       <div
         className={cn(
           ledgerHeaderClassName,

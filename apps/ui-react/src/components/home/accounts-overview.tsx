@@ -78,7 +78,7 @@ export function AccountsOverview() {
   }, [accounts, activities, user.startingDate]);
 
   return (
-    <section aria-label="Accounts" className="flex min-w-0 flex-col">
+    <section aria-label="Accounts" className="flex min-w-0 flex-col py-4">
       <div
         className={cn(
           ledgerHeaderClassName,

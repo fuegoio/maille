@@ -91,7 +91,7 @@ export function FundsOverview() {
   }, [funds, fundAllocations, fundMoves, accounts, activities, user]);
 
   return (
-    <section aria-label="Funds" className="flex min-w-0 flex-col">
+    <section aria-label="Funds" className="flex min-w-0 flex-col py-4">
       <div
         className={cn(
           ledgerHeaderClassName,
