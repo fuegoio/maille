@@ -29,8 +29,7 @@ interface FundRow {
 
 /**
  * Where the money is held by purpose: each top-level fund's balance, with
- * Untracked closing the list as the money no fund claims. One stacked bar
- * carries the same composition as the rows.
+ * Untracked closing the list as the money no fund claims.
  */
 export function FundsOverview() {
   const currencyFormatter = useCurrencyFormatter();
@@ -87,10 +86,6 @@ export function FundsOverview() {
   }, [funds, fundAllocations, fundMoves, accounts, activities, user]);
 
   const total = rows.reduce((sum, row) => sum + row.balance, 0);
-  const positiveTotal = rows.reduce(
-    (sum, row) => sum + Math.max(0, row.balance),
-    0,
-  );
 
   return (
     <section aria-label="Funds" className="flex min-w-0 flex-col">
@@ -115,27 +110,6 @@ export function FundsOverview() {
         </p>
       ) : (
         <div>
-          <div className="border-b px-4 py-4 lg:px-6">
-            <div
-              className="flex h-1.5 gap-px overflow-hidden"
-              role="img"
-              aria-label="Money held by fund"
-            >
-              {rows.map((row) =>
-                row.balance > 0 && positiveTotal > 0 ? (
-                  <div
-                    key={row.id ?? "untracked"}
-                    className="h-full"
-                    style={{
-                      backgroundColor: row.color,
-                      width: `${(row.balance / positiveTotal) * 100}%`,
-                    }}
-                  />
-                ) : null,
-              )}
-            </div>
-          </div>
-
           {rows.map((row) => (
             <Link
               key={row.id ?? "untracked"}
@@ -147,7 +121,7 @@ export function FundsOverview() {
                 "flex h-9 shrink-0 items-center gap-2 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6",
               )}
             >
-              <div
+              <span
                 className="size-3 shrink-0 rounded-sm"
                 style={{ backgroundColor: row.color }}
                 aria-hidden
