@@ -215,7 +215,7 @@ function AccountPage({ account }: { account: Account }) {
             className="min-h-0 flex-1"
           >
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-              <TabsList className="ml-5 h-full!">
+              <TabsList height="full" className="ml-5">
                 <TabsTrigger value="transactions">
                   <ReceiptText />
                   Transactions

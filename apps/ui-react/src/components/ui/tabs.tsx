@@ -25,15 +25,21 @@ function Tabs({
 }
 
 const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center gap-4 p-0 text-muted-foreground group-data-horizontal/tabs:h-8 group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col",
+  "group/tabs-list inline-flex w-fit items-center justify-center gap-4 p-0 text-muted-foreground group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col",
   {
     variants: {
+      height: {
+        default: "group-data-horizontal/tabs:h-8",
+        full: "h-full",
+        lg: "h-12",
+      },
       variant: {
         default: "bg-transparent",
         line: "bg-transparent",
       },
     },
     defaultVariants: {
+      height: "default",
       variant: "default",
     },
   },
@@ -42,6 +48,7 @@ const tabsListVariants = cva(
 function TabsList({
   className,
   variant = "default",
+  height = "default",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
   VariantProps<typeof tabsListVariants>) {
@@ -49,7 +56,7 @@ function TabsList({
     <TabsPrimitive.List
       data-slot="tabs-list"
       data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
+      className={cn(tabsListVariants({ variant, height }), className)}
       {...props}
     />
   );

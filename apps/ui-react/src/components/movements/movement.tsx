@@ -90,13 +90,13 @@ const MOVEMENT_STATUS_ALERT: Record<
   incomplete: {
     icon: CircleDotDashed,
     className: "border-warning/60 bg-warning/15 text-foreground",
-    iconClassName: "!text-warning stroke-[2.25]",
+    iconClassName: "text-warning stroke-[2.25]",
     descriptionClassName: "text-foreground/90",
   },
   completed: {
     icon: CircleCheck,
     className: "border-primary/35 bg-primary/10 text-foreground",
-    iconClassName: "!text-primary",
+    iconClassName: "text-primary",
     descriptionClassName: "text-muted-foreground",
   },
 };
