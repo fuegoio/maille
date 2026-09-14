@@ -27,7 +27,7 @@
   --warning: oklch(0.47 0.12 70);
   --activity-revenue: oklch(0.5 0.12 150);
   --activity-expense: oklch(0.56 0.18 28);
-  --activity-investment: oklch(0.58 0.12 70);
+  --activity-investment: oklch(0.62 0.15 95);
   --activity-neutral: oklch(0.5 0.025 145);
   --border: oklch(0.86 0.012 145);
   --input: oklch(0.82 0.016 145);
@@ -69,7 +69,7 @@
   --warning: oklch(0.78 0.12 78);
   --activity-revenue: oklch(0.72 0.12 150);
   --activity-expense: oklch(0.7 0.17 25);
-  --activity-investment: oklch(0.76 0.12 78);
+  --activity-investment: oklch(0.8 0.15 98);
   --activity-neutral: oklch(0.72 0.018 145);
   --border: oklch(0.96 0.006 145 / 14%);
   --input: oklch(0.96 0.006 145 / 22%);
