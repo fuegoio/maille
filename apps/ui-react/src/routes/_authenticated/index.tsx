@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { useState } from "react";
 
 import { AccountsOverview } from "@/components/home/accounts-overview";
@@ -36,6 +37,8 @@ function RouteComponent() {
         ? "Revenue history"
         : "Expense history";
 
+  const rangeLabel = `${format(range.from, "d MMM yyyy")} – ${format(range.to, "d MMM yyyy")}`;
+
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
     routeKey: "/",
@@ -47,6 +50,13 @@ function RouteComponent() {
       <PageBar>
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
+        <div className="flex-1" />
+        <DateRangePicker
+          range={range}
+          startingDate={user.startingDate}
+          onPreset={setPreset}
+          onCustomRange={setCustomRange}
+        />
       </PageBar>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -61,32 +71,29 @@ function RouteComponent() {
             <h2 className="font-serif text-xl leading-none tracking-[-0.01em]">
               {chartTitle}
             </h2>
-            <DateRangePicker
-              range={range}
-              startingDate={user.startingDate}
-              onPreset={setPreset}
-              onCustomRange={setCustomRange}
-            />
+            <span className="font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase">
+              {rangeLabel}
+            </span>
           </div>
 
           <HomeChart range={range} activeChart={activeChart} />
         </section>
 
         <div className="grid flex-1 grid-cols-1 lg:grid-cols-6 lg:grid-rows-[auto_1fr]">
-          <section className="border-t lg:col-span-3 lg:border-t-0 lg:border-r">
-            <RecentActivities />
-          </section>
-          <section className="border-t lg:col-span-3 lg:border-t-0">
-            <RecentMovements />
-          </section>
-          <section className="border-t lg:col-span-2 lg:border-r">
+          <section className="border-t lg:col-span-2 lg:border-t-0 lg:border-r">
             <CategoryBreakdown range={range} />
           </section>
-          <section className="border-t lg:col-span-2 lg:border-r">
+          <section className="border-t lg:col-span-2 lg:border-t-0 lg:border-r">
             <AccountsOverview />
           </section>
-          <section className="border-t lg:col-span-2">
+          <section className="border-t lg:col-span-2 lg:border-t-0">
             <FundsOverview />
+          </section>
+          <section className="border-t lg:col-span-3 lg:border-r">
+            <RecentActivities />
+          </section>
+          <section className="border-t lg:col-span-3">
+            <RecentMovements />
           </section>
         </div>
       </div>
