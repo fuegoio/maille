@@ -182,7 +182,7 @@ export function HomeKpis({
                   {delta >= 0 ? "+" : "-"}
                   {currencyFormatter.format(Math.abs(delta))}
                   {percent !== null && (
-                    <span className="opacity-70">
+                    <span className="hidden whitespace-nowrap opacity-70 sm:inline">
                       ({percent >= 0 ? "+" : "-"}
                       {Math.abs(percent).toFixed(1)}%)
                     </span>
