@@ -10,7 +10,9 @@ export interface AmountPair {
 /**
  * Dot + amount pairs — the shared amount vocabulary of every table: the
  * type's color rides on the dot, the amount stays in the foreground color.
- * Zero amounts are omitted unless told otherwise; pairs wrap when narrow.
+ * Zero amounts are omitted unless told otherwise. Pairs always sit on one
+ * line — they never shrink, so a narrow row truncates its label instead
+ * of stacking the amounts.
  */
 export function AmountPairsValue({
   pairs,
@@ -27,7 +29,7 @@ export function AmountPairsValue({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-end gap-x-4 gap-y-0.5 font-mono font-medium whitespace-nowrap",
+        "flex shrink-0 items-center justify-end gap-x-2 font-mono font-medium whitespace-nowrap sm:gap-x-4",
         className,
       )}
     >
