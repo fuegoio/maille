@@ -77,10 +77,12 @@ export function PageBreadcrumbs({
               <BreadcrumbItem className={isCurrent ? "min-w-0" : "shrink-0"}>
                 <BreadcrumbLink
                   asChild
-                  // The current crumb keeps its foreground color so it
-                  // still reads as "you are here", but is clickable like
-                  // every other step.
-                  className={isCurrent ? "text-foreground" : undefined}
+                  // The current crumb keeps its foreground color and gains
+                  // weight so it still reads as "you are here", but is
+                  // clickable like every other step.
+                  className={
+                    isCurrent ? "font-medium text-foreground" : undefined
+                  }
                 >
                   <Link
                     to={entry.target.to as never}

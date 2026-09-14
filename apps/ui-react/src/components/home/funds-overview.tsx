@@ -1,3 +1,4 @@
+import { flattenFundTree } from "@maille/core/funds";
 import { Link } from "@tanstack/react-router";
 import { startOfDay } from "date-fns";
 import { useMemo } from "react";
@@ -22,14 +23,17 @@ interface FundRow {
   id: string | null;
   name: string;
   color: string;
+  depth: number;
   balance: number;
   to: string;
   params: Record<string, string>;
 }
 
 /**
- * Where the money is held by purpose: each top-level fund's balance, with
- * Untracked closing the list as the money no fund claims.
+ * Where the money is held by purpose: the whole fund tree, each fund
+ * indented under its parent with its subtree rollup (the same figures
+ * as the funds page), with Untracked closing the list as the money no
+ * fund claims.
  */
 export function FundsOverview() {
   const currencyFormatter = useCurrencyFormatter();
@@ -44,12 +48,13 @@ export function FundsOverview() {
     if (!user) return [];
 
     const today = startOfDay(new Date());
-    const topLevel = funds.filter((fund) => fund.parentFund === null);
+    const nodes = flattenFundTree(funds);
 
-    const fundRows: FundRow[] = topLevel.map((fund) => ({
+    const fundRows: FundRow[] = nodes.map(({ fund, depth }) => ({
       id: fund.id,
       name: fund.name,
       color: fund.color,
+      depth,
       balance: getFundTreeBalanceAtDate(
         fund.id,
         funds,
@@ -61,7 +66,6 @@ export function FundsOverview() {
       to: "/funds/$id",
       params: { id: fund.id },
     }));
-    fundRows.sort((a, b) => b.balance - a.balance);
 
     const untracked = getUntrackedBalanceAtDate({
       accounts,
@@ -76,6 +80,7 @@ export function FundsOverview() {
         id: null,
         name: "Untracked",
         color: "var(--color-muted-foreground)",
+        depth: 0,
         balance: untracked,
         to: "/funds/untracked",
         params: {},
@@ -120,11 +125,20 @@ export function FundsOverview() {
               )}
             >
               <span
-                className="size-3 shrink-0 rounded-sm"
-                style={{ backgroundColor: row.color }}
-                aria-hidden
-              />
-              <span className="min-w-0 truncate">{row.name}</span>
+                className="flex min-w-0 items-center gap-2"
+                style={
+                  row.depth > 0
+                    ? { paddingLeft: `${row.depth * 16}px` }
+                    : undefined
+                }
+              >
+                <span
+                  className="size-3 shrink-0 rounded-sm"
+                  style={{ backgroundColor: row.color }}
+                  aria-hidden
+                />
+                <span className="min-w-0 truncate">{row.name}</span>
+              </span>
               <span className="flex-1" />
               <span className="font-mono text-sm font-medium tabular-nums">
                 {currencyFormatter.format(row.balance)}
