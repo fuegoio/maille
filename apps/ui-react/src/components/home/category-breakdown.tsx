@@ -23,7 +23,7 @@ interface CategoryRow {
 
 /**
  * Where the money moved in the selected range: the top categories by total
- * transaction amount, each carrying its share of the range's total.
+ * transaction amount, as compact ledger rows.
  */
 export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
   const currencyFormatter = useCurrencyFormatter();
@@ -91,24 +91,13 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
       ) : (
         <div>
           {rows.map((row) => {
-            const share = total > 0 ? (row.amount / total) * 100 : 0;
             const body = (
               <>
-                <div className="flex items-center">
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    {row.emoji && <span aria-hidden>{row.emoji}</span>}
-                    <span className="truncate">{row.name}</span>
-                  </span>
-                  <span className="flex-1" />
-                  <span className="font-mono text-sm font-medium tabular-nums">
-                    {currencyFormatter.format(row.amount)}
-                  </span>
-                </div>
-                <span className="mt-2 block h-1 w-full overflow-hidden rounded-full bg-muted">
-                  <span
-                    className="block h-full bg-foreground/25"
-                    style={{ width: `${share}%` }}
-                  />
+                {row.emoji && <span aria-hidden>{row.emoji}</span>}
+                <span className="min-w-0 truncate">{row.name}</span>
+                <span className="flex-1" />
+                <span className="font-mono text-sm font-medium tabular-nums">
+                  {currencyFormatter.format(row.amount)}
                 </span>
               </>
             );
@@ -121,7 +110,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                 aria-label={`Open ${row.name}`}
                 className={cn(
                   ledgerRowClassName,
-                  "flex flex-col border-b px-4 py-3 last:border-b-0 lg:px-6",
+                  "flex h-9 shrink-0 items-center gap-1.5 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6",
                 )}
               >
                 {body}
@@ -129,7 +118,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
             ) : (
               <div
                 key="uncategorized"
-                className="border-b px-4 py-3 last:border-b-0 lg:px-6"
+                className="flex h-9 shrink-0 items-center gap-1.5 border-b pr-2 pl-4 text-sm last:border-b-0 lg:px-6"
               >
                 {body}
               </div>
@@ -137,7 +126,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
           })}
 
           {remainder > 0 && (
-            <p className="px-4 py-2.5 text-xs text-muted-foreground lg:px-6">
+            <p className="px-4 py-2 text-xs text-muted-foreground lg:px-6">
               + {remainder} more{remainder === 1 ? " category" : " categories"}
             </p>
           )}
