@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { type DateRange } from "react-day-picker";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 import {
   HOME_RANGE_PRESETS,
+  getPresetFrom,
   type HomeDateRange,
   type HomeRangePreset,
 } from "./use-home-date-range";
@@ -22,9 +23,10 @@ import {
 /**
  * The home page's range control: preset windows as a segmented control,
  * plus a calendar popover for any custom window. Both drive the KPIs
- * and the chart together. Presets past 6M are desktop-only to fit the
- * top bar on small screens, where the calendar popover still reaches
- * every window.
+ * and the chart together. Presets that would reach back past the ledger's
+ * start are hidden — their windows clamp to the same no-op range — and
+ * the desktop-only hiding below sm keeps the top bar fitting on small
+ * screens, where the calendar popover still reaches every window.
  */
 export function DateRangePicker({
   range,
@@ -40,6 +42,12 @@ export function DateRangePicker({
   const [open, setOpen] = useState(false);
   const isCustom = range.preset === "custom";
 
+  const today = startOfDay(new Date());
+  const presets = HOME_RANGE_PRESETS.filter((preset) => {
+    const from = getPresetFrom(preset.value, today);
+    return from === null || startingDate < from;
+  });
+
   return (
     <div className="flex min-w-0 items-center gap-2">
       <ToggleGroup
@@ -52,7 +60,7 @@ export function DateRangePicker({
           if (value) onPreset(value as HomeRangePreset);
         }}
       >
-        {HOME_RANGE_PRESETS.map((preset) => (
+        {presets.map((preset) => (
           <ToggleGroupItem
             key={preset.value}
             value={preset.value}
