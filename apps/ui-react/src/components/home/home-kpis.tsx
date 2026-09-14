@@ -161,7 +161,7 @@ export function HomeKpis({
               </span>
             </span>
 
-            <span className="truncate font-mono text-sm leading-none font-medium tabular-nums">
+            <span className="truncate font-mono text-lg leading-none font-semibold tabular-nums">
               {currencyFormatter.format(value)}
             </span>
 

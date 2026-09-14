@@ -53,6 +53,9 @@ export function HomeChart({
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
   const currencyFormatter = useCurrencyFormatter();
+  // Axis ticks are compact so any magnitude fits the fixed Y gutter; the
+  // tooltip keeps the exact amount.
+  const axisCurrencyFormatter = useCurrencyFormatter("compact");
 
   const dailyData = useMemo<DayPoint[]>(() => {
     const from = startOfDay(range.from);
@@ -184,7 +187,7 @@ export function HomeChart({
           axisLine={false}
           tickMargin={8}
           width={76}
-          tickFormatter={(value) => currencyFormatter.format(value)}
+          tickFormatter={(value) => axisCurrencyFormatter.format(value)}
         />
         <ReferenceLine y={0} stroke="var(--color-border)" />
         <ChartTooltip
