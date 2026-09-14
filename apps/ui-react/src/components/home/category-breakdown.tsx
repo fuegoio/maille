@@ -100,12 +100,7 @@ export function CategoryBreakdown({ range }: { range: HomeDateRange }) {
                 {row.emoji && <span aria-hidden>{row.emoji}</span>}
                 <span className="min-w-0 truncate">{row.name}</span>
                 <span className="flex-1" />
-                <span
-                  className={cn(
-                    "font-mono text-sm font-medium tabular-nums",
-                    row.amount < 0 && "text-destructive",
-                  )}
-                >
+                <span className="font-mono text-sm font-medium tabular-nums">
                   {currencyFormatter.format(row.amount)}
                 </span>
               </>
