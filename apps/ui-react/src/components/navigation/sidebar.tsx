@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
   BookMarked,
@@ -11,7 +10,6 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { Logo } from "@/components/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -117,30 +115,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border pb-2">
-        <Link
-          to="/"
-          className="flex h-9 items-center gap-2 px-2 text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
-          aria-label="Maille dashboard"
-        >
-          <Logo className="h-4 w-7 shrink-0 text-sidebar-primary" />
-          <span className="font-serif text-lg leading-none group-data-[collapsible=icon]:hidden">
-            Maille
-          </span>
-        </Link>
+      <SidebarHeader>
+        <UserNavigation user={user} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain title="Analysis" items={data.navAnalysis} />
         <NavMain title="Links" items={data.navLinks} />
         <NavMain title="Foundations" items={data.navFoundations} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border pt-2">
+      <SidebarFooter>
         <SidebarCalculator
           open={calculatorOpen}
           onToggle={() => setCalculatorOpen((prev) => !prev)}
           onClose={() => setCalculatorOpen(false)}
         />
-        <UserNavigation user={user} />
       </SidebarFooter>
     </Sidebar>
   );
