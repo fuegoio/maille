@@ -11,6 +11,7 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
@@ -57,7 +58,7 @@ export function ActivityLine({
     } else if (activity.status === "incomplete") {
       return <CircleDotDashed className="size-4 shrink-0 text-orange-300" />;
     } else {
-      return <CircleCheck className="size-4 shrink-0 text-indigo-300" />;
+      return <CircleCheck className="size-4 shrink-0 text-primary" />;
     }
   };
 
@@ -93,7 +94,8 @@ export function ActivityLine({
   return (
     <div
       className={cn(
-        "group relative block shrink border-b pl-1 transition-colors hover:bg-accent",
+        ledgerRowClassName,
+        "group relative block shrink border-b pl-1",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
       style={{
@@ -108,7 +110,7 @@ export function ActivityLine({
         to="/activities/$id"
         params={{ id: activity.id }}
         aria-label={activity.name}
-        className="absolute inset-0"
+        className="absolute inset-0 focus-visible:ring-1 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset"
       />
       <div className="flex h-10 items-center gap-2 pr-2 pl-4.5 text-sm lg:pr-6">
         <Checkbox
@@ -214,9 +216,9 @@ export function ActivityLine({
               key={transaction.id}
               className="flex h-10 items-center gap-2 border-t pr-6 pl-41.75 text-sm"
             >
-              <div className="flex h-10 grow items-center gap-2 border-l-2 pl-4">
+              <div className="flex h-10 grow items-center gap-2 border-l pl-4">
                 <AccountLabel accountId={transaction.fromAccount} />
-                <div className="text-primary-100 mx-2 text-center">to</div>
+                <div className="mx-2 text-center text-muted-foreground">to</div>
                 <AccountLabel accountId={transaction.toAccount} />
 
                 <div className="flex-1" />

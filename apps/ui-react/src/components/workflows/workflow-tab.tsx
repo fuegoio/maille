@@ -142,7 +142,7 @@ export function WorkflowTab({ workflow }: WorkflowTabProps) {
                     className="flex items-center gap-2 py-1"
                   >
                     <div className="h-px flex-1 bg-border" />
-                    <span className="text-[0.65rem] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       New session
                     </span>
                     <div className="h-px flex-1 bg-border" />

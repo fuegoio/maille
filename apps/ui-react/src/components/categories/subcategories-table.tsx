@@ -1,7 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 
+import {
+  ledgerAmountClassName,
+  ledgerHeaderClassName,
+  ledgerRowClassName,
+} from "@/components/shared/ledger-table";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
 import { Badge } from "../ui/badge";
@@ -39,10 +45,15 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
 
   return (
     <div className="flex flex-col">
-      <div className="flex h-8 shrink-0 items-center gap-2 border-b bg-muted/70 pr-6 pl-14">
-        <div className="text-sm font-medium">Subcategories</div>
+      <div
+        className={cn(
+          ledgerHeaderClassName,
+          "flex h-8 shrink-0 items-center gap-2 pr-4 pl-10 sm:pr-6 sm:pl-14",
+        )}
+      >
+        <div>Subcategories</div>
         <div className="flex-1" />
-        <div className="pl-4 text-right text-sm text-muted-foreground">
+        <div className="pl-4 text-right">
           {sortedSubcategories.length} subcategor
           {sortedSubcategories.length > 1 ? "ies" : "y"}
         </div>
@@ -53,7 +64,10 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
           key={subcategory.id}
           to={`/categories/$id/subcategories/$subcategoryId`}
           params={{ id: categoryId, subcategoryId: subcategory.id }}
-          className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+          className={cn(
+            ledgerRowClassName,
+            "group flex h-11 w-full items-center border-b pr-4 pl-10 sm:h-10 sm:pr-6 sm:pl-14",
+          )}
         >
           <div className="flex items-center gap-2">
             {subcategory.emoji && (
@@ -68,7 +82,7 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
 
           <div className="flex-1" />
 
-          <div className="font-mono text-sm">
+          <div className={cn(ledgerAmountClassName, "w-32 text-sm")}>
             {currencyFormatter.format(getTotalOfSubcategory(subcategory.id))}
           </div>
         </Link>

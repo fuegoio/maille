@@ -17,6 +17,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { PageBar } from "@/components/shared/page-bars";
 import {
   ChartContainer,
   ChartTooltip,
@@ -177,10 +178,10 @@ function RouteComponent() {
 
   return (
     <SidebarInset>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+      <PageBar>
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
-      </header>
+      </PageBar>
 
       <section className="border-b" aria-label="Ledger history">
         <div className="flex min-w-0 flex-col border-b sm:flex-row sm:items-stretch">

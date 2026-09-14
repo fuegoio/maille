@@ -3,6 +3,12 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
+import {
+  ledgerAmountClassName,
+  ledgerHeaderClassName,
+  ledgerRowClassName,
+} from "@/components/shared/ledger-table";
+import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
@@ -58,12 +64,18 @@ export function AccountsTable() {
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       {ACCOUNT_TYPES.map((accountType) => (
         <div key={accountType}>
-          <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 px-6">
-            <ChevronDown
-              className={cn(
-                "mr-3 size-3 opacity-20 transition-all hover:opacity-100",
-                groupsFolded.includes(accountType) && "-rotate-90 opacity-100",
-              )}
+          <div
+            className={cn(
+              ledgerHeaderClassName,
+              "flex h-9 shrink-0 items-center gap-2 px-6",
+            )}
+          >
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`${groupsFolded.includes(accountType) ? "Expand" : "Collapse"} ${ACCOUNT_TYPES_NAME[accountType]}`}
+              aria-expanded={!groupsFolded.includes(accountType)}
+              className="mr-1 -ml-1 text-muted-foreground"
               onClick={() => {
                 if (groupsFolded.includes(accountType)) {
                   setGroupsFolded((prev) =>
@@ -73,7 +85,14 @@ export function AccountsTable() {
                   setGroupsFolded((prev) => [...prev, accountType]);
                 }
               }}
-            />
+            >
+              <ChevronDown
+                className={cn(
+                  "size-3 transition-transform duration-100 motion-reduce:transition-none",
+                  groupsFolded.includes(accountType) && "-rotate-90",
+                )}
+              />
+            </Button>
 
             <div
               className={cn(
@@ -81,12 +100,10 @@ export function AccountsTable() {
                 ACCOUNT_TYPES_COLOR[accountType],
               )}
             />
-            <div className="text-sm font-medium">
-              {ACCOUNT_TYPES_NAME[accountType]}
-            </div>
+            <div>{ACCOUNT_TYPES_NAME[accountType]}</div>
             <div className="flex-1" />
 
-            <div className="pl-4 text-right font-mono text-sm">
+            <div className={cn(ledgerAmountClassName, "w-32 pl-4 text-xs")}>
               {currencyFormatter.format(getAccountTypeTotal(accountType))}
             </div>
           </div>
@@ -99,7 +116,10 @@ export function AccountsTable() {
                   key={account.id}
                   to="/accounts/$id"
                   params={{ id: account.id }}
-                  className="group flex h-10 w-full items-center border-b pr-6 pl-14 hover:bg-muted/50"
+                  className={cn(
+                    ledgerRowClassName,
+                    "group flex h-10 w-full items-center border-b pr-6 pl-14",
+                  )}
                 >
                   <div className="text-sm font-medium">{account.name}</div>
                   {account.default && (
@@ -118,7 +138,7 @@ export function AccountsTable() {
                     {getTransactionsLinkedToAccount(account.id)} transactions
                   </div>
 
-                  <div className="text-right font-mono text-sm">
+                  <div className={cn(ledgerAmountClassName, "w-32 text-sm")}>
                     {currencyFormatter.format(getAccountTotal(account.id))}
                   </div>
                 </Link>

@@ -7,6 +7,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -25,13 +26,12 @@ function CategoriesPage() {
 
   return (
     <SidebarInset>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+      <PageBar>
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateCategoryDialog>
           <Button
-            variant="outline"
             aria-label="Create category"
             className="w-8 px-0 sm:w-auto sm:px-2.5"
           >
@@ -39,7 +39,7 @@ function CategoriesPage() {
             <span className="hidden sm:inline">Create category</span>
           </Button>
         </CreateCategoryDialog>
-      </header>
+      </PageBar>
 
       <CategoriesTable />
     </SidebarInset>

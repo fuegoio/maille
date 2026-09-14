@@ -9,6 +9,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { PageBar } from "@/components/shared/page-bars";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useMovements } from "@/stores/movements";
 import { useViews } from "@/stores/views";
@@ -43,7 +44,7 @@ function ToLinkPage() {
 
   return (
     <SidebarInset className="min-w-0 shrink">
-      <header className="flex h-12 shrink-0 items-center gap-1 border-b pr-2 pl-3 sm:gap-2 sm:pl-4">
+      <PageBar className="gap-1 pr-2 sm:gap-2">
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
         <FilterMovementsButton
@@ -54,7 +55,7 @@ function ToLinkPage() {
         <SearchBar />
         <ImportMovementsButton className="hidden sm:flex" />
         <AddMovementButton />
-      </header>
+      </PageBar>
 
       <MovementsTable
         viewId={movementsView.id}

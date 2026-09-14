@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -26,6 +27,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -34,7 +36,10 @@ import {
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 
 const formSchema = z.object({
-  currency: z.string().min(1, "Currency is required"),
+  currency: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{3}$/, "Use a three-letter currency code"),
   startingDate: z.date(),
 });
 
@@ -52,30 +57,40 @@ export function SettingsDialog() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setLoading(true);
+    setSubmitError(null);
 
     try {
-      const response = await authClient.updateUser({
-        currency: data.currency,
-        startingDate: data.startingDate,
-      });
-      if (response.data?.status) {
-        updateUser({
-          ...data,
-        });
+      const normalizedData = {
+        ...data,
+        currency: data.currency.toUpperCase(),
+      };
+      const response = await authClient.updateUser(normalizedData);
+      if (!response.data?.status) {
+        setSubmitError("Settings could not be saved. Please try again.");
+        return;
       }
-    } catch (error) {
-      console.error("Failed to upate user:", error);
+
+      updateUser(normalizedData);
+      setOpen(false);
+    } catch {
+      setSubmitError("Settings could not be saved. Please try again.");
     } finally {
       setLoading(false);
-      setOpen(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (nextOpen) setSubmitError(null);
+      }}
+    >
       <DialogTrigger asChild>
         <DropdownMenuItem
           className="gap-2 px-3"
@@ -85,12 +100,15 @@ export function SettingsDialog() {
           Settings
         </DropdownMenuItem>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>Ledger settings</DialogTitle>
+          <DialogDescription>
+            Choose the defaults used to calculate and display your ledger.
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          <FieldGroup>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FieldGroup className="gap-4">
             <Controller
               name="currency"
               control={form.control}
@@ -101,9 +119,19 @@ export function SettingsDialog() {
                     {...field}
                     id="currency"
                     aria-invalid={fieldState.invalid}
-                    className="h-9"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    maxLength={3}
+                    spellCheck={false}
+                    className="h-9 font-mono uppercase"
                     placeholder="EUR"
+                    onChange={(event) =>
+                      field.onChange(event.target.value.toUpperCase())
+                    }
                   />
+                  <FieldDescription>
+                    Three-letter ISO code used for every amount.
+                  </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -116,7 +144,7 @@ export function SettingsDialog() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="startingDate">Starting Date</FieldLabel>
+                  <FieldLabel htmlFor="startingDate">Starting date</FieldLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -140,6 +168,9 @@ export function SettingsDialog() {
                       />
                     </PopoverContent>
                   </Popover>
+                  <FieldDescription>
+                    Transactions before this date are excluded from balances.
+                  </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -148,16 +179,15 @@ export function SettingsDialog() {
             />
           </FieldGroup>
 
+          {submitError && <FieldError>{submitError}</FieldError>}
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit" disabled={loading}>
-              {loading ? (
-                <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
-              ) : (
-                "Save"
-              )}
+              {loading && <LoaderCircle className="size-4 animate-spin" />}
+              {loading ? "Saving" : "Save changes"}
             </Button>
           </DialogFooter>
         </form>

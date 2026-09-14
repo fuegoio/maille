@@ -4,6 +4,10 @@ import { format } from "date-fns";
 import { ChevronRight, PiggyBank } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import {
+  ledgerAmountClassName,
+  ledgerRowClassName,
+} from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Button } from "@/components/ui/button";
 import {
@@ -158,7 +162,8 @@ export function FundsTable() {
             to="/funds/$id"
             params={{ id: fund.id }}
             className={cn(
-              "flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50",
+              ledgerRowClassName,
+              "flex h-12 w-full cursor-pointer items-center border-b px-4 sm:px-6",
               rowOutlines.has(fund.id) &&
                 rowOutlineClasses(rowOutlines.get(fund.id)!),
             )}
@@ -218,7 +223,12 @@ export function FundsTable() {
 
             <div className="flex-1" />
 
-            <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap">
+            <div
+              className={cn(
+                ledgerAmountClassName,
+                "flex w-32 items-center justify-end text-sm",
+              )}
+            >
               {currencyFormatter.format(balances.get(fund.id) ?? 0)}
             </div>
           </Link>
@@ -228,7 +238,10 @@ export function FundsTable() {
       {/* Untracked is the complement of every fund: muted, at the bottom. */}
       <Link
         to="/funds/untracked"
-        className="flex h-12 w-full cursor-pointer items-center border-b pr-6 pl-6 hover:bg-muted/50"
+        className={cn(
+          ledgerRowClassName,
+          "flex h-12 w-full cursor-pointer items-center border-b px-4 sm:px-6",
+        )}
       >
         <div className="flex items-center text-muted-foreground">
           <div className="mr-0.5 size-5 shrink-0" aria-hidden="true" />
@@ -238,7 +251,12 @@ export function FundsTable() {
 
         <div className="flex-1" />
 
-        <div className="flex w-32 items-center justify-end font-mono text-sm whitespace-nowrap text-muted-foreground">
+        <div
+          className={cn(
+            ledgerAmountClassName,
+            "flex w-32 items-center justify-end text-sm text-muted-foreground",
+          )}
+        >
           {currencyFormatter.format(untrackedBalance)}
         </div>
       </Link>

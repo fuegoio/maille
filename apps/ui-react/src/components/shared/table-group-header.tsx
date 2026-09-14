@@ -1,6 +1,11 @@
 import { Calendar, ChevronDown } from "lucide-react";
 import * as React from "react";
 
+import {
+  ledgerAmountClassName,
+  ledgerHeaderClassName,
+} from "@/components/shared/ledger-table";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface TableGroupHeaderProps {
@@ -23,32 +28,45 @@ export function TableGroupHeader({
   year,
   children,
 }: TableGroupHeaderProps) {
+  const label = new Date(year, month).toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <div className="flex h-10 shrink-0 items-center gap-2 border-b bg-muted/70 pr-2 pl-5 sm:px-6">
-      <ChevronDown
-        className={cn(
-          "mr-2 size-3 opacity-20 transition-all hover:opacity-100 sm:mr-3",
-          folded && "-rotate-90 opacity-100",
-        )}
+    <div
+      className={cn(
+        ledgerHeaderClassName,
+        "flex h-9 shrink-0 items-center gap-2 pr-2 pl-4 sm:px-6",
+      )}
+    >
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        aria-label={`${folded ? "Expand" : "Collapse"} ${label}`}
+        aria-expanded={!folded}
+        className="mr-1 -ml-1 text-muted-foreground"
         onClick={() => onToggle(id)}
-      />
-      <Calendar className="hidden size-4 sm:block" />
-      <div className="min-w-0 truncate text-sm">
+      >
+        <ChevronDown
+          className={cn(
+            "size-3 transition-transform duration-100 motion-reduce:transition-none",
+            folded && "-rotate-90",
+          )}
+        />
+      </Button>
+      <Calendar className="hidden size-3.5 text-muted-foreground sm:block" />
+      <div className="min-w-0 truncate">
         <span className="sm:hidden">
           {new Date(year, month).toLocaleString("default", {
             month: "short",
             year: "numeric",
           })}
         </span>
-        <span className="hidden sm:inline">
-          {new Date(year, month).toLocaleString("default", {
-            month: "long",
-            year: "numeric",
-          })}
-        </span>
+        <span className="hidden sm:inline">{label}</span>
       </div>
       <div className="flex-1" />
-      {children}
+      <div className={cn(ledgerAmountClassName, "font-normal")}>{children}</div>
     </div>
   );
 }

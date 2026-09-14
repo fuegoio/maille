@@ -7,6 +7,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { LedgerHeaderStrip, PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -23,13 +24,12 @@ function FundsPage() {
 
   return (
     <SidebarInset>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
+      <PageBar>
         <SidebarTrigger className="mr-1" />
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <CreateFundDialog>
           <Button
-            variant="outline"
             aria-label="New fund"
             className="w-8 px-0 sm:w-auto sm:px-2.5"
           >
@@ -37,13 +37,13 @@ function FundsPage() {
             <span className="hidden sm:inline">New fund</span>
           </Button>
         </CreateFundDialog>
-      </header>
+      </PageBar>
 
-      <header className="flex h-8 items-center gap-4 border-b bg-muted/50 pr-6 pl-6 text-xs font-medium text-muted-foreground">
+      <LedgerHeaderStrip>
         <div>Fund</div>
         <div className="flex-1" />
         <div className="w-32 text-right">Balance</div>
-      </header>
+      </LedgerHeaderStrip>
 
       <FundsTable />
     </SidebarInset>

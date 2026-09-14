@@ -8,6 +8,7 @@ import * as React from "react";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,7 +42,8 @@ export function MovementLine({
       to="/movements/$id"
       params={{ id: movement.id }}
       className={cn(
-        "group flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-accent lg:pr-6",
+        ledgerRowClassName,
+        "group flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-5.5 text-sm lg:pr-6",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
     >
@@ -71,7 +73,7 @@ export function MovementLine({
       {movement.status === "incomplete" ? (
         <CircleDotDashed className=" size-4 shrink-0 text-orange-300" />
       ) : (
-        <CircleCheck className="size-4 shrink-0 text-indigo-300" />
+        <CircleCheck className="size-4 shrink-0 text-primary" />
       )}
 
       <Badge
@@ -88,7 +90,7 @@ export function MovementLine({
         <AccountLabel accountId={movement.account} />
       </Badge>
 
-      <div className="text-primary-100 overflow-hidden text-ellipsis whitespace-nowrap">
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap text-foreground">
         {movement.name}
       </div>
 

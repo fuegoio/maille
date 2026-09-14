@@ -1,7 +1,7 @@
 import type { Asset } from "@maille/core/accounts";
 
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { ChevronRight, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import * as React from "react";
 
 import {
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { SidebarInset } from "@/components/ui/sidebar";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
@@ -139,45 +139,37 @@ export function Asset() {
   const currencyFormatter = useCurrencyFormatter();
 
   return (
-    <SidebarInset className="max-w-lg">
+    <SummaryPanel
+      open
+      onClose={onClose}
+      title="Asset"
+      width="lg"
+      actions={
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon-sm" aria-label="Delete asset">
+              <Trash2 />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete asset</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this asset? This action cannot
+                be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteAsset} variant="destructive">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      }
+    >
       <div className="flex h-full flex-col">
-        <div className="flex h-12 w-full shrink-0 items-center border-b px-4 sm:px-6">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="mr-4 ml-8 h-8 w-6 lg:ml-0"
-            onClick={onClose}
-          >
-            <ChevronRight className="h-6 w-6 transition hover:text-white" />
-          </Button>
-          <div className="text-sm font-medium text-white">Asset</div>
-
-          <div className="flex-1" />
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Trash2 />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete asset</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this asset? This action cannot
-                  be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={deleteAsset} variant="destructive">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-
         <div className="mb-4 px-4 pt-6 sm:px-8">
           <div className="mb-6 flex items-center justify-between">
             <div className="text-sm font-medium text-muted-foreground">
@@ -239,9 +231,9 @@ export function Asset() {
             <div className="flex-1" />
           </div>
 
-          <div className="mt-4 mb-2 rounded border bg-muted/50">
+          <div className="mt-4 mb-2 border-y">
             {assetActivities.length === 0 ? (
-              <div className="text-primary-300 flex items-center justify-center py-4 text-xs">
+              <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
                 No activities involve this asset yet.
               </div>
             ) : (
@@ -249,7 +241,7 @@ export function Asset() {
                 <div
                   key={activity.id}
                   className={cn(
-                    "flex h-10 cursor-pointer items-center justify-center px-4 text-sm hover:bg-muted",
+                    "flex h-10 items-center justify-center px-4 text-sm",
                     index !== assetActivities.length - 1 && "border-b",
                   )}
                 >
@@ -276,6 +268,6 @@ export function Asset() {
           </div>
         </div>
       </div>
-    </SidebarInset>
+    </SummaryPanel>
   );
 }
