@@ -117,18 +117,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar variant="inset" {...props}>
-      <SidebarHeader className="gap-1 border-b border-sidebar-border pb-2">
-        <Link
-          to="/"
-          className="flex h-9 items-center gap-2 px-2 text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
-          aria-label="Maille dashboard"
-        >
-          <Logo className="h-4 w-7 shrink-0 text-sidebar-primary" />
-          <span className="font-serif text-lg leading-none tracking-[-0.01em] group-data-[collapsible=icon]:hidden">
-            Maille
-          </span>
-        </Link>
-        <UserNavigation user={user} />
+      <SidebarHeader className="border-b border-sidebar-border pb-2">
+        <div className="flex h-9 items-center gap-1">
+          <Link
+            to="/"
+            className="flex h-9 min-w-0 flex-1 items-center gap-2 px-2 text-sidebar-foreground group-data-[collapsible=icon]:justify-center"
+            aria-label="Maille dashboard"
+          >
+            <Logo className="h-4 w-7 shrink-0 text-sidebar-primary" />
+            <span className="font-serif text-lg leading-none tracking-[-0.01em] group-data-[collapsible=icon]:hidden">
+              Maille
+            </span>
+          </Link>
+          <div className="group-data-[collapsible=icon]:hidden">
+            <UserNavigation user={user} compact />
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMain title="Analysis" items={data.navAnalysis} />

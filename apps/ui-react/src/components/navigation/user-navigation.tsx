@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useIsOnline } from "@/hooks/use-is-online";
 import { authClient } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { useSync } from "@/stores/sync";
 
 import { Contacts } from "../contacts/contacts";
@@ -27,7 +28,13 @@ import { SettingsDialog } from "../settings-dialog";
 import { Badge } from "../ui/badge";
 import { ThemeSwitcher } from "./theme-switcher";
 
-export function UserNavigation({ user }: { user: User }) {
+export function UserNavigation({
+  user,
+  compact = false,
+}: {
+  user: User;
+  compact?: boolean;
+}) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
   const isOnline = useIsOnline();
@@ -45,16 +52,27 @@ export function UserNavigation({ user }: { user: User }) {
   };
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className={cn(compact && "w-auto")}>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <SidebarMenuButton
+              aria-label={compact ? `Open ${user.name} menu` : undefined}
+              className={cn(
+                "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+                compact && "size-9! p-2!",
+              )}
+            >
               <Avatar className="size-5">
                 <AvatarImage src={user.image ?? undefined} alt={user.name} />
                 <AvatarFallback>{user.name[0]}</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div
+                className={cn(
+                  "grid flex-1 text-left text-sm leading-tight",
+                  compact && "hidden",
+                )}
+              >
                 {mutationsQueue.length > 0 || !isOnline ? (
                   <Badge
                     variant="secondary"
@@ -77,7 +95,7 @@ export function UserNavigation({ user }: { user: User }) {
                   <span className="truncate font-medium">{user.name}</span>
                 )}
               </div>
-              <ChevronsUpDown className="ml-auto" />
+              <ChevronsUpDown className={cn("ml-auto", compact && "hidden")} />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
