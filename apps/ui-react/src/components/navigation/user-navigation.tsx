@@ -60,7 +60,7 @@ export function UserNavigation({
               aria-label={compact ? `Open ${user.name} menu` : undefined}
               className={cn(
                 "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
-                compact && "size-9! p-2!",
+                compact && "size-9 p-2",
               )}
             >
               <Avatar className="size-5">

@@ -95,19 +95,19 @@ const ACTIVITY_STATUS_ALERT: Record<
   scheduled: {
     icon: CircleDashed,
     className: "border-border bg-muted/40 text-foreground",
-    iconClassName: "!text-muted-foreground",
+    iconClassName: "text-muted-foreground",
     descriptionClassName: "text-muted-foreground",
   },
   incomplete: {
     icon: CircleDotDashed,
     className: "border-warning/60 bg-warning/15 text-foreground",
-    iconClassName: "!text-warning stroke-[2.25]",
+    iconClassName: "text-warning stroke-[2.25]",
     descriptionClassName: "text-foreground/90",
   },
   completed: {
     icon: CircleCheck,
     className: "border-primary/35 bg-primary/10 text-foreground",
-    iconClassName: "!text-primary",
+    iconClassName: "text-primary",
     descriptionClassName: "text-muted-foreground",
   },
 };
