@@ -214,7 +214,7 @@ function RouteComponent() {
       <section className="border-b" aria-label="Ledger history">
         <div className="flex min-w-0 flex-col border-b sm:flex-row sm:items-stretch">
           <div
-            className="flex min-w-0 flex-1 overflow-x-auto p-2"
+            className="flex min-w-0 flex-1 overflow-x-auto px-2 pt-2"
             role="group"
             aria-label="Chart metric"
           >
