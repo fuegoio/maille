@@ -155,7 +155,7 @@ export function HomeChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="aspect-auto h-[300px] w-full px-2 pt-8 pb-2 sm:px-4"
+      className="aspect-auto h-[300px] w-full px-2 pt-10 pb-2 sm:px-4"
     >
       <ComposedChart
         accessibilityLayer
