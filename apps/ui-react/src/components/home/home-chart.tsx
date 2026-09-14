@@ -155,14 +155,14 @@ export function HomeChart({
   return (
     <ChartContainer
       config={chartConfig}
-      className="aspect-auto h-[300px] w-full px-2 pt-10 pb-2 sm:px-4"
+      className="aspect-auto h-[300px] w-full px-2 py-4 sm:px-4"
     >
       <ComposedChart
         accessibilityLayer
         data={chartData}
         margin={{ top: 4, right: 8, bottom: 0, left: 8 }}
       >
-        <CartesianGrid vertical={false} strokeDasharray="2 3" />
+        <CartesianGrid strokeDasharray="2 3" />
         <XAxis
           dataKey="date"
           tickLine={false}
