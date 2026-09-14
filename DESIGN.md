@@ -47,6 +47,11 @@ typography:
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1
+  section:
+    fontFamily: "Source Serif 4 Variable, Georgia, serif"
+    fontSize: "1.125rem"
+    fontWeight: 400
+    lineHeight: 1
   body:
     fontFamily: "Geist Variable, sans-serif"
     fontSize: "0.9375rem"
@@ -159,7 +164,7 @@ The palette is a near-monochrome, green-tinted neutral ramp with one saturated v
 
 - **Destructive** (light `oklch(0.577 0.245 27.3)`; dark `oklch(0.704 0.191 22.2)`): delete, over-drawn funds, negative remaining balances. Negative amounts also use it in tables.
 - **Chart ramp** (chart-1 through chart-5): green monochrome ramp from `oklch(0.78 0.08 150)` to `oklch(0.3 0.065 150)`, for data visualization only.
-- **Activity type colors** (used sparingly in charts and marks): revenue `bg-green-400`, expense `bg-red-400`, investment `bg-orange-400`, neutral `bg-slate-400`.
+- **Activity type colors** (used sparingly in charts and marks): semantic `activity-revenue`, `activity-expense`, `activity-investment`, and `activity-neutral` tokens adapt to both themes. Reconciliation warnings use the separate `warning` token.
 
 ### Named Rules
 
@@ -171,15 +176,17 @@ The palette is a near-monochrome, green-tinted neutral ramp with one saturated v
 
 **Brand Display Font:** Source Serif 4 Variable (fallback: Georgia, serif)
 **Body / Product Font:** Geist Variable (fallback: sans-serif)
+
+Source Serif 4 is the editorial voice inside the product: use it for static headings that orient the user, never for editable names, buttons, labels, table rows, or numeric data.
 **Numeric Font:** system monospace (`ui-monospace, SFMono-Regular, Menlo, monospace`) — via Tailwind `font-mono`
 
-**Character:** Source Serif 4 is competent, archival, and restrained; it appears only in brand moments, authentication headings, and the wordmark. Geist remains geometric, technical, and slightly engineered across product UI. The monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
+**Character:** Source Serif 4 is competent, archival, and restrained; it appears in brand moments, authentication headings, the wordmark, and selected static section or analytical titles. Geist remains geometric, technical, and slightly engineered across product UI. The monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
 
 ### Hierarchy
 
 - **Brand Display** (400, 2.25rem–4.5rem, lh 0.95–1, Source Serif 4): authentication and brand statements only.
-- **Headline** (400, 1.5rem, lh 1, Source Serif 4): authentication and rare page-level brand titles. Dialog headers remain Geist.
-- **Title** (600, 1.25rem, lh 1): card and section headers, page subtitles (e.g. "New fund").
+- **Headline** (400, 1.5rem, lh 1, Source Serif 4): authentication, summary-panel titles, static detail-section titles, and major analytical headings. Dialog headers and editable entity names remain Geist.
+- **Title** (600, 1.25rem, lh 1): task-oriented section headers and page subtitles (e.g. "New fund").
 - **Body** (400, 0.9375rem, lh 1.5): primary reading size. Longest prose stays within 65–75ch.
 - **Label / table text** (400–500, 0.8125rem–0.875rem, lh 1): table rows, form labels, metadata — the workhorse register of the app. Table headers use `text-xs font-medium text-muted-foreground`.
 - **Amount** (500, 0.875rem, lh 1, monospace): every money figure, right-aligned, `whitespace-nowrap`.

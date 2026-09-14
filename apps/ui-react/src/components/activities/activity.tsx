@@ -73,7 +73,7 @@ import { SplitActivityModal } from "./split-activity-modal";
 
 const ACTIVITY_STATUS_NAME: Record<ActivityStatus, string> = {
   scheduled: "Scheduled",
-  incomplete: "To reconciliate",
+  incomplete: "Needs reconciliation",
   completed: "Reconciled",
 };
 
@@ -85,22 +85,30 @@ const ACTIVITY_STATUS_DESCRIPTION: Record<ActivityStatus, string> = {
 
 const ACTIVITY_STATUS_ALERT: Record<
   ActivityStatus,
-  { icon: LucideIcon; className: string; descriptionClassName: string }
+  {
+    icon: LucideIcon;
+    className: string;
+    iconClassName: string;
+    descriptionClassName: string;
+  }
 > = {
   scheduled: {
     icon: CircleDashed,
-    className: "border-border/50 bg-muted/40 text-muted-foreground",
-    descriptionClassName: "text-muted-foreground/70",
+    className: "border-border bg-muted/40 text-foreground",
+    iconClassName: "!text-muted-foreground",
+    descriptionClassName: "text-muted-foreground",
   },
   incomplete: {
     icon: CircleDotDashed,
-    className: "border-orange-400/25 bg-orange-400/10 text-orange-300",
-    descriptionClassName: "text-orange-300/70",
+    className: "border-warning/40 bg-warning/10 text-foreground",
+    iconClassName: "!text-warning",
+    descriptionClassName: "text-foreground/85",
   },
   completed: {
     icon: CircleCheck,
-    className: "border-indigo-400/25 bg-indigo-400/10 text-indigo-300",
-    descriptionClassName: "text-indigo-300/70",
+    className: "border-primary/35 bg-primary/10 text-foreground",
+    iconClassName: "!text-primary",
+    descriptionClassName: "text-muted-foreground",
   },
 };
 
@@ -108,12 +116,13 @@ function ActivityStatusAlert({ status }: { status: ActivityStatus }) {
   const {
     icon: Icon,
     className,
+    iconClassName,
     descriptionClassName,
   } = ACTIVITY_STATUS_ALERT[status];
 
   return (
-    <Alert className={cn("mt-6", className)}>
-      <Icon />
+    <Alert role="status" aria-live="polite" className={cn("mt-6", className)}>
+      <Icon className={iconClassName} />
       <AlertTitle>{ACTIVITY_STATUS_NAME[status]}</AlertTitle>
       <AlertDescription className={descriptionClassName}>
         {ACTIVITY_STATUS_DESCRIPTION[status]}

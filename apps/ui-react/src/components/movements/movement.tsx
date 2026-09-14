@@ -68,7 +68,7 @@ import { SidebarInset, SidebarTrigger } from "../ui/sidebar";
 import { LinkActivityButton } from "./link-activity-button";
 
 const MOVEMENT_STATUS_NAME: Record<MovementStatus, string> = {
-  incomplete: "To reconciliate",
+  incomplete: "Needs reconciliation",
   completed: "Reconciled",
 };
 
@@ -80,17 +80,24 @@ const MOVEMENT_STATUS_DESCRIPTION: Record<MovementStatus, string> = {
 
 const MOVEMENT_STATUS_ALERT: Record<
   MovementStatus,
-  { icon: LucideIcon; className: string; descriptionClassName: string }
+  {
+    icon: LucideIcon;
+    className: string;
+    iconClassName: string;
+    descriptionClassName: string;
+  }
 > = {
   incomplete: {
     icon: CircleDotDashed,
-    className: "border-orange-400/25 bg-orange-400/10 text-orange-300",
-    descriptionClassName: "text-orange-300/70",
+    className: "border-warning/40 bg-warning/10 text-foreground",
+    iconClassName: "!text-warning",
+    descriptionClassName: "text-foreground/85",
   },
   completed: {
     icon: CircleCheck,
-    className: "border-indigo-400/25 bg-indigo-400/10 text-indigo-300",
-    descriptionClassName: "text-indigo-300/70",
+    className: "border-primary/35 bg-primary/10 text-foreground",
+    iconClassName: "!text-primary",
+    descriptionClassName: "text-muted-foreground",
   },
 };
 
@@ -98,12 +105,13 @@ function MovementStatusAlert({ status }: { status: MovementStatus }) {
   const {
     icon: Icon,
     className,
+    iconClassName,
     descriptionClassName,
   } = MOVEMENT_STATUS_ALERT[status];
 
   return (
-    <Alert className={cn("mt-6", className)}>
-      <Icon />
+    <Alert role="status" aria-live="polite" className={cn("mt-6", className)}>
+      <Icon className={iconClassName} />
       <AlertTitle>{MOVEMENT_STATUS_NAME[status]}</AlertTitle>
       <AlertDescription className={descriptionClassName}>
         {MOVEMENT_STATUS_DESCRIPTION[status]}
@@ -411,7 +419,9 @@ export function MovementPage({ movementId }: MovementPageProps) {
             <div className="px-4 py-6 sm:px-8">
               <div className="flex items-center gap-1.5">
                 <BookMarked className="size-3.5 text-muted-foreground" />
-                <div className="text-sm font-medium">Activities</div>
+                <div className="font-serif text-xl leading-none font-normal">
+                  Activities
+                </div>
                 <div className="flex-1" />
 
                 <div className="flex items-center gap-2">
@@ -458,9 +468,9 @@ export function MovementPage({ movementId }: MovementPageProps) {
                         {activity.status === "scheduled" ? (
                           <CircleDashed className="size-4 shrink-0 text-muted-foreground" />
                         ) : activity.status === "incomplete" ? (
-                          <CircleDotDashed className="size-4 shrink-0 text-orange-300" />
+                          <CircleDotDashed className="size-4 shrink-0 text-warning" />
                         ) : (
-                          <CircleCheck className="size-4 shrink-0 text-indigo-300" />
+                          <CircleCheck className="size-4 shrink-0 text-primary" />
                         )}
 
                         <div className="mr-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">

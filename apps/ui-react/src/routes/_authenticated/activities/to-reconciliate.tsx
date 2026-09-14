@@ -43,7 +43,7 @@ function ToReconciliatePage() {
       { key: "activities", label: "Activities", target: { to: "/activities" } },
       {
         key: "to-reconciliate",
-        label: "To reconciliate",
+        label: "Needs reconciliation",
         target: { to: "/activities/to-reconciliate" },
       },
     ],

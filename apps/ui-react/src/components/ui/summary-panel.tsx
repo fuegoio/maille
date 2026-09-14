@@ -40,7 +40,9 @@ export function SummaryPanel({
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <div className="text-sm font-semibold">{title}</div>
+        <div className="font-serif text-xl leading-none font-normal tracking-[-0.01em]">
+          {title}
+        </div>
         {actions && <div className="ml-auto flex items-center">{actions}</div>}
       </div>
 

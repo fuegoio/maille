@@ -197,7 +197,9 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         <div>
           <div className="flex items-center gap-1.5">
             <Landmark className="size-3.5 text-muted-foreground" />
-            <div className="text-base font-medium">Movements</div>
+            <div className="font-serif text-xl leading-none font-normal">
+              Movements
+            </div>
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             Bank records reconciled with this activity's transactions.
@@ -205,9 +207,9 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
         </div>
         <div className="flex-1" />
         {!isReconciled ? (
-          <TriangleAlert className="size-5 text-orange-300" />
+          <TriangleAlert className="size-5 text-warning" />
         ) : (
-          <CircleCheck className="size-5 text-indigo-400" />
+          <CircleCheck className="size-5 text-primary" />
         )}
       </div>
 
@@ -232,8 +234,8 @@ export function ActivityMovements({ activity }: ActivityMovementsProps) {
                     className={cn(
                       "mr-4 ml-3 font-mono text-xs font-medium whitespace-nowrap",
                       !movementsReconciliatedOfAccount.reconcilied
-                        ? "text-orange-300"
-                        : "text-indigo-400",
+                        ? "text-warning"
+                        : "text-primary",
                     )}
                   >
                     {currencyFormatter.format(

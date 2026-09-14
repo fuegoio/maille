@@ -261,7 +261,7 @@ function TransactionLine({
     if (transaction.activity.status === "scheduled") {
       return <CircleDashed className="size-4 shrink-0 text-muted-foreground" />;
     } else if (transaction.activity.status === "incomplete") {
-      return <CircleDotDashed className="size-4 shrink-0 text-orange-300" />;
+      return <CircleDotDashed className="size-4 shrink-0 text-warning" />;
     } else {
       return <CircleCheck className="size-4 shrink-0 text-primary" />;
     }

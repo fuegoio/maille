@@ -1,6 +1,6 @@
 import { AccountType } from "@maille/core/accounts";
 import { createFileRoute } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay } from "date-fns";
+import { eachDayOfInterval, startOfDay, startOfMonth } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -124,6 +124,25 @@ function RouteComponent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days, activities, accounts]);
 
+  const flowGranularity = days.length <= 120 ? "day" : "month";
+  const flowChartData = useMemo(() => {
+    if (flowGranularity === "day") return chartData;
+
+    const months = new Map<
+      string,
+      { date: string; revenue: number; expense: number }
+    >();
+    for (const point of chartData) {
+      const date = startOfMonth(new Date(point.date)).toISOString();
+      const month = months.get(date) ?? { date, revenue: 0, expense: 0 };
+      month.revenue += point.revenue;
+      month.expense += point.expense;
+      months.set(date, month);
+    }
+
+    return [...months.values()];
+  }, [chartData, flowGranularity]);
+
   const chartConfig = {
     views: { label: activeChart },
     value: {
@@ -143,25 +162,34 @@ function RouteComponent() {
   const kpis = [
     {
       id: "balance" as Kpi,
-      name: "Balance",
+      name: "Current balance",
       icon: ArrowRight,
       value: currentBalance,
+      color: "var(--color-primary)",
     },
     {
       id: "revenue" as Kpi,
-      name: "Revenue",
+      name: "Total revenue",
       icon: TrendingUp,
       value: totalRevenue,
+      color: "var(--color-activity-revenue)",
     },
     {
       id: "expense" as Kpi,
-      name: "Expense",
+      name: "Total expense",
       icon: TrendingDown,
       value: totalExpense,
+      color: "var(--color-activity-expense)",
     },
   ];
 
-  const activeKpi = kpis.find((kpi) => kpi.id === activeChart)!;
+  const activeChartData = activeChart === "balance" ? chartData : flowChartData;
+  const flowBarSize =
+    activeChartData.length <= 31 ? 28 : activeChartData.length <= 120 ? 18 : 10;
+  const chartTitle =
+    activeChart === "balance"
+      ? "Balance history"
+      : `${flowGranularity === "day" ? "Daily" : "Monthly"} ${activeChart}`;
   const chartRange = `${user.startingDate.toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
@@ -199,12 +227,20 @@ function RouteComponent() {
                   type="button"
                   aria-pressed={active}
                   data-active={active}
-                  className="flex min-w-36 cursor-pointer items-center gap-2 rounded-sm px-3 py-2 text-left
-                    transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none
-                    data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                  className="flex min-w-36 cursor-pointer items-center gap-2 border-r px-4 py-3 text-left transition-colors
+                    duration-100 last:border-r-0 hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none focus-visible:ring-inset
+                    data-[active=true]:bg-muted/35 motion-reduce:transition-none"
+                  style={
+                    active
+                      ? { boxShadow: `inset 0 -2px 0 ${kpi.color}` }
+                      : undefined
+                  }
                   onClick={() => setActiveChart(kpi.id)}
                 >
-                  <kpi.icon className="size-3.5 shrink-0" />
+                  <kpi.icon
+                    className="size-3.5 shrink-0"
+                    style={{ color: kpi.color }}
+                  />
                   <span className="min-w-0">
                     <span className="block font-mono text-xs leading-none tracking-[0.04em] uppercase opacity-70">
                       {kpi.name}
@@ -218,15 +254,13 @@ function RouteComponent() {
             })}
           </div>
 
-          <div className="flex shrink-0 items-center justify-between gap-4 border-t px-4 py-3 font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase sm:border-t-0 sm:border-l">
-            <span className="flex items-center gap-2">
-              <span
-                className="size-1.5 rounded-[1px]"
-                style={{ backgroundColor: chartConfig.value.color }}
-              />
-              {activeKpi.name} history
+          <div className="flex shrink-0 items-center justify-between gap-4 border-t px-4 py-3 sm:border-t-0 sm:border-l">
+            <span className="font-serif text-xl leading-none tracking-[-0.01em]">
+              {chartTitle}
             </span>
-            <span>{chartRange}</span>
+            <span className="font-mono text-xs tracking-[0.04em] text-muted-foreground uppercase">
+              {chartRange}
+            </span>
           </div>
         </div>
 
@@ -236,10 +270,10 @@ function RouteComponent() {
         >
           <ComposedChart
             accessibilityLayer
-            data={chartData}
+            data={activeChartData}
             margin={{ top: 4, right: 8, bottom: 0, left: 8 }}
           >
-            <CartesianGrid vertical strokeDasharray="2 3" />
+            <CartesianGrid vertical={false} strokeDasharray="2 3" />
             <XAxis
               dataKey="date"
               tickLine={false}
@@ -257,7 +291,14 @@ function RouteComponent() {
               }}
             />
             <YAxis
-              domain={["auto", "auto"]}
+              domain={
+                activeChart === "balance"
+                  ? ["auto", "auto"]
+                  : [
+                      (dataMin: number) => Math.min(0, dataMin),
+                      (dataMax: number) => Math.max(0, dataMax),
+                    ]
+              }
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -266,7 +307,11 @@ function RouteComponent() {
             />
             <ReferenceLine y={0} stroke="var(--color-border)" />
             <ChartTooltip
-              cursor={{ stroke: "var(--color-border)" }}
+              cursor={
+                activeChart === "balance"
+                  ? { stroke: "var(--color-border)" }
+                  : { fill: "var(--color-muted)", fillOpacity: 0.45 }
+              }
               content={
                 <ChartTooltipContent
                   className="w-[176px]"
@@ -299,8 +344,10 @@ function RouteComponent() {
               <Bar
                 dataKey={activeChart}
                 fill="var(--color-value)"
-                maxBarSize={18}
-                radius={[2, 2, 0, 0]}
+                fillOpacity={0.86}
+                barSize={flowBarSize}
+                radius={[1, 1, 0, 0]}
+                activeBar={{ fill: "var(--color-value)", fillOpacity: 1 }}
                 isAnimationActive={false}
               />
             )}

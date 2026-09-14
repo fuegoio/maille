@@ -71,7 +71,7 @@ export function MovementLine({
       </div>
 
       {movement.status === "incomplete" ? (
-        <CircleDotDashed className=" size-4 shrink-0 text-orange-300" />
+        <CircleDotDashed className="size-4 shrink-0 text-warning" />
       ) : (
         <CircleCheck className="size-4 shrink-0 text-primary" />
       )}
