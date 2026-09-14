@@ -102,19 +102,19 @@ export function AccountsOverview() {
         <div>
           {groups.map((group) => (
             <div key={group.type} className="min-w-0">
-              <div className="flex h-8 items-center gap-2 px-4 text-xs font-medium text-muted-foreground lg:px-6">
+              <div className="flex h-9 items-center gap-2 px-4 lg:px-6">
                 <span
                   className={cn(
-                    "h-3 w-3 shrink-0 rounded-xl",
+                    "size-3 shrink-0 rounded-full",
                     ACCOUNT_TYPES_COLOR[group.type],
                   )}
                   aria-hidden
                 />
-                <span className="truncate">
+                <span className="min-w-0 truncate text-sm font-medium">
                   {ACCOUNT_TYPES_NAME[group.type]}
                 </span>
                 <span className="flex-1" />
-                <span className="font-mono tabular-nums">
+                <span className="font-mono text-sm tabular-nums">
                   {currencyFormatter.format(group.total)}
                 </span>
               </div>
