@@ -1,0 +1,124 @@
+/* Maille docs theme — derived from DESIGN.md ("precise instrument").
+   Light: background #f8fbf8, Ledger Green #226837.
+   Dark: background #0e130e, Ledger Green #63b376. */
+
+@import "@fontsource-variable/geist/index.css";
+@import "@fontsource-variable/source-serif-4/index.css";
+
+/* ---------- Light theme ---------- */
+:root,
+:root[data-theme="light"],
+[data-theme="light"] ::backdrop {
+  --sl-font:
+    "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    sans-serif;
+  --sl-font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  --sl-color-white: #0e130e;
+  --sl-color-gray-1: #f1f5f1;
+  --sl-color-gray-2: #0e130e;
+  --sl-color-gray-3: #404a40;
+  --sl-color-gray-4: #535e53;
+  --sl-color-gray-5: #ccd3cc;
+  --sl-color-gray-6: #ebf0eb;
+  --sl-color-gray-7: #f1f5f1;
+  --sl-color-black: #f8fbf8;
+
+  --sl-color-accent-low: #e1ebe1;
+  --sl-color-accent: #226837;
+  --sl-color-accent-high: #154f27;
+
+  --sl-color-text: #0e130e;
+  --sl-color-text-accent: #226837;
+  --sl-color-text-invert: #f8fbf8;
+
+  --sl-color-bg: #f8fbf8;
+  --sl-color-bg-nav: #f1f5f1;
+  --sl-color-bg-sidebar: #f1f5f1;
+  --sl-color-bg-inline-code: #ebf0eb;
+  --sl-color-bg-accent: #226837;
+
+  --sl-color-hairline-light: #ccd3cc;
+  --sl-color-hairline: #ebf0eb;
+  --sl-color-hairline-shade: #f8fbf8;
+
+  --sl-color-border: #ccd3cc;
+  --sl-color-border-accent: #226837;
+}
+
+/* ---------- Dark theme ---------- */
+:root[data-theme="dark"],
+[data-theme="dark"] ::backdrop {
+  --sl-color-white: #eff3ef;
+  --sl-color-gray-1: #202620;
+  --sl-color-gray-2: #eff3ef;
+  --sl-color-gray-3: #c5cec5;
+  --sl-color-gray-4: #9ea89e;
+  --sl-color-gray-5: #5a655a;
+  --sl-color-gray-6: #202620;
+  --sl-color-gray-7: #090e09;
+  --sl-color-black: #0e130e;
+
+  --sl-color-accent-low: #0e130e;
+  --sl-color-accent: #63b376;
+  --sl-color-accent-high: #93c69d;
+
+  --sl-color-text: #eff3ef;
+  --sl-color-text-accent: #63b376;
+  --sl-color-text-invert: #0e130e;
+
+  --sl-color-bg: #0e130e;
+  --sl-color-bg-nav: #090e09;
+  --sl-color-bg-sidebar: #090e09;
+  --sl-color-bg-inline-code: #202620;
+  --sl-color-bg-accent: #63b376;
+
+  --sl-color-hairline-light: #202620;
+  --sl-color-hairline: #131813;
+  --sl-color-hairline-shade: #202620;
+
+  --sl-color-border: #eff3ef24;
+  --sl-color-border-accent: #63b376;
+}
+
+/* ---------- Typography ---------- */
+/* Source Serif 4 for display/headings; Geist for body and UI. */
+.site-title,
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  font-family: "Source Serif 4 Variable", Georgia, serif;
+  font-weight: 500;
+}
+
+/* Monospaced tabular figures wherever numerals matter. */
+code,
+pre,
+kbd,
+.sl-markdown-content table,
+.sl-markdown-content input,
+.sl-content-excerpt {
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-markdown-content pre,
+.sl-markdown-content code {
+  font-family: var(--sl-font-mono);
+}
+
+/* Amounts and IDs inside tables: monospace, no wrapping mid-figure. */
+.sl-markdown-content td code {
+  white-space: nowrap;
+}
+
+/* Reduced motion: Starlight's transitions are small, but respect the
+   preference fully. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
