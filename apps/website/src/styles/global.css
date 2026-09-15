@@ -1,0 +1,638 @@
+/*
+ * Maille website styles. Tokens come from DESIGN.md: a near-monochrome,
+ * green-tinted neutral ramp with one saturated voice (Ledger Green),
+ * hairline borders, tabular monospaced figures, no decoration that carries
+ * no information. Light theme is the default; dark theme follows
+ * prefers-color-scheme.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --background: #f8fbf8;
+  --foreground: #0e130e;
+  --card: #fdfefd;
+  --primary: #226837;
+  --primary-foreground: #f8fbf8;
+  --secondary: #ebf0eb;
+  --muted: #ebf0eb;
+  --muted-foreground: #535e53;
+  --accent: #e1ebe1;
+  --destructive: #c92324;
+  --border: #ccd3cc;
+  --sidebar: #f1f5f1;
+
+  --font-display: "Source Serif 4 Variable", Georgia, serif;
+  --font-body: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0e130e;
+    --foreground: #eff3ef;
+    --card: #131813;
+    --primary: #63b376;
+    --primary-foreground: #0e130e;
+    --secondary: #202620;
+    --muted: #202620;
+    --muted-foreground: #9ea89e;
+    --destructive: #f3625d;
+    --border: #eff3ef24;
+    --sidebar: #090e09;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* --- Accessibility ------------------------------------------------- */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  z-index: 10;
+}
+
+.skip-link:focus {
+  left: 8px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* --- Header -------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 56px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.site-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav a {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+.site-nav a:hover {
+  color: var(--foreground);
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--primary);
+}
+
+/* --- Hero ----------------------------------------------------------- */
+
+.hero {
+  border-bottom: 1px solid var(--border);
+  padding: 96px 0 64px;
+}
+
+.eyebrow {
+  margin: 0 0 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+h1.display {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  max-width: 24ch;
+}
+
+.lede {
+  margin: 0 0 20px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.35;
+  color: var(--muted-foreground);
+}
+
+.hero-intro {
+  margin: 0 0 32px;
+  max-width: 62ch;
+  font-size: 1rem;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* --- Buttons -------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 100ms ease-out,
+    border-color 100ms ease-out,
+    color 100ms ease-out,
+    opacity 100ms ease-out;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+/* --- Sections ------------------------------------------------------- */
+
+.section {
+  border-bottom: 1px solid var(--border);
+  padding: 64px 0;
+}
+
+.section-label {
+  margin: 0 0 8px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+h2.section-title {
+  margin: 0 0 20px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+.prose p {
+  margin: 0 0 14px;
+  max-width: 70ch;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.prose a,
+.footer-links a {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+
+.prose a:hover,
+.footer-links a:hover {
+  color: var(--primary);
+  text-decoration-color: var(--primary);
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+/* --- Model definition list ------------------------------------------ */
+
+dl.model {
+  margin: 32px 0 0;
+}
+
+dl.model > div {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+dl.model dt {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding-top: 2px;
+}
+
+dl.model dd {
+  margin: 0;
+  max-width: 65ch;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 40rem) {
+  dl.model > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* --- Panels and ledger tables ---------------------------------------- */
+
+.panel {
+  margin: 32px 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.panel-caption {
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+table.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+table.ledger th {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+table.ledger td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+table.ledger tr:last-child td {
+  border-bottom: 0;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+th.num {
+  font-family: var(--font-body);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+}
+
+td.mono-cell {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.negative {
+  color: var(--destructive);
+}
+
+/* --- Status marks ---------------------------------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.status::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  background: currentColor;
+  flex: none;
+}
+
+.status-primary {
+  color: var(--primary);
+}
+
+.status-muted {
+  color: var(--muted-foreground);
+}
+
+.status-destructive {
+  color: var(--destructive);
+}
+
+/* --- Code blocks ----------------------------------------------------- */
+
+figure.code {
+  margin: 24px 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  overflow: hidden;
+}
+
+figure.code figcaption {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+figure.code pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+figure.code pre code {
+  font-family: inherit;
+}
+
+.prompt {
+  color: var(--primary);
+  user-select: none;
+}
+
+/* --- Steps (quickstart) ---------------------------------------------- */
+
+ol.steps {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+}
+
+ol.steps > li {
+  padding: 28px 0;
+  border-top: 1px solid var(--border);
+}
+
+.step-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--primary);
+}
+
+/* --- Loop strip ------------------------------------------------------- */
+
+.loop {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.loop > div {
+  padding: 16px;
+  border-left: 1px solid var(--border);
+}
+
+.loop > div:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.loop-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--primary);
+}
+
+.loop-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 4px 0 2px;
+}
+
+.loop-desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 48rem) {
+  .loop {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .loop > div:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* --- Facts strip ------------------------------------------------------ */
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.facts li {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* --- Page hero (inner pages) ------------------------------------------ */
+
+.page-hero {
+  border-bottom: 1px solid var(--border);
+  padding: 56px 0 40px;
+}
+
+.page-hero h1 {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.875rem, 4vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.page-hero .lede {
+  font-size: 1.0625rem;
+  max-width: 62ch;
+}
+
+/* --- Footer ----------------------------------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 0 56px;
+}
+
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px 32px;
+}
+
+.footer-wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.footer-tagline {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  max-width: 48ch;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.footer-links a {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* --- Motion ----------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

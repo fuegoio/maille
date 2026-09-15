@@ -1,0 +1,232 @@
+---
+import Base from "../layouts/Base.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const title = "Quickstart — self-hosting Maille";
+const description =
+  "Self-host Maille in a few commands: clone the repository, start Postgres from apps/api/docker-compose.yaml, configure the API environment, and run the Bun API with the web UI and CLI.";
+---
+
+<Base title={title} description={description}>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Quickstart</p>
+      <h1>Self-host Maille</h1>
+      <p class="lede">
+        Maille is three pieces against your own Postgres: a Bun API with a GraphQL schema, a web UI,
+        and a CLI. This page mirrors the repository exactly — the Compose file, the Dockerfile, and
+        the environment variables the API validates at startup.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Requirements</p>
+      <div class="prose">
+        <p>
+          <strong>Bun</strong> (the API and CLI run on it), <strong>Docker</strong> or an existing
+          PostgreSQL 17 instance, and <strong>Git</strong>. Everything below is run from the
+          repository root unless stated.
+        </p>
+      </div>
+      <ol class="steps">
+        <li>
+          <h2 class="step-title"><span class="step-num">01</span>Clone and install</h2>
+          <div class="prose">
+            <p>A bun + turbo monorepo; one install covers all apps and packages.</p>
+          </div>
+          <CodeBlock
+            title="Shell"
+            code={`git clone https://github.com/fuegoio/maille.git
+cd maille
+bun install`}
+          />
+        </li>
+        <li>
+          <h2 class="step-title"><span class="step-num">02</span>Start Postgres</h2>
+          <div class="prose">
+            <p>
+              <code class="mono">apps/api/docker-compose.yaml</code> starts
+              <code class="mono">postgres:17-alpine</code>: database <code class="mono">maille</code>,
+              user <code class="mono">postgres</code>, exposed on <code class="mono">localhost:5432</code>,
+              data persisted in the <code class="mono">postgres_data</code> volume. If you run your
+              own Postgres instead, create a <code class="mono">maille</code> database and set
+              <code class="mono">DATABASE_URL</code> in the next step.
+            </p>
+          </div>
+          <CodeBlock
+            title="Shell"
+            code={`cd apps/api
+docker compose up -d`}
+          />
+        </li>
+        <li>
+          <h2 class="step-title"><span class="step-num">03</span>Configure the API environment</h2>
+          <div class="prose">
+            <p>
+              The API validates its environment at startup (Bun loads
+              <code class="mono">apps/api/.env</code> automatically). Two variables are required —
+              the Google OAuth client the web UI signs in with — and one optional key enables the
+              movement reconciliation workflow.
+            </p>
+          </div>
+          <figure class="panel">
+            <figcaption class="panel-caption">apps/api/.env</figcaption>
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th scope="col">Variable</th>
+                  <th scope="col">Purpose</th>
+                  <th scope="col">Default</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mono-cell">DATABASE_URL</td>
+                  <td>Postgres connection string</td>
+                  <td class="mono-cell">postgres://postgres:postgres@localhost:5432/maille</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">GOOGLE_CLIENT_ID</td>
+                  <td>OAuth client ID for sign-in</td>
+                  <td class="mono-cell">required</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">GOOGLE_CLIENT_SECRET</td>
+                  <td>OAuth client secret for sign-in</td>
+                  <td class="mono-cell">required</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">LOG_LEVEL</td>
+                  <td>Log verbosity</td>
+                  <td class="mono-cell">info</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">MISTRAL_API_KEY</td>
+                  <td>Enables the movement reconciliation workflow; absent means workflows disabled</td>
+                  <td class="mono-cell">optional</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">WORKFLOWS_LLM_BASE_URL</td>
+                  <td>LLM endpoint used by the workflow</td>
+                  <td class="mono-cell">https://api.mistral.ai/v1</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">WORKFLOWS_LLM_MODEL</td>
+                  <td>Model name used by the workflow</td>
+                  <td class="mono-cell">glm-5-2</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">WORKFLOWS_MAX_ATTEMPTS</td>
+                  <td>Workflow retry budget</td>
+                  <td class="mono-cell">2</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">WORKFLOWS_TIMEOUT_MS</td>
+                  <td>Workflow timeout</td>
+                  <td class="mono-cell">120000</td>
+                </tr>
+                <tr>
+                  <td class="mono-cell">WORKFLOWS_RETRY_DELAY_MS</td>
+                  <td>Delay between workflow attempts</td>
+                  <td class="mono-cell">5000</td>
+                </tr>
+              </tbody>
+            </table>
+          </figure>
+          <div class="prose" style="margin-top: 16px">
+            <p>
+              <code class="mono">SKIP_ENV_VALIDATION=1</code> skips validation — it is what the
+              Docker build uses, and you should not need it locally.
+            </p>
+          </div>
+        </li>
+        <li>
+          <h2 class="step-title"><span class="step-num">04</span>Run the API</h2>
+          <div class="prose">
+            <p>
+              On start the API runs the Drizzle migrations from <code class="mono">./drizzle</code>
+              against your database, then serves auth at <code class="mono">/api/auth</code> and
+              GraphQL at <code class="mono">/api/graphql</code> on port 3000.
+            </p>
+          </div>
+          <CodeBlock
+            title="Shell"
+            code={`cd apps/api
+bun run dev`}
+          />
+        </li>
+        <li>
+          <h2 class="step-title"><span class="step-num">05</span>Run the web UI</h2>
+          <div class="prose">
+            <p>
+              The Vite dev server starts on <code class="mono">localhost:5173</code>. Sign in with
+              Google using the client you configured, create your accounts with their starting
+              balances, and set your starting date.
+            </p>
+          </div>
+          <CodeBlock
+            title="Shell"
+            code={`cd ../ui-react
+bun run dev`}
+          />
+        </li>
+        <li>
+          <h2 class="step-title"><span class="step-num">06</span>Connect the CLI</h2>
+          <div class="prose">
+            <p>
+              The CLI authenticates with a device-code flow: it prints a URL and a code, opens your
+              browser, and stores the session in <code class="mono">~/.maille/config.json</code>
+              (mode 0600). Point it at your local API and UI.
+            </p>
+          </div>
+          <CodeBlock
+            title="Shell"
+            code={`cd ../cli
+bun run dev -- login --url http://localhost:3000/api --ui-url http://localhost:5173`}
+          />
+          <div class="prose" style="margin-top: 16px">
+            <p>
+              From there the daily loop is CLI work: record movements, reconcile them against
+              activities. See the <a href="/cli/">CLI &amp; sync</a> page for the full command
+              reference.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Docker</p>
+      <h2 class="section-title">Run the API as a container</h2>
+      <div class="prose">
+        <p>
+          <code class="mono">apps/api/Dockerfile</code> builds from the repository root in two
+          stages: a Bun stage installs from the lockfile and compiles the API into a standalone
+          <code class="mono">server</code> binary; a Debian slim stage ships the binary with the
+          <code class="mono">drizzle</code> migrations and exposes port 3000. The same environment
+          variables apply at runtime.
+        </p>
+      </div>
+      <CodeBlock
+        title="Shell — build context is the repository root"
+        code={`docker build -f apps/api/Dockerfile -t maille-api .
+
+docker run -d --name maille-api -p 3000:3000 \\
+  -e DATABASE_URL=postgres://postgres:postgres@host.docker.internal:5432/maille \\
+  -e GOOGLE_CLIENT_ID=... \\
+  -e GOOGLE_CLIENT_SECRET=... \\
+  maille-api`}
+      />
+      <div class="prose" style="margin-top: 16px">
+        <p>
+          The container runs migrations from its bundled <code class="mono">drizzle</code> folder on
+          startup, the same way the development server does.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>

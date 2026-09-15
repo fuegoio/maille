@@ -1,0 +1,145 @@
+---
+import Base from "../layouts/Base.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const title = "CLI & sync — Maille";
+const description =
+  "The maille CLI talks to the same GraphQL API as the web UI: device-code login, full command reference, and the sync loop for recording and reconciling bank movements from your own machine.";
+
+const commands = [
+  { name: "auth login | logout | whoami", description: "Manage the session. login, logout, and whoami are also available as top-level shortcuts." },
+  { name: "activities list | get | create | update | delete", description: "Activities, by ID or by list number." },
+  { name: "categories list | create | update | delete", description: "Activity categories and subcategories." },
+  { name: "transactions list <activity> | add <activity> | update | delete", description: "Double-entry transactions of an activity." },
+  { name: "movements list | create | update | delete | link", description: "Bank movements. list takes --unreconciled and --json; link reconciles a movement against an activity." },
+  { name: "accounts list | create | update | delete", description: "Typed accounts with starting balances." },
+  { name: "assets list | create | update | delete", description: "Assets held in an account." },
+  { name: "counterparties list | create | update | delete", description: "Who money goes to and comes from." },
+  { name: "projects list | create | update | delete", description: "Time-bounded project groupings." },
+  { name: "funds list | create | update | delete | allocate", description: "Funds — what the money is for. allocate moves money between funds; no money changes accounts." },
+  { name: "contacts list | add | delete", description: "Other Maille users you share with. add takes a user ID." },
+];
+---
+
+<Base title={title} description={description}>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">CLI &amp; sync</p>
+      <h1>Bank movements come from your machine</h1>
+      <p class="lede">
+        Maille does not hold a connection to your bank. Movements are recorded as they appear — from
+        the CLI on your machine, against the same GraphQL API the web UI uses. Reconciliation stays
+        explicit, in whatever interface you have open.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Authentication</p>
+      <h2 class="section-title">Device-code login</h2>
+      <div class="prose">
+        <p>
+          <code class="mono">maille login</code> starts a device-code flow: it prints a
+          verification URL and a code, opens your browser, and polls until you approve. The session
+          token and your API and UI defaults are stored in
+          <code class="mono">~/.maille/config.json</code>, written with mode
+          <code class="mono">0600</code>.
+        </p>
+      </div>
+      <CodeBlock
+        title="Shell"
+        code={`maille login --url http://localhost:3000/api --ui-url http://localhost:5173
+
+Visit:  http://localhost:5173/device
+Code:   XKCD-MNOP
+
+Waiting for authorization...
+Logged in as you@example.com`}
+      />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Sync loop</p>
+      <h2 class="section-title">Record, review, reconcile</h2>
+      <div class="prose">
+        <p>
+          A movement is recorded with its bank label, amount, account, and date. Unreconciled
+          movements are one command away. Reconciling is an explicit link with an attributed amount —
+          never a silent match.
+        </p>
+      </div>
+      <CodeBlock
+        title="Shell — a session, illustrative"
+        code={`maille movements create \\
+  --name "MONOPRIX 12/09" \\
+  --amount -84.37 \\
+  --account <account-id> \\
+  --date 2026-09-12
+
+maille movements list --unreconciled
+ID        NAME             DATE        AMOUNT   ACCOUNT  STATUS      ACTIVITIES
+9f2c1...  MONOPRIX 12/09   9/12/2026  -84.37   ...      incomplete  0
+
+maille movements link 9f2c1... --activity <activity-id> --amount -84.37
+Movement 9f2c1... linked to activity b3a1e... (-84.37)`}
+      />
+      <div class="prose" style="margin-top: 16px">
+        <p>
+          Every CLI write goes through the API, so a web UI connected to the same instance sees the
+          change immediately. The CLI also accepts <code class="mono">--json</code> on list commands
+          for scripting.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Reference</p>
+      <h2 class="section-title">Command reference</h2>
+      <figure class="panel">
+        <figcaption class="panel-caption">maille &lt;group&gt; &lt;command&gt;</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Command group</th>
+              <th scope="col">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              commands.map((command) => (
+                <tr>
+                  <td class="mono-cell">{command.name}</td>
+                  <td>{command.description}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </figure>
+      <div class="prose" style="margin-top: 16px">
+        <p>
+          Each group has a singular alias (<code class="mono">activity</code>,
+          <code class="mono">movement</code>, ...), and list commands accept the
+          <code class="mono">ls</code> alias. Run <code class="mono">maille &lt;group&gt; --help</code>
+          for the full options of each command.
+        </p>
+      </div>
+      <div class="cta-row" style="margin-top: 32px">
+        <a class="btn btn-primary" href="/quickstart/">Connect the CLI to your instance</a>
+        <a
+          class="btn btn-secondary"
+          href="https://github.com/fuegoio/maille/tree/main/apps/cli"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          CLI source on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>

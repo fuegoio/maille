@@ -1,0 +1,48 @@
+---
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+const links = [
+  { href: "/features", label: "Features" },
+  { href: "/quickstart", label: "Quickstart" },
+  { href: "/cli", label: "CLI & sync" },
+  { href: "/docs", label: "Docs" },
+];
+---
+
+<header class="site-header">
+  <div class="container header-row">
+    <a class="wordmark" href="/">
+      <svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="6" fill="var(--primary)"></rect>
+        <path
+          d="M8 11h16M8 17h16M8 23h9"
+          stroke="var(--primary-foreground)"
+          stroke-width="2.5"
+          stroke-linecap="square"
+        ></path>
+      </svg>
+      <span>Maille</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={link.href === "/docs" ? "/docs/" : `${link.href}/`}
+                aria-current={link.href === current ? "page" : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="https://github.com/fuegoio/maille" rel="noopener noreferrer" target="_blank">
+            GitHub
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>

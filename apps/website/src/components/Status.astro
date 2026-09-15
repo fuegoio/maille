@@ -1,0 +1,10 @@
+---
+interface Props {
+  label: string;
+  tone?: "primary" | "muted" | "destructive";
+}
+
+const { label, tone = "muted" } = Astro.props;
+---
+
+<span class={`status status-${tone}`}>{label}</span>

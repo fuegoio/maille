@@ -1,0 +1,264 @@
+---
+import Base from "../layouts/Base.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import Status from "../components/Status.astro";
+
+const title = "Maille — a precise, double-entry personal ledger";
+const description =
+  "Maille is a self-hosted personal finance tool for developers built on a strict double-entry ledger: activities, transactions, movements, accounts, and funds. Zero approximation, every euro fully accounted for.";
+---
+
+<Base title={title} description={description}>
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow">Self-hosted personal finance for developers</p>
+      <h1 class="display">A precise, double-entry personal ledger.</h1>
+      <p class="lede">Zero approximation. Every euro fully accounted for.</p>
+      <p class="hero-intro">
+        Maille records money the way accounting does: every activity is backed by transactions between
+        accounts, every bank movement is reconciled explicitly, and fund allocation and shared
+        liability are computed from the ledger — never estimated. You run it yourself, against your
+        own Postgres database.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/quickstart/">Self-host quickstart</a>
+        <a
+          class="btn btn-secondary"
+          href="https://github.com/fuegoio/maille"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          GitHub repository
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">The model</p>
+      <h2 class="section-title">One ledger, five nouns</h2>
+      <div class="prose">
+        <p>
+          Maille is a personal finance tool built on a strict double-entry ledger. It has no hidden
+          model: every number on screen — a balance, a fund allocation, a shared liability, a
+          reconciled status — derives from the same ledger, and the interface exposes that structure
+          instead of collapsing it into a summary.
+        </p>
+      </div>
+      <dl class="model">
+        <div>
+          <dt>activities</dt>
+          <dd>
+            An economic event: a grocery run, a salary payment, a rent transfer. Each has a status —
+            scheduled, incomplete, or completed — and is always backed by transactions.
+          </dd>
+        </div>
+        <div>
+          <dt>transactions</dt>
+          <dd>
+            The double entry itself. A transaction moves an amount from one account to another; each
+            side can carry an asset or a counterparty, and fund legs are stored with the transaction.
+          </dd>
+        </div>
+        <div>
+          <dt>movements</dt>
+          <dd>
+            What the bank says happened, recorded exactly as stated: date, amount, account, label. A
+            movement is reconciled only when you link it to activities with attributed amounts.
+          </dd>
+        </div>
+        <div>
+          <dt>accounts</dt>
+          <dd>
+            Where money lives. Seven types — bank, investment, cash, assets, liabilities, expense,
+            revenue. Every transaction names exactly two.
+          </dd>
+        </div>
+        <div>
+          <dt>funds</dt>
+          <dd>
+            What money is for. Funds label money by purpose, independently of the account it sits
+            in, and nest under parent funds. Allocation is computed from the ledger.
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">End to end</p>
+      <h2 class="section-title">One purchase, fully resolved</h2>
+      <div class="prose">
+        <p>
+          A single grocery purchase, as Maille records it: a bank movement, the activity it belongs
+          to, the transactions behind that activity, and the fund the money was earmarked for.
+          Nothing is inferred; every row below was recorded or reconciled explicitly.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Illustrative ledger rows</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Line</th>
+              <th scope="col">Record</th>
+              <th scope="col">Detail</th>
+              <th scope="col" class="num">Amount</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">activity</td>
+              <td>Weekly groceries</td>
+              <td>2026-09-12 · category: groceries / food</td>
+              <td class="num"></td>
+              <td><Status label="completed" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">transaction</td>
+              <td>#1</td>
+              <td>bank:checking → expense:groceries · counterparty: monoprix</td>
+              <td class="num">84.37</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">fund leg</td>
+              <td>food</td>
+              <td>on transaction #1 · against bank:checking</td>
+              <td class="num">84.37</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">movement</td>
+              <td>MONOPRIX 12/09</td>
+              <td>bank:checking · linked -84.37 → Weekly groceries</td>
+              <td class="num">-84.37</td>
+              <td><Status label="reconciled" tone="primary" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+      <ul class="facts" aria-label="What holds this together">
+        <li>your Postgres</li>
+        <li>GraphQL API</li>
+        <li>web UI + CLI</li>
+        <li>explicit reconciliation</li>
+        <li>append-only history</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Reconciliation</p>
+      <h2 class="section-title">Movements are reconciled, never assumed</h2>
+      <div class="prose">
+        <p>
+          Bank movements and activities are separate records. A movement is only complete once the
+          amounts you attribute to activities sum to its amount — until then it is listed as
+          incomplete, visible and unclaimed. Maille never silently auto-matches your money to
+          categories.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Movements on bank:checking</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Movement</th>
+              <th scope="col">Date</th>
+              <th scope="col" class="num">Amount</th>
+              <th scope="col">Attributed</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">MONOPRIX 12/09</td>
+              <td>2026-09-12</td>
+              <td class="num">-84.37</td>
+              <td>-84.37 → Weekly groceries</td>
+              <td><Status label="reconciled" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">SEPA SALARY</td>
+              <td>2026-09-30</td>
+              <td class="num">+3,120.00</td>
+              <td>+3,120.00 → Salary — September</td>
+              <td><Status label="reconciled" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">VRT 13/09</td>
+              <td>2026-09-13</td>
+              <td class="num">-1,200.00</td>
+              <td>0.00</td>
+              <td><Status label="incomplete" tone="muted" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">The daily loop</p>
+      <h2 class="section-title">Built for the reconcile-categorize-review cycle</h2>
+      <div class="prose">
+        <p>
+          You spend short daily or weekly sessions in Maille: movements come in from your machine,
+          you reconcile them, you categorize and label funds, and you review balances that you can
+          trust because the model underneath never approximates.
+        </p>
+      </div>
+      <div class="loop">
+        <div>
+          <span class="loop-num">01</span>
+          <span class="loop-name">Sync</span>
+          <p class="loop-desc">Record bank movements from your machine with the CLI.</p>
+        </div>
+        <div>
+          <span class="loop-num">02</span>
+          <span class="loop-name">Reconcile</span>
+          <p class="loop-desc">Link each movement to its activity, with an attributed amount.</p>
+        </div>
+        <div>
+          <span class="loop-num">03</span>
+          <span class="loop-name">Categorize</span>
+          <p class="loop-desc">Categories, subcategories, projects, and fund legs.</p>
+        </div>
+        <div>
+          <span class="loop-num">04</span>
+          <span class="loop-name">Review</span>
+          <p class="loop-desc">Balances and fund allocations, derived from the same ledger.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Self-hosted</p>
+      <h2 class="section-title">Your instance, your database</h2>
+      <div class="prose">
+        <p>
+          Maille runs on your infrastructure. The API is a Bun server over Postgres with a GraphQL
+          schema; the web UI and the CLI are both clients of it. There is no Maille cloud holding
+          your data.
+        </p>
+      </div>
+      <CodeBlock title="From clone to a running API" code={`git clone https://github.com/fuegoio/maille.git
+cd maille && bun install
+
+cd apps/api && docker compose up -d   # Postgres 17
+bun run dev                            # migrations run, API on :3000/api`} />
+      <div class="cta-row" style="margin-top: 32px">
+        <a class="btn btn-primary" href="/quickstart/">Read the quickstart</a>
+        <a class="btn btn-secondary" href="/features/">How the model works</a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,376 @@
+---
+import Base from "../layouts/Base.astro";
+import Status from "../components/Status.astro";
+
+const title = "Features — Maille";
+const description =
+  "The Maille model, section by section: activities, transactions, movements and explicit reconciliation, accounts, funds, and computed sharing. Ledger structure, not marketing fluff.";
+---
+
+<Base title={title} description={description}>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Features</p>
+      <h1>The model is the feature</h1>
+      <p class="lede">
+        Maille has one feature: a strict double-entry ledger that never approximates. Everything
+        else — balances, allocations, liabilities, statuses — is derived from it and shown as
+        structure, not collapsed into summaries.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Activities</p>
+      <h2 class="section-title">Activities are the unit of record</h2>
+      <div class="prose">
+        <p>
+          An activity is an economic event — a grocery run, a salary payment, a rent transfer. It
+          carries a date, a description, an optional category and subcategory, an optional project,
+          and a status: <strong>scheduled</strong>, <strong>incomplete</strong>, or
+          <strong>completed</strong>. It is always backed by one or more transactions, and it keeps
+          an append-only change history you can review as a timeline.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Activities, September 2026</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Activity</th>
+              <th scope="col">Date</th>
+              <th scope="col">Category</th>
+              <th scope="col">Project</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Weekly groceries</td>
+              <td class="mono-cell">2026-09-12</td>
+              <td>groceries / food</td>
+              <td></td>
+              <td><Status label="completed" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td>Salary — September</td>
+              <td class="mono-cell">2026-09-30</td>
+              <td>income</td>
+              <td></td>
+              <td><Status label="scheduled" tone="muted" /></td>
+            </tr>
+            <tr>
+              <td>Apartment renovation</td>
+              <td class="mono-cell">2026-09-18</td>
+              <td>housing / works</td>
+              <td>renovation 2026</td>
+              <td><Status label="incomplete" tone="muted" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Transactions</p>
+      <h2 class="section-title">Every activity is backed by double-entry transactions</h2>
+      <div class="prose">
+        <p>
+          A transaction moves an amount from one account to another — no exceptions, no one-sided
+          records. Each side can name an asset (a held thing) or a counterparty (who you paid or who
+          paid you). Fund legs are stored with the transaction: a fund move always has an
+          account-side location, so there is no separate fund-move collection to drift out of sync.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Transactions behind “Salary — September”</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Line</th>
+              <th scope="col">From</th>
+              <th scope="col">To</th>
+              <th scope="col" class="num">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">transaction</td>
+              <td>revenue:salary</td>
+              <td>bank:checking</td>
+              <td class="num">3,120.00</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">transaction</td>
+              <td>bank:checking</td>
+              <td>liabilities:credit-card</td>
+              <td class="num">412.90</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">fund leg</td>
+              <td>bank:checking</td>
+              <td>fund:travel</td>
+              <td class="num">400.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Movements</p>
+      <h2 class="section-title">Explicit reconciliation, no silent matching</h2>
+      <div class="prose">
+        <p>
+          Movements are bank records, kept exactly as the bank states them: date, amount, account,
+          label. Reconciliation is an explicit act — you link a movement to an activity with an
+          attributed amount, and the link itself is a record. A movement&rsquo;s status is derived:
+          complete only once attributed amounts sum to its amount. Until then it is
+          <strong>incomplete</strong> and stays in the unreconciled queue.
+        </p>
+        <p>
+          An optional workflow can draft a reconciliation for a movement — it reads grounded
+          evidence from your ledger (similar movements and how they were linked historically,
+          nearby activities) before proposing anything, and the attributed amount must carry the
+          movement&rsquo;s sign and fit its remaining allocation. It requires a
+          <code class="mono">MISTRAL_API_KEY</code>; when no key is configured, workflows are
+          disabled.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Movement reconciliation, by amount</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Movement</th>
+              <th scope="col" class="num">Amount</th>
+              <th scope="col">Attributed to activities</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">MONOPRIX 12/09</td>
+              <td class="num">-84.37</td>
+              <td>-84.37 → Weekly groceries</td>
+              <td><Status label="reconciled" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">IKEA 18/09</td>
+              <td class="num">-649.00</td>
+              <td>-400.00 → Apartment renovation · -249.00 → Weekend furniture</td>
+              <td><Status label="reconciled" tone="primary" /></td>
+            </tr>
+            <tr>
+              <td class="mono-cell">VRT 13/09</td>
+              <td class="num">-1,200.00</td>
+              <td>0.00</td>
+              <td><Status label="incomplete" tone="muted" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Accounts</p>
+      <h2 class="section-title">Typed accounts, two per transaction</h2>
+      <div class="prose">
+        <p>
+          Accounts are where money lives, and every transaction names exactly two. Each account has a
+          type, a starting balance, and a flag marking whether bank movements sync against it.
+          Accounts can be shared with another Maille user at a stated proportion.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Account types</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">Used for</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">bank_account</td>
+              <td>Checking and savings at a bank</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">investment_account</td>
+              <td>Brokerage and retirement accounts</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">cash</td>
+              <td>Physical cash on hand</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">assets</td>
+              <td>Tracked holdings tied to an account</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">liabilities</td>
+              <td>Debts and credit lines</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">expense</td>
+              <td>Where money goes</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">revenue</td>
+              <td>Where money comes from</td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Funds</p>
+      <h2 class="section-title">What the money is for, tracked separately from where it lives</h2>
+      <div class="prose">
+        <p>
+          Funds label money by purpose, independently of accounts: your checking account can hold
+          money earmarked for travel and money earmarked for emergencies at the same time. Funds nest
+          under parent funds. Each fund fixes its opening allocation — how much of each
+          account&rsquo;s balance belonged to it at the fund&rsquo;s start date — and afterwards
+          allocation follows the fund legs on transactions.
+        </p>
+        <p>
+          Reallocating between funds never moves money between accounts. When a fund has less
+          remaining than zero, it is over-allocated, and it is shown that way.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">Fund allocation, illustrative</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Fund</th>
+              <th scope="col" class="num">Allocated</th>
+              <th scope="col" class="num">Spent</th>
+              <th scope="col" class="num">Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>travel</td>
+              <td class="num">2,400.00</td>
+              <td class="num">0.00</td>
+              <td class="num">2,400.00</td>
+            </tr>
+            <tr>
+              <td>emergency</td>
+              <td class="num">5,000.00</td>
+              <td class="num">0.00</td>
+              <td class="num">5,000.00</td>
+            </tr>
+            <tr>
+              <td>food</td>
+              <td class="num">300.00</td>
+              <td class="num">384.37</td>
+              <td class="num negative">-84.37</td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Sharing</p>
+      <h2 class="section-title">Shared liability is computed, not eyeballed</h2>
+      <div class="prose">
+        <p>
+          Share an account or an activity with another Maille user at a stated proportion. Your
+          share of the balance — and of each shared expense — is computed from the ledger, per
+          transaction, so you always know exactly how much of a shared account or a shared cost is
+          yours.
+        </p>
+      </div>
+      <figure class="panel">
+        <figcaption class="panel-caption">A shared account, computed from transactions</figcaption>
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th scope="col">Account</th>
+              <th scope="col">Shared with</th>
+              <th scope="col" class="num">Proportion</th>
+              <th scope="col" class="num">Balance</th>
+              <th scope="col" class="num">Your share</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>bank:joint</td>
+              <td>kim</td>
+              <td class="num">50%</td>
+              <td class="num">1,200.00</td>
+              <td class="num">600.00</td>
+            </tr>
+            <tr>
+              <td>bank:joint</td>
+              <td>alex</td>
+              <td class="num">50%</td>
+              <td class="num">1,200.00</td>
+              <td class="num">600.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Also in the ledger</p>
+      <h2 class="section-title">The rest of the structure</h2>
+      <dl class="model">
+        <div>
+          <dt>categories</dt>
+          <dd>
+            Your own categories and subcategories, attached to activities for analysis without
+            touching the ledger rows.
+          </dd>
+        </div>
+        <div>
+          <dt>projects</dt>
+          <dd>Time-bounded groupings with start and end dates, for work like a renovation.</dd>
+        </div>
+        <div>
+          <dt>assets</dt>
+          <dd>Things you hold, tied to an account, with a free-text location.</dd>
+        </div>
+        <div>
+          <dt>counterparties</dt>
+          <dd>Who money went to or came from, per account, with an initial balance.</dd>
+        </div>
+        <div>
+          <dt>contacts</dt>
+          <dd>Other Maille users you share accounts or activities with.</dd>
+        </div>
+        <div>
+          <dt>history</dt>
+          <dd>
+            Append-only change history on activities and movements, shown as a timeline — the
+            ledger marks, it does not overwrite.
+          </dd>
+        </div>
+      </dl>
+      <div class="cta-row" style="margin-top: 32px">
+        <a class="btn btn-primary" href="/quickstart/">Self-host quickstart</a>
+        <a class="btn btn-secondary" href="/cli/">CLI &amp; sync</a>
+      </div>
+    </div>
+  </section>
+</Base>

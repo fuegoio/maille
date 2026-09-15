@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+
+const title = "Page not found — Maille";
+const description = "This page does not exist on the Maille website.";
+---
+
+<Base title={title} description={description}>
+  <section class="page-hero">
+    <div class="container">
+      <p class="eyebrow">404</p>
+      <h1>Nothing recorded here</h1>
+      <p class="lede">This page does not exist. The ledger, however, balances.</p>
+      <div class="cta-row" style="margin-top: 24px">
+        <a class="btn btn-primary" href="/">Back to the home page</a>
+        <a class="btn btn-secondary" href="/quickstart/">Quickstart</a>
+      </div>
+    </div>
+  </section>
+</Base>
