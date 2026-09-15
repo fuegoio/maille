@@ -102,7 +102,7 @@ export function AccountsOverview() {
         <div className="py-3">
           {groups.map((group) => (
             <div key={group.type} className="min-w-0">
-              <div className="flex h-9 items-center gap-2 px-4 lg:px-6">
+              <div className="flex h-9 items-center gap-2 pr-2 pl-4 lg:px-6">
                 <span
                   className={cn(
                     "size-3 shrink-0 rounded-full",
