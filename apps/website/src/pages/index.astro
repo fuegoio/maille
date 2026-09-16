@@ -67,8 +67,18 @@ const facts = [
         Maille
       </a>
       <nav class="flex items-center gap-5 text-sm">
-        <a href={repo} class="text-muted-foreground hover:text-foreground">GitHub</a>
-        <a href={loginUrl} class="text-muted-foreground hover:text-foreground">Log in</a>
+        <a
+          href={repo}
+          class="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          GitHub
+        </a>
+        <a
+          href={loginUrl}
+          class="inline-flex h-8 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          Log in
+        </a>
         <button
           id="theme-toggle"
           type="button"
