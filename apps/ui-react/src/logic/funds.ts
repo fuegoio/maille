@@ -366,6 +366,28 @@ export function classifyFundMoves({
 }
 
 /**
+ * Whether a leg's null side is Untracked or the outside of the balance
+ * sheet: on a transaction toward an Expense or Revenue account, the null
+ * side facing it is that account — money that left, or entered from
+ * beyond, the balance sheet, and never touched Untracked. Null sides
+ * facing balance accounts, and legs without a transaction, are Untracked.
+ */
+export function isLegNullSideUntracked(
+  leg: Pick<FundMove, "fromFund" | "toFund">,
+  transaction: Pick<Transaction, "fromAccount" | "toAccount"> | null,
+  accounts: Pick<Account, "id" | "type">[],
+): boolean {
+  if (!transaction) return true;
+  const isBalanceAccount = (accountId: string) => {
+    const type = accounts.find((account) => account.id === accountId)?.type;
+    return type !== AccountType.EXPENSE && type !== AccountType.REVENUE;
+  };
+  if (leg.fromFund === null) return isBalanceAccount(transaction.fromAccount);
+  if (leg.toFund === null) return isBalanceAccount(transaction.toAccount);
+  return true;
+}
+
+/**
  * Whether an activity's money touches a fund: any transaction leg naming
  * the fund on either side. Null is Untracked — a transaction with no legs,
  * or with a leg leaving it unnamed on one side, carries untracked money.
