@@ -1,0 +1,27 @@
+{
+  "name": "@maille/website",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/source-serif-4": "^5.3.0",
+    "@maille/tailwind": "*",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^5.14.0",
+    "typescript": "^5.9.3"
+  }
+}

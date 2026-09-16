@@ -1,0 +1,12 @@
+{
+  "name": "@maille/tailwind",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    "./theme.css": "./theme.css"
+  },
+  "scripts": {
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  }
+}

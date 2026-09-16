@@ -1,0 +1,30 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<!-- Same two-circle mark as the app logo (apps/ui-react/src/components/logo.tsx),
+     drawn with currentColor so it follows the theme. -->
+<svg
+  width="363"
+  height="223"
+  viewBox="0 0 363 223"
+  fill="none"
+  aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  class={className}
+>
+  <circle cx="111.5" cy="111.5" r="106.5" stroke="currentColor" stroke-width="10"></circle>
+  <circle
+    cx="251.5"
+    cy="111.5"
+    r="106.5"
+    fill="currentColor"
+    fill-opacity="0.16"
+    stroke="currentColor"
+    stroke-width="10"
+  ></circle>
+</svg>
