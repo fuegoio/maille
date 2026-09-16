@@ -2,16 +2,14 @@ import { type Account, AccountType } from "@maille/core/accounts";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
-  ChevronRight,
   House,
   Plus,
   ReceiptText,
   Settings,
-  SquareChartGantt,
   Users,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 import z from "zod";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -24,9 +22,12 @@ import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { MovementsAnalytics } from "@/components/analytics/movements-analytics";
+import { TransactionsAnalytics } from "@/components/analytics/transactions-analytics";
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
 import { AddMovementButton } from "@/components/movements/add-movement-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
+import { MovementsFilterPanel } from "@/components/movements/filters/movements-filter-panel";
 import { MovementsTable } from "@/components/movements/movements-table";
 import {
   PageBreadcrumbs,
@@ -35,8 +36,13 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
+import {
+  SIDE_PANEL_ICONS,
+  SIDE_PANEL_LABELS,
+  SidePanelToggles,
+} from "@/components/ui/panel-toggles";
+import { SidePanel } from "@/components/ui/side-panel";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -45,9 +51,13 @@ import {
 } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { applyMovementsFilters } from "@/logic/movements";
 import { useAccounts } from "@/stores/accounts";
 import { useFunds } from "@/stores/funds";
 import { useMovements } from "@/stores/movements";
+import { usePanels, type SidePanelKind } from "@/stores/panels";
+import { useViewSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
 
 const ACCOUNT_TABS_NAMES = {
   movements: "Movements",
@@ -97,10 +107,20 @@ function AccountPage({ account }: { account: Account }) {
     fund === undefined ? undefined : fund === "untracked" ? null : fund;
 
   const isMobile = useIsMobile();
-  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+  // The drawer is scoped to the tab: each tab's panels live under its own
+  // view id, the same one its filters use.
+  const viewId = `account-${account.id}-${selectedTab}`;
+  const defaultPanel = isMobile ? null : "summary";
+  const panelState = usePanels((state) => state.getPanel(viewId, defaultPanel));
+  const closePanel = usePanels((state) => state.closePanel);
+  const setFullView = usePanels((state) => state.setFullView);
 
   const movements = useMovements((state) => state.movements);
   const funds = useFunds((state) => state.funds);
+  const { search } = useViewSearch();
+  const movementView = useViews((state) =>
+    state.getMovementView(`account-${account.id}-movements`),
+  );
   const filterFund =
     fundFilter != null
       ? (funds.find((f) => f.id === fundFilter) ?? null)
@@ -121,6 +141,17 @@ function AccountPage({ account }: { account: Account }) {
     });
 
   const viewMovements = movements.filter((m) => m.account === account.id);
+
+  // The analytics panel describes exactly what the table shows: the
+  // same set, the same filters.
+  const filteredMovements = useMemo(
+    () =>
+      applyMovementsFilters(viewMovements, {
+        search,
+        viewFilters: movementView.filters,
+      }),
+    [viewMovements, search, movementView],
+  );
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -152,14 +183,30 @@ function AccountPage({ account }: { account: Account }) {
     ],
   });
 
+  const panelOpen = panelState.panel !== null;
+  // The panel sits beside the content on desktop, overlays it on mobile,
+  // and replaces it entirely in full view.
+  const mainHidden = panelOpen && (isMobile || panelState.fullView);
+
+  const clusterPanels: SidePanelKind[] =
+    selectedTab === "transactions"
+      ? ["analytics", "summary"]
+      : selectedTab === "movements"
+        ? ["filter", "analytics", "summary"]
+        : ["summary"];
+
+  const panelTitle = panelState.panel
+    ? SIDE_PANEL_LABELS[panelState.panel]
+    : "Panel";
+  const PanelIcon = panelState.panel
+    ? SIDE_PANEL_ICONS[panelState.panel]
+    : undefined;
+
   return (
     <>
       <SidebarInset className="flex-row">
         <div
-          className={cn(
-            "flex flex-1 flex-col",
-            summaryOpen && "hidden md:flex",
-          )}
+          className={cn("flex min-w-0 flex-1 flex-col", mainHidden && "hidden")}
         >
           <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
             <SidebarTrigger className="mr-1" />
@@ -167,17 +214,6 @@ function AccountPage({ account }: { account: Account }) {
             <PageBreadcrumbs entries={breadcrumbs} />
             <div className="flex-1" />
             <SearchBar />
-            {!summaryOpen && (
-              <Button
-                variant="secondary"
-                aria-label="Show summary"
-                onClick={() => setSummaryOpen(true)}
-              >
-                <SquareChartGantt />
-                <span className="hidden sm:inline">Summary</span>
-                <ChevronRight className="hidden sm:block" />
-              </Button>
-            )}
             <ShareAccountDialog account={account}>
               <Button
                 variant={account.sharing.length > 0 ? "default" : "ghost"}
@@ -316,6 +352,12 @@ function AccountPage({ account }: { account: Account }) {
                   </Button>
                 </AddCounterpartyModal>
               )}
+
+              <SidePanelToggles
+                viewId={viewId}
+                panels={clusterPanels}
+                defaultPanel={defaultPanel}
+              />
             </header>
 
             <TabsContent value="transactions" className="flex h-full">
@@ -348,13 +390,49 @@ function AccountPage({ account }: { account: Account }) {
           </Tabs>
         </div>
 
-        <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-          <AccountSummary
-            accountId={account.id}
-            fundFilter={fundFilter}
-            onFundFilter={setFundFilter}
-          />
-        </SummaryPanel>
+        {panelOpen && (
+          <SidePanel
+            title={panelTitle}
+            icon={PanelIcon}
+            onClose={() => closePanel(viewId)}
+            fullView={panelState.fullView && panelState.panel === "analytics"}
+            onToggleFullView={
+              panelState.panel === "analytics"
+                ? () => setFullView(viewId, !panelState.fullView)
+                : undefined
+            }
+          >
+            {panelState.panel === "summary" && (
+              <AccountSummary
+                accountId={account.id}
+                fundFilter={fundFilter}
+                onFundFilter={
+                  selectedTab === "transactions" ? setFundFilter : undefined
+                }
+              />
+            )}
+
+            {panelState.panel === "analytics" &&
+              (selectedTab === "transactions" ? (
+                <TransactionsAnalytics
+                  accountId={account.id}
+                  fundFilter={fundFilter}
+                  fullView={panelState.fullView}
+                />
+              ) : (
+                <MovementsAnalytics
+                  movements={filteredMovements}
+                  fullView={panelState.fullView}
+                />
+              ))}
+
+            {panelState.panel === "filter" && selectedTab === "movements" && (
+              <MovementsFilterPanel
+                viewId={`account-${account.id}-movements`}
+              />
+            )}
+          </SidePanel>
+        )}
       </SidebarInset>
 
       {selectedTab === "assets" && <Asset />}

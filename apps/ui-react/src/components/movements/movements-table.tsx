@@ -1,6 +1,5 @@
 import type { Movement } from "@maille/core/movements";
 
-import { verifyMovementFilter } from "@maille/core/movements";
 import * as React from "react";
 
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
@@ -11,7 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
-import { searchCompare } from "@/lib/strings";
+import { applyMovementsFilters } from "@/logic/movements";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -39,17 +38,11 @@ export function MovementsTable({
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
 
   const movementsFiltered = React.useMemo(() => {
-    return movements
-      .filter((movement) => searchCompare(search, movement.name))
-      .filter((movement) =>
-        accountFilter !== null ? movement.account === accountFilter : true,
-      )
-      .filter((movement) => {
-        if (movementView.filters.length === 0) return true;
-        return movementView.filters
-          .map((filter) => verifyMovementFilter(filter, movement))
-          .every((f) => f);
-      });
+    return applyMovementsFilters(movements, {
+      search,
+      viewFilters: movementView.filters,
+      accountFilter,
+    });
   }, [movements, search, accountFilter, movementView.filters]);
 
   const movementsSorted = React.useMemo(() => {

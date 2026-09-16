@@ -423,3 +423,95 @@ export function getTransactionSideFund(
   }
   return legs.find((leg) => leg.toFund)?.toFund ?? null;
 }
+
+/** A fund move as seen from one fund's scope: which activity, which side, how much. */
+export type FundMoveRow = FundMove & {
+  /** Direction of money relative to the scope. */
+  direction: "in" | "out";
+  /** The activity holding the transaction, when the move is tied to one. */
+  activity: { id: string; name: string } | null;
+  /** The transaction's account movement, when the move is tied to one. */
+  accounts: { from: string; to: string } | null;
+  /**
+   * The fund inside the scope holding the move, when it is not the
+   * scope's fund itself — a subfund's row in the subtree view.
+   */
+  own?: string;
+};
+
+/**
+ * The boundary moves of a fund's scope (or Untracked's), the same rows
+ * the fund moves table shows: legs live on their transactions, nested in
+ * the activity holding them — there is no separate fund move collection.
+ */
+export function getFundMovesRows({
+  activities,
+  accounts,
+  funds,
+  fundId,
+  subtree,
+}: {
+  activities: Activity[];
+  accounts: Account[];
+  funds: Fund[];
+  /** The fund whose moves to show; null is Untracked (the null side of moves). */
+  fundId: string | null;
+  /** Show the whole subtree's moves, not just this fund's own. */
+  subtree: boolean;
+}): FundMoveRow[] {
+  const scopeIds =
+    fundId === null
+      ? null
+      : new Set(
+          subtree ? [fundId, ...getFundDescendants(fundId, funds)] : [fundId],
+        );
+  const inScope = (fund: string | null) =>
+    fund !== null && scopeIds !== null && scopeIds.has(fund);
+
+  const result: FundMoveRow[] = [];
+  for (const activity of activities) {
+    for (const transaction of activity.transactions) {
+      for (const leg of transaction.fundMoves ?? []) {
+        const fromInside = inScope(leg.fromFund);
+        const toInside = inScope(leg.toFund);
+        if (scopeIds === null) {
+          if (leg.fromFund !== null && leg.toFund !== null) continue;
+          // A null side facing an Expense or Revenue account is the
+          // outside of the balance sheet, not Untracked: those legs
+          // never move Untracked money and stay off the scope.
+          if (!isLegNullSideUntracked(leg, transaction, accounts)) continue;
+        } else if (fromInside === toInside) {
+          continue;
+        }
+
+        // The fund inside the scope holding the move: the subfund a
+        // subtree row belongs to, when it is not the scope's fund itself.
+        const insideFund = fromInside ? leg.fromFund : leg.toFund;
+        const own =
+          subtree && fundId !== null && insideFund !== fundId
+            ? (insideFund ?? undefined)
+            : undefined;
+
+        result.push({
+          ...leg,
+          direction:
+            scopeIds === null
+              ? leg.toFund === null
+                ? "in"
+                : "out"
+              : toInside
+                ? "in"
+                : "out",
+          activity: { id: activity.id, name: activity.name },
+          accounts: {
+            from: transaction.fromAccount,
+            to: transaction.toAccount,
+          },
+          own,
+        });
+      }
+    }
+  }
+
+  return result;
+}

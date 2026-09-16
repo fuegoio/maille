@@ -1,5 +1,13 @@
 import type { ActivityType, Activity } from "@maille/core/activities";
 
+import {
+  verifyActivityFilter,
+  type ActivityFilter,
+} from "@maille/core/activities";
+
+import { searchCompare } from "@/lib/strings";
+import { activityTouchesFund } from "@/logic/funds";
+
 export function getActivityCategoryTotalForMonth({
   monthDate,
   categoryId,
@@ -86,4 +94,61 @@ export function duplicateActivities({
       toCounterparty: transaction.toCounterparty ?? null,
     })),
   }));
+}
+
+/**
+ * The single activity filter pipeline, shared by the tables and the
+ * analytics panel so both always describe the same set. Tab-level
+ * filters follow the tables' conventions: null filters, undefined
+ * fund filter is off.
+ */
+export function applyActivitiesFilters(
+  activities: Activity[],
+  filters: {
+    search?: string;
+    viewFilters?: ActivityFilter[];
+    accountFilter?: string | null;
+    categoryFilter?: string | null;
+    subcategoryFilter?: string | null;
+    activityTypeFilter?: ActivityType | null;
+    /** A fund the activities must touch; null is Untracked, undefined is off. */
+    fundFilter?: string | null;
+  },
+): Activity[] {
+  return activities
+    .filter((activity) => searchCompare(filters.search ?? "", activity.name))
+    .filter((activity) => {
+      if (filters.subcategoryFilter != null) {
+        return activity.subcategory === filters.subcategoryFilter;
+      }
+      if (filters.categoryFilter != null) {
+        return activity.category === filters.categoryFilter;
+      }
+      return true;
+    })
+    .filter((activity) =>
+      filters.accountFilter != null
+        ? activity.transactions.some(
+            (t) =>
+              t.toAccount === filters.accountFilter ||
+              t.fromAccount === filters.accountFilter,
+          )
+        : true,
+    )
+    .filter((activity) =>
+      filters.activityTypeFilter != null
+        ? activity.types.includes(filters.activityTypeFilter)
+        : true,
+    )
+    .filter((activity) =>
+      filters.fundFilter === undefined
+        ? true
+        : activityTouchesFund(activity, filters.fundFilter),
+    )
+    .filter((activity) => {
+      if (!filters.viewFilters || filters.viewFilters.length === 0) return true;
+      return filters.viewFilters
+        .map((filter) => verifyActivityFilter(filter, activity))
+        .every((f) => f);
+    });
 }

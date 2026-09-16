@@ -1,9 +1,10 @@
 import { getFundAncestors } from "@maille/core/funds";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
+import { FundMovesAnalytics } from "@/components/funds/fund-moves-analytics";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
@@ -14,11 +15,17 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
+import {
+  SIDE_PANEL_ICONS,
+  SIDE_PANEL_LABELS,
+  SidePanelToggles,
+} from "@/components/ui/panel-toggles";
+import { SidePanel } from "@/components/ui/side-panel";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useFunds } from "@/stores/funds";
+import { usePanels } from "@/stores/panels";
 
 export const Route = createFileRoute("/_authenticated/funds/$id")({
   component: FundPage,
@@ -44,7 +51,11 @@ function FundPage() {
     [fundId, funds],
   );
   const isMobile = useIsMobile();
-  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+  const viewId = `fund-${fundId}`;
+  const defaultPanel = isMobile ? null : "summary";
+  const panelState = usePanels((state) => state.getPanel(viewId, defaultPanel));
+  const closePanel = usePanels((state) => state.closePanel);
+  const setFullView = usePanels((state) => state.setFullView);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
   // "none" narrows the page to the fund's own money, excluding subfunds
   const [subfundFilter, setSubfundFilter] = useState<"none" | undefined>(
@@ -100,7 +111,9 @@ function FundPage() {
       <div
         className={cn(
           "flex min-w-0 flex-1 flex-col",
-          summaryOpen && "hidden md:flex",
+          panelState.panel !== null &&
+            (isMobile || panelState.fullView) &&
+            "hidden",
         )}
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
@@ -109,17 +122,11 @@ function FundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          {!summaryOpen && (
-            <Button
-              variant="secondary"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
-          )}
+          <SidePanelToggles
+            viewId={viewId}
+            panels={["analytics", "summary"]}
+            defaultPanel={defaultPanel}
+          />
           <CreateFundDialog defaultParent={fund.id}>
             <Button
               variant="outline"
@@ -144,15 +151,44 @@ function FundPage() {
         />
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        <FundSummary
-          fundId={fund.id}
-          accountFilter={accountFilter ?? undefined}
-          onAccountFilterChange={(account) => setAccountFilter(account ?? null)}
-          subfundFilter={subfundFilter}
-          onSubfundFilterChange={setSubfundFilter}
-        />
-      </SummaryPanel>
+      {panelState.panel !== null && (
+        <SidePanel
+          title={
+            panelState.panel ? SIDE_PANEL_LABELS[panelState.panel] : "Panel"
+          }
+          icon={
+            panelState.panel ? SIDE_PANEL_ICONS[panelState.panel] : undefined
+          }
+          onClose={() => closePanel(viewId)}
+          fullView={panelState.fullView && panelState.panel === "analytics"}
+          onToggleFullView={
+            panelState.panel === "analytics"
+              ? () => setFullView(viewId, !panelState.fullView)
+              : undefined
+          }
+        >
+          {panelState.panel === "summary" && (
+            <FundSummary
+              fundId={fund.id}
+              accountFilter={accountFilter ?? undefined}
+              onAccountFilterChange={(account) =>
+                setAccountFilter(account ?? null)
+              }
+              subfundFilter={subfundFilter}
+              onSubfundFilterChange={setSubfundFilter}
+            />
+          )}
+
+          {panelState.panel === "analytics" && (
+            <FundMovesAnalytics
+              fundId={fund.id}
+              subtree={subfundFilter !== "none"}
+              accountFilter={accountFilter}
+              fullView={panelState.fullView}
+            />
+          )}
+        </SidePanel>
+      )}
     </SidebarInset>
   );
 }

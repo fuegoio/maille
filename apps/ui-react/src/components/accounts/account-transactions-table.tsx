@@ -1,5 +1,3 @@
-import type { Activity } from "@maille/core/activities";
-
 import { format } from "date-fns";
 import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 import * as React from "react";
@@ -20,28 +18,16 @@ import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { getTransactionSideFund } from "@/logic/funds";
+import {
+  getAccountTransactions,
+  type AccountTransaction,
+} from "@/logic/accounts";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useViewSearch } from "@/stores/search";
 
 import { useTransactionsEntityActions } from "./transactions-actions";
 import { TransactionsSelection } from "./transactions-selection";
-
-/** A transaction as seen from one account: which activity, which side, how much. */
-type AccountTransaction = {
-  id: string;
-  /** The activity's date, the one the row groups and sorts by. */
-  date: Date;
-  activity: Activity;
-  /** Direction of money relative to the account. */
-  direction: "in" | "out";
-  /** The account on the other side of the leg. */
-  counterpart: string;
-  /** The fund this account's side holds; null is Untracked. */
-  fund: string | null;
-  amount: number;
-};
 
 interface AccountTransactionsTableProps {
   accountId: string;
@@ -60,42 +46,10 @@ export function AccountTransactionsTable({
     `transactions:${accountId}`,
   );
 
-  const transactions = React.useMemo<AccountTransaction[]>(() => {
-    const result: AccountTransaction[] = [];
-
-    for (const activity of activities) {
-      for (const transaction of activity.transactions) {
-        if (transaction.toAccount === accountId) {
-          result.push({
-            id: transaction.id,
-            date: activity.date,
-            activity,
-            direction: "in",
-            counterpart: transaction.fromAccount,
-            fund: getTransactionSideFund(transaction, accountId),
-            amount: transaction.amount,
-          });
-        } else if (transaction.fromAccount === accountId) {
-          result.push({
-            id: transaction.id,
-            date: activity.date,
-            activity,
-            direction: "out",
-            counterpart: transaction.toAccount,
-            fund: getTransactionSideFund(transaction, accountId),
-            amount: transaction.amount,
-          });
-        }
-      }
-    }
-
-    return result.sort((a, b) => {
-      if (a.activity.date.getTime() !== b.activity.date.getTime()) {
-        return b.activity.date.getTime() - a.activity.date.getTime();
-      }
-      return b.id.localeCompare(a.id);
-    });
-  }, [activities, accountId]);
+  const transactions = React.useMemo<AccountTransaction[]>(
+    () => getAccountTransactions(activities, accountId),
+    [activities, accountId],
+  );
 
   const transactionsFiltered = React.useMemo(
     () => transactions.filter((t) => searchCompare(search, t.activity.name)),

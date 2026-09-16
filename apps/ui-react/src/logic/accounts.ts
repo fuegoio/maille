@@ -4,6 +4,8 @@ import type { Activity } from "@maille/core/activities";
 import { AccountType } from "@maille/core/accounts";
 import { startOfDay } from "date-fns";
 
+import { getTransactionSideFund } from "@/logic/funds";
+
 export function getAccountBalanceAtDate({
   accountId,
   date,
@@ -135,4 +137,63 @@ export function getBalanceForMonth({
 
   // Compute the balance for the current month
   return previousBalance + revenue - expense;
+}
+
+/** A transaction as seen from one account: which activity, which side, how much. */
+export type AccountTransaction = {
+  id: string;
+  /** The activity's date, the one the row groups and sorts by. */
+  date: Date;
+  activity: Activity;
+  /** Direction of money relative to the account. */
+  direction: "in" | "out";
+  /** The account on the other side of the leg. */
+  counterpart: string;
+  /** The fund this account's side holds; null is Untracked. */
+  fund: string | null;
+  amount: number;
+};
+
+/**
+ * Every transaction leg touching the account, as the account's table and
+ * analytics both see it, newest first.
+ */
+export function getAccountTransactions(
+  activities: Activity[],
+  accountId: string,
+): AccountTransaction[] {
+  const result: AccountTransaction[] = [];
+
+  for (const activity of activities) {
+    for (const transaction of activity.transactions) {
+      if (transaction.toAccount === accountId) {
+        result.push({
+          id: transaction.id,
+          date: activity.date,
+          activity,
+          direction: "in",
+          counterpart: transaction.fromAccount,
+          fund: getTransactionSideFund(transaction, accountId),
+          amount: transaction.amount,
+        });
+      } else if (transaction.fromAccount === accountId) {
+        result.push({
+          id: transaction.id,
+          date: activity.date,
+          activity,
+          direction: "out",
+          counterpart: transaction.toAccount,
+          fund: getTransactionSideFund(transaction, accountId),
+          amount: transaction.amount,
+        });
+      }
+    }
+  }
+
+  return result.sort((a, b) => {
+    if (a.date.getTime() !== b.date.getTime()) {
+      return b.date.getTime() - a.date.getTime();
+    }
+    return b.id.localeCompare(a.id);
+  });
 }

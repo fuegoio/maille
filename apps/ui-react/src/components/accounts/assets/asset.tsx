@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import { SummaryPanel } from "@/components/ui/summary-panel";
+import { SidePanel } from "@/components/ui/side-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
@@ -139,8 +139,7 @@ export function Asset() {
   const currencyFormatter = useCurrencyFormatter();
 
   return (
-    <SummaryPanel
-      open
+    <SidePanel
       onClose={onClose}
       title="Asset"
       width="lg"
@@ -268,6 +267,6 @@ export function Asset() {
           </div>
         </div>
       </div>
-    </SummaryPanel>
+    </SidePanel>
   );
 }

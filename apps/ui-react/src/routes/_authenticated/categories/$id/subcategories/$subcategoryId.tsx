@@ -5,13 +5,14 @@ import type {
 
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Settings } from "lucide-react";
+import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
+import { ActivitiesAnalytics } from "@/components/analytics/activities-analytics";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { SubcategorySettingsDialog } from "@/components/categories/subcategory-settings-dialog";
 import {
@@ -28,12 +29,21 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import {
+  SIDE_PANEL_ICONS,
+  SIDE_PANEL_LABELS,
+  SidePanelToggles,
+} from "@/components/ui/panel-toggles";
+import { SidePanel } from "@/components/ui/side-panel";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
+import { applyActivitiesFilters } from "@/logic/activities";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
+import { usePanels } from "@/stores/panels";
+import { useViewSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
 
 export const Route = createFileRoute(
   "/_authenticated/categories/$id/subcategories/$subcategoryId",
@@ -94,7 +104,16 @@ function SubcategoryPage({
 
   const currencyFormatter = useCurrencyFormatter();
 
-  const [summaryOpen, setSummaryOpen] = useState(true);
+  const viewId = `subcategory-${subcategory.id}`;
+  // This surface keeps its panel open by default, even on small screens.
+  const panelState = usePanels((state) => state.getPanel(viewId, "summary"));
+  const closePanel = usePanels((state) => state.closePanel);
+  const setFullView = usePanels((state) => state.setFullView);
+
+  const { search } = useViewSearch();
+  const activityView = useViews((state) =>
+    state.getActivityView(`subcategory-${subcategory.id}`),
+  );
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -127,6 +146,17 @@ function SubcategoryPage({
 
   const viewActivities = activities.filter(
     (a) => a.subcategory === subcategory.id,
+  );
+
+  // The analytics panel describes exactly what the table shows.
+  const filteredActivities = useMemo(
+    () =>
+      applyActivitiesFilters(viewActivities, {
+        search,
+        viewFilters: activityView.filters,
+        subcategoryFilter: subcategory.id,
+      }),
+    [viewActivities, search, activityView, subcategory.id],
   );
 
   const subcategoryActivities = useMemo(
@@ -182,7 +212,7 @@ function SubcategoryPage({
       <div
         className={cn(
           "flex min-w-0 flex-1 flex-col",
-          summaryOpen && "hidden md:flex",
+          panelState.panel !== null && panelState.fullView && "hidden",
         )}
       >
         <PageBar>
@@ -199,17 +229,11 @@ function SubcategoryPage({
             category={category.id}
             subcategory={subcategory.id}
           />
-          {!summaryOpen && (
-            <Button
-              variant="secondary"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
-          )}
+          <SidePanelToggles
+            viewId={viewId}
+            panels={["analytics", "summary"]}
+            defaultPanel="summary"
+          />
           <SubcategorySettingsDialog subcategory={subcategory}>
             <Button variant="ghost" size="icon">
               <Settings />
@@ -224,80 +248,109 @@ function SubcategoryPage({
         />
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        {/* KPIs + chart */}
-        <div className="w-full border-b">
-          <div className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="font-semibold">Last 30 days</div>
-              <div className="flex-1" />
-              <span className="font-mono">
-                {currencyFormatter.format(total30Days)}
-              </span>
-            </div>
+      {panelState.panel !== null && (
+        <SidePanel
+          title={
+            panelState.panel ? SIDE_PANEL_LABELS[panelState.panel] : "Panel"
+          }
+          icon={
+            panelState.panel ? SIDE_PANEL_ICONS[panelState.panel] : undefined
+          }
+          onClose={() => closePanel(viewId)}
+          fullView={panelState.fullView && panelState.panel === "analytics"}
+          onToggleFullView={
+            panelState.panel === "analytics"
+              ? () => setFullView(viewId, !panelState.fullView)
+              : undefined
+          }
+        >
+          {panelState.panel === "summary" && (
+            <>
+              {/* KPIs + chart */}
+              <div className="w-full border-b">
+                <div className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="font-semibold">Last 30 days</div>
+                    <div className="flex-1" />
+                    <span className="font-mono">
+                      {currencyFormatter.format(total30Days)}
+                    </span>
+                  </div>
 
-            <div className="mt-3 flex items-center text-sm">
-              <div className="font-medium text-muted-foreground">Total</div>
-              <div className="flex-1" />
-              <span className="font-mono text-muted-foreground">
-                {currencyFormatter.format(totalOverall)}
-              </span>
-            </div>
-          </div>
+                  <div className="mt-3 flex items-center text-sm">
+                    <div className="font-medium text-muted-foreground">
+                      Total
+                    </div>
+                    <div className="flex-1" />
+                    <span className="font-mono text-muted-foreground">
+                      {currencyFormatter.format(totalOverall)}
+                    </span>
+                  </div>
+                </div>
 
-          <ChartContainer
-            config={chartConfig}
-            className="aspect-auto h-[180px] w-full border-t p-3"
-          >
-            <BarChart
-              accessibilityLayer
-              data={chartData}
-              margin={{ left: 12, right: 12 }}
-            >
-              <CartesianGrid vertical strokeDasharray="2 3" />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(value) => {
-                  const date = new Date(value);
-                  return date.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  });
-                }}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    className="w-[150px]"
-                    nameKey="views"
-                    formatter={(value) =>
-                      currencyFormatter.format(value as number)
-                    }
-                    labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    }
-                  />
-                }
-              />
-              <Bar
-                dataKey="value"
-                fill="var(--color-value)"
-                maxBarSize={18}
-                radius={[2, 2, 0, 0]}
-                isAnimationActive={false}
-              />
-            </BarChart>
-          </ChartContainer>
-        </div>
-      </SummaryPanel>
+                <ChartContainer
+                  config={chartConfig}
+                  className="aspect-auto h-[180px] w-full border-t p-3"
+                >
+                  <BarChart
+                    accessibilityLayer
+                    data={chartData}
+                    margin={{ left: 12, right: 12 }}
+                  >
+                    <CartesianGrid vertical strokeDasharray="2 3" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tickFormatter={(value) => {
+                        const date = new Date(value);
+                        return date.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        });
+                      }}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="w-[150px]"
+                          nameKey="views"
+                          formatter={(value) =>
+                            currencyFormatter.format(value as number)
+                          }
+                          labelFormatter={(value) =>
+                            new Date(value).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          }
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="var(--color-value)"
+                      maxBarSize={18}
+                      radius={[2, 2, 0, 0]}
+                      isAnimationActive={false}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </div>
+            </>
+          )}
+
+          {panelState.panel === "analytics" && (
+            <ActivitiesAnalytics
+              activities={filteredActivities}
+              fullView={panelState.fullView}
+            />
+          )}
+        </SidePanel>
+      )}
     </SidebarInset>
   );
 }

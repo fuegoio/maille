@@ -1,13 +1,14 @@
 import type { Project } from "@maille/core/projects";
 
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
-import { useState } from "react";
+import { Settings } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { ActivitiesAnalytics } from "@/components/analytics/activities-analytics";
 import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
@@ -16,12 +17,21 @@ import { ProjectSettingsDialog } from "@/components/projects/project-settings-di
 import { ProjectSummary } from "@/components/projects/project-summary";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
+import {
+  SIDE_PANEL_ICONS,
+  SIDE_PANEL_LABELS,
+  SidePanelToggles,
+} from "@/components/ui/panel-toggles";
+import { SidePanel } from "@/components/ui/side-panel";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { applyActivitiesFilters } from "@/logic/activities";
 import { useActivities } from "@/stores/activities";
+import { usePanels } from "@/stores/panels";
 import { useProjects } from "@/stores/projects";
+import { useViewSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
 
 export const Route = createFileRoute("/_authenticated/projects/$id")({
   component: ProjectPageRoute,
@@ -53,9 +63,39 @@ function ProjectPage({ project }: { project: Project }) {
 
   const isMobile = useIsMobile();
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [summaryOpen, setSummaryOpen] = useState(!isMobile);
   const [activitiesFilters, setActivitiesFilters] = useState<ActivitiesFilters>(
     {},
+  );
+
+  const viewId = `project-${projectId}`;
+  const defaultPanel = isMobile ? null : "summary";
+  const panelState = usePanels((state) => state.getPanel(viewId, defaultPanel));
+  const closePanel = usePanels((state) => state.closePanel);
+  const setFullView = usePanels((state) => state.setFullView);
+
+  const { search } = useViewSearch();
+  const activityView = useViews((state) =>
+    state.getActivityView("project-detail"),
+  );
+
+  // The analytics panel describes exactly what the table shows.
+  const filteredActivities = useMemo(
+    () =>
+      applyActivitiesFilters(projectActivities, {
+        search,
+        viewFilters: activityView.filters,
+        categoryFilter: activitiesFilters.category ?? null,
+        subcategoryFilter: activitiesFilters.subcategory ?? null,
+        activityTypeFilter: activitiesFilters.activityType ?? null,
+      }),
+    [
+      projectActivities,
+      search,
+      activityView,
+      activitiesFilters.category,
+      activitiesFilters.subcategory,
+      activitiesFilters.activityType,
+    ],
   );
 
   const breadcrumbs = usePageBreadcrumbs({
@@ -77,13 +117,20 @@ function ProjectPage({ project }: { project: Project }) {
     ],
   });
 
+  const panelOpen = panelState.panel !== null;
+  const mainHidden = panelOpen && (isMobile || panelState.fullView);
+
+  const panelTitle = panelState.panel
+    ? SIDE_PANEL_LABELS[panelState.panel]
+    : "Panel";
+  const PanelIcon = panelState.panel
+    ? SIDE_PANEL_ICONS[panelState.panel]
+    : undefined;
+
   return (
     <SidebarInset className="flex-row">
       <div
-        className={cn(
-          "flex min-w-0 flex-1 flex-col",
-          summaryOpen && "hidden md:flex",
-        )}
+        className={cn("flex min-w-0 flex-1 flex-col", mainHidden && "hidden")}
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
@@ -98,18 +145,11 @@ function ProjectPage({ project }: { project: Project }) {
             <Settings />
             <span className="hidden sm:inline">Edit</span>
           </Button>
-
-          {!summaryOpen && (
-            <Button
-              variant="default"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
-          )}
+          <SidePanelToggles
+            viewId={viewId}
+            panels={["analytics", "summary"]}
+            defaultPanel={defaultPanel}
+          />
 
           <ProjectSettingsDialog
             project={project}
@@ -129,13 +169,38 @@ function ProjectPage({ project }: { project: Project }) {
         />
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
-        <ProjectSummary
-          project={project}
-          activitiesFilters={activitiesFilters}
-          onActivitiesFiltersChange={setActivitiesFilters}
-        />
-      </SummaryPanel>
+      {panelOpen && (
+        <SidePanel
+          title={panelTitle}
+          icon={PanelIcon}
+          onClose={() => closePanel(viewId)}
+          fullView={panelState.fullView && panelState.panel === "analytics"}
+          onToggleFullView={
+            panelState.panel === "analytics"
+              ? () => setFullView(viewId, !panelState.fullView)
+              : undefined
+          }
+        >
+          {panelState.panel === "summary" && (
+            <ProjectSummary
+              project={project}
+              activitiesFilters={activitiesFilters}
+              onActivitiesFiltersChange={setActivitiesFilters}
+            />
+          )}
+
+          {panelState.panel === "analytics" && (
+            <ActivitiesAnalytics
+              activities={filteredActivities}
+              fullView={panelState.fullView}
+              filters={activitiesFilters}
+              onFilter={(patch) =>
+                setActivitiesFilters((prev) => ({ ...prev, ...patch }))
+              }
+            />
+          )}
+        </SidePanel>
+      )}
     </SidebarInset>
   );
 }
