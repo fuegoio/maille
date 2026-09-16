@@ -1,11 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="4" fill="oklch(0.46 0.105 150)" />
-  <text
-    x="16"
-    y="23"
-    font-family="Georgia, 'Source Serif 4', serif"
-    font-size="20"
-    text-anchor="middle"
-    fill="oklch(0.985 0.004 145)"
-  >M</text>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .mark { stroke: #226837; }
+    .fill { fill: #226837; }
+    @media (prefers-color-scheme: dark) {
+      .mark { stroke: #63B376; }
+      .fill { fill: #63B376; }
+    }
+  </style>
+  <circle class="mark" cx="196" cy="256" r="92" stroke-width="14"/>
+  <circle class="mark fill" cx="316" cy="256" r="92" fill-opacity="0.2" stroke-width="14"/>
 </svg>
