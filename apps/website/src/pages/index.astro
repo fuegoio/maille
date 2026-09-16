@@ -1,0 +1,257 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Screenshot from "../components/Screenshot.astro";
+
+const repo = "https://github.com/fuegoio/maille";
+
+const features = [
+  {
+    name: "Reconciliation",
+    title: "Movements reconcile, or they don't.",
+    body: "Bank movements are synced from your own machine and matched to transactions by you. A movement that hasn't been matched says so. There is no auto-categorization guessing on your behalf, and no silently dropped rows.",
+    points: ["Explicit matching", "Unreconciled is a first-class state"],
+  },
+  {
+    name: "Fund allocation",
+    title: "Money is labeled by purpose, not by place.",
+    body: "Funds label what money is for, independently of the account it lives in. Allocate your income across funds once, then watch each fund's balance derive from the ledger. Over-allocated and under-allocated are computed states, not spreadsheet formulas.",
+    points: ["Allocation independent of accounts", "Computed over/under states"],
+  },
+  {
+    name: "Shared expenses",
+    title: "Shared liability, computed.",
+    body: "When an expense is shared, Maille computes each party's liability from the transactions that back it. No eyeballed splits, no rounding drift: what you owe and what you are owed are ledger-derived numbers you can trust down to the cent.",
+    points: ["Per-contact liability", "Derived from transactions"],
+  },
+  {
+    name: "Analysis",
+    title: "Read the ledger, not a summary.",
+    body: "Balances, category flows, and cumulative charts all derive from the same double-entry structure the rest of the app uses. The chart is a view over the ledger, so the two can never disagree.",
+    points: ["Step-line cumulative balances", "Category flows over time"],
+  },
+];
+
+const facts = [
+  {
+    term: "Self-hosted",
+    body: "Run your own instance. AGPL-3.0, your machine, your data: nothing leaves it.",
+  },
+  {
+    term: "Your Postgres",
+    body: "The ledger lives in a plain Postgres schema you can query, back up, and inspect directly.",
+  },
+  {
+    term: "CLI sync",
+    body: "Import bank movements from CSV on your own machine, on your own schedule.",
+  },
+  {
+    term: "Keyboard-first",
+    body: "The reconcile-categorize-review loop is the primary workflow; it's built to run one gesture at a time.",
+  },
+];
+---
+
+<Layout
+  title="Maille — a precise, double-entry personal ledger"
+  description="Maille is a personal finance tool for developers built on a strict double-entry ledger: every euro fully accounted for, reconciliation explicit, sharing computed."
+>
+  <header class="sticky top-0 z-10 border-b bg-background">
+    <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+      <a href="/" class="flex items-center gap-2.5 font-serif text-xl">
+        <span class="inline-block size-2 rounded-[2px] bg-primary"></span>
+        Maille
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="#model" class="text-muted-foreground hover:text-foreground">Model</a>
+        <a href="#screens" class="text-muted-foreground hover:text-foreground">Screens</a>
+        <a href="#developers" class="text-muted-foreground hover:text-foreground">Developers</a>
+        <a href={repo} class="hidden underline-offset-4 hover:underline sm:inline">GitHub</a>
+        <button
+          id="theme-toggle"
+          type="button"
+          class="h-8 rounded-md border px-3 font-mono text-xs text-muted-foreground hover:text-foreground"
+          aria-label="Toggle color theme"
+        >
+          dark
+        </button>
+      </nav>
+    </div>
+    <script is:inline>
+      const root = document.documentElement;
+      const toggle = document.getElementById("theme-toggle");
+      const sync = () => {
+        toggle.textContent = root.classList.contains("dark") ? "light" : "dark";
+      };
+      sync();
+      toggle.addEventListener("click", () => {
+        const dark = root.classList.toggle("dark");
+        localStorage.setItem("maille-theme", dark ? "dark" : "light");
+        sync();
+      });
+    </script>
+  </header>
+
+  <main>
+    <section class="mx-auto max-w-6xl px-6 pt-24 pb-16 text-center md:pt-36">
+      <p class="rise-in text-sm text-muted-foreground">
+        Self-hosted personal finance for developers
+      </p>
+      <h1 class="rise-in mt-6 text-5xl" style="animation-delay: 60ms">
+        Every euro, fully accounted for.
+      </h1>
+      <p class="rise-in mx-auto mt-6 max-w-2xl text-lg text-muted-foreground" style="animation-delay: 120ms">
+        Maille is a personal finance tool built on a strict double-entry
+        ledger: every activity is backed by balanced transactions between
+        accounts, reconciliation is explicit, and sharing is computed rather
+        than eyeballed.
+      </p>
+      <div class="rise-in mt-10 flex flex-wrap items-center justify-center gap-4" style="animation-delay: 180ms">
+        <a
+          href={repo}
+          class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90"
+        >
+          Self-host it
+        </a>
+        <a
+          href="#model"
+          class="inline-flex h-10 items-center rounded-md px-5 text-sm text-foreground underline-offset-4 hover:underline"
+        >
+          See the model
+        </a>
+      </div>
+      <div class="rise-in mt-20" style="animation-delay: 240ms">
+        <Screenshot name="Home overview" ratio="16 / 9" />
+      </div>
+    </section>
+
+    <section id="model" class="border-t">
+      <div class="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2 md:py-32">
+        <div>
+          <h2 class="text-4xl">Every activity is a balanced transaction.</h2>
+          <p class="mt-6 text-lg text-muted-foreground">
+            Underneath every entry there is a pair of postings that sum to
+            zero. The balance, the fund allocation, the shared liability, and
+            the reconciled status all derive from that same structure, and
+            the UI exposes it instead of hiding it behind summaries.
+          </p>
+        </div>
+        <div class="overflow-x-auto rounded-lg border bg-card">
+          <table class="w-full min-w-125 border-collapse text-sm">
+            <thead>
+              <tr class="border-b bg-muted/50 text-xs font-medium text-muted-foreground">
+                <th class="px-4 py-2 text-left font-medium">Account</th>
+                <th class="px-4 py-2 text-left font-medium">Fund</th>
+                <th class="px-4 py-2 text-right font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="font-mono">
+              <tr class="border-b">
+                <td class="px-4 py-3 text-left">Expenses:Groceries</td>
+                <td class="px-4 py-3 text-left">Groceries</td>
+                <td class="px-4 py-3 text-right text-activity-revenue">+84.20</td>
+              </tr>
+              <tr class="border-b">
+                <td class="px-4 py-3 text-left">Assets:Checking</td>
+                <td class="px-4 py-3 text-left">—</td>
+                <td class="px-4 py-3 text-right">−84.20</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-muted/50">
+                <td class="px-4 py-3 text-left" colspan="2">
+                  <span class="flex items-center gap-2 font-sans text-xs text-muted-foreground">
+                    <span class="inline-block size-1.5 rounded-[1px] bg-primary"></span>
+                    Grocery run — balanced
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-right text-xs text-muted-foreground">Σ 0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens" class="border-t">
+      <div class="mx-auto max-w-6xl px-6 py-24 md:py-32">
+        <div class="max-w-2xl">
+          <h2 class="text-4xl">The interface exposes the structure.</h2>
+          <p class="mt-6 text-lg text-muted-foreground">
+            No approximation anywhere: which account, which fund, reconciled
+            or not, every surface shows the ledger underneath it.
+          </p>
+        </div>
+        <div class="mt-16 space-y-24">
+          {
+            features.map((feature, i) => (
+              <div
+                class:list={[
+                  "grid items-center gap-10 md:grid-cols-2 md:gap-16",
+                  i % 2 === 1 && "md:[&>*:first-child]:order-2",
+                ]}
+              >
+                <div>
+                  <h3 class="text-3xl">{feature.title}</h3>
+                  <p class="mt-4 text-lg text-muted-foreground">{feature.body}</p>
+                  <ul class="mt-6 space-y-2 text-sm text-muted-foreground">
+                    {feature.points.map((point) => (
+                      <li class="flex items-center gap-2.5">
+                        <span class="inline-block size-1.5 rounded-[1px] bg-primary" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <Screenshot name={feature.name} />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="developers" class="border-t">
+      <div class="mx-auto max-w-6xl px-6 py-24 md:py-32">
+        <div class="max-w-2xl">
+          <h2 class="text-4xl">Built to be owned.</h2>
+          <p class="mt-6 text-lg text-muted-foreground">
+            You run Maille against your own database, sync from your own
+            machine, and trust every number because the model underneath never
+            approximates.
+          </p>
+        </div>
+        <dl class="mt-16 border-t">
+          {
+            facts.map((fact) => (
+              <div class="grid gap-2 border-b py-6 md:grid-cols-12 md:gap-8">
+                <dt class="font-mono text-xs text-muted-foreground md:col-span-3">
+                  {fact.term}
+                </dt>
+                <dd class="text-sm text-foreground md:col-span-9">{fact.body}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t">
+    <div class="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-10 md:flex-row md:items-center">
+      <div>
+        <p class="flex items-center gap-2.5 font-serif text-xl">
+          <span class="inline-block size-2 rounded-[2px] bg-primary"></span>
+          Maille
+        </p>
+        <p class="mt-2 text-xs text-muted-foreground">
+          A precise, double-entry personal ledger. AGPL-3.0.
+        </p>
+      </div>
+      <nav class="flex items-center gap-6 text-sm text-muted-foreground">
+        <a href={repo} class="hover:text-foreground">GitHub</a>
+        <a href={`${repo}/blob/main/LICENCE`} class="hover:text-foreground">Licence</a>
+        <a href={`${repo}/issues`} class="hover:text-foreground">Issues</a>
+      </nav>
+    </div>
+  </footer>
+</Layout>

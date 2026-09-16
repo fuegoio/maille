@@ -1,0 +1,44 @@
+---
+interface Props {
+  /** Human name of the screen, e.g. "Home overview". */
+  name: string;
+  /**
+   * Path under /public once the capture exists, e.g. "/screenshots/home.png".
+   * While omitted, a labelled placeholder frame is rendered.
+   */
+  src?: string;
+  alt?: string;
+  /** CSS aspect-ratio value. Defaults to "16 / 10". */
+  ratio?: string;
+}
+
+const { name, src, alt = name, ratio = "16 / 10" } = Astro.props;
+const slug = name.toLowerCase().replaceAll(/\s+/g, "-");
+---
+
+{
+  src ? (
+    <img
+      src={src}
+      alt={alt}
+      width="1600"
+      height="1000"
+      class="block w-full rounded-lg border bg-card"
+      style={`aspect-ratio: ${ratio}; object-fit: cover;`}
+      loading="lazy"
+    />
+  ) : (
+    <figure
+      class="flex w-full flex-col rounded-lg border bg-card"
+      style={`aspect-ratio: ${ratio};`}
+    >
+      <div class="m-4 flex flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed text-center">
+        <span class="font-mono text-xs text-muted-foreground">screenshot pending</span>
+        <span class="text-foreground">{name}</span>
+        <span class="font-mono text-xs text-muted-foreground">
+          public/screenshots/{slug}.png
+        </span>
+      </div>
+    </figure>
+  )
+}

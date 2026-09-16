@@ -1,0 +1,22 @@
+{
+  "plugins": ["import"],
+  "categories": {},
+  "rules": {},
+  "settings": {
+    "jsdoc": {
+      "ignorePrivate": false,
+      "ignoreInternal": false,
+      "ignoreReplacesDocs": true,
+      "overrideReplacesDocs": true,
+      "augmentsExtendsDoc": false,
+      "implementsReplacesDocs": false,
+      "exemptDestructuredRootsFromChecks": false,
+      "tagNamePreference": {}
+    }
+  },
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": [".astro"]
+}

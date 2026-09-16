@@ -1,0 +1,42 @@
+name: Website
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: apps/website
+
+      - name: Lint
+        run: bun run lint
+        working-directory: apps/website
+
+      - name: Typecheck
+        run: bun run typecheck
+        working-directory: apps/website
+
+      - name: Format check
+        run: bun run fmt:check
+        working-directory: apps/website
+
+      - name: Build
+        run: bun run build
+        working-directory: apps/website
