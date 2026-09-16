@@ -146,6 +146,7 @@ export type AnalyticsPlot = {
   /** series|column → value. */
   values: Map<string, number>;
   rowTotals: Map<string, number>;
+  columnTotals: Map<string, number>;
   total: number;
 };
 
@@ -221,7 +222,14 @@ export function buildPlot(
     total += value;
   }
 
-  return { seriesKeys, columnKeys, values, rowTotals, total };
+  return {
+    seriesKeys,
+    columnKeys,
+    values,
+    rowTotals,
+    columnTotals,
+    total,
+  };
 }
 
 /** The table label of a temporal column: its bucket's start date. */

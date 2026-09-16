@@ -1,6 +1,14 @@
 import { ChartColumn, ChartLine } from "lucide-react";
 import { useMemo } from "react";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import {
   buildPlot,
@@ -21,6 +29,11 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from "@/components/ui/native-select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
@@ -89,10 +102,18 @@ export function AnalyticsView({
     [data, metric, bucket, dimension],
   );
 
+  const compactFormatter = useCurrencyFormatter("compact");
+
   const formatValue = (value: number) =>
     metric.format === "integer"
       ? String(Math.round(value))
       : currencyFormatter.format(value);
+
+  // Axis ticks stay compact: the tooltip carries the precise figure.
+  const formatTick = (value: number) =>
+    metric.format === "integer"
+      ? String(Math.round(value))
+      : compactFormatter.format(value);
 
   return (
     <div
@@ -114,10 +135,12 @@ export function AnalyticsView({
 
       <AnalyticsChart
         plot={plot}
+        metric={metric}
         bucket={bucket}
         dimension={dimension}
         chartKind={chartKind}
         formatValue={formatValue}
+        formatTick={formatTick}
         fullView={fullView}
       />
 
@@ -206,26 +229,36 @@ function AnalyticsControls({
         role="group"
         aria-label="Chart type"
       >
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-pressed={chartKind === "bar"}
-          aria-label="Bar chart"
-          onClick={() => onChange({ chart: "bar" })}
-          className={cn(chartKind === "bar" && "bg-muted hover:bg-muted")}
-        >
-          <ChartColumn className="size-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-pressed={chartKind === "line"}
-          aria-label="Line chart"
-          onClick={() => onChange({ chart: "line" })}
-          className={cn(chartKind === "line" && "bg-muted hover:bg-muted")}
-        >
-          <ChartLine className="size-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-pressed={chartKind === "bar"}
+              aria-label="Bar chart"
+              onClick={() => onChange({ chart: "bar" })}
+              className={cn(chartKind === "bar" && "bg-muted hover:bg-muted")}
+            >
+              <ChartColumn className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Bar chart</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-pressed={chartKind === "line"}
+              aria-label="Line chart"
+              onClick={() => onChange({ chart: "line" })}
+              className={cn(chartKind === "line" && "bg-muted hover:bg-muted")}
+            >
+              <ChartLine className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Line chart</TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );
@@ -233,17 +266,21 @@ function AnalyticsControls({
 
 function AnalyticsChart({
   plot,
+  metric,
   bucket,
   dimension,
   chartKind,
   formatValue,
+  formatTick,
   fullView,
 }: {
   plot: ReturnType<typeof buildPlot>;
+  metric: AnalyticsMetric;
   bucket: AnalyticsBucket;
   dimension: AnalyticsDimension;
   chartKind: AnalyticsConfig["chart"];
   formatValue: (value: number) => string;
+  formatTick: (value: number) => string;
   fullView: boolean;
 }) {
   const seriesLabels = useSeriesLabels();
@@ -275,7 +312,11 @@ function AnalyticsChart({
   const chartConfig: ChartConfig = {};
   for (const [index, seriesKey] of plot.seriesKeys.entries()) {
     chartConfig[`s${index}`] = {
-      label: seriesLabel(seriesLabels, dimension.dimension, seriesKey),
+      // An ungrouped plot names its single series after the metric.
+      label:
+        dimension.key === "none"
+          ? metric.label
+          : seriesLabel(seriesLabels, dimension.dimension, seriesKey),
       color: seriesColor(seriesLabels, dimension.dimension, seriesKey, index),
     };
   }
@@ -302,6 +343,13 @@ function AnalyticsChart({
             tickMargin={4}
             minTickGap={24}
           />
+          <YAxis
+            width={40}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value) => formatTick(value as number)}
+          />
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -317,7 +365,8 @@ function AnalyticsChart({
               dataKey={`s${index}`}
               stroke={`var(--color-s${index})`}
               strokeWidth={1.5}
-              dot={false}
+              // A single point draws nothing as a bare line; give it a dot.
+              dot={chartData.length === 1 ? { r: 2.5, strokeWidth: 0 } : false}
               activeDot={{ r: 3, strokeWidth: 0 }}
               isAnimationActive={false}
             />
@@ -337,6 +386,13 @@ function AnalyticsChart({
             tickMargin={4}
             minTickGap={12}
           />
+          <YAxis
+            width={40}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            tickFormatter={(value) => formatTick(value as number)}
+          />
           <ChartTooltip
             content={
               <ChartTooltipContent
@@ -350,7 +406,8 @@ function AnalyticsChart({
               key={seriesKey}
               dataKey={`s${index}`}
               fill={`var(--color-s${index})`}
-              radius={[2, 2, 0, 0]}
+              // No rounded corners: net metrics flip sign and a fixed
+              // radius rounds the wrong end of negative bars.
               isAnimationActive={false}
             />
           ))}
@@ -400,7 +457,9 @@ function AnalyticsDataTable({
                 {columnLabel(columnKey)}
               </th>
             ))}
-            <th className="border-b px-3 py-2 text-right font-medium">Total</th>
+            <th className="border-b border-l px-3 py-2 text-right font-medium">
+              Total
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -427,21 +486,49 @@ function AnalyticsDataTable({
                     : seriesLabel(seriesLabels, dimension.dimension, seriesKey)}
                 </span>
               </th>
-              {plot.columnKeys.map((columnKey) => (
-                <td
-                  key={columnKey}
-                  className="px-3 py-2 text-right font-mono whitespace-nowrap tabular-nums"
-                >
-                  {formatValue(
-                    plot.values.get(`${seriesKey}|${columnKey}`) ?? 0,
-                  )}
-                </td>
-              ))}
-              <td className="px-3 py-2 text-right font-mono font-medium whitespace-nowrap tabular-nums">
+              {plot.columnKeys.map((columnKey) => {
+                const value = plot.values.get(`${seriesKey}|${columnKey}`) ?? 0;
+                return (
+                  <td
+                    key={columnKey}
+                    className={cn(
+                      "px-3 py-2 text-right font-mono whitespace-nowrap tabular-nums",
+                      // Zeros stay visible but quiet: a sparse plot
+                      // reads by where the numbers are.
+                      value === 0 && "text-muted-foreground/50",
+                    )}
+                  >
+                    {formatValue(value)}
+                  </td>
+                );
+              })}
+              <td className="border-l px-3 py-2 text-right font-mono font-medium whitespace-nowrap tabular-nums">
                 {formatValue(plot.rowTotals.get(seriesKey) ?? 0)}
               </td>
             </tr>
           ))}
+
+          {plot.seriesKeys.length > 1 && (
+            <tr className="border-t">
+              <th
+                scope="row"
+                className="sticky left-0 z-10 bg-card px-3 py-2 text-left font-medium whitespace-nowrap"
+              >
+                Total
+              </th>
+              {plot.columnKeys.map((columnKey) => (
+                <td
+                  key={columnKey}
+                  className="px-3 py-2 text-right font-mono font-medium whitespace-nowrap tabular-nums"
+                >
+                  {formatValue(plot.columnTotals.get(columnKey) ?? 0)}
+                </td>
+              ))}
+              <td className="border-l px-3 py-2 text-right font-mono font-medium whitespace-nowrap tabular-nums">
+                {formatValue(plot.total)}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
