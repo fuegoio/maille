@@ -154,6 +154,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" && (
             <CategorySummary category={category} />
@@ -162,6 +163,13 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           {panelState.panel === "analytics" && (
             <ActivitiesAnalytics
               activities={filteredActivities}
+              viewId="categories-activities"
+              defaults={{
+                y: "net",
+                x: "month",
+                groupBy: "subcategory",
+                chart: "bar",
+              }}
               fullView={panelState.fullView}
             />
           )}

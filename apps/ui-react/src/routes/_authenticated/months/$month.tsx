@@ -293,6 +293,7 @@ function MonthPage() {
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" &&
             (selectedTab === "activities" ? (
@@ -318,24 +319,26 @@ function MonthPage() {
             (selectedTab === "activities" ? (
               <ActivitiesAnalytics
                 activities={filteredActivities}
+                viewId="months-activities"
+                defaults={{
+                  y: "net",
+                  x: "day",
+                  groupBy: "type",
+                  chart: "bar",
+                }}
                 fullView={panelState.fullView}
-                filters={activitiesFilters}
-                onFilter={(patch) =>
-                  setActivitiesFilters((prev) => ({ ...prev, ...patch }))
-                }
-                showFundMoves
               />
             ) : (
               <MovementsAnalytics
                 movements={filteredMovements}
+                viewId="months-movements"
+                defaults={{
+                  y: "net",
+                  x: "day",
+                  groupBy: "none",
+                  chart: "bar",
+                }}
                 fullView={panelState.fullView}
-                accountFilter={activitiesFilters.account ?? null}
-                onAccountSelect={(account) =>
-                  setActivitiesFilters((prev) => ({
-                    ...prev,
-                    account: account ?? undefined,
-                  }))
-                }
               />
             ))}
 

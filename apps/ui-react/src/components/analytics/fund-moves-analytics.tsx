@@ -1,84 +1,130 @@
-import type { FundMove } from "@maille/core/funds";
-
 import { useMemo } from "react";
 
+import type { AnalyticsConfig } from "@/stores/analytics";
+
 import {
-  AnalyticsEmpty,
-  AnalyticsSection,
-} from "@/components/analytics/analytics-section";
-import { AmountPairsValue } from "@/components/shared/amount-pairs";
+  countMetric,
+  inMetric,
+  netMetric,
+  outMetric,
+  TEMPORAL_BUCKETS,
+  NONE_DIMENSION,
+  type AnalyticsBucket,
+  type AnalyticsDatum,
+  type AnalyticsDimension,
+  type AnalyticsMetric,
+} from "@/components/analytics/analytics-data";
+import { AnalyticsView } from "@/components/analytics/analytics-view";
+import { searchCompare } from "@/lib/strings";
+import { getFundMovesRows } from "@/logic/funds";
+import { useAccounts } from "@/stores/accounts";
+import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
+import { useViewSearch } from "@/stores/search";
+
+const FUND_MOVES_METRICS: AnalyticsMetric[] = [
+  countMetric,
+  inMetric,
+  outMetric,
+  netMetric,
+];
+
+const FUND_MOVES_BUCKETS: AnalyticsBucket[] = [
+  ...TEMPORAL_BUCKETS,
+  {
+    key: "counterpartFund",
+    label: "Counterpart",
+    dimension: "counterpartFund",
+  },
+  { key: "direction", label: "Direction", dimension: "direction" },
+];
+
+const FUND_MOVES_DIMENSIONS: AnalyticsDimension[] = [
+  NONE_DIMENSION,
+  {
+    key: "counterpartFund",
+    label: "Counterpart",
+    dimension: "counterpartFund",
+  },
+  { key: "direction", label: "Direction", dimension: "direction" },
+];
+
+interface FundMovesAnalyticsProps {
+  /** The fund whose moves to analyze; null is Untracked. */
+  fundId: string | null;
+  subtree?: boolean;
+  /** Only moves whose transaction touches this account. */
+  accountFilter?: string | null;
+  /** The view the chart configuration persists under. */
+  viewId: string;
+  defaults: AnalyticsConfig;
+  fullView?: boolean;
+}
 
 /**
- * Fund moves by fund: what flowed into and out of every fund touched by
- * the set's transactions, Untracked included. Null sides are Untracked —
- * money entering or leaving the tracked funds.
+ * Fund moves analytics: any metric (count, in, out, net) over any
+ * bucket (time, counterpart fund, direction), grouped by any dimension —
+ * the chart above the table of the plotted data. Describes the same
+ * set the fund moves table shows.
  */
-export function FundMovesBreakdown({ moves }: { moves: FundMove[] }) {
+export function FundMovesAnalytics({
+  fundId,
+  subtree = false,
+  accountFilter = null,
+  viewId,
+  defaults,
+  fullView = false,
+}: FundMovesAnalyticsProps) {
+  const activities = useActivities((state) => state.activities);
+  const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
+  const { search } = useViewSearch();
 
-  const rows = useMemo(() => {
-    const byFund = new Map<string | null, { in: number; out: number }>();
-    for (const move of moves) {
-      if (move.toFund !== null) {
-        const entry = byFund.get(move.toFund) ?? { in: 0, out: 0 };
-        entry.in += move.amount;
-        byFund.set(move.toFund, entry);
-      }
-      if (move.fromFund !== null) {
-        const entry = byFund.get(move.fromFund) ?? { in: 0, out: 0 };
-        entry.out += move.amount;
-        byFund.set(move.fromFund, entry);
-      }
-    }
+  const data = useMemo<AnalyticsDatum[]>(() => {
+    const rows = getFundMovesRows({
+      activities,
+      accounts,
+      funds,
+      fundId,
+      subtree,
+    });
 
-    return [...byFund.entries()]
-      .map(([fundId, entry]) => ({
-        fund: funds.find((f) => f.id === fundId) ?? null,
-        fundId,
-        net: entry.in - entry.out,
-        pairs: [
-          { dot: "bg-green-400", amount: entry.in },
-          { dot: "bg-red-400", amount: -entry.out },
-        ],
-      }))
-      .sort((a, b) => Math.abs(b.net) - Math.abs(a.net));
-  }, [moves, funds]);
-
-  if (moves.length === 0 || rows.length === 0) {
-    return (
-      <AnalyticsSection title="Fund moves">
-        <AnalyticsEmpty>No fund move in this view.</AnalyticsEmpty>
-      </AnalyticsSection>
-    );
-  }
+    return rows
+      .filter((row) => {
+        if (accountFilter !== null) {
+          if (
+            !row.accounts ||
+            (row.accounts.from !== accountFilter &&
+              row.accounts.to !== accountFilter)
+          ) {
+            return false;
+          }
+        }
+        if (!search) return true;
+        return (
+          row.activity !== null && searchCompare(search, row.activity.name)
+        );
+      })
+      .map((row) => ({
+        date: row.date,
+        count: 1,
+        amount: row.direction === "in" ? row.amount : -row.amount,
+        in: row.direction === "in" ? row.amount : 0,
+        out: row.direction === "out" ? row.amount : 0,
+        counterpartFund: row.direction === "in" ? row.fromFund : row.toFund,
+        direction: row.direction,
+      }));
+  }, [activities, accounts, funds, fundId, subtree, accountFilter, search]);
 
   return (
-    <AnalyticsSection title="Fund moves">
-      <div className="flex flex-col">
-        {rows.map((row) => (
-          <div
-            key={row.fundId ?? "untracked"}
-            className="flex min-w-0 items-center gap-2 rounded px-2 py-1.5 transition-colors hover:bg-muted/50"
-          >
-            <div
-              className="size-3 shrink-0 rounded-sm"
-              style={
-                row.fund
-                  ? { backgroundColor: row.fund.color }
-                  : {
-                      backgroundColor:
-                        "color-mix(in srgb, currentColor 40%, transparent)",
-                    }
-              }
-            />
-            <div className="min-w-0 truncate text-sm">
-              {row.fund ? row.fund.name : "Untracked"}
-            </div>
-            <AmountPairsValue pairs={row.pairs} className="ml-auto text-sm" />
-          </div>
-        ))}
-      </div>
-    </AnalyticsSection>
+    <AnalyticsView
+      viewId={viewId}
+      data={data}
+      metrics={FUND_MOVES_METRICS}
+      buckets={FUND_MOVES_BUCKETS}
+      dimensions={FUND_MOVES_DIMENSIONS}
+      defaults={defaults}
+      fullView={fullView}
+    />
   );
 }

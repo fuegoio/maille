@@ -263,6 +263,7 @@ function SubcategoryPage({
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" && (
             <>
@@ -346,6 +347,13 @@ function SubcategoryPage({
           {panelState.panel === "analytics" && (
             <ActivitiesAnalytics
               activities={filteredActivities}
+              viewId="subcategories-activities"
+              defaults={{
+                y: "net",
+                x: "month",
+                groupBy: "none",
+                chart: "bar",
+              }}
               fullView={panelState.fullView}
             />
           )}

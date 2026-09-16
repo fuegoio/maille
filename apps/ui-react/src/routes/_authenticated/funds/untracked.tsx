@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { FundMovesAnalytics } from "@/components/funds/fund-moves-analytics";
+import { FundMovesAnalytics } from "@/components/analytics/fund-moves-analytics";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSummary } from "@/components/funds/fund-summary";
 import {
@@ -93,6 +93,7 @@ function UntrackedFundPage() {
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" && (
             <FundSummary
@@ -106,6 +107,13 @@ function UntrackedFundPage() {
 
           {panelState.panel === "analytics" && (
             <FundMovesAnalytics
+              viewId="funds-moves"
+              defaults={{
+                y: "net",
+                x: "month",
+                groupBy: "counterpartFund",
+                chart: "bar",
+              }}
               fundId={null}
               accountFilter={accountFilter}
               fullView={panelState.fullView}

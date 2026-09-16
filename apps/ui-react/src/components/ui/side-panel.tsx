@@ -20,6 +20,11 @@ interface SidePanelProps {
   onToggleFullView?: () => void;
   width?: "md" | "lg";
   actions?: React.ReactNode;
+  /**
+   * False for panels managing their own internal scroll (analytics pins
+   * its controls and chart, scrolling only the data table).
+   */
+  scrollable?: boolean;
   children: React.ReactNode;
 }
 
@@ -36,6 +41,7 @@ export function SidePanel({
   onToggleFullView,
   width = "md",
   actions,
+  scrollable = true,
   children,
 }: SidePanelProps) {
   return (
@@ -82,7 +88,15 @@ export function SidePanel({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+      <div
+        className={
+          scrollable
+            ? "min-h-0 flex-1 overflow-y-auto"
+            : "flex min-h-0 flex-1 flex-col overflow-hidden"
+        }
+      >
+        {children}
+      </div>
     </aside>
   );
 }

@@ -180,6 +180,7 @@ function ProjectPage({ project }: { project: Project }) {
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" && (
             <ProjectSummary
@@ -192,11 +193,14 @@ function ProjectPage({ project }: { project: Project }) {
           {panelState.panel === "analytics" && (
             <ActivitiesAnalytics
               activities={filteredActivities}
+              viewId="projects-activities"
+              defaults={{
+                y: "net",
+                x: "month",
+                groupBy: "type",
+                chart: "bar",
+              }}
               fullView={panelState.fullView}
-              filters={activitiesFilters}
-              onFilter={(patch) =>
-                setActivitiesFilters((prev) => ({ ...prev, ...patch }))
-              }
             />
           )}
         </SidePanel>

@@ -3,8 +3,8 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Plus, Settings } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { FundMovesAnalytics } from "@/components/analytics/fund-moves-analytics";
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
-import { FundMovesAnalytics } from "@/components/funds/fund-moves-analytics";
 import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
@@ -166,6 +166,7 @@ function FundPage() {
               ? () => setFullView(viewId, !panelState.fullView)
               : undefined
           }
+          scrollable={panelState.panel !== "analytics"}
         >
           {panelState.panel === "summary" && (
             <FundSummary
@@ -181,6 +182,13 @@ function FundPage() {
 
           {panelState.panel === "analytics" && (
             <FundMovesAnalytics
+              viewId="funds-moves"
+              defaults={{
+                y: "net",
+                x: "month",
+                groupBy: "counterpartFund",
+                chart: "bar",
+              }}
               fundId={fund.id}
               subtree={subfundFilter !== "none"}
               accountFilter={accountFilter}

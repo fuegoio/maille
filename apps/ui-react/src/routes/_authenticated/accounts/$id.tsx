@@ -417,11 +417,25 @@ function AccountPage({ account }: { account: Account }) {
                 <TransactionsAnalytics
                   accountId={account.id}
                   fundFilter={fundFilter}
+                  viewId="account-transactions"
+                  defaults={{
+                    y: "net",
+                    x: "day",
+                    groupBy: "fund",
+                    chart: "bar",
+                  }}
                   fullView={panelState.fullView}
                 />
               ) : (
                 <MovementsAnalytics
                   movements={filteredMovements}
+                  viewId="account-movements"
+                  defaults={{
+                    y: "net",
+                    x: "day",
+                    groupBy: "none",
+                    chart: "bar",
+                  }}
                   fullView={panelState.fullView}
                 />
               ))}
