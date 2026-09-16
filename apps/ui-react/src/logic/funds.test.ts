@@ -21,6 +21,7 @@ import {
   getTransactionSideFund,
   getUntrackedBalanceAtDate,
   getUntrackedByAccountAtDate,
+  isLegNullSideUntracked,
 } from "./funds";
 
 const fund = (id: string, parentFund: string | null = null): Fund => ({
@@ -570,6 +571,107 @@ describe("activity fund touches (ui logic)", () => {
     ]);
     expect(activityTouchesFund(a, "house")).toBe(true);
     expect(activityTouchesFund(a, null)).toBe(true);
+  });
+});
+
+describe("leg null side meaning (ui logic)", () => {
+  const accounts = [
+    account("checking", 0),
+    account("savings", 0, AccountType.INVESTMENT_ACCOUNT),
+    account("groceries", 0, AccountType.EXPENSE),
+    account("salary", 0, AccountType.REVENUE),
+  ];
+
+  it("an expense counterpart on the null to-side is outside the balance sheet", () => {
+    // Paid from fund house toward groceries: Untracked never sees the money
+    const leg = move({
+      id: "m1",
+      fromFund: "house",
+      toFund: null,
+      amount: 100,
+    });
+    expect(
+      isLegNullSideUntracked(
+        leg,
+        transaction("t1", 100, "checking", "groceries"),
+        accounts,
+      ),
+    ).toBe(false);
+  });
+
+  it("a revenue counterpart on the null from-side is outside the balance sheet", () => {
+    // Salary assigned to fund house: the money was never Untracked
+    const leg = move({
+      id: "m2",
+      fromFund: null,
+      toFund: "house",
+      amount: 100,
+    });
+    expect(
+      isLegNullSideUntracked(
+        leg,
+        transaction("t2", 100, "salary", "checking"),
+        accounts,
+      ),
+    ).toBe(false);
+  });
+
+  it("a balance counterpart on the null side is Untracked", () => {
+    // Fund house released into savings: lands Untracked
+    const released = move({
+      id: "m3",
+      fromFund: "house",
+      toFund: null,
+      amount: 50,
+    });
+    expect(
+      isLegNullSideUntracked(
+        released,
+        transaction("t3", 50, "checking", "savings"),
+        accounts,
+      ),
+    ).toBe(true);
+
+    // Untracked money pinned into fund house
+    const pinned = move({
+      id: "m4",
+      fromFund: null,
+      toFund: "house",
+      amount: 50,
+    });
+    expect(
+      isLegNullSideUntracked(
+        pinned,
+        transaction("t4", 50, "checking", "savings"),
+        accounts,
+      ),
+    ).toBe(true);
+  });
+
+  it("a leg without a transaction is Untracked", () => {
+    const leg = move({
+      id: "m5",
+      fromFund: "house",
+      toFund: null,
+      amount: 100,
+    });
+    expect(isLegNullSideUntracked(leg, null, accounts)).toBe(true);
+  });
+
+  it("fully named legs have no null side", () => {
+    const leg = move({
+      id: "m6",
+      fromFund: "house",
+      toFund: "car",
+      amount: 100,
+    });
+    expect(
+      isLegNullSideUntracked(
+        leg,
+        transaction("t6", 100, "checking", "groceries"),
+        accounts,
+      ),
+    ).toBe(true);
   });
 });
 

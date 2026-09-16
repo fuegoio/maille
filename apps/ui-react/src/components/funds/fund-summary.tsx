@@ -35,6 +35,7 @@ import {
   getFundTreeSpreadAcrossAccounts,
   getUntrackedBalanceAtDate,
   getUntrackedByAccountAtDate,
+  isLegNullSideUntracked,
 } from "@/logic/funds";
 import {
   useAccounts,
@@ -135,6 +136,20 @@ export function FundSummary({
   const balance = getFundBalanceAtDate(today);
   const balancePrev = getFundBalanceAtDate(thirtyDaysAgo);
 
+  // A leg's null side facing an Expense or Revenue account is the outside
+  // of the balance sheet, not Untracked — those legs never move Untracked
+  // money and stay out of its flows. The transaction's account movement
+  // tells the two null meanings apart.
+  const transactionAccountsById = useMemo(() => {
+    const map = new Map<string, { fromAccount: string; toAccount: string }>();
+    for (const activity of activities) {
+      for (const transaction of activity.transactions) {
+        map.set(transaction.id, transaction);
+      }
+    }
+    return map;
+  }, [activities]);
+
   const flows =
     fundId === null || !user
       ? {
@@ -143,7 +158,14 @@ export function FundSummary({
               (m) =>
                 m.date.getTime() >= thirtyDaysAgo.getTime() &&
                 m.toFund === null &&
-                m.fromFund !== null,
+                m.fromFund !== null &&
+                isLegNullSideUntracked(
+                  m,
+                  m.transaction
+                    ? (transactionAccountsById.get(m.transaction) ?? null)
+                    : null,
+                  accounts,
+                ),
             )
             .reduce((total, m) => total + m.amount, 0),
           // New opening allocations claim money out of Untracked.
@@ -153,7 +175,14 @@ export function FundSummary({
                 (m) =>
                   m.date.getTime() >= thirtyDaysAgo.getTime() &&
                   m.fromFund === null &&
-                  m.toFund !== null,
+                  m.toFund !== null &&
+                  isLegNullSideUntracked(
+                    m,
+                    m.transaction
+                      ? (transactionAccountsById.get(m.transaction) ?? null)
+                      : null,
+                    accounts,
+                  ),
               )
               .reduce((total, m) => total + m.amount, 0) +
             (user

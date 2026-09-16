@@ -20,6 +20,7 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { isLegNullSideUntracked } from "@/logic/funds";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
@@ -60,6 +61,7 @@ export function FundMovesTable({
 }: FundMovesTableProps) {
   const contextNavigate = useContextNavigate();
   const funds = useFunds((state) => state.funds);
+  const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
 
@@ -89,6 +91,10 @@ export function FundMovesTable({
           const toInside = inScope(leg.toFund);
           if (scopeIds === null) {
             if (leg.fromFund !== null && leg.toFund !== null) continue;
+            // A null side facing an Expense or Revenue account is the
+            // outside of the balance sheet, not Untracked: those legs
+            // never move Untracked money and stay off the page.
+            if (!isLegNullSideUntracked(leg, transaction, accounts)) continue;
           } else if (fromInside === toInside) {
             continue;
           }
@@ -123,7 +129,7 @@ export function FundMovesTable({
       }
     }
     return result;
-  }, [activities, scopeIds, subtree, fundId]);
+  }, [activities, scopeIds, subtree, fundId, accounts]);
 
   const rows = React.useMemo<FundMoveWithActivity[]>(
     () =>
