@@ -4,6 +4,9 @@ import Logo from "../components/Logo.astro";
 import Screenshot from "../components/Screenshot.astro";
 
 const repo = "https://github.com/fuegoio/maille";
+// TODO: point these at the hosted app once its domain is settled.
+const signupUrl = "#";
+const loginUrl = "#";
 
 const features = [
   {
@@ -56,8 +59,9 @@ const facts = [
   title="Maille — a precise, double-entry personal ledger"
   description="Maille is a personal finance tool for developers built on a strict double-entry ledger: every euro fully accounted for, reconciliation explicit, sharing computed."
 >
-  <header class="sticky top-0 z-10 border-b bg-background">
-    <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+  <div class="mx-auto flex min-h-dvh w-full max-w-5xl flex-col border-x">
+    <header class="sticky top-0 z-10 border-b bg-background">
+      <div class="flex h-14 items-center justify-between px-6">
       <a href="/" class="flex items-center gap-2.5 font-serif text-xl">
         <Logo class="h-5 w-8 text-primary" />
         Maille
@@ -93,9 +97,9 @@ const facts = [
   </header>
 
   <main>
-    <section class="mx-auto max-w-6xl px-6 pt-24 pb-16 text-center md:pt-36">
+    <section class="px-6 pt-24 pb-16 text-center md:pt-36">
       <p class="rise-in text-sm text-muted-foreground">
-        Self-hosted personal finance for developers
+        Personal finance for developers, hosted or self-hosted
       </p>
       <h1 class="rise-in mt-6 text-5xl" style="animation-delay: 60ms">
         Every euro, fully accounted for.
@@ -108,16 +112,22 @@ const facts = [
       </p>
       <div class="rise-in mt-10 flex flex-wrap items-center justify-center gap-4" style="animation-delay: 180ms">
         <a
-          href={repo}
-          class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90"
+          href={signupUrl}
+          class="inline-flex h-10 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
-          Self-host it
+          Sign up
         </a>
         <a
-          href="#model"
-          class="inline-flex h-10 items-center rounded-md px-5 text-sm text-foreground underline-offset-4 hover:underline"
+          href={loginUrl}
+          class="inline-flex h-10 items-center rounded-md border px-5 text-sm text-foreground hover:bg-muted/50"
         >
-          See the model
+          Log in
+        </a>
+        <a
+          href={repo}
+          class="ml-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          or self-host it
         </a>
       </div>
       <div class="rise-in mt-20" style="animation-delay: 240ms">
@@ -126,7 +136,7 @@ const facts = [
     </section>
 
     <section id="model" class="border-t">
-      <div class="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2 md:py-32">
+      <div class="grid gap-12 px-6 py-24 md:grid-cols-2 md:py-32">
         <div>
           <h2 class="text-4xl">Every activity is a balanced transaction.</h2>
           <p class="mt-6 text-lg text-muted-foreground">
@@ -174,7 +184,7 @@ const facts = [
     </section>
 
     <section id="screens" class="border-t">
-      <div class="mx-auto max-w-6xl px-6 py-24 md:py-32">
+      <div class="px-6 py-24 md:py-32">
         <div class="max-w-2xl">
           <h2 class="text-4xl">The interface exposes the structure.</h2>
           <p class="mt-6 text-lg text-muted-foreground">
@@ -212,7 +222,7 @@ const facts = [
     </section>
 
     <section id="developers" class="border-t">
-      <div class="mx-auto max-w-6xl px-6 py-24 md:py-32">
+      <div class="px-6 py-24 md:py-32">
         <div class="max-w-2xl">
           <h2 class="text-4xl">Built to be owned.</h2>
           <p class="mt-6 text-lg text-muted-foreground">
@@ -238,7 +248,7 @@ const facts = [
   </main>
 
   <footer class="border-t">
-    <div class="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 py-10 md:flex-row md:items-center">
+    <div class="flex flex-col items-start justify-between gap-6 px-6 py-10 md:flex-row md:items-center">
       <div>
         <p class="flex items-center gap-2.5 font-serif text-xl">
           <Logo class="h-5 w-8 text-primary" />
@@ -255,4 +265,5 @@ const facts = [
       </nav>
     </div>
   </footer>
+  </div>
 </Layout>
