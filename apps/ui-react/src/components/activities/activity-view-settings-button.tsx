@@ -38,7 +38,7 @@ export function ActivityViewSettingsButton({
       onConfigChange={handleConfigChange}
       className={className}
     >
-      <div className="flex h-7 items-center justify-between rounded-sm pr-1 pl-1 text-sm hover:bg-muted/50">
+      <label className="flex min-h-8 cursor-pointer items-center justify-between gap-3 text-[13px]">
         <span>Show transactions</span>
         <Switch
           size="sm"
@@ -48,7 +48,7 @@ export function ActivityViewSettingsButton({
             setActivityView(viewId, { ...activityView, showTransactions })
           }
         />
-      </div>
+      </label>
     </ViewSettingsButton>
   );
 }

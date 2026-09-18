@@ -8,7 +8,6 @@ import * as React from "react";
 import type { ViewConfig, ViewDescriptor } from "@/types/views";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -21,27 +20,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface ViewSettingsButtonProps {
   descriptor: ViewDescriptor;
   config: ViewConfig;
   onConfigChange: (update: Partial<ViewConfig>) => void;
-  /** Resource-specific options, rendered above the shared sections. */
+  /** Resource-specific options, rendered between the separators. */
   children?: React.ReactNode;
   className?: string;
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <header className="text-xs font-medium text-muted-foreground">
-      {children}
-    </header>
-  );
-}
+const selectClassName =
+  "w-full min-w-0 border-border/60 bg-muted/40 px-2 text-xs hover:bg-muted dark:bg-muted/40 dark:hover:bg-muted";
 
 /**
- * The generic view settings popover: toggles the row fields, picks the
- * ordering and the grouping from a resource's view descriptor. Anything
+ * The generic view settings popover: picks the ordering and grouping,
+ * toggles the row fields from a resource's view descriptor. Anything
  * resource-specific (e.g. showing an activity's transactions) is passed
  * as children.
  */
@@ -52,17 +48,6 @@ export function ViewSettingsButton({
   children,
   className,
 }: ViewSettingsButtonProps) {
-  const toggleField = (field: string, visible: boolean) => {
-    // Rebuilt in descriptor order so the display order stays canonical.
-    onConfigChange({
-      fields: descriptor.fields
-        .map((option) => option.value)
-        .filter((value) =>
-          value === field ? visible : config.fields.includes(value),
-        ),
-    });
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -75,32 +60,43 @@ export function ViewSettingsButton({
           <SlidersHorizontal />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-60 gap-4 p-3">
-        {children}
-
-        <section className="flex flex-col gap-1">
-          <SectionTitle>Fields</SectionTitle>
-          {descriptor.fields.map((field) => (
-            <label
-              key={field.value}
-              className="flex h-7 items-center rounded-sm pr-1 pl-1 text-sm hover:bg-muted/50"
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        aria-label="View settings"
+        onKeyDown={(event) => {
+          // Keep table shortcuts from intercepting the popover's controls.
+          if (event.key !== "Escape") event.stopPropagation();
+        }}
+        className="max-h-(--radix-popover-content-available-height) w-80 max-w-[calc(100vw-1.5rem)] gap-0 overflow-y-auto p-0 motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
+      >
+        <section
+          aria-label="Grouping and ordering"
+          className="grid grid-cols-[minmax(0,1fr)_9.5rem] items-center gap-x-3 gap-y-2 px-3 py-3 text-[13px]"
+        >
+          <span>Grouping</span>
+          <Select
+            value={config.grouping}
+            onValueChange={(grouping) => onConfigChange({ grouping })}
+          >
+            <SelectTrigger
+              size="sm"
+              aria-label="Grouping"
+              className={selectClassName}
             >
-              <Checkbox
-                checked={config.fields.includes(field.value)}
-                disabled={field.locked}
-                onCheckedChange={(checked) =>
-                  toggleField(field.value, checked === true)
-                }
-                className="mr-2"
-              />
-              {field.text}
-            </label>
-          ))}
-        </section>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="motion-reduce:animate-none">
+              {descriptor.groupings.map((grouping) => (
+                <SelectItem key={grouping.value} value={grouping.value}>
+                  {grouping.text}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <section className="flex flex-col gap-1.5">
-          <SectionTitle>Ordering</SectionTitle>
-          <div className="flex items-center gap-1.5">
+          <span>Ordering</span>
+          <div className="flex min-w-0 items-center gap-1">
             <Select
               value={config.ordering.field}
               onValueChange={(field) =>
@@ -109,10 +105,14 @@ export function ViewSettingsButton({
                 })
               }
             >
-              <SelectTrigger size="sm" className="flex-1">
+              <SelectTrigger
+                size="sm"
+                aria-label="Ordering"
+                className={selectClassName}
+              >
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="motion-reduce:animate-none">
                 {descriptor.orderings.map((ordering) => (
                   <SelectItem key={ordering.value} value={ordering.value}>
                     {ordering.text}
@@ -121,10 +121,15 @@ export function ViewSettingsButton({
               </SelectContent>
             </Select>
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon-sm"
               aria-label={
                 config.ordering.direction === "asc" ? "Ascending" : "Descending"
+              }
+              title={
+                config.ordering.direction === "asc"
+                  ? "Ascending — switch to descending"
+                  : "Descending — switch to ascending"
               }
               onClick={() =>
                 onConfigChange({
@@ -145,23 +150,54 @@ export function ViewSettingsButton({
           </div>
         </section>
 
-        <section className="flex flex-col gap-1.5">
-          <SectionTitle>Grouping</SectionTitle>
-          <Select
-            value={config.grouping}
-            onValueChange={(grouping) => onConfigChange({ grouping })}
+        {children && (
+          <>
+            <Separator />
+            <div className="px-3 py-2">{children}</div>
+          </>
+        )}
+
+        <Separator />
+
+        <section className="flex flex-col gap-2 px-3 py-3">
+          <h3 className="text-xs font-medium text-muted-foreground">Fields</h3>
+          <ToggleGroup
+            type="multiple"
+            variant="outline"
+            size="sm"
+            spacing={1}
+            className="w-full flex-wrap justify-start gap-1"
+            aria-label="Visible fields"
+            value={descriptor.fields
+              .filter(
+                (field) => field.locked || config.fields.includes(field.value),
+              )
+              .map((field) => field.value)}
+            onValueChange={(fields) =>
+              onConfigChange({
+                fields: descriptor.fields
+                  .filter(
+                    (field) => field.locked || fields.includes(field.value),
+                  )
+                  .map((field) => field.value),
+              })
+            }
           >
-            <SelectTrigger size="sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {descriptor.groupings.map((grouping) => (
-                <SelectItem key={grouping.value} value={grouping.value}>
-                  {grouping.text}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {descriptor.fields.map((field) => (
+              <ToggleGroupItem
+                key={field.value}
+                value={field.value}
+                aria-label={`Field: ${field.text}`}
+                title={
+                  field.locked ? `${field.text} is always visible` : field.text
+                }
+                disabled={field.locked}
+                className="px-2 text-xs font-normal text-muted-foreground disabled:opacity-60 data-[state=on]:border-foreground/25 data-[state=on]:bg-muted data-[state=on]:text-foreground"
+              >
+                {field.text}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
         </section>
       </PopoverContent>
     </Popover>
