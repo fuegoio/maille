@@ -14,12 +14,18 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useViewMutations } from "@/components/views/view-mutations";
 import {
   useScopeResources,
   VIEW_RESOURCES,
 } from "@/components/views/view-resources";
-import { cn } from "@/lib/utils";
 
 interface AddViewDialogProps {
   scope: ViewScope;
@@ -95,30 +101,31 @@ export function AddViewDialog({
 
           {resources.length > 1 && (
             <Field>
-              <FieldLabel>Displayed resource</FieldLabel>
-              <div className="flex flex-wrap gap-2">
-                {resources.map((entry) => {
-                  const definition = VIEW_RESOURCES[entry];
-                  const Icon = definition.icon;
-                  return (
-                    <Button
-                      key={entry}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      aria-pressed={resource === entry}
-                      onClick={() => setResource(entry)}
-                      className={cn(
-                        "gap-1.5",
-                        resource === entry && "border-foreground/30 bg-muted",
-                      )}
-                    >
-                      <Icon />
-                      {definition.label}
-                    </Button>
-                  );
-                })}
-              </div>
+              <FieldLabel htmlFor="new-view-resource">
+                Displayed resource
+              </FieldLabel>
+              <Select
+                value={resource}
+                onValueChange={(value) => setResource(value as ViewResource)}
+              >
+                <SelectTrigger id="new-view-resource">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {resources.map((entry) => {
+                    const definition = VIEW_RESOURCES[entry];
+                    const Icon = definition.icon;
+                    return (
+                      <SelectItem key={entry} value={entry}>
+                        <div className="flex items-center gap-1.5">
+                          <Icon />
+                          {definition.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </Field>
           )}
 
