@@ -1,7 +1,7 @@
 import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { Calendar, CalendarClock } from "lucide-react";
+import { Calendar, CalendarCheck, CalendarClock } from "lucide-react";
 import { useMemo } from "react";
 
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
@@ -105,6 +105,10 @@ export function MonthsTable() {
                     "bg-accent/50",
                 )}
               >
+                {monthDate <
+                  new Date(today.getFullYear(), today.getMonth(), 1) && (
+                  <CalendarCheck className="size-4 text-muted-foreground" />
+                )}
                 {monthDate > today && (
                   <CalendarClock className="size-4 text-muted-foreground" />
                 )}
