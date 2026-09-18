@@ -20,7 +20,6 @@ import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { viewGroupOrder } from "@/lib/view-grouping";
 import { sortViewRows } from "@/lib/view-ordering";
-import { getTransactionSideFund } from "@/logic/funds";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
@@ -28,96 +27,54 @@ import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import {
-  accountTransactionFunds,
+  buildTransactionRows,
   transactionFundGroup,
   transactionGroupAccessors,
   transactionOrderingAccessors,
-  type AccountTransaction,
+  type TransactionRow,
+  type TransactionViewFilter,
 } from "./transaction-view";
 import { useTransactionsEntityActions } from "./transactions-actions";
 import { TransactionsSelection } from "./transactions-selection";
 
-interface AccountTransactionsTableProps {
-  accountId: string;
+interface TransactionsTableProps {
+  filter: TransactionViewFilter;
   viewId: string;
-  /** Keep only transactions holding this fund on the account's side; null is Untracked. */
-  fundFilter?: string | null;
 }
 
-export function AccountTransactionsTable({
-  accountId,
-  viewId,
-  fundFilter,
-}: AccountTransactionsTableProps) {
+export function TransactionsTable({ filter, viewId }: TransactionsTableProps) {
   const contextNavigate = useContextNavigate();
   const activities = useActivities((state) => state.activities);
-  const { search } = useViewSearch();
-  const view = useViews((state) => state.getTransactionView(viewId));
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
+  const { search } = useViewSearch();
+  const view = useViews((state) => state.getTransactionView(viewId));
   const groupAccessors = React.useMemo(
     () => transactionGroupAccessors(accounts, funds),
     [accounts, funds],
   );
   const scrollRef = useScrollRestoration<HTMLDivElement>(
-    `transactions:${accountId}`,
+    `transactions:${viewId}`,
   );
 
-  const transactions = React.useMemo<AccountTransaction[]>(() => {
-    const result: AccountTransaction[] = [];
-
-    for (const activity of activities) {
-      for (const transaction of activity.transactions) {
-        if (transaction.toAccount === accountId) {
-          result.push({
-            id: transaction.id,
-            date: activity.date,
-            activity,
-            direction: "in",
-            counterpart: transaction.fromAccount,
-            fund: getTransactionSideFund(transaction, accountId),
-            fundIds: accountTransactionFunds(transaction, accountId),
-            amount: transaction.amount,
-          });
-        } else if (transaction.fromAccount === accountId) {
-          result.push({
-            id: transaction.id,
-            date: activity.date,
-            activity,
-            direction: "out",
-            counterpart: transaction.toAccount,
-            fund: getTransactionSideFund(transaction, accountId),
-            fundIds: accountTransactionFunds(transaction, accountId),
-            amount: transaction.amount,
-          });
-        }
-      }
-    }
-
-    return result;
-  }, [activities, accountId]);
+  const transactions = React.useMemo(
+    () => buildTransactionRows(activities, filter, accounts, funds),
+    [activities, filter, accounts, funds],
+  );
 
   const transactionsFiltered = React.useMemo(
     () => transactions.filter((t) => searchCompare(search, t.activity.name)),
     [transactions, search],
   );
 
-  const transactionsVisible = React.useMemo(
-    () =>
-      fundFilter === undefined
-        ? transactionsFiltered
-        : transactionsFiltered.filter((t) => t.fund === fundFilter),
-    [transactionsFiltered, fundFilter],
-  );
-
   const transactionsSorted = React.useMemo(
     () =>
       sortViewRows(
-        transactionsVisible,
+        transactionsFiltered,
         view.ordering,
         transactionOrderingAccessors,
       ),
-    [transactionsVisible, view.ordering],
+    [transactionsFiltered, view.ordering],
   );
   const { items, isFolded, toggleGroup } = useGroupedRows(
     transactionsSorted,
@@ -160,12 +117,12 @@ export function AccountTransactionsTable({
   });
 
   const entityActions = useTransactionsEntityActions(
-    accountId,
+    filter,
     selectedTransactions,
     clearSelectedTransactions,
   );
 
-  if (transactionsVisible.length === 0) {
+  if (transactionsFiltered.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center overflow-hidden">
         <div className="text-sm text-muted-foreground">
@@ -251,7 +208,7 @@ export function AccountTransactionsTable({
       </div>
 
       <TransactionsSelection
-        accountId={accountId}
+        filter={filter}
         selectedTransactions={selectedTransactions}
         onClearSelection={clearSelectedTransactions}
       />
@@ -267,7 +224,7 @@ function TransactionLine({
   outlineSides,
   onCheckedChange,
 }: {
-  transaction: AccountTransaction;
+  transaction: TransactionRow;
   fields: readonly string[];
   fullDate: boolean;
   checked: boolean;
@@ -280,7 +237,6 @@ function TransactionLine({
   const fund = transactionFundGroup(transaction, funds);
   const isInflow = transaction.direction === "in";
   const amount = isInflow ? transaction.amount : -transaction.amount;
-  const counterpart = accounts.find((a) => a.id === transaction.counterpart);
 
   const getStatusIcon = () => {
     if (transaction.activity.status === "scheduled") {
@@ -290,6 +246,51 @@ function TransactionLine({
     } else {
       return <CircleCheck className="size-4 shrink-0 text-primary" />;
     }
+  };
+
+  const renderCounterpart = () => {
+    const counterpart = transaction.counterpart;
+    if (counterpart.kind === "untracked") {
+      return (
+        <>
+          <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
+          <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+            Untracked
+          </span>
+        </>
+      );
+    }
+    if (counterpart.kind === "fund") {
+      const counterFund = funds.find((f) => f.id === counterpart.fund);
+      return (
+        <>
+          <div
+            className="size-3 shrink-0 rounded-sm"
+            style={{
+              backgroundColor: counterFund?.color ?? "transparent",
+            }}
+          />
+          <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+            {counterFund?.name ?? "Unknown fund"}
+          </span>
+        </>
+      );
+    }
+    const account = accounts.find((a) => a.id === counterpart.account);
+    if (!account) return null;
+    return (
+      <>
+        <div
+          className={cn(
+            "size-3 shrink-0 rounded-xl",
+            ACCOUNT_TYPES_COLOR[account.type],
+          )}
+        />
+        <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+          {account.name}
+        </span>
+      </>
+    );
   };
 
   return (
@@ -335,19 +336,7 @@ function TransactionLine({
         {fields.includes("counterpart") && (
           <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
             <span className="text-xs">{isInflow ? "from" : "to"}</span>
-            {counterpart && (
-              <>
-                <div
-                  className={cn(
-                    "size-3 shrink-0 rounded-xl",
-                    ACCOUNT_TYPES_COLOR[counterpart.type],
-                  )}
-                />
-                <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-                  {counterpart.name}
-                </span>
-              </>
-            )}
+            {renderCounterpart()}
           </div>
         )}
         {fields.includes("fund") && (

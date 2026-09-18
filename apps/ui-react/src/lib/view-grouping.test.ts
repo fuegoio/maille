@@ -3,25 +3,21 @@ import { ActivityType, type Activity } from "@maille/core/activities";
 import { describe, expect, it } from "vitest";
 
 import {
-  accountTransactionFunds,
-  transactionFundGroup,
-  transactionGroupAccessors,
-  transactionOrderingAccessors,
-  type AccountTransaction,
-} from "@/components/accounts/transaction-view";
-import {
   activityGroupAccessors,
   activityViewDescriptor,
   ACTIVITY_VIEW_GROUPINGS,
   visibleActivityAmountTypes,
 } from "@/components/activities/activity-view";
-import {
-  fundMoveFundGroup,
-  fundMoveGroupAccessors,
-  type FundMoveWithActivity,
-} from "@/components/funds/fund-move-view";
 import { movementGroupAccessors } from "@/components/movements/movement-view";
 import { computeRowOutlines } from "@/components/shared/row-outline";
+import {
+  accountTransactionFunds,
+  transactionCounterpartGroup,
+  transactionFundGroup,
+  transactionGroupAccessors,
+  transactionOrderingAccessors,
+  type TransactionRow,
+} from "@/components/transactions/transaction-view";
 
 import { groupViewRows, namedGroup, viewGroupOrder } from "./view-grouping";
 import { sortViewRows } from "./view-ordering";
@@ -188,11 +184,11 @@ describe("resource view semantics", () => {
     ).toEqual(["out", "zero", "in"]);
   });
 
-  it("sorts transaction amounts by their signed account perspective", () => {
+  it("sorts transaction amounts by their signed perspective", () => {
     const input = [
       { ...rows[0], amount: 10, direction: "in" },
       { ...rows[1], amount: 30, direction: "out" },
-    ] as unknown as AccountTransaction[];
+    ] as unknown as TransactionRow[];
     expect(
       sortViewRows(
         input,
@@ -237,31 +233,21 @@ describe("resource view semantics", () => {
     expect(accountTransactionFunds(fullyFunded, "bank")).toEqual(["one"]);
   });
 
-  it("groups external expense/revenue legs separately from Untracked", () => {
+  it("groups external expense/revenue counterparts separately from Untracked", () => {
     const accounts = [
       { id: "bank", name: "Bank", type: AccountType.BANK_ACCOUNT },
       { id: "expense", name: "Expense", type: AccountType.EXPENSE },
     ];
-    const move = {
-      direction: "out",
-      fromFund: "food",
-      toFund: null,
-      accounts: { from: "bank", to: "expense" },
-    } as FundMoveWithActivity;
-    expect(fundMoveFundGroup(move, "to", accounts, []).label).toBe("Expense");
     expect(
-      fundMoveFundGroup(
-        { ...move, accounts: { from: "bank", to: "bank" } },
-        "to",
+      transactionCounterpartGroup(
+        { kind: "external", account: "expense" },
         accounts,
         [],
-      ).label,
+      ),
+    ).toMatchObject({ key: "external:expense", label: "Expense" });
+    expect(
+      transactionCounterpartGroup({ kind: "untracked" }, accounts, []).label,
     ).toBe("Untracked");
-    const accessors = fundMoveGroupAccessors(accounts, [
-      { id: "food", name: "Food" },
-    ]);
-    expect(accessors.own(move).label).toBe("Food");
-    expect(accessors.counterpart(move).label).toBe("Expense");
   });
 });
 
@@ -326,12 +312,12 @@ describe("group presentation metadata", () => {
     ).toEqual({ kind: "account", type: AccountType.BANK_ACCOUNT });
     expect(
       transactionGroupAccessors(accounts, []).counterpart({
-        counterpart: "bank",
+        counterpart: { kind: "account", account: "bank" },
       } as never).marker,
     ).toEqual({ kind: "account", type: AccountType.BANK_ACCOUNT });
   });
 
-  it("keeps fund colors in transaction and fund-move groups, with explicit fallbacks", () => {
+  it("keeps fund colors in transaction groups, with explicit fallbacks", () => {
     const funds = [{ id: "food", name: "Food", color: "#336699" }];
     expect(transactionFundGroup({ fundIds: ["food"] }, funds).marker).toEqual({
       kind: "fund",
@@ -344,23 +330,10 @@ describe("group presentation metadata", () => {
     expect(
       transactionFundGroup({ fundIds: ["food", null] }, funds).marker,
     ).toEqual({ kind: "icon", name: "mixed-funds" });
-    const accessors = fundMoveGroupAccessors(
-      [{ id: "expense", name: "Expense", type: AccountType.EXPENSE }],
-      funds,
-    );
-    const row = {
-      fromFund: "food",
-      toFund: null,
-      accounts: { from: "bank", to: "expense" },
-    } as FundMoveWithActivity;
-    expect(accessors.fromFund(row).marker).toEqual({
-      kind: "fund",
-      color: "#336699",
-    });
-    expect(accessors.toFund(row).marker).toEqual({
-      kind: "account",
-      type: AccountType.EXPENSE,
-    });
+    expect(
+      transactionCounterpartGroup({ kind: "fund", fund: "food" }, [], funds)
+        .marker,
+    ).toEqual({ kind: "fund", color: "#336699" });
   });
 
   it("retains decoration on folded headers without changing their rows or keys", () => {

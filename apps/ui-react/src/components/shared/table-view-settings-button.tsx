@@ -1,8 +1,7 @@
 import type { ViewConfig } from "@/types/views";
 
-import { transactionViewDescriptor } from "@/components/accounts/transaction-view";
-import { fundMoveViewDescriptor } from "@/components/funds/fund-move-view";
 import { movementViewDescriptor } from "@/components/movements/movement-view";
+import { transactionViewDescriptor } from "@/components/transactions/transaction-view";
 import { useViews } from "@/stores/views";
 
 import { ViewSettingsButton } from "./view-settings-button";
@@ -11,22 +10,16 @@ export function TableViewSettingsButton({
   kind,
   viewId,
 }: {
-  kind: "movement" | "transaction" | "fundMove";
+  kind: "movement" | "transaction";
   viewId: string;
 }) {
   const view = useViews((state) =>
     kind === "movement"
       ? state.getMovementView(viewId)
-      : kind === "transaction"
-        ? state.getTransactionView(viewId)
-        : state.getFundMoveView(viewId),
+      : state.getTransactionView(viewId),
   );
   const descriptor =
-    kind === "movement"
-      ? movementViewDescriptor
-      : kind === "transaction"
-        ? transactionViewDescriptor
-        : fundMoveViewDescriptor;
+    kind === "movement" ? movementViewDescriptor : transactionViewDescriptor;
   const onConfigChange = (update: Partial<ViewConfig>) => {
     const state = useViews.getState();
     if (kind === "movement")
@@ -34,14 +27,9 @@ export function TableViewSettingsButton({
         ...state.getMovementView(viewId),
         ...update,
       });
-    else if (kind === "transaction")
+    else
       state.setTransactionView(viewId, {
         ...state.getTransactionView(viewId),
-        ...update,
-      });
-    else
-      state.setFundMoveView(viewId, {
-        ...state.getFundMoveView(viewId),
         ...update,
       });
   };

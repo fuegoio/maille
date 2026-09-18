@@ -6,13 +6,12 @@ import { persist } from "zustand/middleware";
 
 import type { ViewConfig } from "@/types/views";
 
-import { TRANSACTION_VIEW_FIELDS } from "@/components/accounts/transaction-view";
 import {
   ACTIVITY_AMOUNT_FIELDS,
   ACTIVITY_VIEW_FIELDS,
 } from "@/components/activities/activity-view";
-import { FUND_MOVE_VIEW_FIELDS } from "@/components/funds/fund-move-view";
 import { MOVEMENT_VIEW_FIELDS } from "@/components/movements/movement-view";
+import { TRANSACTION_VIEW_FIELDS } from "@/components/transactions/transaction-view";
 
 import { storage } from "./storage";
 
@@ -67,7 +66,10 @@ function isLegacyView(view: Partial<ViewConfig>): boolean {
 
 /** Upgrade old saved views without resetting filters or explicit field choices. */
 export function migrateViews(persisted: unknown) {
-  const state = persisted as Partial<ViewsState>;
+  // Fund move views were folded into transaction views; the stale key
+  // is dropped so it never comes back on rehydration.
+  const { fundMoveViews: _dropped, ...state } = (persisted ??
+    {}) as Partial<ViewsState> & { fundMoveViews?: unknown };
   return {
     ...state,
     activityViews: (state.activityViews ?? []).map((view) => ({
@@ -89,7 +91,6 @@ export function migrateViews(persisted: unknown) {
       ...view,
     })),
     transactionViews: state.transactionViews ?? [],
-    fundMoveViews: state.fundMoveViews ?? [],
   };
 }
 
@@ -97,11 +98,8 @@ interface ViewsState {
   activityViews: ActivityView[];
   movementViews: MovementView[];
   transactionViews: TableView[];
-  fundMoveViews: TableView[];
   getTransactionView: (viewId: string) => TableView;
   setTransactionView: (viewId: string, view: TableView) => void;
-  getFundMoveView: (viewId: string) => TableView;
-  setFundMoveView: (viewId: string, view: TableView) => void;
 
   getActivityView: (viewId: string) => ActivityView;
   deleteCategory: (categoryId: string) => void;
@@ -118,7 +116,6 @@ export const useViews = create<ViewsState>()(
       activityViews: [],
       movementViews: [],
       transactionViews: [],
-      fundMoveViews: [],
 
       getActivityView: (viewId: string): ActivityView => {
         const state = get();
@@ -229,29 +226,10 @@ export const useViews = create<ViewsState>()(
             : [...state.transactionViews, view],
         }));
       },
-
-      getFundMoveView: (viewId) => {
-        const existing = get().fundMoveViews.find((view) => view.id === viewId);
-        if (existing) return existing;
-        const view = defaultTableView(viewId, FUND_MOVE_VIEW_FIELDS);
-        get().setFundMoveView(viewId, view);
-        return view;
-      },
-      setFundMoveView: (viewId, view) => {
-        set((state) => ({
-          fundMoveViews: state.fundMoveViews.some(
-            (entry) => entry.id === viewId,
-          )
-            ? state.fundMoveViews.map((entry) =>
-                entry.id === viewId ? view : entry,
-              )
-            : [...state.fundMoveViews, view],
-        }));
-      },
     }),
     {
       name: "views",
-      version: 1,
+      version: 2,
       migrate: migrateViews,
       storage: storage,
     },

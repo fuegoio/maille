@@ -20,14 +20,16 @@ import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
 import { useSync } from "@/stores/sync";
 
+import { fundScopeLegs, type TransactionViewFilter } from "./transaction-view";
+
 type SelectedTransaction = {
   transaction: Transaction;
   activityId: string;
 };
 
 export function useTransactionsEntityActions(
-  /** The account whose transactions view selected the rows. */
-  accountId: string,
+  /** The side the selecting view shows the transactions from. */
+  filter: TransactionViewFilter,
   selectedTransactions: string[],
   onClearSelection?: () => void,
 ): EntityAction[] {
@@ -48,12 +50,29 @@ export function useTransactionsEntityActions(
     return result;
   }, [selectedTransactions, activities]);
 
+  /**
+   * The transaction's legs crossing the view's fund scope, when the
+   * view is a fund's: the parts of the transaction this page tracks.
+   */
+  const scopeLegsOf = React.useCallback(
+    (transaction: Transaction) =>
+      filter.kind === "fund"
+        ? fundScopeLegs(
+            transaction,
+            { fundId: filter.fundId, subtree: filter.subtree ?? false },
+            accounts,
+            funds,
+          )
+        : [],
+    [filter, accounts, funds],
+  );
+
   const updateTransactions = React.useCallback(
     (update: {
       amount?: number;
-      /** Retargets the counterpart account: the side that is not this view's. */
+      /** Retargets the counterpart account: the side the view does not hold. */
       account?: string;
-      /** Sets this view's account-side fund; null means Untracked. */
+      /** Sets the view's side of the transaction's fund legs; null means Untracked. */
       fund?: string | null;
     }) => {
       selectedTransactionsData.forEach(({ transaction, activityId }) => {
@@ -68,30 +87,42 @@ export function useTransactionsEntityActions(
         > = {};
         if (update.amount !== undefined) updateFields.amount = update.amount;
         if (update.account !== undefined) {
-          if (transaction.fromAccount === accountId) {
-            updateFields.toAccount = update.account;
+          if (filter.kind === "account") {
+            if (transaction.fromAccount === filter.accountId) {
+              updateFields.toAccount = update.account;
+            } else {
+              updateFields.fromAccount = update.account;
+            }
           } else {
-            updateFields.fromAccount = update.account;
+            // A fund view holds no account of its own: the counterpart
+            // is the account the money flows from on its way in, or to
+            // on its way out.
+            const direction = scopeLegsOf(transaction)[0]?.direction;
+            if (direction === "in") updateFields.fromAccount = update.account;
+            else updateFields.toAccount = update.account;
           }
         }
 
         // Fund legs follow the transaction.tsx canonical shape: one leg
         // holding the from and to funds, Untracked sides as null. A fund
-        // change keeps the other side's fund; an amount change carries
-        // over to the existing legs.
+        // view retargets the legs crossing its scope instead, leaving
+        // every other leg alone; an amount change carries over to the
+        // existing legs.
         const existingFundMoves = transaction.fundMoves ?? [];
         let effectiveFundMoves: FundMove[] | undefined;
-        if (update.fund !== undefined) {
+        if (update.fund !== undefined && filter.kind === "account") {
           const trackedFromFund =
             existingFundMoves.find((m) => m.fromFund)?.fromFund ?? null;
           const trackedToFund =
             existingFundMoves.find((m) => m.toFund)?.toFund ?? null;
           const fromFund =
-            transaction.fromAccount === accountId
+            transaction.fromAccount === filter.accountId
               ? update.fund
               : trackedFromFund;
           const toFund =
-            transaction.fromAccount === accountId ? trackedToFund : update.fund;
+            transaction.fromAccount === filter.accountId
+              ? trackedToFund
+              : update.fund;
           effectiveFundMoves =
             fromFund !== null || toFund !== null
               ? [
@@ -106,6 +137,25 @@ export function useTransactionsEntityActions(
                   },
                 ]
               : [];
+        } else if (update.fund !== undefined && filter.kind === "fund") {
+          // Retarget the scope's side of every boundary leg; legs whose
+          // both sides end up null carry no fund and are dropped.
+          const targetFund = update.fund;
+          const scopeSides = new Map(
+            scopeLegsOf(transaction).map((scopeLeg) => [
+              scopeLeg.leg.id,
+              scopeLeg.side,
+            ]),
+          );
+          effectiveFundMoves = existingFundMoves
+            .map((move): FundMove => {
+              const side = scopeSides.get(move.id);
+              if (side === undefined) return move;
+              return side === "fromFund"
+                ? { ...move, fromFund: targetFund }
+                : { ...move, toFund: targetFund };
+            })
+            .filter((move) => move.fromFund !== null || move.toFund !== null);
         } else if (
           update.amount !== undefined &&
           existingFundMoves.length > 0
@@ -177,7 +227,7 @@ export function useTransactionsEntityActions(
         });
       });
     },
-    [selectedTransactionsData, activities, mutate, accountId],
+    [selectedTransactionsData, activities, mutate, filter, scopeLegsOf],
   );
 
   const deleteTransactions = React.useCallback(() => {
@@ -239,7 +289,10 @@ export function useTransactionsEntityActions(
         shortcut: "C",
         getValues: () => {
           return accounts
-            .filter((account) => account.id !== accountId)
+            .filter(
+              (account) =>
+                !(filter.kind === "account" && account.id === filter.accountId),
+            )
             .map((account) => ({
               value: `account-${account.id}`,
               label: account.name,
@@ -318,7 +371,7 @@ export function useTransactionsEntityActions(
     funds,
     updateTransactions,
     deleteTransactions,
-    accountId,
+    filter,
     onClearSelection,
   ]);
 }

@@ -17,7 +17,6 @@ import z from "zod";
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
 import { AccountSummary } from "@/components/accounts/account-summary";
-import { AccountTransactionsTable } from "@/components/accounts/account-transactions-table";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
@@ -35,6 +34,7 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -331,10 +331,13 @@ function AccountPage({ account }: { account: Account }) {
             </header>
 
             <TabsContent value="transactions" className="flex h-full">
-              <AccountTransactionsTable
+              <TransactionsTable
                 viewId={`account-${account.id}-transactions`}
-                accountId={account.id}
-                fundFilter={fundFilter}
+                filter={{
+                  kind: "account",
+                  accountId: account.id,
+                  fundFilter,
+                }}
               />
             </TabsContent>
 

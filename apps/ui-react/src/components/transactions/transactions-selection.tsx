@@ -5,16 +5,19 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
+import type { TransactionViewFilter } from "./transaction-view";
+
 import { TransactionsCommandPalette } from "./transactions-command-palette";
 
 interface TransactionsSelectionProps {
-  accountId: string;
+  /** The side the selecting view shows the transactions from. */
+  filter: TransactionViewFilter;
   selectedTransactions: string[];
   onClearSelection: () => void;
 }
 
 export function TransactionsSelection({
-  accountId,
+  filter,
   selectedTransactions,
   onClearSelection,
 }: TransactionsSelectionProps) {
@@ -67,7 +70,7 @@ export function TransactionsSelection({
           </div>
 
           <TransactionsCommandPalette
-            accountId={accountId}
+            filter={filter}
             selectedTransactions={selectedTransactions}
             open={paletteOpened}
             onOpenChange={setPaletteOpened}

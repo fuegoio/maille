@@ -18,7 +18,6 @@ describe("persisted table views", () => {
       activityViews: [],
       movementViews: [],
       transactionViews: [],
-      fundMoveViews: [],
     });
   });
 
@@ -36,6 +35,7 @@ describe("persisted table views", () => {
         },
       ],
       movementViews: [{ id: "movements", filters }],
+      fundMoveViews: [{ id: "fund-moves" }],
     });
     expect(upgraded.activityViews[0]).toMatchObject({
       fields: ["name", ...ACTIVITY_AMOUNT_FIELDS],
@@ -51,7 +51,9 @@ describe("persisted table views", () => {
     });
     expect(upgraded.movementViews[0].fields).toContain("amount");
     expect(upgraded.transactionViews).toEqual([]);
-    expect(upgraded.fundMoveViews).toEqual([]);
+    // Fund move views were folded into transaction views; the stale
+    // persisted key is dropped on migration.
+    expect(upgraded).not.toHaveProperty("fundMoveViews");
   });
 
   it("restores older records without any view configuration", async () => {
@@ -97,7 +99,6 @@ describe("persisted table views", () => {
       grouping: "fund",
     });
     expect(state.getTransactionView("account-two").grouping).toBe("period");
-    expect(state.getFundMoveView("account-one").fields).toContain("amount");
     expect(state.getTransactionView("account-one")).toBe(
       state.getTransactionView("account-one"),
     );

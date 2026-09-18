@@ -4,7 +4,6 @@ import { ChevronRight, Plus, Settings, SquareChartGantt } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CreateFundDialog } from "@/components/funds/create-fund-dialog";
-import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSettingsDialog } from "@/components/funds/fund-settings-dialog";
 import { FundSummary } from "@/components/funds/fund-summary";
 import {
@@ -14,6 +13,7 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -111,8 +111,8 @@ function FundPage() {
           <div className="flex-1" />
           <SearchBar />
           <TableViewSettingsButton
-            kind="fundMove"
-            viewId={`fund-${fund.id}-moves`}
+            kind="transaction"
+            viewId={`fund-${fund.id}-transactions`}
           />
           {!summaryOpen && (
             <Button
@@ -142,11 +142,14 @@ function FundPage() {
           </FundSettingsDialog>
         </header>
 
-        <FundMovesTable
-          viewId={`fund-${fund.id}-moves`}
-          fundId={fund.id}
-          accountFilter={accountFilter}
-          subtree={subfundFilter !== "none"}
+        <TransactionsTable
+          viewId={`fund-${fund.id}-transactions`}
+          filter={{
+            kind: "fund",
+            fundId: fund.id,
+            subtree: subfundFilter !== "none",
+            accountFilter,
+          }}
         />
       </div>
 

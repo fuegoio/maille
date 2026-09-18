@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
-import { FundMovesTable } from "@/components/funds/fund-moves-table";
 import { FundSummary } from "@/components/funds/fund-summary";
 import {
   PageBreadcrumbs,
@@ -10,6 +9,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -59,8 +59,8 @@ function UntrackedFundPage() {
           <div className="flex-1" />
           <SearchBar />
           <TableViewSettingsButton
-            kind="fundMove"
-            viewId="fund-untracked-moves"
+            kind="transaction"
+            viewId="fund-untracked-transactions"
           />
           {!summaryOpen && (
             <Button
@@ -75,10 +75,13 @@ function UntrackedFundPage() {
           )}
         </header>
 
-        <FundMovesTable
-          viewId="fund-untracked-moves"
-          fundId={null}
-          accountFilter={accountFilter}
+        <TransactionsTable
+          viewId="fund-untracked-transactions"
+          filter={{
+            kind: "fund",
+            fundId: null,
+            accountFilter,
+          }}
         />
       </div>
 

@@ -11,11 +11,13 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 
+import type { TransactionViewFilter } from "./transaction-view";
+
 import { useTransactionsEntityActions } from "./transactions-actions";
 
 interface TransactionsCommandPaletteProps {
-  /** The account whose transactions view opened the palette. */
-  accountId: string;
+  /** The side the selecting view shows the transactions from. */
+  filter: TransactionViewFilter;
   selectedTransactions: string[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,7 +25,7 @@ interface TransactionsCommandPaletteProps {
 }
 
 export function TransactionsCommandPalette({
-  accountId,
+  filter,
   selectedTransactions,
   open,
   onOpenChange,
@@ -39,7 +41,7 @@ export function TransactionsCommandPalette({
   const [inputValue, setInputValue] = React.useState("");
 
   const actions = useTransactionsEntityActions(
-    accountId,
+    filter,
     selectedTransactions,
     onClearSelection,
   );
