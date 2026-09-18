@@ -7,6 +7,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import { GroupMarker } from "@/components/shared/group-marker";
 import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
@@ -20,7 +21,7 @@ import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { viewGroupOrder } from "@/lib/view-grouping";
 import { sortViewRows } from "@/lib/view-ordering";
-import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
+import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
 import { useViewSearch } from "@/stores/search";
@@ -28,6 +29,7 @@ import { useViews } from "@/stores/views";
 
 import {
   buildTransactionRows,
+  transactionCounterpartGroup,
   transactionFundGroup,
   transactionGroupAccessors,
   transactionOrderingAccessors,
@@ -235,6 +237,11 @@ function TransactionLine({
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
   const fund = transactionFundGroup(transaction, funds);
+  const counterpart = transactionCounterpartGroup(
+    transaction.counterpart,
+    accounts,
+    funds,
+  );
   const isInflow = transaction.direction === "in";
   const amount = isInflow ? transaction.amount : -transaction.amount;
 
@@ -246,51 +253,6 @@ function TransactionLine({
     } else {
       return <CircleCheck className="size-4 shrink-0 text-primary" />;
     }
-  };
-
-  const renderCounterpart = () => {
-    const counterpart = transaction.counterpart;
-    if (counterpart.kind === "untracked") {
-      return (
-        <>
-          <div className="size-3 shrink-0 rounded-sm bg-muted-foreground/40" />
-          <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-            Untracked
-          </span>
-        </>
-      );
-    }
-    if (counterpart.kind === "fund") {
-      const counterFund = funds.find((f) => f.id === counterpart.fund);
-      return (
-        <>
-          <div
-            className="size-3 shrink-0 rounded-sm"
-            style={{
-              backgroundColor: counterFund?.color ?? "transparent",
-            }}
-          />
-          <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-            {counterFund?.name ?? "Unknown fund"}
-          </span>
-        </>
-      );
-    }
-    const account = accounts.find((a) => a.id === counterpart.account);
-    if (!account) return null;
-    return (
-      <>
-        <div
-          className={cn(
-            "size-3 shrink-0 rounded-xl",
-            ACCOUNT_TYPES_COLOR[account.type],
-          )}
-        />
-        <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
-          {account.name}
-        </span>
-      </>
-    );
   };
 
   return (
@@ -336,12 +298,18 @@ function TransactionLine({
         {fields.includes("counterpart") && (
           <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
             <span className="text-xs">{isInflow ? "from" : "to"}</span>
-            {renderCounterpart()}
+            {counterpart.marker && <GroupMarker marker={counterpart.marker} />}
+            <span className="max-w-40 truncate text-ellipsis whitespace-nowrap">
+              {counterpart.label}
+            </span>
           </div>
         )}
         {fields.includes("fund") && (
-          <span className="hidden max-w-32 truncate text-xs text-muted-foreground md:inline">
-            {fund.label}
+          <span className="hidden items-center gap-1.5 text-xs text-muted-foreground md:inline-flex">
+            {fund.marker && <GroupMarker marker={fund.marker} />}
+            <span className="max-w-32 truncate text-ellipsis whitespace-nowrap">
+              {fund.label}
+            </span>
           </span>
         )}
       </ContextLink>
