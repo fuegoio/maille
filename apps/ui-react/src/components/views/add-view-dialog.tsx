@@ -16,7 +16,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useViewMutations } from "@/components/views/view-mutations";
 import {
-  scopeResources,
+  useScopeResources,
   VIEW_RESOURCES,
 } from "@/components/views/view-resources";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,7 @@ export function AddViewDialog({
   const [name, setName] = React.useState("");
   const { createView } = useViewMutations();
 
-  const resources = scopeResources(scope);
+  const resources = useScopeResources(scope);
   const [requestedResource, setResource] = React.useState<ViewResource>(
     resources[0],
   );

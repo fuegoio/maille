@@ -43,6 +43,7 @@ import {
   useScopedActivities,
   useScopedMovements,
 } from "@/components/views/view-scope-data";
+import { useAccounts } from "@/stores/accounts";
 
 /** Which resources a scope's custom views can display. */
 export function scopeResources(scope: ViewScope): ViewResource[] {
@@ -57,6 +58,23 @@ export function scopeResources(scope: ViewScope): ViewResource[] {
     case "fund":
       return ["transactions"];
   }
+}
+
+/**
+ * The resources offered when creating a view over a scope. Accounts
+ * without movements enabled don't offer them, like their disabled tab.
+ */
+export function useScopeResources(scope: ViewScope): ViewResource[] {
+  const account = useAccounts((state) =>
+    scope.kind === "account"
+      ? state.getAccountById(scope.accountId)
+      : undefined,
+  );
+  const resources = scopeResources(scope);
+  if (scope.kind === "account" && !account?.movements) {
+    return resources.filter((resource) => resource !== "movements");
+  }
+  return resources;
 }
 
 /** The default grouping of a new view: months are already one period. */
