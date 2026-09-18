@@ -54,6 +54,7 @@ export type Activity = {
 };
 
 export type ActivityAmounts = {
+  asset: Scalars['Float']['output'];
   expense: Scalars['Float']['output'];
   investment: Scalars['Float']['output'];
   neutral: Scalars['Float']['output'];

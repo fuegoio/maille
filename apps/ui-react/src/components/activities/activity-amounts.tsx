@@ -6,11 +6,12 @@ import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 
 /** The display order of the per-type amounts, matching the month and project
- * summary blocks: revenue, expense, investment, neutral. */
+ * summary blocks: revenue, expense, investment, asset, neutral. */
 const AMOUNTS_ORDER = [
   ActivityType.REVENUE,
   ActivityType.EXPENSE,
   ActivityType.INVESTMENT,
+  ActivityType.ASSET,
   ActivityType.NEUTRAL,
 ] as const;
 

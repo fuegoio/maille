@@ -18,6 +18,7 @@ const zeroAmounts = (): ActivityAmounts => ({
   expense: 0,
   revenue: 0,
   investment: 0,
+  asset: 0,
   neutral: 0,
 });
 

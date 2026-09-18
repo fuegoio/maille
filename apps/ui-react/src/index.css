@@ -28,6 +28,7 @@
   --activity-revenue: oklch(0.58 0.13 150);
   --activity-expense: oklch(0.62 0.17 28);
   --activity-investment: oklch(75% 0.183 55.934);
+  --activity-asset: oklch(0.62 0.17 293.541);
   --activity-neutral: oklch(0.5 0.025 145);
   --account-bank: oklch(0.62 0.17 276.935);
   --account-cash: oklch(0.62 0.015 145);
@@ -74,6 +75,7 @@
   --activity-revenue: oklch(0.72 0.12 150);
   --activity-expense: oklch(0.7 0.17 25);
   --activity-investment: oklch(75% 0.183 55.934);
+  --activity-asset: oklch(0.72 0.17 293.541);
   --activity-neutral: oklch(0.72 0.018 145);
   --account-bank: oklch(0.72 0.17 276.935);
   --account-cash: oklch(0.72 0.015 145);
@@ -123,6 +125,7 @@
   --color-activity-revenue: var(--activity-revenue);
   --color-activity-expense: var(--activity-expense);
   --color-activity-investment: var(--activity-investment);
+  --color-activity-asset: var(--activity-asset);
   --color-activity-neutral: var(--activity-neutral);
   --color-account-bank: var(--account-bank);
   --color-account-cash: var(--account-cash);

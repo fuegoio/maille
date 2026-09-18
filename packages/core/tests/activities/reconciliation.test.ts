@@ -16,6 +16,7 @@ const accounts = [
   { id: "expense", type: AccountType.EXPENSE, movements: false },
   { id: "revenue", type: AccountType.REVENUE, movements: false },
   { id: "investment", type: AccountType.INVESTMENT_ACCOUNT, movements: false },
+  { id: "assets", type: AccountType.ASSETS, movements: false },
 ];
 
 const transaction = (fromAccount: string, toAccount: string, amount: number): Transaction => ({
@@ -41,6 +42,12 @@ describe("deriveActivityTypes", () => {
   it("derives investment from an investment account leg", () => {
     expect(deriveActivityTypes([transaction("bank", "investment", 10)], accounts)).toEqual([
       ActivityType.INVESTMENT,
+    ]);
+  });
+
+  it("derives asset from an assets account leg", () => {
+    expect(deriveActivityTypes([transaction("bank", "assets", 10)], accounts)).toEqual([
+      ActivityType.ASSET,
     ]);
   });
 
@@ -95,6 +102,13 @@ describe("getActivityAmounts", () => {
     expect(sale[ActivityType.INVESTMENT]).toBe(-100);
   });
 
+  it("sums an asset purchase positively and a sale negatively", () => {
+    const purchase = getActivityAmounts([transaction("bank", "assets", 100)], accounts);
+    expect(purchase[ActivityType.ASSET]).toBe(100);
+    const sale = getActivityAmounts([transaction("assets", "bank", 100)], accounts);
+    expect(sale[ActivityType.ASSET]).toBe(-100);
+  });
+
   it("sums transfers between untyped accounts as neutral", () => {
     const amounts = getActivityAmounts([transaction("bank", "cash", 100)], accounts);
     expect(amounts[ActivityType.NEUTRAL]).toBe(100);
@@ -111,6 +125,7 @@ describe("getActivityAmounts", () => {
       [ActivityType.EXPENSE]: 5,
       [ActivityType.REVENUE]: 0,
       [ActivityType.INVESTMENT]: -100,
+      [ActivityType.ASSET]: 0,
       [ActivityType.NEUTRAL]: 20,
     });
     expect(getActivityAmountsTotal(amounts)).toBe(-75);
@@ -120,14 +135,15 @@ describe("getActivityAmounts", () => {
 describe("sumActivityAmounts", () => {
   it("sums per-type amounts across activities", () => {
     const totals = sumActivityAmounts([
-      { amounts: { expense: 10, revenue: 0, investment: -100, neutral: 20 } },
-      { amounts: { expense: 5, revenue: 100, investment: 0, neutral: 0 } },
+      { amounts: { expense: 10, revenue: 0, investment: -100, asset: 50, neutral: 20 } },
+      { amounts: { expense: 5, revenue: 100, investment: 0, asset: 0, neutral: 0 } },
     ]);
 
     expect(totals).toEqual({
       expense: 15,
       revenue: 100,
       investment: -100,
+      asset: 50,
       neutral: 20,
     });
   });
@@ -137,6 +153,7 @@ describe("sumActivityAmounts", () => {
       expense: 0,
       revenue: 0,
       investment: 0,
+      asset: 0,
       neutral: 0,
     });
   });

@@ -27,6 +27,7 @@ export const ACTIVITY_TYPES_COLOR = {
   [ActivityType.EXPENSE]: "bg-activity-expense",
   [ActivityType.REVENUE]: "bg-activity-revenue",
   [ActivityType.INVESTMENT]: "bg-activity-investment",
+  [ActivityType.ASSET]: "bg-activity-asset",
   [ActivityType.NEUTRAL]: "bg-activity-neutral",
 };
 
@@ -34,6 +35,7 @@ export const ACTIVITY_TYPES_CHART_COLOR = {
   [ActivityType.EXPENSE]: "var(--color-activity-expense)",
   [ActivityType.REVENUE]: "var(--color-activity-revenue)",
   [ActivityType.INVESTMENT]: "var(--color-activity-investment)",
+  [ActivityType.ASSET]: "var(--color-activity-asset)",
   [ActivityType.NEUTRAL]: "var(--color-activity-neutral)",
 };
 
@@ -42,6 +44,7 @@ export const ACTIVITY_TYPES_NAME = {
   [ActivityType.EXPENSE]: "Expense",
   [ActivityType.REVENUE]: "Revenue",
   [ActivityType.INVESTMENT]: "Investment",
+  [ActivityType.ASSET]: "Asset",
   [ActivityType.NEUTRAL]: "Neutral",
 };
 

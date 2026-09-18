@@ -74,6 +74,7 @@ export const ActivityAmountsSchema = builder.objectRef<{
   expense: number;
   revenue: number;
   investment: number;
+  asset: number;
   neutral: number;
 }>("ActivityAmounts");
 
@@ -82,6 +83,7 @@ ActivityAmountsSchema.implement({
     expense: t.exposeFloat("expense"),
     revenue: t.exposeFloat("revenue"),
     investment: t.exposeFloat("investment"),
+    asset: t.exposeFloat("asset"),
     neutral: t.exposeFloat("neutral"),
   }),
 });
