@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { SelectSearchInput } from "@/components/ui/select-search-input";
 
 import {
   filterSubmenuOffset,
@@ -197,7 +198,9 @@ function FilterOperatorSubmenu<F extends FilterShape>({
           <DropdownMenuLabel>
             {field.text} · {operator}
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          {!("options" in field.input && field.input.options.length > 8) && (
+            <DropdownMenuSeparator />
+          )}
           <FilterOperatorValues
             field={field}
             filter={filter}
@@ -323,16 +326,13 @@ function FilterChoiceList({
   return (
     <>
       {input.options.length > 8 && (
-        <div className="px-1 pb-1">
-          <Input
-            aria-label="Search filter values"
-            placeholder="Search values…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onKeyDown={handleInputKeyDown}
-            className="h-8 text-sm"
-          />
-        </div>
+        <SelectSearchInput
+          aria-label="Search filter values"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          onKeyDown={handleInputKeyDown}
+          groupClassName="-mx-1 mb-1 w-auto"
+        />
       )}
       <div className="max-h-64 overflow-y-auto">
         {visible.length === 0 && (

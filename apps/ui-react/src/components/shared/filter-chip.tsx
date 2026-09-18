@@ -47,7 +47,7 @@ export function FilterChip<F extends FilterShape>({
               {filter.operator ?? "Choose operator"}
             </span>
             {!withoutValue && (
-              <span className="flex min-w-0 items-center gap-1.5 pr-2">
+              <span className="flex h-full min-w-0 items-center gap-1.5 border-l border-input px-2">
                 <FilterValueSummary field={field} value={filter.value} />
               </span>
             )}

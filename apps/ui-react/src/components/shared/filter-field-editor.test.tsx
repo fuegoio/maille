@@ -6,6 +6,7 @@ import { CheckboxIndicator } from "@/components/ui/checkbox";
 
 import type { FilterShape } from "./filter-picker-state";
 
+import { FilterChip } from "./filter-chip";
 import {
   FilterValueSummary,
   type FilterFieldDefinition,
@@ -27,6 +28,43 @@ const field: FilterFieldDefinition<FilterShape> = {
 };
 
 describe("shared filter values", () => {
+  it("separates the operator from its value in the filter bar", () => {
+    const html = renderToStaticMarkup(
+      <FilterChip
+        field={field}
+        filter={{
+          field: "status",
+          operator: "is any of",
+          value: ["completed"],
+        }}
+        onChange={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(html).toContain(
+      'class="flex h-full min-w-0 items-center gap-1.5 border-l border-input px-2"',
+    );
+    expect(html).toContain("Completed");
+  });
+  it("omits the value separator for operators without values", () => {
+    const presenceField = {
+      ...field,
+      value: "category",
+      operators: ["is defined"],
+      operatorsWithoutValue: ["is defined"],
+    };
+    const html = renderToStaticMarkup(
+      <FilterChip
+        field={presenceField}
+        filter={{ field: "category", operator: "is defined" }}
+        onChange={() => {}}
+        onDelete={() => {}}
+      />,
+    );
+    expect(html).not.toContain(
+      'class="flex h-full min-w-0 items-center gap-1.5 border-l border-input px-2"',
+    );
+  });
   it("uses the same option labels in chips as in the value editor", () => {
     expect(
       renderToStaticMarkup(

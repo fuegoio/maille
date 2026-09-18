@@ -1,4 +1,4 @@
-import { Plus, Search, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import * as React from "react";
 
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
@@ -9,13 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SelectSearchInput } from "@/components/ui/select-search-input";
 import { cn } from "@/lib/utils";
-
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "../ui/input-group";
 
 interface ActivityCategorySelectProps {
   value?: string | null;
@@ -120,20 +115,13 @@ export function ActivityCategorySelect({
             e.preventDefault();
         }}
       >
-        {/* Search input */}
-        <InputGroup className="gap-1 rounded-none border-t-0 border-r-0 border-b border-l-0 bg-background! ring-0!">
-          <InputGroupInput
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
-          <InputGroupAddon>
-            <Search className="size-3 text-muted-foreground" />
-          </InputGroupAddon>
-        </InputGroup>
+        <SelectSearchInput
+          ref={searchInputRef}
+          aria-label="Search categories"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+        />
 
         {categories.map((cat) => {
           const visibleIndex = filteredCategories.findIndex(
