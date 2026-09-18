@@ -5,9 +5,13 @@ import { useAccounts, ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 
 interface AccountLabelProps {
   accountId: string;
+  size?: "default" | "sm";
 }
 
-export function AccountLabel({ accountId }: AccountLabelProps) {
+export function AccountLabel({
+  accountId,
+  size = "default",
+}: AccountLabelProps) {
   const accounts = useAccounts((state) => state.accounts);
 
   const account = useMemo(() => {
@@ -20,11 +24,17 @@ export function AccountLabel({ accountId }: AccountLabelProps) {
     <div className="flex min-w-0 items-center">
       <div
         className={cn(
-          "size-3 shrink-0 rounded-xl",
+          "shrink-0 rounded-full",
+          size === "sm" ? "size-1.5" : "size-3",
           ACCOUNT_TYPES_COLOR[account.type],
         )}
       />
-      <div className="ml-2 overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap">
+      <div
+        className={cn(
+          "truncate",
+          size === "sm" ? "ml-1.5 text-xs" : "ml-2 text-sm font-medium",
+        )}
+      >
         {account.name}
       </div>
     </div>
