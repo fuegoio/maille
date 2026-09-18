@@ -1,3 +1,6 @@
+import type { AccountType } from "@maille/core/accounts";
+import type { ActivityType } from "@maille/core/activities";
+
 import type { ViewDirection, ViewOption, ViewOrdering } from "@/types/views";
 
 export const DATE_GROUPINGS: ViewOption[] = [
@@ -8,11 +11,33 @@ export const DATE_GROUPINGS: ViewOption[] = [
   { value: "year", text: "Year" },
 ];
 
+export type GroupIcon =
+  | "category"
+  | "subcategory"
+  | "project"
+  | "activity"
+  | "account"
+  | "fund"
+  | "untracked"
+  | "mixed-funds";
+
+/** Presentation metadata travels with a group, never in its identity or sort key. */
+export type GroupMarker =
+  | { kind: "emoji"; value: string }
+  | { kind: "account"; type: AccountType }
+  | { kind: "fund"; color: string }
+  | { kind: "status"; value: string }
+  | { kind: "direction"; value: "in" | "out" | "zero" }
+  | { kind: "types"; values: readonly ActivityType[] }
+  | { kind: "icon"; name: GroupIcon };
+
 export type RowGroup = {
   key: string;
   label: string;
   shortLabel?: string;
   calendar?: boolean;
+  marker?: GroupMarker;
+  parent?: { label: string; marker?: GroupMarker };
   sortValue?: number | string;
 };
 
@@ -26,8 +51,58 @@ export function namedGroup(
   id: string | null | undefined,
   name: string | undefined,
   fallback: string,
+  marker?: GroupMarker,
 ): RowGroup {
-  return { key: id ?? "none", label: name ?? fallback };
+  return {
+    key: id ?? "none",
+    label: name ?? fallback,
+    ...(marker && { marker }),
+  };
+}
+
+export function emojiGroup(
+  id: string | null | undefined,
+  entity: { name: string; emoji?: string | null } | undefined,
+  fallback: string,
+  icon: "category" | "subcategory" | "project",
+): RowGroup {
+  return namedGroup(
+    id,
+    entity?.name,
+    fallback,
+    entity?.emoji
+      ? { kind: "emoji", value: entity.emoji }
+      : { kind: "icon", name: icon },
+  );
+}
+
+export function accountGroup(
+  id: string | null | undefined,
+  account: { name: string; type: AccountType } | undefined,
+  fallback = "Unknown account",
+): RowGroup {
+  return namedGroup(
+    id,
+    account?.name,
+    fallback,
+    account
+      ? { kind: "account", type: account.type }
+      : { kind: "icon", name: "account" },
+  );
+}
+
+export function fundGroup(
+  id: string | null,
+  fund: { name: string; color?: string } | undefined,
+): RowGroup {
+  return namedGroup(
+    id,
+    fund?.name,
+    id === null ? "Untracked" : "Unknown fund",
+    fund?.color
+      ? { kind: "fund", color: fund.color }
+      : { kind: "icon", name: id === null ? "untracked" : "fund" },
+  );
 }
 
 export function statusGroup(status: string): RowGroup {
@@ -38,6 +113,7 @@ export function statusGroup(status: string): RowGroup {
   };
   return {
     key: status,
+    marker: { kind: "status", value: status },
     label: labels[status] ?? status,
     sortValue: ["scheduled", "incomplete", "completed"].indexOf(status),
   };
@@ -46,6 +122,7 @@ export function statusGroup(status: string): RowGroup {
 export function directionGroup(direction: "in" | "out" | "zero"): RowGroup {
   return {
     key: direction,
+    marker: { kind: "direction", value: direction },
     label:
       direction === "in"
         ? "Inflow"

@@ -1,3 +1,4 @@
+import type { Account } from "@maille/core/accounts";
 import type { Movement } from "@maille/core/movements";
 
 import type { ViewDescriptor } from "@/types/views";
@@ -5,7 +6,7 @@ import type { ViewDescriptor } from "@/types/views";
 import {
   DATE_GROUPINGS,
   directionGroup,
-  namedGroup,
+  accountGroup,
   statusGroup,
   type GroupAccessors,
 } from "@/lib/view-grouping";
@@ -44,14 +45,14 @@ export const movementOrderingAccessors = {
   amount: (row: Movement) => row.amount,
 };
 export function movementGroupAccessors(
-  accounts: { id: string; name: string }[],
+  accounts: Pick<Account, "id" | "name" | "type">[],
 ): GroupAccessors<Movement> {
   return {
     status: (row) => statusGroup(row.status),
     account: (row) =>
-      namedGroup(
+      accountGroup(
         row.account,
-        accounts.find((account) => account.id === row.account)?.name,
+        accounts.find((account) => account.id === row.account),
         "Unknown account",
       ),
     direction: (row) =>

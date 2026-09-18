@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   accountTransactionFunds,
   transactionFundGroup,
+  transactionGroupAccessors,
   transactionOrderingAccessors,
   type AccountTransaction,
 } from "@/components/accounts/transaction-view";
@@ -261,5 +262,120 @@ describe("resource view semantics", () => {
     ]);
     expect(accessors.own(move).label).toBe("Food");
     expect(accessors.counterpart(move).label).toBe("Expense");
+  });
+});
+
+describe("group presentation metadata", () => {
+  it("carries category and project emoji separately from identity and sorting", () => {
+    const accessors = activityGroupAccessors(
+      [{ id: "food", name: "Food", emoji: "\u{1F37D}" }],
+      [],
+      [{ id: "trip", name: "Trip", emoji: "\u{1F9F3}" }],
+    );
+    const row = { category: "food", project: "trip" } as Activity;
+    expect(accessors.category(row)).toMatchObject({
+      key: "food",
+      label: "Food",
+      marker: { kind: "emoji", value: "\u{1F37D}" },
+    });
+    expect(accessors.project(row).marker).toEqual({
+      kind: "emoji",
+      value: "\u{1F9F3}",
+    });
+    expect(accessors.category({ category: null } as Activity).marker).toEqual({
+      kind: "icon",
+      name: "category",
+    });
+  });
+
+  it("uses the subcategory's own category for its breadcrumb", () => {
+    const accessors = activityGroupAccessors(
+      [{ id: "food", name: "Food", emoji: "\u{1F37D}" }],
+      [
+        {
+          id: "groceries",
+          name: "Groceries",
+          category: "food",
+          emoji: "\u{1F6D2}",
+        },
+      ],
+      [],
+    );
+    const group = accessors.subcategory({
+      subcategory: "groceries",
+      category: "stale",
+    } as Activity);
+    expect(group).toMatchObject({
+      key: "groceries",
+      label: "Groceries",
+      marker: { kind: "emoji", value: "\u{1F6D2}" },
+      parent: { label: "Food", marker: { kind: "emoji", value: "\u{1F37D}" } },
+    });
+    expect(
+      accessors.subcategory({ subcategory: null } as Activity).parent,
+    ).toBeUndefined();
+  });
+
+  it("carries account types in movements and transaction counterpart groups", () => {
+    const accounts = [
+      { id: "bank", name: "Bank", type: AccountType.BANK_ACCOUNT },
+    ];
+    expect(
+      movementGroupAccessors(accounts).account({ account: "bank" } as never)
+        .marker,
+    ).toEqual({ kind: "account", type: AccountType.BANK_ACCOUNT });
+    expect(
+      transactionGroupAccessors(accounts, []).counterpart({
+        counterpart: "bank",
+      } as never).marker,
+    ).toEqual({ kind: "account", type: AccountType.BANK_ACCOUNT });
+  });
+
+  it("keeps fund colors in transaction and fund-move groups, with explicit fallbacks", () => {
+    const funds = [{ id: "food", name: "Food", color: "#336699" }];
+    expect(transactionFundGroup({ fundIds: ["food"] }, funds).marker).toEqual({
+      kind: "fund",
+      color: "#336699",
+    });
+    expect(transactionFundGroup({ fundIds: [null] }, funds).marker).toEqual({
+      kind: "icon",
+      name: "untracked",
+    });
+    expect(
+      transactionFundGroup({ fundIds: ["food", null] }, funds).marker,
+    ).toEqual({ kind: "icon", name: "mixed-funds" });
+    const accessors = fundMoveGroupAccessors(
+      [{ id: "expense", name: "Expense", type: AccountType.EXPENSE }],
+      funds,
+    );
+    const row = {
+      fromFund: "food",
+      toFund: null,
+      accounts: { from: "bank", to: "expense" },
+    } as FundMoveWithActivity;
+    expect(accessors.fromFund(row).marker).toEqual({
+      kind: "fund",
+      color: "#336699",
+    });
+    expect(accessors.toFund(row).marker).toEqual({
+      kind: "account",
+      type: AccountType.EXPENSE,
+    });
+  });
+
+  it("retains decoration on folded headers without changing their rows or keys", () => {
+    const accessors = {
+      category: (row: (typeof rows)[number]) => ({
+        ...namedGroup(row.category, "Food", "No category"),
+        marker: { kind: "emoji" as const, value: "\u{1F37D}" },
+      }),
+    };
+    const items = groupViewRows(rows, "category", accessors, "asc", [
+      "group:category:one",
+    ]);
+    const group = headers(items)[0];
+    expect(group.id).toBe("group:category:one");
+    expect(group.marker).toEqual({ kind: "emoji", value: "\u{1F37D}" });
+    expect(group.rows.map((row) => row.id)).toEqual(["a", "c"]);
   });
 });
