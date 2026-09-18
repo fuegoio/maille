@@ -218,7 +218,7 @@ function AccountPage({ account }: { account: Account }) {
             <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
               <TabsList
                 height="full"
-                className="min-w-0 overflow-x-auto sm:ml-5"
+                className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
               >
                 <TabsTrigger value="transactions">
                   <ReceiptText />

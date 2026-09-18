@@ -189,6 +189,8 @@ export function AccountTransactionsTable({
                   label={item.label}
                   shortLabel={item.shortLabel}
                   calendar={item.calendar}
+                  marker={item.marker}
+                  parent={item.parent}
                   count={item.rows.length}
                 >
                   {view.fields.includes("amount") && (

@@ -6,6 +6,9 @@ import type { ViewDescriptor } from "@/types/views";
 
 import {
   DATE_GROUPINGS,
+  accountGroup,
+  fundGroup,
+  type RowGroup,
   directionGroup,
   namedGroup,
   type GroupAccessors,
@@ -63,27 +66,30 @@ export const fundMoveOrderingAccessors = {
 };
 export function fundMoveGroupAccessors(
   accounts: Pick<Account, "id" | "name" | "type">[],
-  funds: { id: string; name: string }[],
+  funds: { id: string; name: string; color?: string }[],
 ): GroupAccessors<FundMoveWithActivity> {
-  const fundGroup = (row: FundMoveWithActivity, side: "from" | "to") =>
+  const sideFundGroup = (row: FundMoveWithActivity, side: "from" | "to") =>
     fundMoveFundGroup(row, side, accounts, funds);
-  const accountGroup = (id: string | undefined) =>
-    namedGroup(
+  const sideAccountGroup = (id: string | undefined) =>
+    accountGroup(
       id,
-      accounts.find((account) => account.id === id)?.name,
+      accounts.find((account) => account.id === id),
       "No account",
     );
   return {
     direction: (row) => directionGroup(row.direction),
     activity: (row) =>
-      namedGroup(row.activity?.id, row.activity?.name, "No activity"),
-    own: (row) => fundGroup(row, row.direction === "in" ? "to" : "from"),
+      namedGroup(row.activity?.id, row.activity?.name, "No activity", {
+        kind: "icon",
+        name: "activity",
+      }),
+    own: (row) => sideFundGroup(row, row.direction === "in" ? "to" : "from"),
     counterpart: (row) =>
-      fundGroup(row, row.direction === "in" ? "from" : "to"),
-    fromFund: (row) => fundGroup(row, "from"),
-    toFund: (row) => fundGroup(row, "to"),
-    fromAccount: (row) => accountGroup(row.accounts?.from),
-    toAccount: (row) => accountGroup(row.accounts?.to),
+      sideFundGroup(row, row.direction === "in" ? "from" : "to"),
+    fromFund: (row) => sideFundGroup(row, "from"),
+    toFund: (row) => sideFundGroup(row, "to"),
+    fromAccount: (row) => sideAccountGroup(row.accounts?.from),
+    toAccount: (row) => sideAccountGroup(row.accounts?.to),
   };
 }
 
@@ -91,8 +97,8 @@ export function fundMoveFundGroup(
   row: FundMoveWithActivity,
   side: "from" | "to",
   accounts: Pick<Account, "id" | "name" | "type">[],
-  funds: { id: string; name: string }[],
-) {
+  funds: { id: string; name: string; color?: string }[],
+): RowGroup {
   const id = side === "from" ? row.fromFund : row.toFund;
   const account = accounts.find((entry) => entry.id === row.accounts?.[side]);
   if (
@@ -101,11 +107,14 @@ export function fundMoveFundGroup(
     (account.type === AccountType.EXPENSE ||
       account.type === AccountType.REVENUE)
   ) {
-    return { key: `external:${account.id}`, label: account.name };
+    return {
+      key: `external:${account.id}`,
+      label: account.name,
+      marker: { kind: "account", type: account.type },
+    };
   }
-  return namedGroup(
+  return fundGroup(
     id,
-    funds.find((fund) => fund.id === id)?.name,
-    id === null ? "Untracked" : "Unknown fund",
+    funds.find((fund) => fund.id === id),
   );
 }

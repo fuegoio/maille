@@ -4,7 +4,7 @@ import type { ViewDescriptor } from "@/types/views";
 
 import {
   DATE_GROUPINGS,
-  namedGroup,
+  emojiGroup,
   statusGroup,
   type GroupAccessors,
 } from "@/lib/view-grouping";
@@ -106,30 +106,55 @@ export const activityOrderingAccessors: Record<
 };
 
 export function activityGroupAccessors(
-  categories: { id: string; name: string }[],
-  subcategories: { id: string; name: string }[],
-  projects: { id: string; name: string }[],
+  categories: { id: string; name: string; emoji?: string | null }[],
+  subcategories: {
+    id: string;
+    name: string;
+    category: string;
+    emoji?: string | null;
+  }[],
+  projects: { id: string; name: string; emoji?: string | null }[],
 ): GroupAccessors<Activity> {
   return {
     status: (row) => statusGroup(row.status),
     category: (row) =>
-      namedGroup(
+      emojiGroup(
         row.category,
-        categories.find((category) => category.id === row.category)?.name,
+        categories.find((category) => category.id === row.category),
         "No category",
+        "category",
       ),
-    subcategory: (row) =>
-      namedGroup(
+    subcategory: (row) => {
+      const subcategory = subcategories.find(
+        (entry) => entry.id === row.subcategory,
+      );
+      const group = emojiGroup(
         row.subcategory,
-        subcategories.find((subcategory) => subcategory.id === row.subcategory)
-          ?.name,
+        subcategory,
         "No subcategory",
-      ),
+        "subcategory",
+      );
+      if (!subcategory) return group;
+      const category = categories.find(
+        (entry) => entry.id === subcategory.category,
+      );
+      const parent = emojiGroup(
+        subcategory.category,
+        category,
+        "Unknown category",
+        "category",
+      );
+      return {
+        ...group,
+        parent: { label: parent.label, marker: parent.marker },
+      };
+    },
     project: (row) =>
-      namedGroup(
+      emojiGroup(
         row.project,
-        projects.find((project) => project.id === row.project)?.name,
+        projects.find((project) => project.id === row.project),
         "No project",
+        "project",
       ),
     // Mixed activities form one type combination, not duplicate rows with duplicate totals.
     type: (row) => {
@@ -138,6 +163,7 @@ export function activityGroupAccessors(
       );
       return {
         key: types.join("+") || "none",
+        marker: { kind: "types", values: types },
         label: types.map((type) => typeNames[type]).join(" + ") || "No type",
       };
     },

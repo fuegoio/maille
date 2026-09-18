@@ -1,9 +1,13 @@
+import type { Account } from "@maille/core/accounts";
 import type { Activity, Transaction } from "@maille/core/activities";
 
 import type { ViewDescriptor } from "@/types/views";
 
 import {
   DATE_GROUPINGS,
+  accountGroup,
+  fundGroup,
+  type RowGroup,
   directionGroup,
   namedGroup,
   statusGroup,
@@ -60,18 +64,21 @@ export const transactionOrderingAccessors = {
     row.direction === "in" ? row.amount : -row.amount,
 };
 export function transactionGroupAccessors(
-  accounts: { id: string; name: string }[],
-  funds: { id: string; name: string }[],
+  accounts: Pick<Account, "id" | "name" | "type">[],
+  funds: { id: string; name: string; color?: string }[],
 ): GroupAccessors<AccountTransaction> {
   return {
     status: (row) => statusGroup(row.activity.status),
     activity: (row) =>
-      namedGroup(row.activity.id, row.activity.name, "No activity"),
+      namedGroup(row.activity.id, row.activity.name, "No activity", {
+        kind: "icon",
+        name: "activity",
+      }),
     direction: (row) => directionGroup(row.direction),
     counterpart: (row) =>
-      namedGroup(
+      accountGroup(
         row.counterpart,
-        accounts.find((account) => account.id === row.counterpart)?.name,
+        accounts.find((account) => account.id === row.counterpart),
         "Unknown account",
       ),
     fund: (row) => transactionFundGroup(row, funds),
@@ -93,13 +100,17 @@ export function accountTransactionFunds(
 }
 export function transactionFundGroup(
   row: Pick<AccountTransaction, "fundIds">,
-  funds: { id: string; name: string }[],
-) {
-  if (row.fundIds.length > 1) return { key: "mixed", label: "Mixed funds" };
+  funds: { id: string; name: string; color?: string }[],
+): RowGroup {
+  if (row.fundIds.length > 1)
+    return {
+      key: "mixed",
+      label: "Mixed funds",
+      marker: { kind: "icon", name: "mixed-funds" },
+    };
   const id = row.fundIds[0] ?? null;
-  return namedGroup(
+  return fundGroup(
     id,
-    funds.find((fund) => fund.id === id)?.name,
-    id === null ? "Untracked" : "Unknown fund",
+    funds.find((fund) => fund.id === id),
   );
 }
