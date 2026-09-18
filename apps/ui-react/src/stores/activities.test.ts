@@ -69,7 +69,6 @@ describe("updateAccount event and activity reconciliation status", () => {
       activities: [],
       activityCategories: [],
       activitySubcategories: [],
-      showTransactions: false,
     });
 
     useAccounts.getState().addAccount(bankAccount);

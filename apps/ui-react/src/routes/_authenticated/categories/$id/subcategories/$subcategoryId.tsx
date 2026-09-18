@@ -220,7 +220,7 @@ function SubcategoryPage({
         <ActivitiesTable
           viewId={`subcategory-${subcategory.id}`}
           activities={viewActivities}
-          grouping="period"
+          groupings={["period"]}
         />
       </div>
 

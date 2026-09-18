@@ -428,13 +428,13 @@ export function ActivityPage({
                 {Object.values(activity.amounts).every(
                   (amount) => amount === 0,
                 ) ? (
-                  <div className="font-mono text-2xl font-semibold whitespace-nowrap tabular-nums">
+                  <div className="font-mono text-2xl whitespace-nowrap tabular-nums">
                     {currencyFormatter.format(activity.amount)}
                   </div>
                 ) : (
                   <ActivityAmountsValue
                     amounts={activity.amounts}
-                    className="text-2xl font-semibold"
+                    className="text-2xl"
                   />
                 )}
               </div>

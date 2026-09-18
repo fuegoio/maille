@@ -14,6 +14,7 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
+import { sortViewRows } from "@/lib/view-ordering";
 import { activityTouchesFund } from "@/logic/funds";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
@@ -22,12 +23,18 @@ import { useActivitiesEntityActions } from "./activities-actions";
 import { ActivitiesSelection } from "./activities-selection";
 import { ActivityAmountsValue } from "./activity-amounts";
 import { ActivityLine } from "./activity-line";
+import {
+  ACTIVITY_VIEW_FIELDS,
+  activityOrderingAccessors,
+  type ActivityViewGrouping,
+} from "./activity-view";
 import { ActivitiesFilters } from "./filters/activities-filters";
 
 interface ActivitiesTableProps {
   viewId: string;
   activities: Activity[];
-  grouping?: "period" | null;
+  /** Grouping modes the page allows; the view's choice wins when allowed. */
+  groupings?: readonly ActivityViewGrouping[];
   accountFilter?: string | null;
   categoryFilter?: string | null;
   subcategoryFilter?: string | null;
@@ -40,7 +47,7 @@ interface ActivitiesTableProps {
 export function ActivitiesTable({
   viewId,
   activities,
-  grouping = null,
+  groupings = ["none"],
   accountFilter = null,
   categoryFilter = null,
   subcategoryFilter = null,
@@ -54,6 +61,24 @@ export function ActivitiesTable({
   const { search } = useViewSearch();
   const scrollRef = useScrollRestoration<HTMLDivElement>(
     `activities:${viewId}`,
+  );
+
+  // The view's grouping applies when the page allows it; otherwise the
+  // page's first allowed mode wins.
+  const grouping: ActivityViewGrouping = groupings.includes(
+    activityView.grouping as ActivityViewGrouping,
+  )
+    ? (activityView.grouping as ActivityViewGrouping)
+    : groupings[0];
+
+  const fields = React.useMemo(
+    () =>
+      ACTIVITY_VIEW_FIELDS.filter(
+        (field) =>
+          activityView.fields.includes(field) &&
+          (field !== "project" || !hideProject),
+      ),
+    [activityView.fields, hideProject],
   );
 
   const activitiesFiltered = React.useMemo(() => {
@@ -114,17 +139,24 @@ export function ActivitiesTable({
   ]);
 
   const activitiesSorted = React.useMemo(() => {
-    return [...activitiesFiltered].sort((a, b) => {
-      if (a.date.getTime() !== b.date.getTime()) {
-        return b.date.getTime() - a.date.getTime();
-      }
-      return b.id.localeCompare(a.id);
-    });
-  }, [activitiesFiltered]);
+    return sortViewRows(
+      activitiesFiltered,
+      activityView.ordering,
+      activityOrderingAccessors,
+    );
+  }, [activitiesFiltered, activityView.ordering]);
+
+  // Group headers follow the date ordering's direction; any other field
+  // leaves the groups newest-first.
+  const groupOrder =
+    activityView.ordering.field === "date"
+      ? activityView.ordering.direction
+      : "desc";
 
   const { items, isFolded, toggleGroup } = useGroupedRows(
     activitiesSorted,
-    grouping !== null,
+    grouping === "period",
+    groupOrder,
   );
 
   const rows = React.useMemo<TableRow[]>(
@@ -197,6 +229,8 @@ export function ActivitiesTable({
                       <ActivityLine
                         activity={item}
                         accountFilter={accountFilter}
+                        fields={fields}
+                        showTransactions={activityView.showTransactions}
                         hideProject={hideProject}
                         checked={selectedActivities.includes(item.id)}
                         outlineSides={rowOutlines.get(item.id)}

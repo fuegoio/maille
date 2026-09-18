@@ -52,7 +52,6 @@ interface ActivitiesState {
   activities: Activity[];
   activityCategories: ActivityCategory[];
   activitySubcategories: ActivitySubCategory[];
-  showTransactions: boolean;
 
   getActivityById: (activityId: string) => Activity | undefined;
   getActivityCategoryById: (categoryId: string) => ActivityCategory | undefined;
@@ -60,7 +59,6 @@ interface ActivitiesState {
     subcategoryId: string,
   ) => ActivitySubCategory | undefined;
 
-  setShowTransactions: (show: boolean) => void;
   addTransaction: (activityId: string, transaction: Transaction) => Transaction;
   updateTransaction: (
     activityId: string,
@@ -226,14 +224,9 @@ export const useActivities = create<ActivitiesState>()(
       activities: [],
       activityCategories: [],
       activitySubcategories: [],
-      showTransactions: false,
 
       getActivityById: (activityId: string): Activity | undefined => {
         return get().activities.find((a) => a.id === activityId);
-      },
-
-      setShowTransactions: (show: boolean) => {
-        set({ showTransactions: show });
       },
 
       addTransaction: (activityId, transaction) => {

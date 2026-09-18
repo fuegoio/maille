@@ -95,7 +95,7 @@ export function MovementLine({
         <AccountLabel accountId={movement.account} />
       </Badge>
 
-      <div className="overflow-hidden text-ellipsis whitespace-nowrap text-foreground">
+      <div className="overflow-hidden font-medium text-ellipsis whitespace-nowrap text-foreground">
         {movement.name}
       </div>
 

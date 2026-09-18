@@ -109,7 +109,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
         <ActivitiesTable
           viewId={`category-${category.id}`}
           activities={viewActivities}
-          grouping="period"
+          groupings={["period"]}
         />
       </div>
 
