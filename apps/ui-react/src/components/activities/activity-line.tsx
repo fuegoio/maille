@@ -223,7 +223,7 @@ export function ActivityLine({
           {transactions.map((transaction) => (
             <li
               key={transaction.id}
-              className="relative flex h-8 items-center gap-3 pl-5 before:absolute before:top-0 before:left-0 before:h-1/2 before:w-3 before:rounded-bl-sm before:border-b before:border-l after:absolute after:inset-y-0 after:left-0 after:border-l first:before:-top-2 first:before:h-[calc(50%+0.5rem)] last:after:hidden"
+              className="relative flex h-8 items-center gap-3 pl-5 before:absolute before:inset-y-0 before:left-0 before:border-l before:border-border/70 after:absolute after:top-[calc(50%-0.375rem)] after:left-0 after:w-3 after:origin-top-left after:rotate-30 after:border-t after:border-border/70 first:before:-top-2 last:before:bottom-[calc(50%+0.375rem)]"
             >
               <div className="flex min-w-0 flex-1 items-center gap-1.5">
                 <AccountLabel accountId={transaction.fromAccount} size="sm" />
