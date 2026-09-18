@@ -21,11 +21,13 @@ export type ViewOrdering = {
 export type ViewScope =
   | {
       kind: "page";
-      page: "activities" | "movements" | "categories" | "projects" | "funds";
+      page: "activities" | "movements";
     }
   | { kind: "month"; month: number; year: number }
   | { kind: "account"; accountId: string }
-  | { kind: "fund"; fundId: string | null };
+  | { kind: "fund"; fundId: string | null }
+  | { kind: "category"; categoryId: string }
+  | { kind: "project"; projectId: string };
 
 /** A scope as stored in the API and sync events: a single string. */
 export function serializeViewScope(scope: ViewScope): string {
@@ -38,19 +40,17 @@ export function serializeViewScope(scope: ViewScope): string {
       return `account:${scope.accountId}`;
     case "fund":
       return `fund:${scope.fundId ?? "untracked"}`;
+    case "category":
+      return `category:${scope.categoryId}`;
+    case "project":
+      return `project:${scope.projectId}`;
   }
 }
 
 export function deserializeViewScope(scope: string): ViewScope | null {
   const [kind, value] = scope.split(":");
   if (kind === "page") {
-    if (
-      value === "activities" ||
-      value === "movements" ||
-      value === "categories" ||
-      value === "projects" ||
-      value === "funds"
-    ) {
+    if (value === "activities" || value === "movements") {
       return { kind: "page", page: value };
     }
     return null;
@@ -71,6 +71,12 @@ export function deserializeViewScope(scope: string): ViewScope | null {
       return { kind: "fund", fundId: null };
     }
     return { kind: "fund", fundId: value };
+  }
+  if (kind === "category" && value !== undefined) {
+    return { kind: "category", categoryId: value };
+  }
+  if (kind === "project" && value !== undefined) {
+    return { kind: "project", projectId: value };
   }
   return null;
 }

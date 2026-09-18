@@ -1,8 +1,14 @@
 import type { ActivityCategory } from "@maille/core/activities";
 
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import {
+  BookMarked,
+  ChevronRight,
+  Settings,
+  SquareChartGantt,
+} from "lucide-react";
 import { useState } from "react";
+import z from "zod";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
@@ -20,12 +26,26 @@ import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomViewActions } from "@/components/views/custom-view-actions";
+import { useViewMutations } from "@/components/views/view-mutations";
+import {
+  CustomViewTabs,
+  CustomViewTabsContent,
+  useSelectedView,
+} from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
+const searchParamsSchema = z.object({
+  /** "activities", or a custom view's id. */
+  tab: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
   component: CategoryPageRoute,
+  validateSearch: searchParamsSchema,
   loader: async ({ params }) => {
     const activities = useActivities.getState();
     const category = activities.getActivityCategoryById(params.id);
@@ -50,10 +70,17 @@ function CategoryPageRoute() {
 }
 
 function CategoryPage({ category }: { category: ActivityCategory }) {
+  const navigate = useNavigate();
+  const { tab } = Route.useSearch();
+  const selectedTab = tab ?? "activities";
   const activities = useActivities((state) => state.activities);
 
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
+
+  const viewScope = { kind: "category", categoryId: category.id } as const;
+  const selectedCustomView = useSelectedView(viewScope, selectedTab);
+  const { updateViewConfig } = useViewMutations();
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -84,9 +111,13 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          <FilterActivitiesButton viewId={`category-${category.id}`} />
-          <ActivityViewSettingsButton viewId={`category-${category.id}`} />
-          <AddActivityButton category={category.id} />
+          {selectedCustomView === null && (
+            <>
+              <FilterActivitiesButton viewId={`category-${category.id}`} />
+              <ActivityViewSettingsButton viewId={`category-${category.id}`} />
+              <AddActivityButton category={category.id} />
+            </>
+          )}
           {!summaryOpen && (
             <Button
               variant="outline"
@@ -105,10 +136,58 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           </CategorySettingsDialog>
         </header>
 
-        <ActivitiesTable
-          viewId={`category-${category.id}`}
-          activities={viewActivities}
-        />
+        <Tabs
+          value={selectedTab}
+          onValueChange={(value) =>
+            navigate({
+              to: ".",
+              search: (prev) => ({
+                ...prev,
+                tab: value === "activities" ? undefined : value,
+              }),
+            })
+          }
+          className="min-h-0 flex-1"
+        >
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <TabsList
+              height="full"
+              className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
+            >
+              <TabsTrigger value="activities">
+                <BookMarked />
+                Activities
+              </TabsTrigger>
+              <CustomViewTabs
+                scope={viewScope}
+                onSelect={(value) =>
+                  navigate({
+                    to: ".",
+                    search: (prev) => ({ ...prev, tab: value }),
+                  })
+                }
+              />
+            </TabsList>
+            <div className="flex-1" />
+            {selectedCustomView !== null && (
+              <CustomViewActions
+                view={selectedCustomView}
+                onConfigChange={(config) =>
+                  updateViewConfig(selectedCustomView, config)
+                }
+              />
+            )}
+          </header>
+
+          <TabsContent value="activities" className="flex h-full">
+            <ActivitiesTable
+              viewId={`category-${category.id}`}
+              activities={viewActivities}
+            />
+          </TabsContent>
+
+          <CustomViewTabsContent scope={viewScope} />
+        </Tabs>
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>

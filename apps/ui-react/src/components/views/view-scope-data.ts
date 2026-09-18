@@ -16,10 +16,22 @@ const inMonth = (date: Date, month: number, year: number): boolean =>
 export function useScopedActivities(scope: ViewScope | null): Activity[] {
   const activities = useActivities((state) => state.activities);
   return React.useMemo(() => {
-    if (scope?.kind !== "month") return activities;
-    return activities.filter((activity) =>
-      inMonth(activity.date, scope.month, scope.year),
-    );
+    if (scope?.kind === "month") {
+      return activities.filter((activity) =>
+        inMonth(activity.date, scope.month, scope.year),
+      );
+    }
+    if (scope?.kind === "category") {
+      return activities.filter(
+        (activity) => activity.category === scope.categoryId,
+      );
+    }
+    if (scope?.kind === "project") {
+      return activities.filter(
+        (activity) => activity.project === scope.projectId,
+      );
+    }
+    return activities;
   }, [activities, scope]);
 }
 
