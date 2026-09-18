@@ -1,12 +1,9 @@
 import type { MovementFilter } from "@maille/core/movements";
 
-import { OperatorsWithoutValue } from "@maille/core/movements";
-
 import { FilterPicker } from "@/components/shared/filter-picker";
-import { isEmptyFilterValue } from "@/components/shared/filter-picker-state";
 import { useViews } from "@/stores/views";
 
-import { MOVEMENT_FILTER_PICKER_FIELDS } from "./movement-filter-fields";
+import { useMovementFilterFields } from "./movement-filter-fields";
 
 interface FilterMovementsButtonProps {
   /** The store-backed view to filter; ignored when filters is provided. */
@@ -18,20 +15,6 @@ interface FilterMovementsButtonProps {
   className?: string;
 }
 
-/**
- * A filter is complete once its operator is set and its value carries
- * a constraint; "is defined"-style operators need no value.
- */
-function isComplete(filter: MovementFilter): boolean {
-  return (
-    filter.operator !== undefined &&
-    ((OperatorsWithoutValue as readonly string[]).includes(
-      filter.operator as string,
-    ) ||
-      !isEmptyFilterValue(filter.value))
-  );
-}
-
 export function FilterMovementsButton({
   viewId,
   filters,
@@ -39,6 +22,7 @@ export function FilterMovementsButton({
   variant = "default",
   className,
 }: FilterMovementsButtonProps) {
+  const fields = useMovementFilterFields();
   const storeView = useViews((state) =>
     viewId === undefined ? undefined : state.getMovementView(viewId),
   );
@@ -56,11 +40,7 @@ export function FilterMovementsButton({
 
   return (
     <FilterPicker
-      fields={MOVEMENT_FILTER_PICKER_FIELDS}
-      emptyFilter={(field) =>
-        ({ field, operator: undefined, value: undefined }) as MovementFilter
-      }
-      isComplete={isComplete}
+      fields={fields}
       filters={currentFilters}
       onFiltersChange={setFilters}
       variant={variant}

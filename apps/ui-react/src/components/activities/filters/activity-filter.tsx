@@ -1,15 +1,8 @@
-import {
-  ActivityFilterFields,
-  OperatorsWithoutValue,
-  type ActivityFilter,
-} from "@maille/core/activities";
-import { X } from "lucide-react";
+import type { ActivityFilter } from "@maille/core/activities";
 
-import { Button } from "@/components/ui/button";
+import { FilterChip } from "@/components/shared/filter-chip";
 
-import { ActivityFilterOperatorMenu } from "./activity-filter-operator-menu";
-import { ActivityFilterValueMenu } from "./activity-filter-value-menu";
-import { ActivityFilterIcons } from "./activity-filters-icons";
+import { useActivityFilterFields } from "./activity-filter-fields";
 
 interface ActivityFilterProps {
   modelValue: ActivityFilter;
@@ -22,51 +15,15 @@ export function ActivityFilter({
   onUpdateModelValue,
   onDelete,
 }: ActivityFilterProps) {
-  const activityFilterField = ActivityFilterFields.find(
-    (aff) => aff.value === modelValue.field,
-  );
-  if (!activityFilterField) return null;
-
-  const showValueMenu =
-    modelValue.operator !== undefined &&
-    !OperatorsWithoutValue.includes(modelValue.operator as any);
-
-  const Icon = ActivityFilterIcons[activityFilterField.value];
-
+  const fields = useActivityFilterFields();
+  const field = fields.find((entry) => entry.value === modelValue.field);
+  if (!field) return null;
   return (
-    <div className="flex h-6 w-fit max-w-full items-center overflow-hidden rounded border border-input">
-      <div className="flex h-7 items-center border-r border-input bg-input/30 px-2 text-xs">
-        <Icon className="mr-1 size-3" />
-        {activityFilterField.text}
-      </div>
-
-      <ActivityFilterOperatorMenu
-        modelValue={modelValue.operator}
-        field={modelValue.field}
-        onUpdateModelValue={(operator) => {
-          onUpdateModelValue({ ...modelValue, operator } as ActivityFilter);
-        }}
-      />
-
-      {showValueMenu && (
-        <ActivityFilterValueMenu
-          modelValue={modelValue.value}
-          field={modelValue.field}
-          onUpdateModelValue={(value) => {
-            onUpdateModelValue({ ...modelValue, value } as ActivityFilter);
-          }}
-        />
-      )}
-
-      <Button
-        onClick={onDelete}
-        aria-label="Delete filter"
-        variant="ghost"
-        size="icon"
-        className="size-6 rounded-none border-r-0 border-l-0 bg-input/30 hover:bg-input/50"
-      >
-        <X className="size-3.5" />
-      </Button>
-    </div>
+    <FilterChip
+      field={field}
+      filter={modelValue}
+      onChange={onUpdateModelValue}
+      onDelete={onDelete}
+    />
   );
 }

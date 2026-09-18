@@ -15,6 +15,34 @@ export function isEmptyFilterValue(value: unknown): boolean {
   );
 }
 
+/** Both the add menu and saved chips keep unfinished edits local. */
+export function resolveFilterUpdate<F extends FilterShape>(
+  pending: F,
+  patch: Partial<F>,
+  operatorsWithoutValue: readonly string[] = [],
+): { pending: F; saved: F | null | undefined } {
+  const next = { ...pending, ...patch };
+  if (next.operator && operatorsWithoutValue.includes(next.operator)) {
+    const complete = { ...next, value: undefined };
+    return { pending: complete, saved: complete };
+  }
+  if (next.operator && !isEmptyFilterValue(next.value)) {
+    return { pending: next, saved: next };
+  }
+  return {
+    pending: next,
+    saved:
+      "value" in patch && isEmptyFilterValue(next.value) ? null : undefined,
+  };
+}
+
+export function toggleFilterValue(current: unknown, value: string): string[] {
+  const values: string[] = Array.isArray(current) ? current : [];
+  return values.includes(value)
+    ? values.filter((entry) => entry !== value)
+    : [...values, value];
+}
+
 /** Update the last filter for a field, preserving other constraints (including date ranges). */
 export function replacePickerFilter<F extends FilterShape>(
   filters: F[],
