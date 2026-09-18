@@ -24,11 +24,13 @@ const AMOUNTS_ORDER = [
 export function ActivityAmountsValue({
   amounts,
   className,
+  types = AMOUNTS_ORDER,
 }: {
   amounts: ActivityAmounts;
   className?: string;
+  types?: readonly ActivityType[];
 }) {
-  const pairs: AmountPair[] = AMOUNTS_ORDER.map((activityType) => ({
+  const pairs: AmountPair[] = types.map((activityType) => ({
     dot: ACTIVITY_TYPES_COLOR[activityType],
     amount: amounts[activityType],
   }));

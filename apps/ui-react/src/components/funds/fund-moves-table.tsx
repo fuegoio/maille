@@ -1,7 +1,4 @@
-import type { FundMove } from "@maille/core/funds";
-
 import { getFundDescendants } from "@maille/core/funds";
-import { format } from "date-fns";
 import { MoveRight } from "lucide-react";
 import * as React from "react";
 
@@ -11,6 +8,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
+import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
@@ -20,34 +18,28 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { viewGroupOrder } from "@/lib/view-grouping";
+import { sortViewRows } from "@/lib/view-ordering";
 import { isLegNullSideUntracked } from "@/logic/funds";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
 import { useViewSearch } from "@/stores/search";
+import { useViews } from "@/stores/views";
 
+import {
+  fundMoveFundGroup,
+  fundMoveGroupAccessors,
+  fundMoveOrderingAccessors,
+  type FundMoveWithActivity,
+} from "./fund-move-view";
 import { useFundMovesEntityActions } from "./fund-moves-actions";
 import { FundMovesSelection } from "./fund-moves-selection";
-
-/** A fund move as seen from one fund: which activity, which side, how much. */
-type FundMoveWithActivity = FundMove & {
-  kind: "move";
-  /** Direction of money relative to the fund. */
-  direction: "in" | "out";
-  /** The activity holding the transaction, when the move is tied to one. */
-  activity: { id: string; name: string } | null;
-  /** The transaction's account movement, when the move is tied to one. */
-  accounts: { from: string; to: string } | null;
-  /**
-   * The fund inside the scope holding the move, when it is not the page's
-   * fund itself — a subfund's row in the subtree view.
-   */
-  own?: string;
-};
 
 interface FundMovesTableProps {
   /** The fund whose moves to show; null is Untracked (the null side of moves). */
   fundId: string | null;
+  viewId: string;
   /** Only show moves whose transaction touches this account. */
   accountFilter?: string | null;
   /** Show the whole subtree's moves, not just this fund's own. */
@@ -56,6 +48,7 @@ interface FundMovesTableProps {
 
 export function FundMovesTable({
   fundId,
+  viewId,
   accountFilter = null,
   subtree = false,
 }: FundMovesTableProps) {
@@ -64,6 +57,11 @@ export function FundMovesTable({
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
+  const view = useViews((state) => state.getFundMoveView(viewId));
+  const groupAccessors = React.useMemo(
+    () => fundMoveGroupAccessors(accounts, funds),
+    [accounts, funds],
+  );
 
   // The funds whose moves the table shows: the fund itself, or its whole
   // subtree. Money crossing the scope's boundary is a row; moves between
@@ -131,20 +129,9 @@ export function FundMovesTable({
     return result;
   }, [activities, scopeIds, subtree, fundId, accounts]);
 
-  const rows = React.useMemo<FundMoveWithActivity[]>(
-    () =>
-      [...moves].sort((a, b) => {
-        if (a.date.getTime() !== b.date.getTime()) {
-          return b.date.getTime() - a.date.getTime();
-        }
-        return b.id.localeCompare(a.id);
-      }),
-    [moves],
-  );
-
   const rowsFiltered = React.useMemo(
     () =>
-      rows.filter((row) => {
+      moves.filter((row) => {
         if (accountFilter !== null) {
           if (
             !row.accounts ||
@@ -159,10 +146,19 @@ export function FundMovesTable({
           row.activity !== null && searchCompare(search, row.activity.name)
         );
       }),
-    [rows, search, accountFilter],
+    [moves, search, accountFilter],
   );
 
-  const { items, isFolded, toggleGroup } = useGroupedRows(rowsFiltered, true);
+  const rowsSorted = React.useMemo(
+    () => sortViewRows(rowsFiltered, view.ordering, fundMoveOrderingAccessors),
+    [rowsFiltered, view.ordering],
+  );
+  const { items, isFolded, toggleGroup } = useGroupedRows(
+    rowsSorted,
+    view.grouping,
+    groupAccessors,
+    viewGroupOrder(view.grouping, view.ordering),
+  );
 
   const tableRows = React.useMemo<TableRow[]>(
     () =>
@@ -221,18 +217,22 @@ export function FundMovesTable({
                   id={item.id}
                   folded={isFolded(item.id)}
                   onToggle={toggleGroup}
-                  month={item.month}
-                  year={item.year}
+                  label={item.label}
+                  shortLabel={item.shortLabel}
+                  calendar={item.calendar}
+                  count={item.rows.length}
                 >
-                  <AmountPairsValue
-                    pairs={(["in", "out"] as const).map((direction) => ({
-                      dot: direction === "in" ? "bg-green-400" : "bg-red-400",
-                      amount: item.rows
-                        .filter((row) => row.direction === direction)
-                        .reduce((sum, row) => sum + row.amount, 0),
-                    }))}
-                    className="text-sm"
-                  />
+                  {view.fields.includes("amount") && (
+                    <AmountPairsValue
+                      pairs={(["in", "out"] as const).map((direction) => ({
+                        dot: direction === "in" ? "bg-green-400" : "bg-red-400",
+                        amount: item.rows
+                          .filter((row) => row.direction === direction)
+                          .reduce((sum, row) => sum + row.amount, 0),
+                      }))}
+                      className="text-sm"
+                    />
+                  )}
                 </TableGroupHeader>
               ) : (
                 <EntityContextMenu
@@ -263,6 +263,8 @@ export function FundMovesTable({
                   >
                     <FundMoveLine
                       move={item}
+                      fields={view.fields}
+                      fullDate={view.grouping !== "period"}
                       funds={funds}
                       to={item.activity ? "/activities/$id" : undefined}
                       params={
@@ -298,6 +300,8 @@ export function FundMovesTable({
 /** A fund move row, tied to a transaction's activity. */
 function FundMoveLine({
   move,
+  fields,
+  fullDate,
   funds,
   to,
   params,
@@ -307,6 +311,8 @@ function FundMoveLine({
   onCheckedChange,
 }: {
   move: FundMoveWithActivity;
+  fields: readonly string[];
+  fullDate: boolean;
   funds: { id: string; name: string; color: string }[];
   to?: string;
   params?: Record<string, string>;
@@ -316,6 +322,7 @@ function FundMoveLine({
   outlineSides?: { top: boolean; bottom: boolean };
   onCheckedChange: (event?: React.MouseEvent) => void;
 }) {
+  const accounts = useAccounts((state) => state.accounts);
   const isInflow = move.direction === "in";
   const amount = isInflow ? move.amount : -move.amount;
 
@@ -353,7 +360,12 @@ function FundMoveLine({
           </span>
         </>
       ) : (
-        <span>Untracked</span>
+        <span>
+          {
+            fundMoveFundGroup(move, isInflow ? "from" : "to", accounts, funds)
+              .label
+          }
+        </span>
       )}
     </>
   );
@@ -384,12 +396,9 @@ function FundMoveLine({
       />
 
       <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
-        <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
-          {format(move.date, "dd EEE")}
-        </div>
-        <div className="ml-2 w-8 shrink-0 text-muted-foreground lg:hidden">
-          {format(move.date, "dd EEEEE")}
-        </div>
+        {fields.includes("date") && (
+          <LedgerDate date={move.date} full={fullDate} />
+        )}
 
         {move.activity ? (
           <>
@@ -402,16 +411,18 @@ function FundMoveLine({
               <div className="min-w-0 truncate font-medium">
                 {move.activity.name}
               </div>
-              {own && (
+              {fields.includes("own") && own && (
                 <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
                   {renderOwn()}
                 </div>
               )}
-              <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
-                <span className="text-xs">{isInflow ? "from" : "to"}</span>
-                {renderCounterpart()}
-              </div>
-              {move.note && (
+              {fields.includes("counterpart") && (
+                <div className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:flex">
+                  <span className="text-xs">{isInflow ? "from" : "to"}</span>
+                  {renderCounterpart()}
+                </div>
+              )}
+              {fields.includes("note") && move.note && (
                 <div
                   className="hidden min-w-0 truncate text-muted-foreground md:block"
                   title={move.note}
@@ -421,7 +432,7 @@ function FundMoveLine({
               )}
 
               {/* The transaction's account movement, when the row is wide */}
-              {move.accounts && (
+              {fields.includes("accounts") && move.accounts && (
                 <div className="hidden shrink-0 items-center gap-1.5 border-l px-2 text-muted-foreground @3xl:flex">
                   <AccountFlowLabel accountId={move.accounts.from} />
                   <MoveRight className="size-3.5 shrink-0" />
@@ -435,13 +446,13 @@ function FundMoveLine({
         ) : (
           <>
             <div className="flex min-w-0 items-center gap-1.5 font-medium">
-              {own && renderOwn()}
+              {fields.includes("own") && own && renderOwn()}
               <span className="text-muted-foreground">
                 {isInflow ? "from" : "to"}
               </span>
               {renderCounterpart()}
             </div>
-            {move.note && (
+            {fields.includes("note") && move.note && (
               <div
                 className="hidden min-w-0 truncate text-muted-foreground md:block"
                 title={move.note}
@@ -454,10 +465,12 @@ function FundMoveLine({
         )}
       </div>
 
-      <AmountPairsValue
-        pairs={[{ dot: isInflow ? "bg-green-400" : "bg-red-400", amount }]}
-        hideZeros={false}
-      />
+      {fields.includes("amount") && (
+        <AmountPairsValue
+          pairs={[{ dot: isInflow ? "bg-green-400" : "bg-red-400", amount }]}
+          hideZeros={false}
+        />
+      )}
     </>
   );
 

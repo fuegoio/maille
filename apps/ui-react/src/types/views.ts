@@ -34,6 +34,8 @@ export type ViewOption = {
 export type ViewDescriptor = {
   /** Toggleable row fields, in display order. */
   fields: ViewOption[];
+  /** Independently toggleable amounts, stored alongside the other field ids. */
+  amounts?: ViewOption[];
   /** Fields the rows can be ordered by. */
   orderings: ViewOption[];
   /** Grouping modes; conventionally starts with "none". */

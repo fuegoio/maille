@@ -14,8 +14,11 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
+import { viewGroupOrder } from "@/lib/view-grouping";
 import { sortViewRows } from "@/lib/view-ordering";
 import { activityTouchesFund } from "@/logic/funds";
+import { useActivities } from "@/stores/activities";
+import { useProjects } from "@/stores/projects";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -25,6 +28,9 @@ import { ActivityAmountsValue } from "./activity-amounts";
 import { ActivityLine } from "./activity-line";
 import {
   ACTIVITY_VIEW_FIELDS,
+  ACTIVITY_VIEW_GROUPINGS,
+  activityGroupAccessors,
+  visibleActivityAmountTypes,
   activityOrderingAccessors,
   type ActivityViewGrouping,
 } from "./activity-view";
@@ -47,7 +53,7 @@ interface ActivitiesTableProps {
 export function ActivitiesTable({
   viewId,
   activities,
-  groupings = ["none"],
+  groupings = ACTIVITY_VIEW_GROUPINGS,
   accountFilter = null,
   categoryFilter = null,
   subcategoryFilter = null,
@@ -59,6 +65,13 @@ export function ActivitiesTable({
 
   const activityView = useViews((state) => state.getActivityView(viewId));
   const { search } = useViewSearch();
+  const categories = useActivities((state) => state.activityCategories);
+  const subcategories = useActivities((state) => state.activitySubcategories);
+  const projects = useProjects((state) => state.projects);
+  const groupAccessors = React.useMemo(
+    () => activityGroupAccessors(categories, subcategories, projects),
+    [categories, subcategories, projects],
+  );
   const scrollRef = useScrollRestoration<HTMLDivElement>(
     `activities:${viewId}`,
   );
@@ -146,17 +159,11 @@ export function ActivitiesTable({
     );
   }, [activitiesFiltered, activityView.ordering]);
 
-  // Group headers follow the date ordering's direction; any other field
-  // leaves the groups newest-first.
-  const groupOrder =
-    activityView.ordering.field === "date"
-      ? activityView.ordering.direction
-      : "desc";
-
   const { items, isFolded, toggleGroup } = useGroupedRows(
     activitiesSorted,
-    grouping === "period",
-    groupOrder,
+    grouping,
+    groupAccessors,
+    viewGroupOrder(grouping, activityView.ordering),
   );
 
   const rows = React.useMemo<TableRow[]>(
@@ -205,11 +212,14 @@ export function ActivitiesTable({
                     id={item.id}
                     folded={isFolded(item.id)}
                     onToggle={toggleGroup}
-                    month={item.month}
-                    year={item.year}
+                    label={item.label}
+                    shortLabel={item.shortLabel}
+                    calendar={item.calendar}
+                    count={item.rows.length}
                   >
                     <ActivityAmountsValue
                       amounts={sumActivityAmounts(item.rows)}
+                      types={visibleActivityAmountTypes(fields)}
                       className="text-sm"
                     />
                   </TableGroupHeader>
@@ -230,6 +240,7 @@ export function ActivitiesTable({
                         activity={item}
                         accountFilter={accountFilter}
                         fields={fields}
+                        fullDate={grouping !== "period"}
                         showTransactions={activityView.showTransactions}
                         hideProject={hideProject}
                         checked={selectedActivities.includes(item.id)}

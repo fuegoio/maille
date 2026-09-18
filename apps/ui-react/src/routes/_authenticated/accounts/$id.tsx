@@ -34,6 +34,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -157,7 +158,7 @@ function AccountPage({ account }: { account: Account }) {
       <SidebarInset className="flex-row">
         <div
           className={cn(
-            "flex flex-1 flex-col",
+            "flex min-w-0 flex-1 flex-col",
             summaryOpen && "hidden md:flex",
           )}
         >
@@ -214,8 +215,11 @@ function AccountPage({ account }: { account: Account }) {
             }
             className="min-h-0 flex-1"
           >
-            <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-              <TabsList height="full" className="ml-5">
+            <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+              <TabsList
+                height="full"
+                className="min-w-0 overflow-x-auto sm:ml-5"
+              >
                 <TabsTrigger value="transactions">
                   <ReceiptText />
                   Transactions
@@ -280,6 +284,10 @@ function AccountPage({ account }: { account: Account }) {
                     </Button>
                   )}
                   <AddActivityButton size="sm" />
+                  <TableViewSettingsButton
+                    kind="transaction"
+                    viewId={`account-${account.id}-transactions`}
+                  />
                 </>
               )}
               {selectedTab === "movements" && (
@@ -288,6 +296,10 @@ function AccountPage({ account }: { account: Account }) {
                     viewId={`account-${account.id}-movements`}
                   />
                   <AddMovementButton size="sm" />
+                  <TableViewSettingsButton
+                    kind="movement"
+                    viewId={`account-${account.id}-movements`}
+                  />
                 </>
               )}
               {selectedTab === "assets" && (
@@ -320,6 +332,7 @@ function AccountPage({ account }: { account: Account }) {
 
             <TabsContent value="transactions" className="flex h-full">
               <AccountTransactionsTable
+                viewId={`account-${account.id}-transactions`}
                 accountId={account.id}
                 fundFilter={fundFilter}
               />
@@ -329,7 +342,6 @@ function AccountPage({ account }: { account: Account }) {
               <MovementsTable
                 viewId={`account-${account.id}-movements`}
                 movements={viewMovements}
-                grouping="period"
                 accountFilter={account.id}
               />
             </TabsContent>

@@ -11,6 +11,7 @@ import { activityViewDescriptor } from "./activity-view";
 interface ActivityViewSettingsButtonProps {
   viewId: string;
   className?: string;
+  hideProject?: boolean;
 }
 
 /**
@@ -20,6 +21,7 @@ interface ActivityViewSettingsButtonProps {
 export function ActivityViewSettingsButton({
   viewId,
   className,
+  hideProject = false,
 }: ActivityViewSettingsButtonProps) {
   const activityView = useViews((state) => state.getActivityView(viewId));
   const setActivityView = useViews((state) => state.setActivityView);
@@ -33,7 +35,16 @@ export function ActivityViewSettingsButton({
 
   return (
     <ViewSettingsButton
-      descriptor={activityViewDescriptor}
+      descriptor={
+        hideProject
+          ? {
+              ...activityViewDescriptor,
+              fields: activityViewDescriptor.fields.filter(
+                (field) => field.value !== "project",
+              ),
+            }
+          : activityViewDescriptor
+      }
       config={activityView}
       onConfigChange={handleConfigChange}
       className={className}

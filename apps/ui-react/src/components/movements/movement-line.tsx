@@ -1,13 +1,13 @@
 import type { Movement } from "@maille/core/movements";
 
 import { useRouter } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { CircleCheck, CircleDotDashed } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
 import { AmountPairsValue } from "@/components/shared/amount-pairs";
+import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,11 @@ import { WORKFLOW_STATUS_CONFIG } from "@/components/workflows/workflow-status";
 import { cn } from "@/lib/utils";
 import { useWorkflows } from "@/stores/workflows";
 
+import { MOVEMENT_VIEW_FIELDS } from "./movement-view";
+
 interface MovementLineProps {
+  fields?: readonly string[];
+  fullDate?: boolean;
   movement: Movement;
   checked: boolean;
   /** Outline sides when the row is checked or focused; absent otherwise. */
@@ -28,6 +32,8 @@ interface MovementLineProps {
 
 export function MovementLine({
   movement,
+  fields = MOVEMENT_VIEW_FIELDS,
+  fullDate = false,
   checked,
   outlineSides,
   showCheckbox = true,
@@ -68,32 +74,32 @@ export function MovementLine({
         />
       )}
 
-      <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
-        {format(movement.date, "dd EEE")}
-      </div>
-      <div className="ml-2 w-8 shrink-0 text-muted-foreground lg:hidden">
-        {format(movement.date, "dd EEEEE")}
-      </div>
-
-      {movement.status === "incomplete" ? (
-        <CircleDotDashed className="size-4 shrink-0 text-warning" />
-      ) : (
-        <CircleCheck className="size-4 shrink-0 text-primary" />
+      {fields.includes("date") && (
+        <LedgerDate date={movement.date} full={fullDate} />
       )}
 
-      <Badge
-        variant="outline"
-        className="h-6 shrink-0 hover:bg-border/50 sm:mr-1"
-        onClick={(e) => {
-          e.preventDefault();
-          void router.navigate({
-            to: `/accounts/$id`,
-            params: { id: movement.account },
-          });
-        }}
-      >
-        <AccountLabel accountId={movement.account} />
-      </Badge>
+      {fields.includes("status") &&
+        (movement.status === "incomplete" ? (
+          <CircleDotDashed className="size-4 shrink-0 text-warning" />
+        ) : (
+          <CircleCheck className="size-4 shrink-0 text-primary" />
+        ))}
+
+      {fields.includes("account") && (
+        <Badge
+          variant="outline"
+          className="h-6 shrink-0 hover:bg-border/50 sm:mr-1"
+          onClick={(e) => {
+            e.preventDefault();
+            void router.navigate({
+              to: `/accounts/$id`,
+              params: { id: movement.account },
+            });
+          }}
+        >
+          <AccountLabel accountId={movement.account} />
+        </Badge>
+      )}
 
       <div className="overflow-hidden font-medium text-ellipsis whitespace-nowrap text-foreground">
         {movement.name}
@@ -111,15 +117,17 @@ export function MovementLine({
         />
       )}
 
-      <AmountPairsValue
-        pairs={[
-          {
-            dot: movement.amount > 0 ? "bg-green-400" : "bg-red-400",
-            amount: movement.amount,
-          },
-        ]}
-        hideZeros={false}
-      />
+      {fields.includes("amount") && (
+        <AmountPairsValue
+          pairs={[
+            {
+              dot: movement.amount > 0 ? "bg-green-400" : "bg-red-400",
+              amount: movement.amount,
+            },
+          ]}
+          hideZeros={false}
+        />
+      )}
     </ContextLink>
   );
 }

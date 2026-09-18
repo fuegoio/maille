@@ -7,6 +7,7 @@ import { useState } from "react";
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import {
   PageBreadcrumbs,
@@ -89,6 +90,7 @@ function ProjectPage({ project }: { project: Project }) {
           <SidebarTrigger className="mr-1" />
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
+          <ActivityViewSettingsButton viewId="project-detail" hideProject />
           <AddActivityButton project={projectId} />
           <Button
             variant="outline"
@@ -120,7 +122,6 @@ function ProjectPage({ project }: { project: Project }) {
 
         <ActivitiesTable
           viewId="project-detail"
-          groupings={["period"]}
           activities={projectActivities}
           hideProject={true}
           activityTypeFilter={activitiesFilters.activityType}

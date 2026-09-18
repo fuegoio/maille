@@ -5,6 +5,7 @@ import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
@@ -87,6 +88,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           />
           <div className="flex-1" />
           <SearchBar />
+          <ActivityViewSettingsButton viewId={`category-${category.id}`} />
           <AddActivityButton category={category.id} />
           {!summaryOpen && (
             <Button
@@ -109,7 +111,6 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
         <ActivitiesTable
           viewId={`category-${category.id}`}
           activities={viewActivities}
-          groupings={["period"]}
         />
       </div>
 

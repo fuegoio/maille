@@ -9,6 +9,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -57,6 +58,10 @@ function UntrackedFundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
+          <TableViewSettingsButton
+            kind="fundMove"
+            viewId="fund-untracked-moves"
+          />
           {!summaryOpen && (
             <Button
               variant="secondary"
@@ -70,7 +75,11 @@ function UntrackedFundPage() {
           )}
         </header>
 
-        <FundMovesTable fundId={null} accountFilter={accountFilter} />
+        <FundMovesTable
+          viewId="fund-untracked-moves"
+          fundId={null}
+          accountFilter={accountFilter}
+        />
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>

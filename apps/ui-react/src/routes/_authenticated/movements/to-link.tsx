@@ -10,6 +10,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { PageBar } from "@/components/shared/page-bars";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useMovements } from "@/stores/movements";
 import { useViews } from "@/stores/views";
@@ -55,13 +56,10 @@ function ToLinkPage() {
         <SearchBar />
         <ImportMovementsButton className="hidden sm:flex" />
         <AddMovementButton />
+        <TableViewSettingsButton kind="movement" viewId={movementsView.id} />
       </PageBar>
 
-      <MovementsTable
-        viewId={movementsView.id}
-        movements={viewMovements}
-        grouping="period"
-      />
+      <MovementsTable viewId={movementsView.id} movements={viewMovements} />
     </SidebarInset>
   );
 }

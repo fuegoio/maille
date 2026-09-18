@@ -66,11 +66,7 @@ function ToReconciliatePage() {
         />
       </PageBar>
 
-      <ActivitiesTable
-        viewId={activityView.id}
-        activities={viewActivities}
-        groupings={["none", "period"]}
-      />
+      <ActivitiesTable viewId={activityView.id} activities={viewActivities} />
     </SidebarInset>
   );
 }

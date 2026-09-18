@@ -12,29 +12,39 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
+import { viewGroupOrder } from "@/lib/view-grouping";
+import { sortViewRows } from "@/lib/view-ordering";
+import { useAccounts } from "@/stores/accounts";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
 import { MovementsFilters } from "./filters/movements-filters";
 import { MovementLine } from "./movement-line";
+import {
+  movementGroupAccessors,
+  movementOrderingAccessors,
+} from "./movement-view";
 import { useMovementsEntityActions } from "./movements-actions";
 import { MovementsSelection } from "./movements-selection";
 
 interface MovementsTableProps {
   movements: Movement[];
   viewId: string;
-  grouping?: "period" | null;
   accountFilter?: string | null;
 }
 
 export function MovementsTable({
   movements,
   viewId,
-  grouping = null,
   accountFilter = null,
 }: MovementsTableProps) {
   const contextNavigate = useContextNavigate();
   const { search } = useViewSearch();
+  const accounts = useAccounts((state) => state.accounts);
+  const groupAccessors = React.useMemo(
+    () => movementGroupAccessors(accounts),
+    [accounts],
+  );
   const movementView = useViews((state) => state.getMovementView(viewId));
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
 
@@ -52,18 +62,20 @@ export function MovementsTable({
       });
   }, [movements, search, accountFilter, movementView.filters]);
 
-  const movementsSorted = React.useMemo(() => {
-    return [...movementsFiltered].sort((a, b) => {
-      if (a.date.getTime() !== b.date.getTime()) {
-        return b.date.getTime() - a.date.getTime();
-      }
-      return b.id.localeCompare(a.id);
-    });
-  }, [movementsFiltered]);
-
+  const movementsSorted = React.useMemo(
+    () =>
+      sortViewRows(
+        movementsFiltered,
+        movementView.ordering,
+        movementOrderingAccessors,
+      ),
+    [movementsFiltered, movementView.ordering],
+  );
   const { items, isFolded, toggleGroup } = useGroupedRows(
     movementsSorted,
-    grouping !== null,
+    movementView.grouping,
+    groupAccessors,
+    viewGroupOrder(movementView.grouping, movementView.ordering),
   );
 
   const rows = React.useMemo<TableRow[]>(
@@ -109,32 +121,36 @@ export function MovementsTable({
                     id={item.id}
                     folded={isFolded(item.id)}
                     onToggle={toggleGroup}
-                    month={item.month}
-                    year={item.year}
+                    label={item.label}
+                    shortLabel={item.shortLabel}
+                    calendar={item.calendar}
+                    count={item.rows.length}
                   >
                     {/* Movements are signed: in sums the positives, out the
                      * negatives, displayed positively with its dot. */}
-                    <AmountPairsValue
-                      pairs={[
-                        {
-                          dot: "bg-green-400",
-                          amount: item.rows.reduce(
-                            (sum, movement) =>
-                              sum + Math.max(movement.amount, 0),
-                            0,
-                          ),
-                        },
-                        {
-                          dot: "bg-red-400",
-                          amount: -item.rows.reduce(
-                            (sum, movement) =>
-                              sum + Math.min(movement.amount, 0),
-                            0,
-                          ),
-                        },
-                      ]}
-                      className="text-sm"
-                    />
+                    {movementView.fields.includes("amount") && (
+                      <AmountPairsValue
+                        pairs={[
+                          {
+                            dot: "bg-green-400",
+                            amount: item.rows.reduce(
+                              (sum, movement) =>
+                                sum + Math.max(movement.amount, 0),
+                              0,
+                            ),
+                          },
+                          {
+                            dot: "bg-red-400",
+                            amount: -item.rows.reduce(
+                              (sum, movement) =>
+                                sum + Math.min(movement.amount, 0),
+                              0,
+                            ),
+                          },
+                        ]}
+                        className="text-sm"
+                      />
+                    )}
                   </TableGroupHeader>
                 ) : (
                   <EntityContextMenu
@@ -151,6 +167,8 @@ export function MovementsTable({
                     >
                       <MovementLine
                         movement={item}
+                        fields={movementView.fields}
+                        fullDate={movementView.grouping !== "period"}
                         checked={selectedMovements.includes(item.id)}
                         outlineSides={rowOutlines.get(item.id)}
                         onCheckedChange={(event) =>
