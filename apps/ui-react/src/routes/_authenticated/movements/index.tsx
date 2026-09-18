@@ -41,12 +41,14 @@ const viewScope = { kind: "page", page: "movements" } as const;
 
 function MovementsPage() {
   const movements = useMovements((state) => state.movements);
-  const movementView = useViews((state) =>
-    state.getMovementView("activities-page"),
-  );
   const navigate = useNavigate();
   const { view } = Route.useSearch();
   const selectedTab = view ?? "all";
+  const builtInViewId =
+    selectedTab === "to-link" ? "activities-to-link-page" : "activities-page";
+  const movementView = useViews((state) =>
+    state.getMovementView(builtInViewId),
+  );
   const selectedCustomView = useSelectedView(viewScope, selectedTab);
   const { updateViewConfig } = useViewMutations();
 
@@ -115,13 +117,10 @@ function MovementsPage() {
           ) : (
             <>
               <FilterMovementsButton
-                viewId="activities-page"
-                className="ml-2 text-muted-foreground"
+                key={builtInViewId}
+                viewId={builtInViewId}
               />
-              <TableViewSettingsButton
-                kind="movement"
-                viewId="activities-page"
-              />
+              <TableViewSettingsButton kind="movement" viewId={builtInViewId} />
               <ExportMovementsButton
                 movements={viewMovements}
                 filters={movementView.filters}

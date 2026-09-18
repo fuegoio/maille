@@ -114,7 +114,6 @@ function ActivitiesPage() {
                     ? "activities-reconciliate-page"
                     : "activities-page"
                 }
-                className="ml-2 text-muted-foreground"
               />
               <ActivityViewSettingsButton
                 viewId={

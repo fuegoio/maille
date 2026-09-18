@@ -60,11 +60,7 @@ export function CustomViewActions({
 
   return (
     <>
-      <DefinitionFilterButton
-        view={view}
-        onConfigChange={onConfigChange}
-        className="ml-2 text-muted-foreground"
-      />
+      <DefinitionFilterButton view={view} onConfigChange={onConfigChange} />
       <DefinitionSettingsButton view={view} onConfigChange={onConfigChange} />
       <DefinitionExportButton view={view} className="hidden sm:flex" />
 

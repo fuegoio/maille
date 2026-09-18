@@ -190,12 +190,9 @@ function SubcategoryPage({
           <SidebarTrigger className="mr-1" />
 
           <PageBreadcrumbs entries={breadcrumbs} />
-          <FilterActivitiesButton
-            viewId={`subcategory-${subcategory.id}`}
-            className="ml-2 text-muted-foreground"
-          />
           <div className="flex-1" />
           <SearchBar />
+          <FilterActivitiesButton viewId={`subcategory-${subcategory.id}`} />
           <ActivityViewSettingsButton
             viewId={`subcategory-${subcategory.id}`}
           />

@@ -1,20 +1,12 @@
-import {
-  MovementFilterFields,
-  type MovementFilter,
-} from "@maille/core/movements";
-import { ListFilter, Plus } from "lucide-react";
-import * as React from "react";
+import type { MovementFilter } from "@maille/core/movements";
 
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { OperatorsWithoutValue } from "@maille/core/movements";
+
+import { FilterPicker } from "@/components/shared/filter-picker";
+import { isEmptyFilterValue } from "@/components/shared/filter-picker-state";
 import { useViews } from "@/stores/views";
 
-import { MovementFilterIcons } from "./movement-filters-icons";
+import { MOVEMENT_FILTER_PICKER_FIELDS } from "./movement-filter-fields";
 
 interface FilterMovementsButtonProps {
   /** The store-backed view to filter; ignored when filters is provided. */
@@ -24,6 +16,20 @@ interface FilterMovementsButtonProps {
   onFiltersChange?: (filters: MovementFilter[]) => void;
   variant?: "default" | "mini";
   className?: string;
+}
+
+/**
+ * A filter is complete once its operator is set and its value carries
+ * a constraint; "is defined"-style operators need no value.
+ */
+function isComplete(filter: MovementFilter): boolean {
+  return (
+    filter.operator !== undefined &&
+    ((OperatorsWithoutValue as readonly string[]).includes(
+      filter.operator as string,
+    ) ||
+      !isEmptyFilterValue(filter.value))
+  );
 }
 
 export function FilterMovementsButton({
@@ -37,58 +43,28 @@ export function FilterMovementsButton({
     viewId === undefined ? undefined : state.getMovementView(viewId),
   );
   const setMovementView = useViews((state) => state.setMovementView);
-  const [open, setOpen] = React.useState(false);
 
   const currentFilters = filters ?? storeView?.filters ?? [];
 
-  const selectField = (field: MovementFilter["field"]) => {
-    const nextFilters = [
-      ...currentFilters,
-      {
-        field: field,
-        operator: undefined,
-        value: undefined,
-      } as MovementFilter,
-    ];
+  const setFilters = (nextFilters: MovementFilter[]) => {
     if (onFiltersChange !== undefined) {
       onFiltersChange(nextFilters);
     } else if (viewId !== undefined && storeView !== undefined) {
       setMovementView(viewId, { ...storeView, filters: nextFilters });
     }
-    setOpen(false);
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      {variant === "default" && (
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className={className} size="sm">
-            <ListFilter />
-            <span className="hidden font-normal sm:inline">Filter</span>
-          </Button>
-        </DropdownMenuTrigger>
-      )}
-      {variant === "mini" && (
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className={className} size="icon-sm">
-            <Plus />
-          </Button>
-        </DropdownMenuTrigger>
-      )}
-      <DropdownMenuContent className="w-48">
-        {MovementFilterFields.map((field) => {
-          const Icon = MovementFilterIcons[field.value];
-          return (
-            <DropdownMenuItem
-              key={field.value}
-              onSelect={() => selectField(field.value)}
-            >
-              <Icon />
-              {field.text}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <FilterPicker
+      fields={MOVEMENT_FILTER_PICKER_FIELDS}
+      emptyFilter={(field) =>
+        ({ field, operator: undefined, value: undefined }) as MovementFilter
+      }
+      isComplete={isComplete}
+      filters={currentFilters}
+      onFiltersChange={setFilters}
+      variant={variant}
+      className={className}
+    />
   );
 }

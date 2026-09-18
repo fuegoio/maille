@@ -42,12 +42,12 @@ export function AddViewDialog({
   const { createView } = useViewMutations();
 
   const resources = scopeResources(scope);
-  const [resource, setResource] = React.useState<ViewResource>(resources[0]);
-  React.useEffect(() => {
-    setResource((current) =>
-      resources.includes(current) ? current : resources[0],
-    );
-  }, [resources]);
+  const [requestedResource, setResource] = React.useState<ViewResource>(
+    resources[0],
+  );
+  const resource = resources.includes(requestedResource)
+    ? requestedResource
+    : resources[0];
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -93,32 +93,34 @@ export function AddViewDialog({
             />
           </Field>
 
-          <Field>
-            <FieldLabel>Displayed resource</FieldLabel>
-            <div className="flex flex-wrap gap-2">
-              {resources.map((entry) => {
-                const definition = VIEW_RESOURCES[entry];
-                const Icon = definition.icon;
-                return (
-                  <Button
-                    key={entry}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    aria-pressed={resource === entry}
-                    onClick={() => setResource(entry)}
-                    className={cn(
-                      "gap-1.5",
-                      resource === entry && "border-foreground/30 bg-muted",
-                    )}
-                  >
-                    <Icon />
-                    {definition.label}
-                  </Button>
-                );
-              })}
-            </div>
-          </Field>
+          {resources.length > 1 && (
+            <Field>
+              <FieldLabel>Displayed resource</FieldLabel>
+              <div className="flex flex-wrap gap-2">
+                {resources.map((entry) => {
+                  const definition = VIEW_RESOURCES[entry];
+                  const Icon = definition.icon;
+                  return (
+                    <Button
+                      key={entry}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      aria-pressed={resource === entry}
+                      onClick={() => setResource(entry)}
+                      className={cn(
+                        "gap-1.5",
+                        resource === entry && "border-foreground/30 bg-muted",
+                      )}
+                    >
+                      <Icon />
+                      {definition.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </Field>
+          )}
 
           <DialogFooter>
             <Button type="submit" disabled={name.trim() === ""}>

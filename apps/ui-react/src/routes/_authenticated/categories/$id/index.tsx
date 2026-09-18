@@ -82,12 +82,9 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           <SidebarTrigger className="mr-1" />
 
           <PageBreadcrumbs entries={breadcrumbs} />
-          <FilterActivitiesButton
-            viewId={`category-${category.id}`}
-            className="ml-2 text-muted-foreground"
-          />
           <div className="flex-1" />
           <SearchBar />
+          <FilterActivitiesButton viewId={`category-${category.id}`} />
           <ActivityViewSettingsButton viewId={`category-${category.id}`} />
           <AddActivityButton category={category.id} />
           {!summaryOpen && (
