@@ -27,6 +27,8 @@ const accountTypeToActivityType = (accountType: AccountType): ActivityType | nul
     return ActivityType.REVENUE;
   } else if (accountType === AccountType.INVESTMENT_ACCOUNT) {
     return ActivityType.INVESTMENT;
+  } else if (accountType === AccountType.ASSETS) {
+    return ActivityType.ASSET;
   }
   return null;
 };
@@ -69,10 +71,10 @@ export const deriveActivityTypes = (
 
 /**
  * The activity's amounts per type. Typed legs contribute to their type:
- * money flowing into an expense or investment account counts positively,
- * money coming from a revenue account counts positively, and the reverse
- * directions negatively. Transactions with no typed account on either side
- * contribute their face amount to neutral.
+ * money flowing into an expense, investment or asset account counts
+ * positively, money coming from a revenue account counts positively, and the
+ * reverse directions negatively. Transactions with no typed account on
+ * either side contribute their face amount to neutral.
  */
 export const getActivityAmounts = (
   transactions: Transaction[],
@@ -82,6 +84,7 @@ export const getActivityAmounts = (
     [ActivityType.EXPENSE]: 0,
     [ActivityType.REVENUE]: 0,
     [ActivityType.INVESTMENT]: 0,
+    [ActivityType.ASSET]: 0,
     [ActivityType.NEUTRAL]: 0,
   };
 
@@ -97,6 +100,8 @@ export const getActivityAmounts = (
       amounts[ActivityType.REVENUE] += transaction.amount;
     } else if (fromType === ActivityType.INVESTMENT) {
       amounts[ActivityType.INVESTMENT] -= transaction.amount;
+    } else if (fromType === ActivityType.ASSET) {
+      amounts[ActivityType.ASSET] -= transaction.amount;
     }
 
     if (toType === ActivityType.EXPENSE) {
@@ -105,6 +110,8 @@ export const getActivityAmounts = (
       amounts[ActivityType.REVENUE] -= transaction.amount;
     } else if (toType === ActivityType.INVESTMENT) {
       amounts[ActivityType.INVESTMENT] += transaction.amount;
+    } else if (toType === ActivityType.ASSET) {
+      amounts[ActivityType.ASSET] += transaction.amount;
     }
 
     if (!fromType && !toType) {
@@ -116,6 +123,7 @@ export const getActivityAmounts = (
     [ActivityType.EXPENSE]: _.round(amounts[ActivityType.EXPENSE], 2),
     [ActivityType.REVENUE]: _.round(amounts[ActivityType.REVENUE], 2),
     [ActivityType.INVESTMENT]: _.round(amounts[ActivityType.INVESTMENT], 2),
+    [ActivityType.ASSET]: _.round(amounts[ActivityType.ASSET], 2),
     [ActivityType.NEUTRAL]: _.round(amounts[ActivityType.NEUTRAL], 2),
   };
 };
@@ -140,12 +148,14 @@ export const sumActivityAmounts = (activities: { amounts: ActivityAmounts }[]): 
     [ActivityType.EXPENSE]: 0,
     [ActivityType.REVENUE]: 0,
     [ActivityType.INVESTMENT]: 0,
+    [ActivityType.ASSET]: 0,
     [ActivityType.NEUTRAL]: 0,
   };
   for (const { amounts } of activities) {
     sums.expense += amounts.expense;
     sums.revenue += amounts.revenue;
     sums.investment += amounts.investment;
+    sums.asset += amounts.asset;
     sums.neutral += amounts.neutral;
   }
   return sums;

@@ -93,6 +93,7 @@ const activity = (
     expense: 0,
     revenue: 0,
     investment: 0,
+    asset: 0,
     neutral: 0,
   },
   category: null,

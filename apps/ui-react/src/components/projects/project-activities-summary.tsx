@@ -73,6 +73,7 @@ export function ProjectActivitiesSummary({
         [ActivityType.REVENUE]: "#4ade80",
         [ActivityType.EXPENSE]: "#f87171",
         [ActivityType.INVESTMENT]: "#fb923c",
+        [ActivityType.ASSET]: "#a78bfa",
         [ActivityType.NEUTRAL]: "#9ca3af",
       }[activityType],
     );
@@ -84,6 +85,7 @@ export function ProjectActivitiesSummary({
     ActivityType.REVENUE,
     ActivityType.EXPENSE,
     ActivityType.INVESTMENT,
+    ActivityType.ASSET,
     ActivityType.NEUTRAL,
   ].map((type) => ({ type, value: getTypeTotal(type) }));
 

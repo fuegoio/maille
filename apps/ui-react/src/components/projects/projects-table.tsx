@@ -115,6 +115,25 @@ export function ProjectsTable() {
             </div>
           </div>
 
+          {/* Asset */}
+          <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm lg:flex">
+            <div
+              className={cn(
+                "mr-3 size-2.5 shrink-0 rounded-lg",
+                ACTIVITY_TYPES_COLOR[ActivityType.ASSET],
+              )}
+            />
+            <div className="flex-1">
+              {currencyFormatter.format(
+                getActivityTypeTotalForProject({
+                  projectId: project.id,
+                  activityType: ActivityType.ASSET,
+                  activities,
+                }),
+              )}
+            </div>
+          </div>
+
           {/* Expense */}
           <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
             <div

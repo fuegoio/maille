@@ -84,6 +84,11 @@ export function MonthsTable() {
               activityType: ActivityType.INVESTMENT,
               activities,
             });
+            const asset = getActivityTypeTotalForMonth({
+              monthDate,
+              activityType: ActivityType.ASSET,
+              activities,
+            });
 
             return (
               <Link
@@ -154,6 +159,19 @@ export function MonthsTable() {
                   />
                   <div className="flex-1">
                     {currencyFormatter.format(investment)}
+                  </div>
+                </div>
+
+                {/* Asset */}
+                <div className="mr-4 hidden w-32 items-center pl-4 text-right font-mono text-sm md:flex">
+                  <div
+                    className={cn(
+                      "mr-3 size-2.5 shrink-0 rounded-lg",
+                      ACTIVITY_TYPES_COLOR[ActivityType.ASSET],
+                    )}
+                  />
+                  <div className="flex-1">
+                    {currencyFormatter.format(asset)}
                   </div>
                 </div>
 

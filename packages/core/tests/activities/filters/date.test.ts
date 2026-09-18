@@ -81,6 +81,7 @@ describe("date filters on activity", () => {
         [ActivityType.EXPENSE]: 10,
         [ActivityType.REVENUE]: 0,
         [ActivityType.INVESTMENT]: 0,
+        [ActivityType.ASSET]: 0,
         [ActivityType.NEUTRAL]: 0,
       },
       category: null,

@@ -17,6 +17,7 @@ export enum ActivityType {
   EXPENSE = "expense",
   REVENUE = "revenue",
   INVESTMENT = "investment",
+  ASSET = "asset",
   NEUTRAL = "neutral",
 }
 
