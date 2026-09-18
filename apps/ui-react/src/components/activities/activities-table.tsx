@@ -1,7 +1,6 @@
 import {
   ActivityType,
   sumActivityAmounts,
-  verifyActivityFilter,
   type Activity,
 } from "@maille/core/activities";
 import * as React from "react";
@@ -13,8 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
-import { searchCompare } from "@/lib/strings";
-import { activityTouchesFund } from "@/logic/funds";
+import { applyActivitiesFilters } from "@/logic/activities";
 import { useViewSearch } from "@/stores/search";
 import { useViews } from "@/stores/views";
 
@@ -57,51 +55,15 @@ export function ActivitiesTable({
   );
 
   const activitiesFiltered = React.useMemo(() => {
-    return activities
-      .filter((activity) => searchCompare(search, activity.name))
-      .filter((activity) => {
-        if (subcategoryFilter !== null) {
-          return activity.subcategory === subcategoryFilter;
-        }
-
-        if (categoryFilter !== null) {
-          return activity.category === categoryFilter;
-        }
-
-        return true;
-      })
-      .filter((activity) => {
-        if (accountFilter !== null) {
-          return (
-            activity.transactions.filter(
-              (t) =>
-                t.toAccount === accountFilter ||
-                t.fromAccount === accountFilter,
-            ).length > 0
-          );
-        } else {
-          return true;
-        }
-      })
-      .filter((activity) =>
-        activityTypeFilter !== null
-          ? activity.types.includes(activityTypeFilter)
-          : true,
-      )
-      .filter((activity) =>
-        fundFilter === undefined
-          ? true
-          : activityTouchesFund(activity, fundFilter),
-      )
-      .filter((activity) => {
-        if (activityView.filters.length === 0) return true;
-
-        return activityView.filters
-          .map((filter) => {
-            return verifyActivityFilter(filter, activity);
-          })
-          .every((f) => f);
-      });
+    return applyActivitiesFilters(activities, {
+      search,
+      viewFilters: activityView.filters,
+      accountFilter,
+      categoryFilter,
+      subcategoryFilter,
+      activityTypeFilter,
+      fundFilter,
+    });
   }, [
     activities,
     search,

@@ -1,6 +1,3 @@
-import type { FundMove } from "@maille/core/funds";
-
-import { getFundDescendants } from "@maille/core/funds";
 import { format } from "date-fns";
 import { MoveRight } from "lucide-react";
 import * as React from "react";
@@ -20,7 +17,7 @@ import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { searchCompare } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { isLegNullSideUntracked } from "@/logic/funds";
+import { getFundMovesRows, type FundMoveRow } from "@/logic/funds";
 import { ACCOUNT_TYPES_COLOR, useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
@@ -30,19 +27,8 @@ import { useFundMovesEntityActions } from "./fund-moves-actions";
 import { FundMovesSelection } from "./fund-moves-selection";
 
 /** A fund move as seen from one fund: which activity, which side, how much. */
-type FundMoveWithActivity = FundMove & {
+type FundMoveWithActivity = FundMoveRow & {
   kind: "move";
-  /** Direction of money relative to the fund. */
-  direction: "in" | "out";
-  /** The activity holding the transaction, when the move is tied to one. */
-  activity: { id: string; name: string } | null;
-  /** The transaction's account movement, when the move is tied to one. */
-  accounts: { from: string; to: string } | null;
-  /**
-   * The fund inside the scope holding the move, when it is not the page's
-   * fund itself — a subfund's row in the subtree view.
-   */
-  own?: string;
 };
 
 interface FundMovesTableProps {
@@ -65,71 +51,13 @@ export function FundMovesTable({
   const activities = useActivities((state) => state.activities);
   const { search } = useViewSearch();
 
-  // The funds whose moves the table shows: the fund itself, or its whole
-  // subtree. Money crossing the scope's boundary is a row; moves between
-  // funds inside it cancel out of the rollup, like the summary's flows.
-  const scopeIds = React.useMemo(() => {
-    if (fundId === null) return null;
-    return new Set(
-      subtree ? [fundId, ...getFundDescendants(fundId, funds)] : [fundId],
-    );
-  }, [fundId, subtree, funds]);
-
-  const moves = React.useMemo<FundMoveWithActivity[]>(() => {
-    const inScope = (fund: string | null) =>
-      fund !== null && scopeIds !== null && scopeIds.has(fund);
-
-    // Legs live on their transactions, nested in the activity holding
-    // them — there is no separate fund move collection.
-    const result: FundMoveWithActivity[] = [];
-    for (const activity of activities) {
-      for (const transaction of activity.transactions) {
-        for (const leg of transaction.fundMoves ?? []) {
-          // Untracked lists the null side of every move; a fund lists its
-          // (or its subtree's) boundary moves.
-          const fromInside = inScope(leg.fromFund);
-          const toInside = inScope(leg.toFund);
-          if (scopeIds === null) {
-            if (leg.fromFund !== null && leg.toFund !== null) continue;
-            // A null side facing an Expense or Revenue account is the
-            // outside of the balance sheet, not Untracked: those legs
-            // never move Untracked money and stay off the page.
-            if (!isLegNullSideUntracked(leg, transaction, accounts)) continue;
-          } else if (fromInside === toInside) {
-            continue;
-          }
-
-          // The fund inside the scope holding the move: the subfund a
-          // subtree row belongs to, when it is not the page's fund itself.
-          const insideFund = fromInside ? leg.fromFund : leg.toFund;
-          const own =
-            subtree && fundId !== null && insideFund !== fundId
-              ? (insideFund ?? undefined)
-              : undefined;
-
-          result.push({
-            ...leg,
-            kind: "move" as const,
-            direction:
-              scopeIds === null
-                ? leg.toFund === null
-                  ? ("in" as const)
-                  : ("out" as const)
-                : toInside
-                  ? ("in" as const)
-                  : ("out" as const),
-            activity: { id: activity.id, name: activity.name },
-            accounts: {
-              from: transaction.fromAccount,
-              to: transaction.toAccount,
-            },
-            own,
-          });
-        }
-      }
-    }
-    return result;
-  }, [activities, scopeIds, subtree, fundId, accounts]);
+  const moves = React.useMemo<FundMoveWithActivity[]>(
+    () =>
+      getFundMovesRows({ activities, accounts, funds, fundId, subtree }).map(
+        (move) => ({ ...move, kind: "move" as const }),
+      ),
+    [activities, accounts, funds, fundId, subtree],
+  );
 
   const rows = React.useMemo<FundMoveWithActivity[]>(
     () =>
