@@ -27,14 +27,12 @@ export function useMovementFilterFields(): FilterFieldDefinition<MovementFilter>
           return {
             ...base,
             operators: ActivityFilterNameDescriptionOperators,
-            defaultOperator: "contains",
             input: { type: "text" },
           };
         case "date":
           return {
             ...base,
             operators: ActivityFilterDateOperators,
-            defaultOperator: "before",
             input: {
               type: "single",
               options: ActivityFilterDateValues.map((value) => ({
@@ -47,14 +45,12 @@ export function useMovementFilterFields(): FilterFieldDefinition<MovementFilter>
           return {
             ...base,
             operators: ActivityFilterAmountOperators,
-            defaultOperator: "equal",
             input: { type: "number" },
           };
         case "account":
           return {
             ...base,
             operators: ActivityFilterMultipleOperators,
-            defaultOperator: "is any of",
             input: {
               type: "multiple",
               pluralLabel: "accounts",
@@ -77,7 +73,6 @@ export function useMovementFilterFields(): FilterFieldDefinition<MovementFilter>
           return {
             ...base,
             operators: ActivityFilterMultipleOperators,
-            defaultOperator: "is any of",
             input: {
               type: "multiple",
               pluralLabel: "statuses",

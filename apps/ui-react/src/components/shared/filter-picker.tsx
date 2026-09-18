@@ -34,7 +34,7 @@ interface FilterPickerProps<F extends FilterShape> {
   className?: string;
 }
 
-/** One dropdown for fields, with a persistent checkbox submenu for each field's values. */
+/** Fields open operator submenus, which in turn open their value editors. */
 export function FilterPicker<F extends FilterShape>({
   fields,
   filters,
@@ -126,9 +126,9 @@ export function FilterPicker<F extends FilterShape>({
                   sideOffset={4}
                   collisionPadding={8}
                   aria-label={`${field.text} filter`}
-                  // Operator selects use their own portal; field switching is controlled above.
+                  // Keep the field menu open while its nested operator/value menus have focus.
                   onFocusOutside={(event) => event.preventDefault()}
-                  className="max-h-(--radix-dropdown-menu-content-available-height) w-[calc(100vw-10rem)] max-w-64 overflow-y-auto motion-reduce:animate-none sm:w-64 motion-reduce:[&_*]:transition-none"
+                  className="max-h-(--radix-dropdown-menu-content-available-height) w-[calc(100vw-10rem)] max-w-48 overflow-y-auto motion-reduce:animate-none sm:w-48 motion-reduce:[&_*]:transition-none"
                   onKeyDown={handleFilterEditorKeyDown}
                 >
                   <FilterFieldEditor

@@ -1,12 +1,34 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  filterSubmenuOffset,
   isEmptyFilterValue,
   replacePickerFilter,
   resolveFilterUpdate,
   toggleFilterValue,
   type FilterShape,
 } from "./filter-picker-state";
+
+describe("nested filter positioning", () => {
+  it("keeps menus adjacent when the values fit on the right", () => {
+    expect(filterSubmenuOffset({ left: 200, right: 380 }, 1024)).toBe(4);
+  });
+  it("lets Radix flip left when space is available there", () => {
+    expect(filterSubmenuOffset({ left: 700, right: 880 }, 1024)).toBe(4);
+  });
+  it.each([320, 390])("keeps deeper values inside a %spx viewport", (width) => {
+    const trigger = { left: 12, right: 164 };
+    const offset = filterSubmenuOffset(trigger, width);
+    const left = trigger.right + offset;
+    expect(left).toBeGreaterThanOrEqual(8);
+    expect(left + 256).toBeLessThanOrEqual(width - 8);
+    expect(offset).not.toBe(4);
+  });
+  it("caps the content width on very narrow screens", () => {
+    const right = 190;
+    expect(right + filterSubmenuOffset({ left: 10, right }, 240)).toBe(8);
+  });
+});
 
 describe("filter picker values", () => {
   it.each([undefined, null, "", "  ", [], NaN, Infinity, -Infinity])(

@@ -58,7 +58,7 @@ export function FilterChip<F extends FilterShape>({
           sideOffset={8}
           collisionPadding={8}
           aria-label={field.text + " filter"}
-          className="w-64 max-w-[calc(100vw-1rem)] motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
+          className="w-48 max-w-[calc(100vw-1rem)] motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
           onKeyDown={handleFilterEditorKeyDown}
         >
           <FilterFieldEditor

@@ -36,14 +36,12 @@ export function useActivityFilterFields(): FilterFieldDefinition<ActivityFilter>
           return {
             ...base,
             operators: ActivityFilterNameDescriptionOperators,
-            defaultOperator: "contains",
             input: { type: "text" },
           };
         case "date":
           return {
             ...base,
             operators: ActivityFilterDateOperators,
-            defaultOperator: "before",
             input: {
               type: "single",
               options: ActivityFilterDateValues.map((value) => ({
@@ -56,14 +54,12 @@ export function useActivityFilterFields(): FilterFieldDefinition<ActivityFilter>
           return {
             ...base,
             operators: ActivityFilterAmountOperators,
-            defaultOperator: "equal",
             input: { type: "number" },
           };
         case "type":
           return {
             ...base,
             operators: ActivityFilterMultipleOperators,
-            defaultOperator: "is any of",
             input: {
               type: "multiple",
               pluralLabel: "types",
@@ -91,7 +87,6 @@ export function useActivityFilterFields(): FilterFieldDefinition<ActivityFilter>
               ...ActivityFilterCategoryOperators,
             ],
             operatorsWithoutValue: ActivityFilterCategoryOperators,
-            defaultOperator: "is any of",
             input: {
               type: "multiple",
               pluralLabel:
@@ -115,7 +110,6 @@ export function useActivityFilterFields(): FilterFieldDefinition<ActivityFilter>
           return {
             ...base,
             operators: ActivityFilterMultipleOperators,
-            defaultOperator: "is any of",
             input: {
               type: "multiple",
               pluralLabel: "accounts",

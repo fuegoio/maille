@@ -43,6 +43,23 @@ export function toggleFilterValue(current: unknown, value: string): string[] {
     : [...values, value];
 }
 
+/** Overlap ancestor menus only when a full value submenu cannot fit on either side. */
+export function filterSubmenuOffset(
+  trigger: { left: number; right: number },
+  viewportWidth: number,
+  contentWidth = 256,
+): number {
+  const padding = 8;
+  const gap = 4;
+  const width = Math.min(contentWidth, viewportWidth - padding * 2);
+  if (
+    trigger.left - gap - padding >= width ||
+    viewportWidth - trigger.right - gap - padding >= width
+  )
+    return gap;
+  return Math.max(padding, viewportWidth - padding - width) - trigger.right;
+}
+
 /** Update the last filter for a field, preserving other constraints (including date ranges). */
 export function replacePickerFilter<F extends FilterShape>(
   filters: F[],

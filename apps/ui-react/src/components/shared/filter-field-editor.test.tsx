@@ -16,7 +16,6 @@ const field: FilterFieldDefinition<FilterShape> = {
   text: "Status",
   icon: ListFilter,
   operators: ["is any of"],
-  defaultOperator: "is any of",
   input: {
     type: "multiple",
     pluralLabel: "statuses",
