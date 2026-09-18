@@ -3,7 +3,7 @@ import type { FundMove } from "@maille/core/funds";
 import type { Movement } from "@maille/core/movements";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AccountType } from "@maille/core/accounts";
+import { AccountType, type Account } from "@maille/core/accounts";
 import { extractDateFromMovementName } from "@maille/core/movements";
 import * as React from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -94,13 +94,121 @@ export function AddActivityModal({
   onOpenChange,
   movement,
   movements,
-  amount: initialAmount,
-  name: initialName,
-  date: initialDate,
-  category: initialCategory,
-  subcategory: initialSubcategory,
-  project: initialProject,
+  amount,
+  name,
+  date,
+  category,
+  subcategory,
+  project,
 }: AddActivityModalProps) {
+  // The form is keyed on its seeding inputs: changing them remounts it with
+  // fresh defaults, while store refreshes re-render without touching it.
+  const seedKey = [
+    movement?.id ?? null,
+    movements ? movements.map((m) => m.id).join(",") : null,
+    name ?? null,
+    date?.getTime() ?? null,
+    amount ?? null,
+    category ?? null,
+    subcategory ?? null,
+    project ?? null,
+  ].join("|");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl">
+        <AddActivityForm
+          key={seedKey}
+          onOpenChange={onOpenChange}
+          movement={movement}
+          movements={movements}
+          initialAmount={amount}
+          initialName={name}
+          initialDate={date}
+          initialCategory={category}
+          initialSubcategory={subcategory}
+          initialProject={project}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Guess best transaction accounts: money out goes bank -> expense,
+// money in goes revenue -> bank (the movement's account takes one leg).
+function guessBestTransaction({
+  movement,
+  movements,
+  accounts,
+}: {
+  movement?: Movement;
+  movements?: Movement[];
+  accounts: Account[];
+}) {
+  const movementAmount = movement
+    ? movement.amount
+    : movements && movements.length > 0
+      ? movements[0].amount
+      : undefined;
+  const isRevenue = movementAmount !== undefined ? movementAmount > 0 : false;
+
+  let fromAccount: string | undefined;
+  let toAccount: string | undefined;
+
+  if (!isRevenue) {
+    fromAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
+    toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
+
+    if (movement) {
+      fromAccount = movement.account;
+    } else if (movements) {
+      const firstMovement = movements[0];
+      if (movements.every((m) => m.account === firstMovement.account)) {
+        fromAccount = firstMovement.account;
+      }
+    }
+  } else {
+    fromAccount = accounts.find((a) => a.type === AccountType.REVENUE)?.id;
+    toAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
+
+    if (movement) {
+      toAccount = movement.account;
+    } else if (movements) {
+      const firstMovement = movements[0];
+      if (movements.every((m) => m.account === firstMovement.account)) {
+        toAccount = firstMovement.account;
+      }
+    }
+  }
+
+  return { fromAccount, toAccount };
+}
+
+interface AddActivityFormProps {
+  onOpenChange: (open: boolean) => void;
+  movement?: Movement;
+  movements?: Movement[];
+  initialAmount?: number;
+  initialName?: string;
+  initialDate?: Date;
+  initialCategory?: string;
+  initialSubcategory?: string;
+  initialProject?: string;
+}
+
+// Mounted inside DialogContent, so it only exists while the dialog is open
+// and starts from fresh defaults on every open.
+function AddActivityForm({
+  onOpenChange,
+  movement,
+  movements,
+  initialAmount,
+  initialName,
+  initialDate,
+  initialCategory,
+  initialSubcategory,
+  initialProject,
+}: AddActivityFormProps) {
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const accounts = useAccounts((state) => state.accounts);
@@ -109,17 +217,59 @@ export function AddActivityModal({
   const contextNavigate = useContextNavigate();
   const currencyFormatter = useCurrencyFormatter();
 
+  const bestTransaction = guessBestTransaction({
+    movement,
+    movements,
+    accounts,
+  });
+
+  const getMovementDate = (m: Movement | undefined): Date => {
+    if (!m) return initialDate || new Date();
+    const extractedDate = extractDateFromMovementName(m.name, m.date);
+    return extractedDate || m.date;
+  };
+  const initialFormDate = movement
+    ? getMovementDate(movement)
+    : initialDate || new Date();
+
+  const initialTransactions = [];
+  if (bestTransaction) {
+    const amount = movement ? Math.abs(movement.amount) : (initialAmount ?? 0);
+    initialTransactions.push({
+      fromAccount: bestTransaction.fromAccount,
+      fromAsset: null,
+      fromCounterparty: null,
+      toAccount: bestTransaction.toAccount,
+      toAsset: null,
+      toCounterparty: null,
+      amount,
+      // Each side lands in its account's default fund, so the activity
+      // is classified from the start
+      fundMoves: classifyFundMoves({
+        fromAccount: bestTransaction.fromAccount ?? "",
+        toAccount: bestTransaction.toAccount ?? "",
+        amount: amount ?? 0,
+        accounts,
+        defaultFundByAccount,
+        date: initialFormDate,
+      }),
+    });
+  }
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: movement ? movement.name : initialName || "",
       description: "",
-      date: new Date(),
-      transactions: [],
+      date: initialFormDate,
+      category: initialCategory,
+      subcategory: initialSubcategory,
+      project: initialProject,
+      transactions: initialTransactions,
     },
   });
 
-  const { control, handleSubmit, watch, setValue, reset, formState } = form;
+  const { control, handleSubmit, watch, setValue, formState } = form;
   const { errors } = formState;
 
   const nameInputRef = React.useRef<HTMLInputElement>(null);
@@ -161,53 +311,13 @@ export function AddActivityModal({
     setValue("transactions", updatedTransactions);
   };
 
-  // Guess best transaction accounts: money out goes bank -> expense,
-  // money in goes revenue -> bank (the movement's account takes one leg).
-  const guessBestTransaction = React.useCallback(() => {
-    const movementAmount = movement
-      ? movement.amount
-      : movements && movements.length > 0
-        ? movements[0].amount
-        : undefined;
-    const isRevenue = movementAmount !== undefined ? movementAmount > 0 : false;
-
-    let fromAccount: string | undefined;
-    let toAccount: string | undefined;
-
-    if (!isRevenue) {
-      fromAccount = accounts.find(
-        (a) => a.type === AccountType.BANK_ACCOUNT,
-      )?.id;
-      toAccount = accounts.find((a) => a.type === AccountType.EXPENSE)?.id;
-
-      if (movement) {
-        fromAccount = movement.account;
-      } else if (movements) {
-        const firstMovement = movements[0];
-        if (movements.every((m) => m.account === firstMovement.account)) {
-          fromAccount = firstMovement.account;
-        }
-      }
-    } else {
-      fromAccount = accounts.find((a) => a.type === AccountType.REVENUE)?.id;
-      toAccount = accounts.find((a) => a.type === AccountType.BANK_ACCOUNT)?.id;
-
-      if (movement) {
-        toAccount = movement.account;
-      } else if (movements) {
-        const firstMovement = movements[0];
-        if (movements.every((m) => m.account === firstMovement.account)) {
-          toAccount = firstMovement.account;
-        }
-      }
-    }
-
-    return { fromAccount, toAccount };
-  }, [movement, movements, accounts]);
-
   // Add a new transaction
   const addTransaction = React.useCallback(() => {
-    const { fromAccount, toAccount } = guessBestTransaction();
+    const { fromAccount, toAccount } = guessBestTransaction({
+      movement,
+      movements,
+      accounts,
+    });
     let amount = 0;
 
     if (movement) {
@@ -242,7 +352,6 @@ export function AddActivityModal({
   }, [
     movement,
     movements,
-    guessBestTransaction,
     transactions,
     setValue,
     accounts,
@@ -355,7 +464,6 @@ export function AddActivityModal({
       ],
     });
 
-    reset();
     onOpenChange(false);
     void contextNavigate({
       to: "/activities/$id",
@@ -368,7 +476,11 @@ export function AddActivityModal({
     if (!movements) return;
 
     movements.forEach((movement) => {
-      const { fromAccount, toAccount } = guessBestTransaction();
+      const { fromAccount, toAccount } = guessBestTransaction({
+        movement,
+        movements,
+        accounts,
+      });
 
       const extractedDate = extractDateFromMovementName(
         movement.name,
@@ -418,285 +530,198 @@ export function AddActivityModal({
       });
     });
 
-    reset();
     onOpenChange(false);
   };
 
-  // Store data (accounts, default funds) refreshes with new identities on
-  // session refreshes, which would re-seed the form and wipe in-progress
-  // edits. Only reset when the actual seeding inputs change, like the
-  // fund settings dialog guards on the fund id.
-  const seedKey = [
-    movement?.id ?? null,
-    movements ? movements.map((m) => m.id).join(",") : null,
-    initialName ?? null,
-    initialDate?.getTime() ?? null,
-    initialAmount ?? null,
-    initialCategory ?? null,
-    initialSubcategory ?? null,
-    initialProject ?? null,
-  ].join("|");
-  const lastSeedKey = React.useRef<string | null>(null);
-
-  React.useEffect(() => {
-    if (lastSeedKey.current === seedKey) return;
-    lastSeedKey.current = seedKey;
-
-    const bestTransaction = guessBestTransaction();
-
-    const getMovementDate = (m: Movement | undefined): Date => {
-      if (!m) return initialDate || new Date();
-      const extractedDate = extractDateFromMovementName(m.name, m.date);
-      return extractedDate || m.date;
-    };
-    const resetDate = movement
-      ? getMovementDate(movement)
-      : initialDate || new Date();
-
-    const transactions = [];
-    if (bestTransaction) {
-      const amount = movement
-        ? Math.abs(movement.amount)
-        : (initialAmount ?? 0);
-      transactions.push({
-        fromAccount: bestTransaction.fromAccount,
-        fromAsset: null,
-        fromCounterparty: null,
-        toAccount: bestTransaction.toAccount,
-        toAsset: null,
-        toCounterparty: null,
-        amount,
-        // Each side lands in its account's default fund, so the activity
-        // is classified from the start
-        fundMoves: classifyFundMoves({
-          fromAccount: bestTransaction.fromAccount ?? "",
-          toAccount: bestTransaction.toAccount ?? "",
-          amount: amount ?? 0,
-          accounts,
-          defaultFundByAccount,
-          date: resetDate,
-        }),
-      });
-    }
-
-    reset({
-      name: movement ? movement.name : initialName || "",
-      description: "",
-      date: resetDate,
-      category: initialCategory,
-      subcategory: initialSubcategory,
-      project: initialProject,
-      transactions: transactions,
-    });
-  }, [
-    seedKey,
-    movement,
-    movements,
-    initialAmount,
-    initialName,
-    initialDate,
-    initialCategory,
-    initialSubcategory,
-    initialProject,
-    reset,
-    guessBestTransaction,
-    accounts,
-    defaultFundByAccount,
-  ]);
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {movement && (
-              <div>
-                {accounts.find((a) => a.id === movement.account)?.name ||
-                  movement.account}{" "}
-                - {movement.name}
-              </div>
-            )}
-            {movements && <div>{movements.length} movements</div>}
-            {!movement && !movements && <div>New activity</div>}
-          </DialogTitle>
-        </DialogHeader>
-
-        {/* Main content */}
-        <form onSubmit={handleSubmit(onSubmit)} className="min-w-0">
-          {/* Date picker */}
-          {!movements && (
-            <Controller
-              name="date"
-              control={control}
-              render={({ field, fieldState }) => (
-                <>
-                  <label htmlFor="date" className="sr-only">
-                    Date
-                  </label>
-                  <DatePicker
-                    id="date"
-                    showIcon={false}
-                    value={field.value}
-                    onChange={field.onChange}
-                    className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent dark:hover:bg-transparent"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </>
-              )}
-            />
-          )}
-          {movements && (
-            <div className="py-0.5 text-sm text-muted-foreground">
-              Date of the movement
+    <>
+      <DialogHeader>
+        <DialogTitle>
+          {movement && (
+            <div>
+              {accounts.find((a) => a.id === movement.account)?.name ||
+                movement.account}{" "}
+              - {movement.name}
             </div>
           )}
+          {movements && <div>{movements.length} movements</div>}
+          {!movement && !movements && <div>New activity</div>}
+        </DialogTitle>
+      </DialogHeader>
 
-          {/* Name input */}
+      {/* Main content */}
+      <form onSubmit={handleSubmit(onSubmit)} className="min-w-0">
+        {/* Date picker */}
+        {!movements && (
           <Controller
-            name="name"
+            name="date"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <>
-                <Input
-                  {...field}
-                  ref={nameInputRef}
-                  id="name"
-                  aria-label="Activity name"
-                  placeholder="Activity name"
-                  autoFocus
-                  className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-2xl font-semibold focus-visible:ring-0 focus-visible:ring-transparent md:text-2xl dark:bg-transparent"
+                <label htmlFor="date" className="sr-only">
+                  Date
+                </label>
+                <DatePicker
+                  id="date"
+                  showIcon={false}
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent dark:hover:bg-transparent"
                 />
-                {errors.name && <FieldError errors={[errors.name]} />}
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
               </>
             )}
           />
+        )}
+        {movements && (
+          <div className="py-0.5 text-sm text-muted-foreground">
+            Date of the movement
+          </div>
+        )}
 
-          {/* Description */}
+        {/* Name input */}
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => (
+            <>
+              <Input
+                {...field}
+                ref={nameInputRef}
+                id="name"
+                aria-label="Activity name"
+                placeholder="Activity name"
+                autoFocus
+                className="mt-1 h-auto w-full border-0 bg-transparent px-0 py-0.5 text-2xl font-semibold focus-visible:ring-0 focus-visible:ring-transparent md:text-2xl dark:bg-transparent"
+              />
+              {errors.name && <FieldError errors={[errors.name]} />}
+            </>
+          )}
+        />
+
+        {/* Description */}
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <Textarea
+              {...field}
+              id="description"
+              aria-label="Description"
+              className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent"
+              placeholder="Add a description ..."
+              rows={1}
+            />
+          )}
+        />
+
+        {/* Category, Subcategory, Project selectors */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Controller
-            name="description"
+            name="category"
             control={control}
             render={({ field }) => (
-              <Textarea
-                {...field}
-                id="description"
-                aria-label="Description"
-                className="mt-2 min-h-0 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm focus-visible:ring-0 focus-visible:ring-transparent dark:bg-transparent"
-                placeholder="Add a description ..."
-                rows={1}
+              <ActivityCategorySelect
+                value={field.value || null}
+                onValueChange={(value) => {
+                  field.onChange(value ?? "");
+                  setValue("subcategory", "");
+                }}
+                categories={categories}
+                disabled={categories.length === 0}
+                placeholder="Category"
               />
             )}
           />
 
-          {/* Category, Subcategory, Project selectors */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Controller
-              name="category"
-              control={control}
-              render={({ field }) => (
-                <ActivityCategorySelect
-                  value={field.value || null}
-                  onValueChange={(value) => {
-                    field.onChange(value ?? "");
-                    setValue("subcategory", "");
+          <Controller
+            name="subcategory"
+            control={control}
+            render={({ field }) => (
+              <ActivitySubcategorySelect
+                value={field.value || null}
+                onValueChange={(val) => field.onChange(val ?? "")}
+                categoryId={category}
+                subcategories={subcategories}
+              />
+            )}
+          />
+
+          {/* Project Select */}
+          <Controller
+            name="project"
+            control={control}
+            render={({ field }) => (
+              <ProjectSelect
+                value={field.value || null}
+                onValueChange={(value) => field.onChange(value ?? "")}
+              />
+            )}
+          />
+        </div>
+
+        {/* Transactions section */}
+        <div className="mt-4 border-t pt-4">
+          <div className="mb-2 flex items-center justify-between pr-2">
+            <h3 className="text-sm font-medium">Transactions</h3>
+            <div className="flex items-center gap-2">
+              <span className="mr-2 font-mono text-sm text-muted-foreground">
+                {currencyFormatter.format(transactionsSum)}
+              </span>
+              {!movements && (
+                <TransactionDropdown
+                  transactions={transactions}
+                  baseAmount={
+                    movement ? Math.abs(movement.amount) : transactionsSum
+                  }
+                  onApplyTemplate={(newTransactions) => {
+                    setValue(
+                      "transactions",
+                      newTransactions.map((t) => ({
+                        fromAccount: t.fromAccount,
+                        fromAsset: t.fromAsset || null,
+                        fromCounterparty: t.fromCounterparty || null,
+                        toAccount: t.toAccount,
+                        toAsset: t.toAsset || null,
+                        toCounterparty: t.toCounterparty || null,
+                        amount: t.amount,
+                        fundMoves: t.fundMoves ?? [],
+                      })),
+                    );
                   }}
-                  categories={categories}
-                  disabled={categories.length === 0}
-                  placeholder="Category"
+                  onAddTransaction={() => addTransaction()}
                 />
               )}
-            />
-
-            <Controller
-              name="subcategory"
-              control={control}
-              render={({ field }) => (
-                <ActivitySubcategorySelect
-                  value={field.value || null}
-                  onValueChange={(val) => field.onChange(val ?? "")}
-                  categoryId={category}
-                  subcategories={subcategories}
-                />
-              )}
-            />
-
-            {/* Project Select */}
-            <Controller
-              name="project"
-              control={control}
-              render={({ field }) => (
-                <ProjectSelect
-                  value={field.value || null}
-                  onValueChange={(value) => field.onChange(value ?? "")}
-                />
-              )}
-            />
-          </div>
-
-          {/* Transactions section */}
-          <div className="mt-4 border-t pt-4">
-            <div className="mb-2 flex items-center justify-between pr-2">
-              <h3 className="text-sm font-medium">Transactions</h3>
-              <div className="flex items-center gap-2">
-                <span className="mr-2 font-mono text-sm text-muted-foreground">
-                  {currencyFormatter.format(transactionsSum)}
-                </span>
-                {!movements && (
-                  <TransactionDropdown
-                    transactions={transactions}
-                    baseAmount={
-                      movement ? Math.abs(movement.amount) : transactionsSum
-                    }
-                    onApplyTemplate={(newTransactions) => {
-                      setValue(
-                        "transactions",
-                        newTransactions.map((t) => ({
-                          fromAccount: t.fromAccount,
-                          fromAsset: t.fromAsset || null,
-                          fromCounterparty: t.fromCounterparty || null,
-                          toAccount: t.toAccount,
-                          toAsset: t.toAsset || null,
-                          toCounterparty: t.toCounterparty || null,
-                          amount: t.amount,
-                          fundMoves: t.fundMoves ?? [],
-                        })),
-                      );
-                    }}
-                    onAddTransaction={() => addTransaction()}
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-3 pr-1">
-              {transactions.map((transaction, index) => (
-                <TransactionComponent
-                  key={index}
-                  transaction={transaction}
-                  showMetadata={false}
-                  className={
-                    index !== transactions.length - 1 ? "border-b" : ""
-                  }
-                  onUpdate={(updateData) =>
-                    handleTransactionUpdate(index, updateData)
-                  }
-                  onDelete={() => handleTransactionDelete(index)}
-                />
-              ))}
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit">
-              {movements ? "Add activities" : "Add activity"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <div className="space-y-3 pr-1">
+            {transactions.map((transaction, index) => (
+              <TransactionComponent
+                key={index}
+                transaction={transaction}
+                showMetadata={false}
+                className={index !== transactions.length - 1 ? "border-b" : ""}
+                onUpdate={(updateData) =>
+                  handleTransactionUpdate(index, updateData)
+                }
+                onDelete={() => handleTransactionDelete(index)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <DialogFooter className="mt-4">
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button type="submit">
+            {movements ? "Add activities" : "Add activity"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
   );
 }
