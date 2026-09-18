@@ -264,6 +264,7 @@ type Mutation {
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
+  createView(config: String!, id: String!, name: String!, resource: String!, scope: String!): View!
   deleteAccount(id: String!): DeleteAccountResponse!
   deleteActivity(id: String!): DeleteActivityResponse!
   deleteActivityCategory(id: String!): DeleteActivityResponse!
@@ -276,6 +277,7 @@ type Mutation {
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
   deleteTransaction(activityId: String!, id: String!): DeleteTransactionResponse!
+  deleteView(id: String!): Boolean!
 
   """
   Extracts a structured list of movements from pasted text or HTML using AI. No state is written.
@@ -300,6 +302,7 @@ type Mutation {
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
   updateTransaction(activityId: String!, amount: Float, fromAccount: String, fromAsset: String, fromCounterparty: String, fundMoves: [FundMoveInput!], id: String!, toAccount: String, toAsset: String, toCounterparty: String): Transaction!
+  updateView(config: String, id: String!, name: String): View!
 }
 
 type Project {
@@ -323,6 +326,7 @@ type Query {
   funds: [Fund!]!
   movements: [Movement!]!
   projects: [Project!]!
+  views: [View!]!
   workflows(statuses: [String!]): [MovementWorkflow!]!
 }
 
@@ -353,6 +357,15 @@ input TransactionInput {
   toAccount: String!
   toAsset: String
   toCounterparty: String
+}
+
+type View {
+  config: String!
+  createdAt: Date!
+  id: String!
+  name: String!
+  resource: String!
+  scope: String!
 }
 
 type WorkflowMessage {

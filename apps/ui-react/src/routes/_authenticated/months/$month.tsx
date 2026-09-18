@@ -30,13 +30,21 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomViewActions } from "@/components/views/custom-view-actions";
+import { useViewMutations } from "@/components/views/view-mutations";
+import {
+  CustomViewTabs,
+  CustomViewTabsContent,
+  useSelectedView,
+} from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
 
 const searchParamsSchema = z.object({
-  tab: z.enum(["activities", "movements"]).optional(),
+  /** "activities", "movements", or a custom view's id. */
+  tab: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/months/$month")({
@@ -80,6 +88,10 @@ function MonthPage() {
 
   const activities = useActivities((state) => state.activities);
   const movements = useMovements((state) => state.movements);
+
+  const viewScope = { kind: "month", month, year } as const;
+  const selectedCustomView = useSelectedView(viewScope, selectedTab);
+  const { updateViewConfig } = useViewMutations();
 
   const [activitiesFilters, setActivitiesFilters] = useState<ActivitiesFilters>(
     {},
@@ -159,7 +171,7 @@ function MonthPage() {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value as "activities" | "movements",
+                tab: value,
               }),
             })
           }
@@ -178,9 +190,26 @@ function MonthPage() {
                 <ArrowRightLeft />
                 Movements
               </TabsTrigger>
+              <CustomViewTabs
+                scope={viewScope}
+                onSelect={(value) =>
+                  navigate({
+                    to: ".",
+                    search: (prev) => ({ ...prev, tab: value }),
+                  })
+                }
+              />
             </TabsList>
             <div className="flex-1" />
-            {selectedTab === "activities" && (
+            {selectedCustomView !== null && (
+              <CustomViewActions
+                view={selectedCustomView}
+                onConfigChange={(config) =>
+                  updateViewConfig(selectedCustomView, config)
+                }
+              />
+            )}
+            {selectedCustomView === null && selectedTab === "activities" && (
               <>
                 <FilterActivitiesButton
                   viewId={`month-${month}-${year}-activities`}
@@ -191,7 +220,7 @@ function MonthPage() {
                 />
               </>
             )}
-            {selectedTab === "movements" && (
+            {selectedCustomView === null && selectedTab === "movements" && (
               <>
                 <FilterMovementsButton
                   viewId={`month-${month}-${year}-movements`}
@@ -223,6 +252,8 @@ function MonthPage() {
               accountFilter={activitiesFilters.account ?? null}
             />
           </TabsContent>
+
+          <CustomViewTabsContent scope={viewScope} />
         </Tabs>
       </div>
 

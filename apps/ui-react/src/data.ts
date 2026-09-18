@@ -5,9 +5,11 @@ import type {
   HistorySubject,
   SerializedHistoryEntry,
 } from "@maille/core/history";
+import type { ViewResource } from "@maille/core/views";
 import type { MovementWorkflow } from "@maille/core/workflows";
 
 import { AccountType } from "@maille/core/accounts";
+import { parseViewConfig } from "@maille/core/views";
 
 import { graphql } from "./gql";
 import { graphqlClient } from "./gql/client";
@@ -16,6 +18,7 @@ import { useActivities } from "./stores/activities";
 import { useAssets } from "./stores/assets";
 import { useContacts } from "./stores/contacts";
 import { useCounterparties } from "./stores/counterparties";
+import { useCustomViews } from "./stores/customViews";
 import { useFunds } from "./stores/funds";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
@@ -212,6 +215,15 @@ const userDataQuery = graphql(/* GraphQL */ `
       createdAt
     }
 
+    views {
+      id
+      name
+      scope
+      resource
+      config
+      createdAt
+    }
+
     workflows {
       id
       movement
@@ -340,6 +352,20 @@ export const fetchUserData = async () => {
     });
   });
 
+  // Populate views
+  useCustomViews.getState().setViews(
+    userData.views.map((view) => ({
+      id: view.id,
+      name: view.name,
+      scope: view.scope,
+      config: parseViewConfig(
+        view.resource as ViewResource,
+        JSON.parse(view.config) as unknown,
+      ),
+      createdAt: view.createdAt,
+    })),
+  );
+
   // Populate workflows
   userData.workflows.forEach((workflow) => {
     useWorkflows.getState().upsertWorkflow({
@@ -384,5 +410,6 @@ export const clearAllStores = () => {
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
   useFunds.setState({ funds: [], fundAllocations: [] });
+  useCustomViews.setState({ views: [] });
   useWorkflows.setState({ workflows: [] });
 };

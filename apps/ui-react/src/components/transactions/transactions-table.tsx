@@ -1,3 +1,6 @@
+import type { ViewConfig as CustomViewConfig } from "@maille/core/views";
+
+import { verifyTransactionFilter } from "@maille/core/views";
 import { CircleCheck, CircleDashed, CircleDotDashed } from "lucide-react";
 import * as React from "react";
 
@@ -12,6 +15,7 @@ import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
+import { TransactionsFilters } from "@/components/transactions/filters/transactions-filters";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
@@ -42,15 +46,29 @@ import { TransactionsSelection } from "./transactions-selection";
 interface TransactionsTableProps {
   filter: TransactionViewFilter;
   viewId: string;
+  /**
+   * A custom view's config; overrides the store-backed view. Pass
+   * onConfigChange to make the view's filter bar editable.
+   */
+  config?: Extract<CustomViewConfig, { resource: "transactions" }>;
+  onConfigChange?: (
+    config: Extract<CustomViewConfig, { resource: "transactions" }>,
+  ) => void;
 }
 
-export function TransactionsTable({ filter, viewId }: TransactionsTableProps) {
+export function TransactionsTable({
+  filter,
+  viewId,
+  config,
+  onConfigChange,
+}: TransactionsTableProps) {
   const contextNavigate = useContextNavigate();
   const activities = useActivities((state) => state.activities);
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
   const { search } = useViewSearch();
-  const view = useViews((state) => state.getTransactionView(viewId));
+  const storedView = useViews((state) => state.getTransactionView(viewId));
+  const view = config ?? storedView;
   const groupAccessors = React.useMemo(
     () => transactionGroupAccessors(accounts, funds),
     [accounts, funds],
@@ -64,10 +82,24 @@ export function TransactionsTable({ filter, viewId }: TransactionsTableProps) {
     [activities, filter, accounts, funds],
   );
 
-  const transactionsFiltered = React.useMemo(
-    () => transactions.filter((t) => searchCompare(search, t.activity.name)),
-    [transactions, search],
-  );
+  const transactionsFiltered = React.useMemo(() => {
+    const rowFilters = config?.filters ?? [];
+    return transactions
+      .filter((t) => searchCompare(search, t.activity.name))
+      .filter((t) => {
+        if (rowFilters.length === 0) return true;
+        return rowFilters
+          .map((rowFilter) =>
+            verifyTransactionFilter(rowFilter, {
+              date: t.date,
+              amount: t.amount,
+              direction: t.direction,
+              status: t.activity.status,
+            }),
+          )
+          .every((matched) => matched);
+      });
+  }, [transactions, search, config?.filters]);
 
   const transactionsSorted = React.useMemo(
     () =>
@@ -136,6 +168,13 @@ export function TransactionsTable({ filter, viewId }: TransactionsTableProps) {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      {config !== undefined && onConfigChange !== undefined && (
+        <TransactionsFilters
+          filters={config.filters}
+          onFiltersChange={(filters) => onConfigChange({ ...config, filters })}
+        />
+      )}
+
       <div className="flex flex-1 flex-col overflow-y-auto">
         <ScrollArea className="flex-1" viewportRef={scrollRef}>
           {items.map((item) => (

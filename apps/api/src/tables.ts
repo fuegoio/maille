@@ -22,6 +22,7 @@ import type {
   WorkflowTrigger,
 } from "@maille/core/workflows";
 import type { SyncEvent } from "@maille/core/sync";
+import type { ViewResource } from "@maille/core/views";
 import { relations } from "drizzle-orm";
 
 export const user = pgTable("user", {
@@ -374,4 +375,19 @@ export const contacts = pgTable("contacts", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull(),
+});
+
+// A user-defined table view: settings and filters over one resource,
+// attached to a scope (a page, month, account or fund). The config is
+// stored as a JSON string; its shape is validated by the client.
+export const views = pgTable("views", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  scope: text("scope").notNull(),
+  resource: text("resource").notNull().$type<ViewResource>(),
+  config: text("config").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

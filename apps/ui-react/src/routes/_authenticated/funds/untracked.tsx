@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ChevronRight, SquareChartGantt } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ChevronRight, ReceiptText, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
+import z from "zod";
 
 import { FundSummary } from "@/components/funds/fund-summary";
 import {
@@ -13,18 +14,39 @@ import { TransactionsTable } from "@/components/transactions/transactions-table"
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CustomViewActions } from "@/components/views/custom-view-actions";
+import { useViewMutations } from "@/components/views/view-mutations";
+import {
+  CustomViewTabs,
+  CustomViewTabsContent,
+  useSelectedView,
+} from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
+const searchParamsSchema = z.object({
+  /** "transactions", or a custom view's id. */
+  tab: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/funds/untracked")({
   component: UntrackedFundPage,
+  validateSearch: searchParamsSchema,
 });
 
 /** Untracked is the default fund: every null side of a fund move. */
 function UntrackedFundPage() {
+  const navigate = useNavigate();
+  const { tab } = Route.useSearch();
+  const selectedTab = tab ?? "transactions";
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
+
+  const viewScope = { kind: "fund", fundId: null } as const;
+  const selectedCustomView = useSelectedView(viewScope, selectedTab);
+  const { updateViewConfig } = useViewMutations();
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -58,10 +80,12 @@ function UntrackedFundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          <TableViewSettingsButton
-            kind="transaction"
-            viewId="fund-untracked-transactions"
-          />
+          {selectedCustomView === null && (
+            <TableViewSettingsButton
+              kind="transaction"
+              viewId="fund-untracked-transactions"
+            />
+          )}
           {!summaryOpen && (
             <Button
               variant="secondary"
@@ -75,14 +99,62 @@ function UntrackedFundPage() {
           )}
         </header>
 
-        <TransactionsTable
-          viewId="fund-untracked-transactions"
-          filter={{
-            kind: "fund",
-            fundId: null,
-            accountFilter,
-          }}
-        />
+        <Tabs
+          value={selectedTab}
+          onValueChange={(value) =>
+            navigate({
+              to: ".",
+              search: (prev) => ({
+                ...prev,
+                tab: value === "transactions" ? undefined : value,
+              }),
+            })
+          }
+          className="min-h-0 flex-1"
+        >
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <TabsList
+              height="full"
+              className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
+            >
+              <TabsTrigger value="transactions">
+                <ReceiptText />
+                Transactions
+              </TabsTrigger>
+              <CustomViewTabs
+                scope={viewScope}
+                onSelect={(value) =>
+                  navigate({
+                    to: ".",
+                    search: (prev) => ({ ...prev, tab: value }),
+                  })
+                }
+              />
+            </TabsList>
+            <div className="flex-1" />
+            {selectedCustomView !== null && (
+              <CustomViewActions
+                view={selectedCustomView}
+                onConfigChange={(config) =>
+                  updateViewConfig(selectedCustomView, config)
+                }
+              />
+            )}
+          </header>
+
+          <TabsContent value="transactions" className="flex h-full">
+            <TransactionsTable
+              viewId="fund-untracked-transactions"
+              filter={{
+                kind: "fund",
+                fundId: null,
+                accountFilter,
+              }}
+            />
+          </TabsContent>
+
+          <CustomViewTabsContent scope={viewScope} />
+        </Tabs>
       </div>
 
       <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>

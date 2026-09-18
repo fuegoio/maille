@@ -1,4 +1,5 @@
 import type { Movement } from "@maille/core/movements";
+import type { ViewConfig as CustomViewConfig } from "@maille/core/views";
 
 import { verifyMovementFilter } from "@maille/core/movements";
 import * as React from "react";
@@ -30,12 +31,22 @@ import { MovementsSelection } from "./movements-selection";
 interface MovementsTableProps {
   movements: Movement[];
   viewId: string;
+  /**
+   * A custom view's config; overrides the store-backed view. Pass
+   * onConfigChange to make the view's filter bar editable.
+   */
+  config?: Extract<CustomViewConfig, { resource: "movements" }>;
+  onConfigChange?: (
+    config: Extract<CustomViewConfig, { resource: "movements" }>,
+  ) => void;
   accountFilter?: string | null;
 }
 
 export function MovementsTable({
   movements,
   viewId,
+  config,
+  onConfigChange,
   accountFilter = null,
 }: MovementsTableProps) {
   const contextNavigate = useContextNavigate();
@@ -45,7 +56,8 @@ export function MovementsTable({
     () => movementGroupAccessors(accounts),
     [accounts],
   );
-  const movementView = useViews((state) => state.getMovementView(viewId));
+  const storedView = useViews((state) => state.getMovementView(viewId));
+  const movementView = config ?? storedView;
   const scrollRef = useScrollRestoration<HTMLDivElement>(`movements:${viewId}`);
 
   const movementsFiltered = React.useMemo(() => {
@@ -109,7 +121,16 @@ export function MovementsTable({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <MovementsFilters viewId={viewId} movements={movementsFiltered} />
+      <MovementsFilters
+        viewId={config === undefined ? viewId : undefined}
+        movements={movementsFiltered}
+        filters={config?.filters}
+        onFiltersChange={
+          config !== undefined && onConfigChange !== undefined
+            ? (filters) => onConfigChange({ ...config, filters })
+            : undefined
+        }
+      />
 
       <div className="flex flex-1 flex-col overflow-y-auto">
         {movementsFiltered.length !== 0 ? (

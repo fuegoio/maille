@@ -1,4 +1,8 @@
-import { verifyActivityFilter, type Activity } from "@maille/core/activities";
+import {
+  verifyActivityFilter,
+  type Activity,
+  type ActivityFilter,
+} from "@maille/core/activities";
 import { stringify } from "csv-stringify/browser/esm/sync";
 import { Download } from "lucide-react";
 import * as React from "react";
@@ -13,29 +17,39 @@ import { getGraphQLDate } from "@/lib/date";
 import { useViews } from "@/stores/views";
 
 interface ExportActivitiesButtonProps {
-  viewId: string;
+  /** The store-backed view to export; ignored when filters is provided. */
+  viewId?: string;
   activities: Activity[];
+  /** The view's filters, when exporting a custom view. */
+  filters?: ActivityFilter[];
   className?: string;
 }
 
 export function ExportActivitiesButton({
   viewId,
   activities,
+  filters,
   className,
 }: ExportActivitiesButtonProps) {
-  const activityView = useViews((state) => state.getActivityView(viewId));
+  const activityView = useViews((state) =>
+    viewId === undefined ? undefined : state.getActivityView(viewId),
+  );
+  const viewFilters = React.useMemo(
+    () => filters ?? activityView?.filters ?? [],
+    [filters, activityView],
+  );
 
   const filteredActivities = React.useMemo(() => {
     return activities.filter((activity) => {
-      if (activityView.filters.length === 0) return true;
+      if (viewFilters.length === 0) return true;
 
-      return activityView.filters
+      return viewFilters
         .map((filter) => {
           return verifyActivityFilter(filter, activity);
         })
         .every((f) => f);
     });
-  }, [activities, activityView.filters]);
+  }, [activities, viewFilters]);
 
   const exportActivities = () => {
     const csvFile = stringify([

@@ -56,7 +56,7 @@ const data = {
       items: [
         {
           title: "Needs reconciliation",
-          url: "/activities/to-reconciliate",
+          url: "/activities?view=reconcile",
         },
       ],
     },
@@ -67,7 +67,7 @@ const data = {
       items: [
         {
           title: "To link",
-          url: "/movements/to-link",
+          url: "/movements?view=to-link",
         },
       ],
     },
