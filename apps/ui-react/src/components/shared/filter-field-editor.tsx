@@ -202,19 +202,8 @@ function FilterChoiceList({
         value={option.value}
         onSelect={(event) => event.preventDefault()}
         textValue={option.label}
-        className={
-          itemClassName +
-          " [&>[data-slot=dropdown-menu-radio-item-indicator]]:hidden"
-        }
+        className={itemClassName + " pr-8"}
       >
-        <span
-          aria-hidden
-          className="grid size-4 shrink-0 place-items-center rounded-full border border-input"
-        >
-          {value === option.value && (
-            <span className="size-2 rounded-full bg-primary" />
-          )}
-        </span>
         {content}
       </DropdownMenuRadioItem>
     );
