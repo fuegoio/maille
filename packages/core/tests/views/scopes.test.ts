@@ -12,14 +12,13 @@ describe("view scopes", () => {
     const scopes: ViewScope[] = [
       { kind: "page", page: "activities" },
       { kind: "page", page: "movements" },
-      { kind: "page", page: "categories" },
-      { kind: "page", page: "projects" },
-      { kind: "page", page: "funds" },
       { kind: "month", month: 9, year: 2026 },
       { kind: "month", month: 12, year: 2026 },
       { kind: "account", accountId: "acc-12345678" },
       { kind: "fund", fundId: "fund-12345678" },
       { kind: "fund", fundId: null },
+      { kind: "category", categoryId: "cat-12345678" },
+      { kind: "project", projectId: "prj-12345678" },
     ];
 
     for (const scope of scopes) {

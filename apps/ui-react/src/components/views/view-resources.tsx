@@ -57,6 +57,10 @@ export function scopeResources(scope: ViewScope): ViewResource[] {
       return ["transactions", "movements"];
     case "fund":
       return ["transactions"];
+    case "category":
+      return ["activities"];
+    case "project":
+      return ["activities"];
   }
 }
 
