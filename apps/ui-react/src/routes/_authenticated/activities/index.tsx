@@ -55,11 +55,7 @@ function ActivitiesPage() {
         />
       </PageBar>
 
-      <ActivitiesTable
-        viewId={activityView.id}
-        activities={activities}
-        groupings={["none", "period"]}
-      />
+      <ActivitiesTable viewId={activityView.id} activities={activities} />
     </SidebarInset>
   );
 }

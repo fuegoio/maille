@@ -6,7 +6,13 @@ import { persist } from "zustand/middleware";
 
 import type { ViewConfig } from "@/types/views";
 
-import { ACTIVITY_VIEW_FIELDS } from "@/components/activities/activity-view";
+import { TRANSACTION_VIEW_FIELDS } from "@/components/accounts/transaction-view";
+import {
+  ACTIVITY_AMOUNT_FIELDS,
+  ACTIVITY_VIEW_FIELDS,
+} from "@/components/activities/activity-view";
+import { FUND_MOVE_VIEW_FIELDS } from "@/components/funds/fund-move-view";
+import { MOVEMENT_VIEW_FIELDS } from "@/components/movements/movement-view";
 
 import { storage } from "./storage";
 
@@ -20,7 +26,9 @@ type ActivityView = ViewConfig & {
   filters: ActivityFilter[];
 };
 
-type MovementView = {
+type TableView = ViewConfig & { id: string };
+
+type MovementView = ViewConfig & {
   id: string;
   filters: MovementFilter[];
 };
@@ -33,26 +41,67 @@ function defaultActivityView(viewId: string): ActivityView {
     filters: [],
     fields: [...ACTIVITY_VIEW_FIELDS],
     ordering: { field: "date", direction: "desc" },
-    grouping: "period",
+    grouping: viewId.startsWith("month-") ? "none" : "period",
   };
 }
 
-/**
- * Views persisted before the fields, ordering and grouping options
- * exist lack those keys; they are upgraded to the defaults on first read.
- */
-function isLegacyActivityView(view: ActivityView): boolean {
-  const persisted = view as Partial<ActivityView>;
+function defaultTableView(
+  viewId: string,
+  fields: readonly string[],
+): TableView {
+  return {
+    id: viewId,
+    fields: [...fields],
+    ordering: { field: "date", direction: "desc" },
+    grouping: viewId.startsWith("month-") ? "none" : "period",
+  };
+}
+
+function isLegacyView(view: Partial<ViewConfig>): boolean {
   return (
-    persisted.fields === undefined ||
-    persisted.ordering === undefined ||
-    persisted.grouping === undefined
+    view.fields === undefined ||
+    view.ordering === undefined ||
+    view.grouping === undefined
   );
+}
+
+/** Upgrade old saved views without resetting filters or explicit field choices. */
+export function migrateViews(persisted: unknown) {
+  const state = persisted as Partial<ViewsState>;
+  return {
+    ...state,
+    activityViews: (state.activityViews ?? []).map((view) => ({
+      ...defaultActivityView(view.id),
+      ...view,
+      // Month pages previously ignored their persisted period default.
+      grouping: view.id.startsWith("month-")
+        ? "none"
+        : (view.grouping ?? "period"),
+      fields: [
+        ...new Set([
+          ...(view.fields ?? ACTIVITY_VIEW_FIELDS),
+          ...ACTIVITY_AMOUNT_FIELDS,
+        ]),
+      ],
+    })),
+    movementViews: (state.movementViews ?? []).map((view) => ({
+      ...defaultTableView(view.id, MOVEMENT_VIEW_FIELDS),
+      ...view,
+    })),
+    transactionViews: state.transactionViews ?? [],
+    fundMoveViews: state.fundMoveViews ?? [],
+  };
 }
 
 interface ViewsState {
   activityViews: ActivityView[];
   movementViews: MovementView[];
+  transactionViews: TableView[];
+  fundMoveViews: TableView[];
+  getTransactionView: (viewId: string) => TableView;
+  setTransactionView: (viewId: string, view: TableView) => void;
+  getFundMoveView: (viewId: string) => TableView;
+  setFundMoveView: (viewId: string, view: TableView) => void;
 
   getActivityView: (viewId: string) => ActivityView;
   deleteCategory: (categoryId: string) => void;
@@ -68,6 +117,8 @@ export const useViews = create<ViewsState>()(
     (set, get) => ({
       activityViews: [],
       movementViews: [],
+      transactionViews: [],
+      fundMoveViews: [],
 
       getActivityView: (viewId: string): ActivityView => {
         const state = get();
@@ -81,7 +132,7 @@ export const useViews = create<ViewsState>()(
           return view;
         }
 
-        if (isLegacyActivityView(existing)) {
+        if (isLegacyView(existing)) {
           const view: ActivityView = {
             ...defaultActivityView(viewId),
             ...existing,
@@ -134,18 +185,14 @@ export const useViews = create<ViewsState>()(
       },
 
       getMovementView: (viewId: string): MovementView => {
-        const state = get();
-        let view = state.movementViews.find((view) => view.id === viewId);
-        if (!view) {
-          view = {
-            id: viewId,
-            filters: [] as MovementFilter[],
-          };
-          set((state) => ({
-            movementViews: [...state.movementViews, view!],
-          }));
-        }
-
+        const existing = get().movementViews.find((view) => view.id === viewId);
+        if (existing && !isLegacyView(existing)) return existing;
+        const view = {
+          ...defaultTableView(viewId, MOVEMENT_VIEW_FIELDS),
+          filters: [],
+          ...existing,
+        };
+        get().setMovementView(viewId, view);
         return view;
       },
       setMovementView: (viewId: string, view: MovementView) => {
@@ -162,9 +209,50 @@ export const useViews = create<ViewsState>()(
           }
         });
       },
+      getTransactionView: (viewId) => {
+        const existing = get().transactionViews.find(
+          (view) => view.id === viewId,
+        );
+        if (existing) return existing;
+        const view = defaultTableView(viewId, TRANSACTION_VIEW_FIELDS);
+        get().setTransactionView(viewId, view);
+        return view;
+      },
+      setTransactionView: (viewId, view) => {
+        set((state) => ({
+          transactionViews: state.transactionViews.some(
+            (entry) => entry.id === viewId,
+          )
+            ? state.transactionViews.map((entry) =>
+                entry.id === viewId ? view : entry,
+              )
+            : [...state.transactionViews, view],
+        }));
+      },
+
+      getFundMoveView: (viewId) => {
+        const existing = get().fundMoveViews.find((view) => view.id === viewId);
+        if (existing) return existing;
+        const view = defaultTableView(viewId, FUND_MOVE_VIEW_FIELDS);
+        get().setFundMoveView(viewId, view);
+        return view;
+      },
+      setFundMoveView: (viewId, view) => {
+        set((state) => ({
+          fundMoveViews: state.fundMoveViews.some(
+            (entry) => entry.id === viewId,
+          )
+            ? state.fundMoveViews.map((entry) =>
+                entry.id === viewId ? view : entry,
+              )
+            : [...state.fundMoveViews, view],
+        }));
+      },
     }),
     {
       name: "views",
+      version: 1,
+      migrate: migrateViews,
       storage: storage,
     },
   ),

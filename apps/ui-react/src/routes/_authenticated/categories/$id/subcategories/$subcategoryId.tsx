@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
@@ -195,6 +196,9 @@ function SubcategoryPage({
           />
           <div className="flex-1" />
           <SearchBar />
+          <ActivityViewSettingsButton
+            viewId={`subcategory-${subcategory.id}`}
+          />
           <AddActivityButton
             category={category.id}
             subcategory={subcategory.id}
@@ -220,7 +224,6 @@ function SubcategoryPage({
         <ActivitiesTable
           viewId={`subcategory-${subcategory.id}`}
           activities={viewActivities}
-          groupings={["period"]}
         />
       </div>
 

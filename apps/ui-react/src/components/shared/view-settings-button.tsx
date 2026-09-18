@@ -159,46 +159,65 @@ export function ViewSettingsButton({
 
         <Separator />
 
-        <section className="flex flex-col gap-2 px-3 py-3">
-          <h3 className="text-xs font-medium text-muted-foreground">Fields</h3>
-          <ToggleGroup
-            type="multiple"
-            variant="outline"
-            size="sm"
-            spacing={1}
-            className="w-full flex-wrap justify-start gap-1"
-            aria-label="Visible fields"
-            value={descriptor.fields
-              .filter(
-                (field) => field.locked || config.fields.includes(field.value),
-              )
-              .map((field) => field.value)}
-            onValueChange={(fields) =>
-              onConfigChange({
-                fields: descriptor.fields
+        {[
+          { label: "Fields", options: descriptor.fields },
+          { label: "Amounts", options: descriptor.amounts ?? [] },
+        ]
+          .filter(({ options }) => options.length > 0)
+          .map(({ label, options }) => (
+            <section key={label} className="flex flex-col gap-2 px-3 py-3">
+              <h3 className="text-xs font-medium text-muted-foreground">
+                {label}
+              </h3>
+              <ToggleGroup
+                type="multiple"
+                variant="outline"
+                size="sm"
+                spacing={1}
+                className="w-full flex-wrap justify-start gap-1"
+                aria-label={`Visible ${label.toLowerCase()}`}
+                value={options
                   .filter(
-                    (field) => field.locked || fields.includes(field.value),
+                    (field) =>
+                      field.locked || config.fields.includes(field.value),
                   )
-                  .map((field) => field.value),
-              })
-            }
-          >
-            {descriptor.fields.map((field) => (
-              <ToggleGroupItem
-                key={field.value}
-                value={field.value}
-                aria-label={`Field: ${field.text}`}
-                title={
-                  field.locked ? `${field.text} is always visible` : field.text
+                  .map((field) => field.value)}
+                onValueChange={(fields) =>
+                  onConfigChange({
+                    fields: [
+                      ...config.fields.filter(
+                        (field) =>
+                          !options.some((option) => option.value === field),
+                      ),
+                      ...options
+                        .filter(
+                          (field) =>
+                            field.locked || fields.includes(field.value),
+                        )
+                        .map((field) => field.value),
+                    ],
+                  })
                 }
-                disabled={field.locked}
-                className="px-2 text-xs font-normal text-muted-foreground disabled:opacity-60 data-[state=on]:border-foreground/25 data-[state=on]:bg-muted data-[state=on]:text-foreground"
               >
-                {field.text}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </section>
+                {options.map((field) => (
+                  <ToggleGroupItem
+                    key={field.value}
+                    value={field.value}
+                    aria-label={`${label === "Amounts" ? "Amount" : "Field"}: ${field.text}`}
+                    title={
+                      field.locked
+                        ? `${field.text} is always visible`
+                        : field.text
+                    }
+                    disabled={field.locked}
+                    className="px-2 text-xs font-normal text-muted-foreground disabled:opacity-60 data-[state=on]:border-foreground/25 data-[state=on]:bg-muted data-[state=on]:text-foreground"
+                  >
+                    {field.text}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </section>
+          ))}
       </PopoverContent>
     </Popover>
   );

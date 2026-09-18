@@ -1,6 +1,36 @@
-import type { Activity } from "@maille/core/activities";
+import { ActivityType, type Activity } from "@maille/core/activities";
 
 import type { ViewDescriptor } from "@/types/views";
+
+import {
+  DATE_GROUPINGS,
+  namedGroup,
+  statusGroup,
+  type GroupAccessors,
+} from "@/lib/view-grouping";
+
+export const ACTIVITY_AMOUNT_TYPES = [
+  ActivityType.REVENUE,
+  ActivityType.EXPENSE,
+  ActivityType.INVESTMENT,
+  ActivityType.ASSET,
+  ActivityType.NEUTRAL,
+] as const;
+export const ACTIVITY_AMOUNT_FIELDS = ACTIVITY_AMOUNT_TYPES.map(
+  (type) => `amount:${type}` as const,
+);
+const typeNames: Record<ActivityType, string> = {
+  revenue: "Revenue",
+  expense: "Expense",
+  investment: "Investment",
+  asset: "Asset",
+  neutral: "Neutral",
+};
+export function visibleActivityAmountTypes(fields: readonly string[]) {
+  return ACTIVITY_AMOUNT_TYPES.filter((type) =>
+    fields.includes(`amount:${type}`),
+  );
+}
 
 /** The row fields of the activities view, in display order. */
 export const ACTIVITY_VIEW_FIELDS = [
@@ -10,12 +40,24 @@ export const ACTIVITY_VIEW_FIELDS = [
   "category",
   "subcategory",
   "project",
+  ...ACTIVITY_AMOUNT_FIELDS,
 ] as const;
 
 export type ActivityViewField = (typeof ACTIVITY_VIEW_FIELDS)[number];
 
 /** The grouping modes of the activities view. */
-export const ACTIVITY_VIEW_GROUPINGS = ["none", "period"] as const;
+export const ACTIVITY_VIEW_GROUPINGS = [
+  "none",
+  "day",
+  "week",
+  "period",
+  "year",
+  "status",
+  "category",
+  "subcategory",
+  "project",
+  "type",
+] as const;
 
 export type ActivityViewGrouping = (typeof ACTIVITY_VIEW_GROUPINGS)[number];
 
@@ -33,14 +75,22 @@ export const activityViewDescriptor: ViewDescriptor = {
     { value: "subcategory", text: "Subcategory" },
     { value: "project", text: "Project" },
   ],
+  amounts: ACTIVITY_AMOUNT_TYPES.map((type) => ({
+    value: `amount:${type}`,
+    text: typeNames[type],
+  })),
   orderings: [
     { value: "date", text: "Date" },
     { value: "name", text: "Name" },
     { value: "amount", text: "Amount" },
   ],
   groupings: [
-    { value: "none", text: "None" },
-    { value: "period", text: "Month" },
+    ...DATE_GROUPINGS,
+    { value: "status", text: "Status" },
+    { value: "category", text: "Category" },
+    { value: "subcategory", text: "Subcategory" },
+    { value: "project", text: "Project" },
+    { value: "type", text: "Type" },
   ],
 };
 
@@ -54,3 +104,42 @@ export const activityOrderingAccessors: Record<
   name: (activity) => activity.name,
   amount: (activity) => activity.amount,
 };
+
+export function activityGroupAccessors(
+  categories: { id: string; name: string }[],
+  subcategories: { id: string; name: string }[],
+  projects: { id: string; name: string }[],
+): GroupAccessors<Activity> {
+  return {
+    status: (row) => statusGroup(row.status),
+    category: (row) =>
+      namedGroup(
+        row.category,
+        categories.find((category) => category.id === row.category)?.name,
+        "No category",
+      ),
+    subcategory: (row) =>
+      namedGroup(
+        row.subcategory,
+        subcategories.find((subcategory) => subcategory.id === row.subcategory)
+          ?.name,
+        "No subcategory",
+      ),
+    project: (row) =>
+      namedGroup(
+        row.project,
+        projects.find((project) => project.id === row.project)?.name,
+        "No project",
+      ),
+    // Mixed activities form one type combination, not duplicate rows with duplicate totals.
+    type: (row) => {
+      const types = ACTIVITY_AMOUNT_TYPES.filter((type) =>
+        row.types.includes(type),
+      );
+      return {
+        key: types.join("+") || "none",
+        label: types.map((type) => typeNames[type]).join(" + ") || "No type",
+      };
+    },
+  };
+}

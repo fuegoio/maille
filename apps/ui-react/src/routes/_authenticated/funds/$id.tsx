@@ -13,6 +13,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -109,6 +110,10 @@ function FundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
+          <TableViewSettingsButton
+            kind="fundMove"
+            viewId={`fund-${fund.id}-moves`}
+          />
           {!summaryOpen && (
             <Button
               variant="secondary"
@@ -138,6 +143,7 @@ function FundPage() {
         </header>
 
         <FundMovesTable
+          viewId={`fund-${fund.id}-moves`}
           fundId={fund.id}
           accountFilter={accountFilter}
           subtree={subfundFilter !== "none"}

@@ -1,6 +1,5 @@
 import { type Activity } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
 import {
   ChevronRight,
   CircleCheck,
@@ -11,6 +10,7 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { ContextLink } from "@/components/navigation/breadcrumbs";
+import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -23,7 +23,10 @@ import type { ActivityViewField } from "./activity-view";
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
 import { ActivityAmountsValue } from "./activity-amounts";
-import { ACTIVITY_VIEW_FIELDS } from "./activity-view";
+import {
+  ACTIVITY_VIEW_FIELDS,
+  visibleActivityAmountTypes,
+} from "./activity-view";
 
 interface ActivityLineProps {
   activity: Activity;
@@ -36,6 +39,7 @@ interface ActivityLineProps {
   accountFilter?: string | null;
   /** Row fields to render; defaults to every field of the view system. */
   fields?: readonly ActivityViewField[];
+  fullDate?: boolean;
   /** Show the activity's transactions under the row. */
   showTransactions?: boolean;
   hideProject?: boolean;
@@ -49,6 +53,7 @@ export function ActivityLine({
   showCheckbox = true,
   accountFilter = null,
   fields = ACTIVITY_VIEW_FIELDS,
+  fullDate = false,
   showTransactions = false,
   hideProject = false,
 }: ActivityLineProps) {
@@ -143,14 +148,7 @@ export function ActivityLine({
         )}
 
         {showField("date") && (
-          <>
-            <div className="mx-1 hidden w-12 shrink-0 whitespace-nowrap text-muted-foreground lg:block">
-              {format(activity.date, "dd EEE")}
-            </div>
-            <div className="ml-1 w-8 shrink-0 whitespace-nowrap text-muted-foreground lg:hidden">
-              {format(activity.date, "dd EEEEE")}
-            </div>
-          </>
+          <LedgerDate date={activity.date} full={fullDate} />
         )}
 
         {showField("status") && getStatusIcon()}
@@ -228,15 +226,29 @@ export function ActivityLine({
             )}
         </div>
 
-        <ActivityAmountsValue amounts={activity.amounts} className="text-sm" />
+        <ActivityAmountsValue
+          amounts={activity.amounts}
+          types={visibleActivityAmountTypes(fields)}
+          className="text-sm"
+        />
       </div>
 
       {hasTransactions && (
         <ul
           aria-label={`Transactions for ${activity.name}`}
           className={cn(
-            "pointer-events-none pr-2 pl-17.5 text-xs text-muted-foreground lg:pr-6",
-            showCheckbox ? "sm:pl-24.5 lg:pl-29.5" : "lg:pl-22.5",
+            "pointer-events-none pr-2 pl-[calc(1.625rem+var(--tree-checkbox)+var(--tree-date)+var(--tree-status))] text-xs text-muted-foreground lg:pr-6",
+            showField("date")
+              ? fullDate
+                ? "[--tree-date:7rem]"
+                : "[--tree-date:2.75rem] lg:[--tree-date:4rem]"
+              : "[--tree-date:0rem]",
+            showField("status")
+              ? "[--tree-status:0rem]"
+              : "[--tree-status:-0.5rem]",
+            showCheckbox
+              ? "[--tree-checkbox:0rem] sm:[--tree-checkbox:1.75rem]"
+              : "[--tree-checkbox:0rem]",
           )}
         >
           {transactions.map((transaction) => (

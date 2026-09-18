@@ -11,6 +11,7 @@ import z from "zod";
 import type { ActivitiesFilters } from "@/types/activities";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
@@ -24,6 +25,7 @@ import {
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -163,8 +165,8 @@ function MonthPage() {
           }
           className="min-h-0 flex-1"
         >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 pr-4 pl-7">
-            <TabsList height="full" className="ml-5">
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <TabsList height="full" className="min-w-0 overflow-x-auto sm:ml-5">
               <TabsTrigger value="activities">
                 <BookMarked />
                 Activities
@@ -181,12 +183,21 @@ function MonthPage() {
                   viewId={`month-${month}-${year}-activities`}
                 />
                 <AddActivityButton size="sm" />
+                <ActivityViewSettingsButton
+                  viewId={`month-${month}-${year}-activities`}
+                />
               </>
             )}
             {selectedTab === "movements" && (
-              <FilterMovementsButton
-                viewId={`month-${month}-${year}-movements`}
-              />
+              <>
+                <FilterMovementsButton
+                  viewId={`month-${month}-${year}-movements`}
+                />
+                <TableViewSettingsButton
+                  kind="movement"
+                  viewId={`month-${month}-${year}-movements`}
+                />
+              </>
             )}
           </header>
 

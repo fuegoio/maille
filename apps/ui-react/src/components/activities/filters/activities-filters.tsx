@@ -2,6 +2,7 @@ import { sumActivityAmounts, type Activity } from "@maille/core/activities";
 import * as React from "react";
 
 import { ActivityAmountsValue } from "@/components/activities/activity-amounts";
+import { visibleActivityAmountTypes } from "@/components/activities/activity-view";
 import { Button } from "@/components/ui/button";
 import { useViews } from "@/stores/views";
 
@@ -77,6 +78,7 @@ export function ActivitiesFilters({
          * 16px at lg via lg:pr-6 on top of the header's px-2. */}
         <ActivityAmountsValue
           amounts={activitiesTotal}
+          types={visibleActivityAmountTypes(activityView.fields)}
           className="text-sm lg:pr-4"
         />
       </div>

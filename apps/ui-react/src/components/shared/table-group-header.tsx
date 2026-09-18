@@ -13,26 +13,25 @@ interface TableGroupHeaderProps {
   id: string;
   folded: boolean;
   onToggle: (id: string) => void;
-  month: number;
-  year: number;
+  label: string;
+  shortLabel?: string;
+  calendar?: boolean;
+  count: number;
   /** Right-aligned group totals. */
   children?: React.ReactNode;
 }
 
-/** A month-period group header row, shared by every grouped table. */
+/** A foldable group label, row count and totals, shared by every ledger table. */
 export function TableGroupHeader({
   id,
   folded,
   onToggle,
-  month,
-  year,
+  label,
+  shortLabel = label,
+  calendar = false,
+  count,
   children,
 }: TableGroupHeaderProps) {
-  const label = new Date(year, month).toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
-
   return (
     <div
       className={cn(
@@ -55,16 +54,19 @@ export function TableGroupHeader({
           )}
         />
       </Button>
-      <Calendar className="hidden size-3.5 text-muted-foreground sm:block" />
+      {calendar && (
+        <Calendar className="hidden size-3.5 text-muted-foreground sm:block" />
+      )}
       <div className="min-w-0 truncate">
-        <span className="sm:hidden">
-          {new Date(year, month).toLocaleString("default", {
-            month: "short",
-            year: "numeric",
-          })}
-        </span>
+        <span className="sm:hidden">{shortLabel}</span>
         <span className="hidden sm:inline">{label}</span>
       </div>
+      <span
+        className="shrink-0 text-muted-foreground"
+        aria-label={`${count} rows`}
+      >
+        {count}
+      </span>
       <div className="flex-1" />
       <div className={cn(ledgerAmountClassName, "font-normal")}>{children}</div>
     </div>

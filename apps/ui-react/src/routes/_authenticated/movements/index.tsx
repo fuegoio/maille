@@ -11,6 +11,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { PageBar } from "@/components/shared/page-bars";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -53,6 +54,7 @@ function MovementsPage() {
         <SearchBar />
         <ImportMovementsButton className="hidden sm:flex" />
         <AddMovementButton />
+        <TableViewSettingsButton kind="movement" viewId={movementsView.id} />
         <div className="hidden h-full w-px bg-border sm:block" />
         <Tooltip>
           <TooltipTrigger asChild className="hidden sm:flex">
@@ -66,11 +68,7 @@ function MovementsPage() {
         </Tooltip>
       </PageBar>
 
-      <MovementsTable
-        viewId={movementsView.id}
-        movements={movements}
-        grouping="period"
-      />
+      <MovementsTable viewId={movementsView.id} movements={movements} />
     </SidebarInset>
   );
 }
