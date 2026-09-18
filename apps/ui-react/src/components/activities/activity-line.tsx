@@ -55,6 +55,8 @@ export function ActivityLine({
       : true,
   );
 
+  const hasTransactions = showTransactions && transactions.length > 0;
+
   const getStatusIcon = () => {
     if (activity.status === "scheduled") {
       return <CircleDashed className="size-4 shrink-0 text-muted-foreground" />;
@@ -99,13 +101,9 @@ export function ActivityLine({
       className={cn(
         ledgerRowClassName,
         "group relative block shrink border-b pl-1",
+        hasTransactions ? "pb-2" : "h-10",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
-      style={{
-        height: showTransactions
-          ? `${40 * (1 + transactions.length)}px`
-          : "40px",
-      }}
     >
       {/* Stretched link: the row itself must not be an anchor, because the
           category/subcategory/project badges below are links too. */}
@@ -214,26 +212,30 @@ export function ActivityLine({
         <ActivityAmountsValue amounts={activity.amounts} className="text-sm" />
       </div>
 
-      {showTransactions && (
-        <div className="flex flex-col">
+      {hasTransactions && (
+        <ul
+          aria-label={`Transactions for ${activity.name}`}
+          className={cn(
+            "pointer-events-none pr-2 pl-17.5 text-xs text-muted-foreground lg:pr-6",
+            showCheckbox ? "sm:pl-24.5 lg:pl-29.5" : "lg:pl-22.5",
+          )}
+        >
           {transactions.map((transaction) => (
-            <div
+            <li
               key={transaction.id}
-              className="flex h-10 items-center gap-2 border-t pr-6 pl-41.75 text-sm"
+              className="relative flex h-8 items-center gap-3 pl-5 before:absolute before:top-0 before:left-0 before:h-1/2 before:w-3 before:rounded-bl-sm before:border-b before:border-l after:absolute after:inset-y-0 after:left-0 after:border-l first:before:-top-2 first:before:h-[calc(50%+0.5rem)] last:after:hidden"
             >
-              <div className="flex h-10 grow items-center gap-2 border-l pl-4">
-                <AccountLabel accountId={transaction.fromAccount} />
-                <div className="mx-2 text-center text-muted-foreground">to</div>
-                <AccountLabel accountId={transaction.toAccount} />
-
-                <div className="flex-1" />
-                <div className="text-right font-mono font-medium whitespace-nowrap">
-                  {currencyFormatter.format(transaction.amount)}
-                </div>
+              <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                <AccountLabel accountId={transaction.fromAccount} size="sm" />
+                <span className="shrink-0">to</span>
+                <AccountLabel accountId={transaction.toAccount} size="sm" />
               </div>
-            </div>
+              <div className="shrink-0 text-right font-mono whitespace-nowrap tabular-nums">
+                {currencyFormatter.format(transaction.amount)}
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
