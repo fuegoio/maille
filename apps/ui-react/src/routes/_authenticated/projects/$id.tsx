@@ -120,7 +120,7 @@ function ProjectPage({ project }: { project: Project }) {
 
         <ActivitiesTable
           viewId="project-detail"
-          grouping="period"
+          groupings={["period"]}
           activities={projectActivities}
           hideProject={true}
           activityTypeFilter={activitiesFilters.activityType}

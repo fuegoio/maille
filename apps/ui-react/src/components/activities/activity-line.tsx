@@ -18,9 +18,12 @@ import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useProjects } from "@/stores/projects";
 
+import type { ActivityViewField } from "./activity-view";
+
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
 import { ActivityAmountsValue } from "./activity-amounts";
+import { ACTIVITY_VIEW_FIELDS } from "./activity-view";
 
 interface ActivityLineProps {
   activity: Activity;
@@ -31,6 +34,10 @@ interface ActivityLineProps {
   /** Hide the checkbox in summary contexts; selection stays a table-only concern. */
   showCheckbox?: boolean;
   accountFilter?: string | null;
+  /** Row fields to render; defaults to every field of the view system. */
+  fields?: readonly ActivityViewField[];
+  /** Show the activity's transactions under the row. */
+  showTransactions?: boolean;
   hideProject?: boolean;
 }
 
@@ -41,13 +48,16 @@ export function ActivityLine({
   outlineSides,
   showCheckbox = true,
   accountFilter = null,
+  fields = ACTIVITY_VIEW_FIELDS,
+  showTransactions = false,
   hideProject = false,
 }: ActivityLineProps) {
   const currencyFormatter = useCurrencyFormatter();
-  const showTransactions = useActivities((state) => state.showTransactions);
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
   const getProjectById = useProjects((state) => state.getProjectById);
+
+  const showField = (field: ActivityViewField) => fields.includes(field);
 
   const transactions = activity.transactions.filter((t) =>
     accountFilter !== null
@@ -134,60 +144,69 @@ export function ActivityLine({
           />
         )}
 
-        <div className="mx-1 hidden w-12 shrink-0 text-muted-foreground lg:block">
-          {format(activity.date, "dd EEE")}
-        </div>
-        <div className="ml-1 w-8 shrink-0 text-muted-foreground lg:hidden">
-          {format(activity.date, "dd EEEEE")}
-        </div>
+        {showField("date") && (
+          <>
+            <div className="mx-1 hidden w-12 shrink-0 whitespace-nowrap text-muted-foreground lg:block">
+              {format(activity.date, "dd EEE")}
+            </div>
+            <div className="ml-1 w-8 shrink-0 whitespace-nowrap text-muted-foreground lg:hidden">
+              {format(activity.date, "dd EEEEE")}
+            </div>
+          </>
+        )}
 
-        {getStatusIcon()}
+        {showField("status") && getStatusIcon()}
 
-        <div className="mr-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="mr-1 min-w-0 overflow-hidden font-medium text-ellipsis whitespace-nowrap">
           {activity.name}
         </div>
 
         <div className="flex-1" />
 
         <div className="mr-2 flex min-w-0 items-center">
-          {activity.category !== null && getCategoryName() && (
-            <Badge
-              variant="outline"
-              asChild
-              className="relative z-10 h-6 [a]:hover:bg-border/50"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <Link to={`/categories/$id`} params={{ id: activity.category }}>
-                {getCategoryName()}
-              </Link>
-            </Badge>
-          )}
-
-          {activity.subcategory !== null && getSubcategoryName() && (
-            <>
-              <ChevronRight className="mx-1 size-4 text-muted-foreground" />
+          {showField("category") &&
+            activity.category !== null &&
+            getCategoryName() && (
               <Badge
                 variant="outline"
                 asChild
-                onClick={(e) => e.stopPropagation()}
                 className="relative z-10 h-6 [a]:hover:bg-border/50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
               >
-                <Link
-                  to={`/categories/$id/subcategories/$subcategoryId`}
-                  params={{
-                    id: activity.category!,
-                    subcategoryId: activity.subcategory,
-                  }}
-                >
-                  {getSubcategoryName()}
+                <Link to={`/categories/$id`} params={{ id: activity.category }}>
+                  {getCategoryName()}
                 </Link>
               </Badge>
-            </>
-          )}
+            )}
 
-          {activity.project !== null &&
+          {showField("subcategory") &&
+            activity.subcategory !== null &&
+            getSubcategoryName() && (
+              <>
+                <ChevronRight className="mx-1 size-4 text-muted-foreground" />
+                <Badge
+                  variant="outline"
+                  asChild
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative z-10 h-6 [a]:hover:bg-border/50"
+                >
+                  <Link
+                    to={`/categories/$id/subcategories/$subcategoryId`}
+                    params={{
+                      id: activity.category!,
+                      subcategoryId: activity.subcategory,
+                    }}
+                  >
+                    {getSubcategoryName()}
+                  </Link>
+                </Badge>
+              </>
+            )}
+
+          {showField("project") &&
+            activity.project !== null &&
             !hideProject &&
             getProjectById(activity.project) && (
               <>

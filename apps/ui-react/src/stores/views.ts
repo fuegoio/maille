@@ -4,9 +4,17 @@ import type { MovementFilter } from "@maille/core/movements";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { ViewConfig } from "@/types/views";
+
+import { ACTIVITY_VIEW_FIELDS } from "@/components/activities/activity-view";
+
 import { storage } from "./storage";
 
-type ActivityView = {
+/**
+ * An activity view is the generic view configuration (fields, ordering,
+ * grouping) plus the activity's own options and filters.
+ */
+type ActivityView = ViewConfig & {
   id: string;
   showTransactions: boolean;
   filters: ActivityFilter[];
@@ -16,6 +24,31 @@ type MovementView = {
   id: string;
   filters: MovementFilter[];
 };
+
+/** The configuration a new activity view starts from. */
+function defaultActivityView(viewId: string): ActivityView {
+  return {
+    id: viewId,
+    showTransactions: false,
+    filters: [],
+    fields: [...ACTIVITY_VIEW_FIELDS],
+    ordering: { field: "date", direction: "desc" },
+    grouping: "period",
+  };
+}
+
+/**
+ * Views persisted before the fields, ordering and grouping options
+ * exist lack those keys; they are upgraded to the defaults on first read.
+ */
+function isLegacyActivityView(view: ActivityView): boolean {
+  const persisted = view as Partial<ActivityView>;
+  return (
+    persisted.fields === undefined ||
+    persisted.ordering === undefined ||
+    persisted.grouping === undefined
+  );
+}
 
 interface ViewsState {
   activityViews: ActivityView[];
@@ -38,19 +71,30 @@ export const useViews = create<ViewsState>()(
 
       getActivityView: (viewId: string): ActivityView => {
         const state = get();
-        let view = state.activityViews.find((view) => view.id === viewId);
-        if (!view) {
-          view = {
-            id: viewId,
-            showTransactions: false,
-            filters: [] as ActivityFilter[],
-          };
+        const existing = state.activityViews.find((view) => view.id === viewId);
+
+        if (existing === undefined) {
+          const view = defaultActivityView(viewId);
           set((state) => ({
-            activityViews: [...state.activityViews, view!],
+            activityViews: [...state.activityViews, view],
           }));
+          return view;
         }
 
-        return view;
+        if (isLegacyActivityView(existing)) {
+          const view: ActivityView = {
+            ...defaultActivityView(viewId),
+            ...existing,
+          };
+          set((state) => ({
+            activityViews: state.activityViews.map((v) =>
+              v.id === viewId ? view : v,
+            ),
+          }));
+          return view;
+        }
+
+        return existing;
       },
       setActivityView: (viewId: string, view: ActivityView) => {
         set((state) => {

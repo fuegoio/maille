@@ -14,6 +14,7 @@ interface AddActivityButtonProps {
   className?: string;
   movement?: Movement;
   size?: "default" | "sm" | "lg";
+  variant?: "default" | "outline" | "secondary" | "ghost";
   category?: string;
   subcategory?: string;
   project?: string;
@@ -26,6 +27,7 @@ export function AddActivityButton({
   className,
   movement,
   size = "default",
+  variant = "outline",
   category,
   subcategory,
   project,
@@ -57,7 +59,7 @@ export function AddActivityButton({
               ? "w-7 px-0 sm:w-auto sm:px-2.5"
               : "w-8 px-0 sm:w-auto sm:px-2.5"),
         )}
-        variant="outline"
+        variant={variant}
         size={iconOnly ? "icon" : size}
         aria-label="Add activity"
       >

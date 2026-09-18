@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import type { ViewDirection } from "@/types/views";
+
 /** A month-period group header followed by its rows, in rendered order. */
 export type GroupedRow<T> =
   | {
@@ -13,12 +15,14 @@ export type GroupedRow<T> =
 
 /**
  * Month-period grouping for tables: rows are grouped by their date's
- * month and year (most recent first), each group preceded by a foldable
- * header. Without grouping the rows pass through untouched.
+ * month and year, each group preceded by a foldable header, the groups
+ * ordered by the direction (newest first by default). Without grouping
+ * the rows pass through untouched.
  */
 export function useGroupedRows<T extends { id: string; date: Date }>(
   rows: T[],
   grouping: boolean,
+  groupOrder: ViewDirection = "desc",
 ) {
   const [groupsFolded, setGroupsFolded] = React.useState<string[]>([]);
 
@@ -62,8 +66,9 @@ export function useGroupedRows<T extends { id: string; date: Date }>(
 
     return groups
       .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
+        const sign = groupOrder === "asc" ? -1 : 1;
+        if (a.year !== b.year) return (b.year - a.year) * sign;
+        return (b.month - a.month) * sign;
       })
       .reduce((items: GroupedRow<T>[], group) => {
         items.push({ itemType: "group", ...group });
@@ -74,7 +79,7 @@ export function useGroupedRows<T extends { id: string; date: Date }>(
           group.rows.map((row) => ({ itemType: "row" as const, ...row })),
         );
       }, []);
-  }, [rows, grouping, groupsFolded]);
+  }, [rows, grouping, groupOrder, groupsFolded]);
 
   return { items, isFolded, toggleGroup };
 }

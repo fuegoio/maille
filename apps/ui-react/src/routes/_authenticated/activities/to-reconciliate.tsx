@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
@@ -10,7 +11,6 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { PageBar } from "@/components/shared/page-bars";
-import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useActivities } from "@/stores/activities";
 import { useViews } from "@/stores/views";
@@ -23,10 +23,6 @@ export const Route = createFileRoute(
 
 function ToReconciliatePage() {
   const activities = useActivities((state) => state.activities);
-  const showTransactions = useActivities((state) => state.showTransactions);
-  const setShowTransactions = useActivities(
-    (state) => state.setShowTransactions,
-  );
 
   const activityView = useViews((state) =>
     state.getActivityView("activities-reconciliate-page"),
@@ -60,15 +56,9 @@ function ToReconciliatePage() {
         />
         <div className="flex-1" />
         <SearchBar />
-        <AddActivityButton />
-        <Button
-          className="hidden gap-1 sm:flex"
-          variant="outline"
-          onClick={() => setShowTransactions(!showTransactions)}
-        >
-          {showTransactions ? "Hide" : "Show"} transactions
-        </Button>
+        <AddActivityButton variant="default" />
         <div className="hidden h-full w-px bg-border sm:block" />
+        <ActivityViewSettingsButton viewId={activityView.id} />
         <ExportActivitiesButton
           viewId={activityView.id}
           activities={viewActivities}
@@ -79,7 +69,7 @@ function ToReconciliatePage() {
       <ActivitiesTable
         viewId={activityView.id}
         activities={viewActivities}
-        grouping="period"
+        groupings={["none", "period"]}
       />
     </SidebarInset>
   );
