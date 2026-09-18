@@ -17,9 +17,13 @@ export function useAccountDefaultFunds(): Map<string, string | null> {
   const funds = useFunds((state) => state.funds);
   const fundAllocations = useFunds((state) => state.fundAllocations);
   const startingDate = useAuth((state) => state.user?.startingDate);
+  // Session refreshes deserialize startingDate into a new, equal Date
+  // instance. Key the memo on its timestamp so those refreshes don't
+  // churn the Map identity for every consumer.
+  const startingTime = startingDate ? startingDate.getTime() : null;
 
   return React.useMemo(() => {
-    if (!startingDate) {
+    if (!startingTime) {
       return new Map<string, string | null>();
     }
     return getDefaultFundByAccount({
@@ -27,7 +31,7 @@ export function useAccountDefaultFunds(): Map<string, string | null> {
       activities,
       funds,
       fundAllocations,
-      startingDate,
+      startingDate: new Date(startingTime),
     });
-  }, [accounts, activities, funds, fundAllocations, startingDate]);
+  }, [accounts, activities, funds, fundAllocations, startingTime]);
 }

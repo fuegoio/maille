@@ -422,7 +422,26 @@ export function AddActivityModal({
     onOpenChange(false);
   };
 
+  // Store data (accounts, default funds) refreshes with new identities on
+  // session refreshes, which would re-seed the form and wipe in-progress
+  // edits. Only reset when the actual seeding inputs change, like the
+  // fund settings dialog guards on the fund id.
+  const seedKey = [
+    movement?.id ?? null,
+    movements ? movements.map((m) => m.id).join(",") : null,
+    initialName ?? null,
+    initialDate?.getTime() ?? null,
+    initialAmount ?? null,
+    initialCategory ?? null,
+    initialSubcategory ?? null,
+    initialProject ?? null,
+  ].join("|");
+  const lastSeedKey = React.useRef<string | null>(null);
+
   React.useEffect(() => {
+    if (lastSeedKey.current === seedKey) return;
+    lastSeedKey.current = seedKey;
+
     const bestTransaction = guessBestTransaction();
 
     const getMovementDate = (m: Movement | undefined): Date => {
@@ -470,6 +489,7 @@ export function AddActivityModal({
       transactions: transactions,
     });
   }, [
+    seedKey,
     movement,
     movements,
     initialAmount,
