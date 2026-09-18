@@ -1,7 +1,6 @@
-import {
-  ActivityFilterFields,
-  type ActivityFilter,
-} from "@maille/core/activities";
+import type { TransactionFilter } from "@maille/core/views";
+
+import { TransactionFilterFields } from "@maille/core/views";
 import { ListFilter, Plus } from "lucide-react";
 import * as React from "react";
 
@@ -12,49 +11,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useViews } from "@/stores/views";
 
-import { ActivityFilterIcons } from "./activity-filters-icons";
+import { TransactionFilterIcons } from "./transaction-filters-icons";
 
-interface FilterActivitiesButtonProps {
-  /** The store-backed view to filter; ignored when filters is provided. */
-  viewId?: string;
-  /** Filters to edit directly (a custom view); overrides viewId. */
-  filters?: ActivityFilter[];
-  onFiltersChange?: (filters: ActivityFilter[]) => void;
+interface FilterTransactionsButtonProps {
+  filters: TransactionFilter[];
+  onFiltersChange: (filters: TransactionFilter[]) => void;
   variant?: "default" | "mini";
   className?: string;
 }
 
-export function FilterActivitiesButton({
-  viewId,
+export function FilterTransactionsButton({
   filters,
   onFiltersChange,
   variant = "default",
   className,
-}: FilterActivitiesButtonProps) {
-  const storeView = useViews((state) =>
-    viewId === undefined ? undefined : state.getActivityView(viewId),
-  );
-  const setActivityView = useViews((state) => state.setActivityView);
+}: FilterTransactionsButtonProps) {
   const [open, setOpen] = React.useState(false);
 
-  const currentFilters = filters ?? storeView?.filters ?? [];
-
-  const selectField = (field: ActivityFilter["field"]) => {
-    const nextFilters = [
-      ...currentFilters,
+  const selectField = (field: TransactionFilter["field"]) => {
+    onFiltersChange([
+      ...filters,
       {
         field: field,
         operator: undefined,
         value: undefined,
-      } as ActivityFilter,
-    ];
-    if (onFiltersChange !== undefined) {
-      onFiltersChange(nextFilters);
-    } else if (viewId !== undefined && storeView !== undefined) {
-      setActivityView(viewId, { ...storeView, filters: nextFilters });
-    }
+      } as unknown as TransactionFilter,
+    ]);
     setOpen(false);
   };
 
@@ -76,8 +59,8 @@ export function FilterActivitiesButton({
         </DropdownMenuTrigger>
       )}
       <DropdownMenuContent className="w-48">
-        {ActivityFilterFields.map((field) => {
-          const Icon = ActivityFilterIcons[field.value];
+        {TransactionFilterFields.map((field) => {
+          const Icon = TransactionFilterIcons[field.value];
           return (
             <DropdownMenuItem
               key={field.value}

@@ -1,3 +1,5 @@
+import type { ActivityFilter } from "@maille/core/activities";
+
 import { sumActivityAmounts, type Activity } from "@maille/core/activities";
 import * as React from "react";
 
@@ -6,60 +8,73 @@ import { visibleActivityAmountTypes } from "@/components/activities/activity-vie
 import { Button } from "@/components/ui/button";
 import { useViews } from "@/stores/views";
 
-import { ActivityFilter } from "./activity-filter";
+import { ActivityFilter as ActivityFilterRow } from "./activity-filter";
 import { FilterActivitiesButton } from "./filter-activities-button";
 
 interface ActivitiesFiltersProps {
-  viewId: string;
+  /** The store-backed view to filter; ignored when filters is provided. */
+  viewId?: string;
   activities: Activity[];
+  /** Filters to edit directly (a custom view); overrides viewId. */
+  filters?: ActivityFilter[];
+  onFiltersChange?: (filters: ActivityFilter[]) => void;
+  /** Visible field ids, used for the totals when filters is provided. */
+  fields?: string[];
 }
 
 export function ActivitiesFilters({
   viewId,
   activities,
+  filters,
+  onFiltersChange,
+  fields,
 }: ActivitiesFiltersProps) {
-  const activityView = useViews((state) => state.getActivityView(viewId));
+  const storeView = useViews((state) =>
+    viewId === undefined ? undefined : state.getActivityView(viewId),
+  );
   const setActivityView = useViews((state) => state.setActivityView);
+
+  const currentFilters = filters ?? storeView?.filters ?? [];
+  const currentFields = fields ?? storeView?.fields ?? [];
+
+  const setFilters = (nextFilters: ActivityFilter[]) => {
+    if (onFiltersChange !== undefined) {
+      onFiltersChange(nextFilters);
+    } else if (viewId !== undefined && storeView !== undefined) {
+      setActivityView(viewId, { ...storeView, filters: nextFilters });
+    }
+  };
 
   const activitiesTotal = React.useMemo(
     () => sumActivityAmounts(activities),
     [activities],
   );
 
-  const clearFilters = () => {
-    setActivityView(viewId, {
-      ...activityView,
-      filters: [],
-    });
-  };
-
-  if (activityView.filters.length === 0) return null;
+  if (currentFilters.length === 0) return null;
 
   return (
     <header className="flex h-9 shrink-0 items-center gap-2 border-b bg-muted/50 px-2 sm:pl-11.25">
       <div className="flex flex-wrap items-center gap-2">
-        {activityView.filters.map((filter, index) => (
-          <ActivityFilter
+        {currentFilters.map((filter, index) => (
+          <ActivityFilterRow
             key={index}
             modelValue={filter}
             onUpdateModelValue={(newFilter) => {
-              setActivityView(viewId, {
-                ...activityView,
-                filters: activityView.filters.map((f, i) =>
-                  i === index ? newFilter : f,
-                ),
-              });
+              setFilters(
+                currentFilters.map((f, i) => (i === index ? newFilter : f)),
+              );
             }}
             onDelete={() => {
-              setActivityView(viewId, {
-                ...activityView,
-                filters: activityView.filters.filter((_, i) => i !== index),
-              });
+              setFilters(currentFilters.filter((_, i) => i !== index));
             }}
           />
         ))}
 
-        <FilterActivitiesButton viewId={viewId} variant="mini" />
+        <FilterActivitiesButton
+          filters={currentFilters}
+          onFiltersChange={setFilters}
+          variant="mini"
+        />
       </div>
 
       <div className="mt-2 flex flex-1 items-end sm:mt-0 sm:ml-2 sm:items-center">
@@ -67,7 +82,7 @@ export function ActivitiesFilters({
 
         <Button
           variant="ghost"
-          onClick={clearFilters}
+          onClick={() => setFilters([])}
           size="sm"
           className="mr-2"
         >
@@ -78,7 +93,7 @@ export function ActivitiesFilters({
          * 16px at lg via lg:pr-6 on top of the header's px-2. */}
         <ActivityAmountsValue
           amounts={activitiesTotal}
-          types={visibleActivityAmountTypes(activityView.fields)}
+          types={visibleActivityAmountTypes(currentFields)}
           className="text-sm lg:pr-4"
         />
       </div>

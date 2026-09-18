@@ -1,3 +1,5 @@
+import type { ViewConfig as CustomViewConfig } from "@maille/core/views";
+
 import {
   ActivityType,
   sumActivityAmounts,
@@ -39,6 +41,14 @@ import { ActivitiesFilters } from "./filters/activities-filters";
 interface ActivitiesTableProps {
   viewId: string;
   activities: Activity[];
+  /**
+   * A custom view's config; overrides the store-backed view. Pass
+   * onConfigChange to make the view's filter bar editable.
+   */
+  config?: Extract<CustomViewConfig, { resource: "activities" }>;
+  onConfigChange?: (
+    config: Extract<CustomViewConfig, { resource: "activities" }>,
+  ) => void;
   /** Grouping modes the page allows; the view's choice wins when allowed. */
   groupings?: readonly ActivityViewGrouping[];
   accountFilter?: string | null;
@@ -53,6 +63,8 @@ interface ActivitiesTableProps {
 export function ActivitiesTable({
   viewId,
   activities,
+  config,
+  onConfigChange,
   groupings = ACTIVITY_VIEW_GROUPINGS,
   accountFilter = null,
   categoryFilter = null,
@@ -63,7 +75,8 @@ export function ActivitiesTable({
 }: ActivitiesTableProps) {
   const contextNavigate = useContextNavigate();
 
-  const activityView = useViews((state) => state.getActivityView(viewId));
+  const storedView = useViews((state) => state.getActivityView(viewId));
+  const activityView = config ?? storedView;
   const { search } = useViewSearch();
   const categories = useActivities((state) => state.activityCategories);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -198,8 +211,15 @@ export function ActivitiesTable({
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <ActivitiesFilters
-        viewId={activityView.id}
+        viewId={config === undefined ? viewId : undefined}
         activities={activitiesFiltered}
+        filters={config?.filters}
+        fields={config?.fields}
+        onFiltersChange={
+          config !== undefined && onConfigChange !== undefined
+            ? (filters) => onConfigChange({ ...config, filters })
+            : undefined
+        }
       />
 
       <div className="flex flex-1 flex-col overflow-y-auto">

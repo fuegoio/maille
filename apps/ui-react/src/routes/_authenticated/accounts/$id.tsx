@@ -44,6 +44,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CustomViewActions } from "@/components/views/custom-view-actions";
+import { useViewMutations } from "@/components/views/view-mutations";
+import {
+  CustomViewTabs,
+  CustomViewTabsContent,
+  useSelectedView,
+} from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
@@ -57,9 +64,8 @@ const ACCOUNT_TABS_NAMES = {
 } as const;
 
 const searchParamsSchema = z.object({
-  tab: z
-    .enum(["transactions", "movements", "assets", "counterparties"])
-    .optional(),
+  /** A fixed tab, or a custom view's id. */
+  tab: z.string().optional(),
   /** Filters the transactions by their fund on this account's side; "untracked" is Untracked. */
   fund: z.string().optional(),
 });
@@ -100,6 +106,10 @@ function AccountPage({ account }: { account: Account }) {
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
 
+  const viewScope = { kind: "account", accountId: account.id } as const;
+  const selectedCustomView = useSelectedView(viewScope, selectedTab);
+  const { updateViewConfig } = useViewMutations();
+
   const movements = useMovements((state) => state.movements);
   const funds = useFunds((state) => state.funds);
   const filterFund =
@@ -137,11 +147,16 @@ function AccountPage({ account }: { account: Account }) {
             },
           ]
         : []),
-      ...(account && selectedTab !== "transactions"
+      ...(account &&
+      selectedTab !== "transactions" &&
+      selectedTab in ACCOUNT_TABS_NAMES
         ? [
             {
               key: `account-tab:${selectedTab}`,
-              label: ACCOUNT_TABS_NAMES[selectedTab],
+              label:
+                ACCOUNT_TABS_NAMES[
+                  selectedTab as keyof typeof ACCOUNT_TABS_NAMES
+                ],
               target: {
                 to: "/accounts/$id",
                 params: { id: account.id },
@@ -205,11 +220,7 @@ function AccountPage({ account }: { account: Account }) {
                 to: ".",
                 search: (prev) => ({
                   ...prev,
-                  tab: value as
-                    | "transactions"
-                    | "movements"
-                    | "assets"
-                    | "counterparties",
+                  tab: value,
                 }),
               })
             }
@@ -256,41 +267,60 @@ function AccountPage({ account }: { account: Account }) {
                     Counterparties
                   </TabsTrigger>
                 )}
+                <CustomViewTabs
+                  scope={viewScope}
+                  onSelect={(value) =>
+                    navigate({
+                      to: ".",
+                      search: (prev) => ({ ...prev, tab: value }),
+                    })
+                  }
+                />
               </TabsList>
               <div className="flex-1" />
 
-              {selectedTab === "transactions" && (
-                <>
-                  {fundFilter !== undefined && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={() => setFundFilter(undefined)}
-                    >
-                      <div
-                        className="size-3 shrink-0 rounded-sm"
-                        style={
-                          filterFund
-                            ? { backgroundColor: filterFund.color }
-                            : {
-                                backgroundColor:
-                                  "color-mix(in srgb, currentColor 40%, transparent)",
-                              }
-                        }
-                      />
-                      {filterFund ? filterFund.name : "Untracked"}
-                      <X className="size-3.5" />
-                    </Button>
-                  )}
-                  <AddActivityButton size="sm" />
-                  <TableViewSettingsButton
-                    kind="transaction"
-                    viewId={`account-${account.id}-transactions`}
-                  />
-                </>
+              {selectedCustomView !== null && (
+                <CustomViewActions
+                  view={selectedCustomView}
+                  onConfigChange={(config) =>
+                    updateViewConfig(selectedCustomView, config)
+                  }
+                />
               )}
-              {selectedTab === "movements" && (
+
+              {selectedCustomView === null &&
+                selectedTab === "transactions" && (
+                  <>
+                    {fundFilter !== undefined && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setFundFilter(undefined)}
+                      >
+                        <div
+                          className="size-3 shrink-0 rounded-sm"
+                          style={
+                            filterFund
+                              ? { backgroundColor: filterFund.color }
+                              : {
+                                  backgroundColor:
+                                    "color-mix(in srgb, currentColor 40%, transparent)",
+                                }
+                          }
+                        />
+                        {filterFund ? filterFund.name : "Untracked"}
+                        <X className="size-3.5" />
+                      </Button>
+                    )}
+                    <AddActivityButton size="sm" />
+                    <TableViewSettingsButton
+                      kind="transaction"
+                      viewId={`account-${account.id}-transactions`}
+                    />
+                  </>
+                )}
+              {selectedCustomView === null && selectedTab === "movements" && (
                 <>
                   <FilterMovementsButton
                     viewId={`account-${account.id}-movements`}
@@ -302,7 +332,7 @@ function AccountPage({ account }: { account: Account }) {
                   />
                 </>
               )}
-              {selectedTab === "assets" && (
+              {selectedCustomView === null && selectedTab === "assets" && (
                 <AddAssetModal accountId={accountId}>
                   <Button
                     size="sm"
@@ -315,19 +345,20 @@ function AccountPage({ account }: { account: Account }) {
                   </Button>
                 </AddAssetModal>
               )}
-              {selectedTab === "counterparties" && (
-                <AddCounterpartyModal accountId={accountId}>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    aria-label="Add counterparty"
-                    className="w-7 px-0 sm:w-auto sm:px-2.5"
-                  >
-                    <Plus />
-                    <span className="hidden sm:inline">Add counterparty</span>
-                  </Button>
-                </AddCounterpartyModal>
-              )}
+              {selectedCustomView === null &&
+                selectedTab === "counterparties" && (
+                  <AddCounterpartyModal accountId={accountId}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      aria-label="Add counterparty"
+                      className="w-7 px-0 sm:w-auto sm:px-2.5"
+                    >
+                      <Plus />
+                      <span className="hidden sm:inline">Add counterparty</span>
+                    </Button>
+                  </AddCounterpartyModal>
+                )}
             </header>
 
             <TabsContent value="transactions" className="flex h-full">
@@ -360,6 +391,8 @@ function AccountPage({ account }: { account: Account }) {
                 <CounterpartiesTable accountId={account.id} />
               </TabsContent>
             )}
+
+            <CustomViewTabsContent scope={viewScope} />
           </Tabs>
         </div>
 

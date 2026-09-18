@@ -18,6 +18,7 @@ import { useAssets } from "./assets";
 import { useAuth } from "./auth";
 import { useContacts } from "./contacts";
 import { useCounterparties } from "./counterparties";
+import { useCustomViews } from "./customViews";
 import { useFunds } from "./funds";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
@@ -78,6 +79,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
+            useCustomViews.getState().handleEvent(event);
             useWorkflows.getState().handleEvent(event);
           });
 
@@ -139,6 +141,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useCustomViews.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
           useWorkflows.getState().handleMutationSuccess({
             ...mutation,
             result,
@@ -179,6 +185,7 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleMutationError(mutation);
           useCounterparties.getState().handleMutationError(mutation);
           useContacts.getState().handleMutationError(mutation);
+          useCustomViews.getState().handleMutationError(mutation);
           useWorkflows.getState().handleMutationError(mutation);
           await get().dequeueMutations();
         }
@@ -219,6 +226,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
+            useCustomViews.getState().handleEvent(event);
             useWorkflows.getState().handleEvent(event);
           });
       },

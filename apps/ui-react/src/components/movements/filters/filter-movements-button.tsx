@@ -17,32 +17,44 @@ import { useViews } from "@/stores/views";
 import { MovementFilterIcons } from "./movement-filters-icons";
 
 interface FilterMovementsButtonProps {
-  viewId: string;
+  /** The store-backed view to filter; ignored when filters is provided. */
+  viewId?: string;
+  /** Filters to edit directly (a custom view); overrides viewId. */
+  filters?: MovementFilter[];
+  onFiltersChange?: (filters: MovementFilter[]) => void;
   variant?: "default" | "mini";
   className?: string;
 }
 
 export function FilterMovementsButton({
   viewId,
+  filters,
+  onFiltersChange,
   variant = "default",
   className,
 }: FilterMovementsButtonProps) {
-  const movementView = useViews((state) => state.getMovementView(viewId));
+  const storeView = useViews((state) =>
+    viewId === undefined ? undefined : state.getMovementView(viewId),
+  );
   const setMovementView = useViews((state) => state.setMovementView);
   const [open, setOpen] = React.useState(false);
 
+  const currentFilters = filters ?? storeView?.filters ?? [];
+
   const selectField = (field: MovementFilter["field"]) => {
-    setMovementView(viewId, {
-      ...movementView,
-      filters: [
-        ...movementView.filters,
-        {
-          field: field,
-          operator: undefined,
-          value: undefined,
-        } as MovementFilter,
-      ],
-    });
+    const nextFilters = [
+      ...currentFilters,
+      {
+        field: field,
+        operator: undefined,
+        value: undefined,
+      } as MovementFilter,
+    ];
+    if (onFiltersChange !== undefined) {
+      onFiltersChange(nextFilters);
+    } else if (viewId !== undefined && storeView !== undefined) {
+      setMovementView(viewId, { ...storeView, filters: nextFilters });
+    }
     setOpen(false);
   };
 

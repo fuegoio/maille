@@ -13,7 +13,8 @@
     "./history": "./src/history/index.ts",
     "./sync": "./src/sync/index.ts",
     "./workflows": "./src/workflows/index.ts",
-    "./contacts": "./src/contacts/index.ts"
+    "./contacts": "./src/contacts/index.ts",
+    "./views": "./src/views/index.ts"
   },
   "scripts": {
     "dev": "tsc --watch",

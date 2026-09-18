@@ -3,6 +3,7 @@ import type { ActivitySharing, Transaction } from "#activities/types.ts";
 import type { ContactUser } from "#contacts/index.ts";
 import type { FundMove } from "#funds/types.ts";
 import type { SerializedHistoryEntry } from "#history/types.ts";
+import type { ViewResource } from "#views/types.ts";
 import type {
   MovementWorkflow,
   WorkflowMessage,
@@ -383,6 +384,34 @@ export interface DeleteContactEvent extends BaseSyncEvent {
   };
 }
 
+/** A created view; config is its settings and filters as a JSON string. */
+export interface CreateViewEvent extends BaseSyncEvent {
+  type: "createView";
+  payload: {
+    id: string;
+    name: string;
+    scope: string;
+    resource: ViewResource;
+    config: string;
+  };
+}
+
+export interface UpdateViewEvent extends BaseSyncEvent {
+  type: "updateView";
+  payload: {
+    id: string;
+    name?: string;
+    config?: string;
+  };
+}
+
+export interface DeleteViewEvent extends BaseSyncEvent {
+  type: "deleteView";
+  payload: {
+    id: string;
+  };
+}
+
 export interface CreateUserEvent extends BaseSyncEvent {
   type: "createUser";
   payload: {
@@ -477,6 +506,9 @@ export type SyncEvent =
   | DeleteCounterpartyEvent
   | CreateContactEvent
   | DeleteContactEvent
+  | CreateViewEvent
+  | UpdateViewEvent
+  | DeleteViewEvent
   | CreateUserEvent
   | UpdateUserEvent
   | CreateHistoryEvent
