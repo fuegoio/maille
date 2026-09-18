@@ -28,6 +28,33 @@ const field: FilterFieldDefinition<FilterShape> = {
 };
 
 describe("shared filter values", () => {
+  it.each(["Type", "Amount"])(
+    "keeps the %s field label outside the dropdown trigger",
+    (text) => {
+      const html = renderToStaticMarkup(
+        <FilterChip
+          field={{ ...field, text }}
+          filter={{
+            field: "status",
+            operator: "is any of",
+            value: ["completed"],
+          }}
+          onChange={() => {}}
+          onDelete={() => {}}
+        />,
+      );
+      const firstButton = html.match(
+        /<button\b[^>]*>([\s\S]*?)<\/button>/,
+      )?.[1];
+      expect(firstButton).toBeDefined();
+      expect(firstButton).not.toContain(text);
+      expect(firstButton).toContain("is any of");
+      expect(firstButton).toContain("Completed");
+      expect(html.indexOf(text + "</span>")).toBeLessThan(
+        html.indexOf("<button"),
+      );
+    },
+  );
   it("separates the operator from its value in the filter bar", () => {
     const html = renderToStaticMarkup(
       <FilterChip

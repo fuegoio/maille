@@ -32,17 +32,17 @@ export function FilterChip<F extends FilterShape>({
     field.operatorsWithoutValue?.includes(filter.operator ?? "") ?? false;
   return (
     <div className="flex h-6 w-fit max-w-full items-center rounded border border-input">
+      <span className="flex h-full shrink-0 items-center gap-1 rounded-l border-r border-input bg-input/30 px-2 text-xs">
+        <Icon className="size-3" />
+        {field.text}
+      </span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             aria-label={"Edit " + field.text.toLowerCase() + " filter"}
-            className="h-full min-w-0 gap-0 rounded-none rounded-l px-0 text-xs font-normal"
+            className="h-full min-w-0 gap-0 rounded-none px-0 text-xs font-normal"
           >
-            <span className="flex h-full shrink-0 items-center gap-1 border-r border-input bg-input/30 px-2">
-              <Icon className="size-3" />
-              {field.text}
-            </span>
             <span className="shrink-0 px-2 text-muted-foreground">
               {filter.operator ?? "Choose operator"}
             </span>
