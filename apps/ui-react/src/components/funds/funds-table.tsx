@@ -1,7 +1,7 @@
 import { flattenFundTree } from "@maille/core/funds";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { ChevronRight, PiggyBank } from "lucide-react";
+import { ChevronRight, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -133,7 +133,7 @@ export function FundsTable() {
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <PiggyBank />
+              <Wallet />
             </EmptyMedia>
             <EmptyTitle>No Funds Yet</EmptyTitle>
             <EmptyDescription>
