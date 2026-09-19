@@ -134,6 +134,12 @@ function UntrackedFundPage() {
                 onConfigChange={(config) =>
                   updateViewConfig(selectedCustomView, config)
                 }
+                onDeleted={() =>
+                  navigate({
+                    to: ".",
+                    search: (prev) => ({ ...prev, tab: undefined }),
+                  })
+                }
               />
             ) : (
               <>

@@ -292,6 +292,15 @@ function AccountPage({ account }: { account: Account }) {
                     onConfigChange={(config) =>
                       updateViewConfig(selectedCustomView, config)
                     }
+                    onDeleted={() =>
+                      navigate({
+                        to: ".",
+                        search: (prev) => ({
+                          ...prev,
+                          tab: "transactions",
+                        }),
+                      })
+                    }
                   />
                 </>
               )}

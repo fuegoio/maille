@@ -35,6 +35,8 @@ import { viewResourceDefinition } from "@/components/views/view-resources";
 interface CustomViewActionsProps {
   view: View;
   onConfigChange: (config: CustomViewConfig) => void;
+  /** Called after the view is deleted, so the page can leave its tab. */
+  onDeleted?: () => void;
   className?: string;
 }
 
@@ -46,6 +48,7 @@ interface CustomViewActionsProps {
 export function CustomViewActions({
   view,
   onConfigChange,
+  onDeleted,
   className,
 }: CustomViewActionsProps) {
   const definition = viewResourceDefinition(view);
@@ -142,6 +145,7 @@ export function CustomViewActions({
               onClick={() => {
                 deleteView(view);
                 setDeleteOpen(false);
+                onDeleted?.();
               }}
             >
               Delete

@@ -105,6 +105,7 @@ function ActivitiesPage() {
               onConfigChange={(config) =>
                 updateViewConfig(selectedCustomView, config)
               }
+              onDeleted={() => selectTab("all")}
             />
           ) : (
             <>
