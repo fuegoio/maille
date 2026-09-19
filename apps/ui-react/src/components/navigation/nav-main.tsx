@@ -29,11 +29,11 @@ export function NavMain({
     }[];
   }[];
 }) {
-  const location = useRouterState({ select: (s) => s.location });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { isMobile, setOpenMobile } = useSidebar();
   // Sub-views live in the query (?view=reconcile), so the active checks
-  // match on the path and search together.
-  const href = location.pathname + location.search;
+  // match on the full href, path and search string together.
+  const href = useRouterState({ select: (s) => s.location.href });
 
   function handleLinkClick() {
     if (isMobile) setOpenMobile(false);
@@ -52,7 +52,7 @@ export function NavMain({
                 !item.exact
                   ? href.startsWith(item.url) &&
                     !item.items?.some((subItem) => href.startsWith(subItem.url))
-                  : location.pathname === item.url
+                  : pathname === item.url
               }
             >
               <Link to={item.url} onClick={handleLinkClick}>
