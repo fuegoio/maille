@@ -33,7 +33,7 @@ interface ViewSettingsButtonProps {
 }
 
 const selectClassName =
-  "w-full min-w-0 border-border/60 bg-muted/40 px-2 text-xs hover:bg-muted dark:bg-muted/40 dark:hover:bg-muted";
+  "w-full min-w-0 border-border/60 bg-muted/40 px-2 text-xs transition-colors hover:bg-muted dark:bg-muted/40 dark:hover:bg-muted";
 
 /**
  * The generic view settings popover: picks the ordering and grouping,

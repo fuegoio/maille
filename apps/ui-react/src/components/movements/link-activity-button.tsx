@@ -428,7 +428,7 @@ export function LinkActivityButton({
                   aria-selected={isHighlighted}
                   id={`${listboxId}-option-${index}`}
                   className={cn(
-                    "flex h-10 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm hover:bg-muted",
+                    "flex h-10 shrink-0 cursor-pointer items-center rounded px-2 py-1 text-sm transition-colors hover:bg-muted",
                     isHighlighted && "bg-accent",
                   )}
                   onClick={() => linkActivity(activity)}
