@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  Outlet,
-  redirect,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { AppSidebar } from "@/components/navigation/sidebar";
@@ -132,29 +127,9 @@ function AuthenticatedLayout() {
     <SidebarProvider className="flex-col">
       <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <AppSidebar />
-        {/*
-          Keyed by pathname so every navigation enters as a new surface;
-          search-param changes (tab switches inside a page) don't re-key it.
-        */}
-        <ScreenTransition>
-          <Outlet />
-        </ScreenTransition>
+        <Outlet />
       </div>
       <WorkflowBar />
     </SidebarProvider>
-  );
-}
-
-/** The route outlet with the screen transition: each navigation's content
- * enters with the app's short fade-and-rise, skipped under reduced motion. */
-function ScreenTransition({ children }: { children: React.ReactNode }) {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
-
-  return (
-    <div key={pathname} className="flex min-h-0 min-w-0 flex-1 animate-view-in">
-      {children}
-    </div>
   );
 }
