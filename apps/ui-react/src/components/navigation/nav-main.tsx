@@ -31,6 +31,9 @@ export function NavMain({
 }) {
   const location = useRouterState({ select: (s) => s.location });
   const { isMobile, setOpenMobile } = useSidebar();
+  // Sub-views live in the query (?view=reconcile), so the active checks
+  // match on the path and search together.
+  const href = location.pathname + location.search;
 
   function handleLinkClick() {
     if (isMobile) setOpenMobile(false);
@@ -47,10 +50,8 @@ export function NavMain({
               tooltip={item.title}
               isActive={
                 !item.exact
-                  ? location.pathname.startsWith(item.url) &&
-                    !item.items?.some((subItem) =>
-                      location.pathname.startsWith(subItem.url),
-                    )
+                  ? href.startsWith(item.url) &&
+                    !item.items?.some((subItem) => href.startsWith(subItem.url))
                   : location.pathname === item.url
               }
             >
@@ -65,7 +66,7 @@ export function NavMain({
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton
                       asChild
-                      isActive={location.pathname.startsWith(subItem.url)}
+                      isActive={href.startsWith(subItem.url)}
                     >
                       <Link to={subItem.url} onClick={handleLinkClick}>
                         <span>{subItem.title}</span>
