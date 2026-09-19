@@ -117,18 +117,18 @@ export function AddMovementButton({ className, size }: AddMovementButtonProps) {
           <Button
             type="button"
             variant="outline"
-            size={size === "sm" ? "icon-sm" : "default"}
+            size={size}
             className={cn(
               className,
-              size !== "sm" && "w-8 px-0 sm:w-auto sm:px-2.5",
+              size === "sm"
+                ? "w-7 px-0 sm:w-auto sm:px-2.5"
+                : "w-8 px-0 sm:w-auto sm:px-2.5",
             )}
             aria-label="Add movement"
             onClick={openDialog}
           >
             <Plus className="h-4 w-4" />
-            {size !== "sm" && (
-              <span className="hidden sm:inline">Add movement</span>
-            )}
+            <span className="hidden sm:inline">Add movement</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>
