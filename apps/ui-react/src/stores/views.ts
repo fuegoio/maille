@@ -1,5 +1,6 @@
 import type { ActivityFilter } from "@maille/core/activities";
 import type { MovementFilter } from "@maille/core/movements";
+import type { TransactionFilter } from "@maille/core/views";
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -25,7 +26,7 @@ type ActivityView = ViewConfig & {
   filters: ActivityFilter[];
 };
 
-type TableView = ViewConfig & { id: string };
+type TableView = ViewConfig & { id: string; filters: TransactionFilter[] };
 
 type MovementView = ViewConfig & {
   id: string;
@@ -53,6 +54,7 @@ function defaultTableView(
     fields: [...fields],
     ordering: { field: "date", direction: "desc" },
     grouping: viewId.startsWith("month-") ? "none" : "period",
+    filters: [],
   };
 }
 
@@ -90,7 +92,11 @@ export function migrateViews(persisted: unknown) {
       ...defaultTableView(view.id, MOVEMENT_VIEW_FIELDS),
       ...view,
     })),
-    transactionViews: state.transactionViews ?? [],
+    transactionViews: (state.transactionViews ?? []).map((view) => ({
+      ...defaultTableView(view.id, TRANSACTION_VIEW_FIELDS),
+      ...view,
+      filters: view.filters ?? [],
+    })),
   };
 }
 

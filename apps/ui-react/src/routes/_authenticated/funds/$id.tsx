@@ -21,6 +21,8 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
+import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -125,6 +127,14 @@ function FundPage() {
     return <DeletedRedirect target={{ to: "/funds" }} />;
   }
 
+  const transactionViewId = `fund-${fund.id}-transactions`;
+  const transactionFilter = {
+    kind: "fund",
+    fundId: fund.id,
+    subtree: subfundFilter !== "none",
+    accountFilter,
+  } as const;
+
   return (
     <SidebarInset className="flex-row">
       <div
@@ -139,12 +149,6 @@ function FundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          {selectedCustomView === null && (
-            <TableViewSettingsButton
-              kind="transaction"
-              viewId={`fund-${fund.id}-transactions`}
-            />
-          )}
           {!summaryOpen && (
             <Button
               variant="secondary"
@@ -206,25 +210,33 @@ function FundPage() {
               />
             </TabsList>
             <div className="flex-1" />
-            {selectedCustomView !== null && (
+            {selectedCustomView !== null ? (
               <CustomViewActions
                 view={selectedCustomView}
                 onConfigChange={(config) =>
                   updateViewConfig(selectedCustomView, config)
                 }
               />
+            ) : (
+              <>
+                <FilterTransactionsButton viewId={transactionViewId} />
+                <TableViewSettingsButton
+                  kind="transaction"
+                  viewId={transactionViewId}
+                />
+                <ExportTransactionsButton
+                  filter={transactionFilter}
+                  viewId={transactionViewId}
+                  className="hidden sm:flex"
+                />
+              </>
             )}
           </header>
 
           <TabsContent value="transactions" className="flex h-full">
             <TransactionsTable
-              viewId={`fund-${fund.id}-transactions`}
-              filter={{
-                kind: "fund",
-                fundId: fund.id,
-                subtree: subfundFilter !== "none",
-                accountFilter,
-              }}
+              viewId={transactionViewId}
+              filter={transactionFilter}
             />
           </TabsContent>
 

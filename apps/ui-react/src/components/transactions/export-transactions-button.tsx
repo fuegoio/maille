@@ -19,9 +19,12 @@ import { getGraphQLDate } from "@/lib/date";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useFunds } from "@/stores/funds";
+import { useViews } from "@/stores/views";
 
 interface ExportTransactionsButtonProps {
   filter: TransactionViewFilter;
+  /** The store-backed view whose filters to export; ignored when filters is provided. */
+  viewId?: string;
   /** The view's filters, when exporting a custom view. */
   filters?: TransactionFilter[];
   className?: string;
@@ -29,18 +32,24 @@ interface ExportTransactionsButtonProps {
 
 export function ExportTransactionsButton({
   filter,
+  viewId,
   filters,
   className,
 }: ExportTransactionsButtonProps) {
   const activities = useActivities((state) => state.activities);
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
+  const storeView = useViews((state) =>
+    viewId === undefined ? undefined : state.getTransactionView(viewId),
+  );
+
+  const exportFilters = filters ?? storeView?.filters ?? [];
 
   const filteredRows = React.useMemo(() => {
     const rows = buildTransactionRows(activities, filter, accounts, funds);
-    if (!filters || filters.length === 0) return rows;
+    if (exportFilters.length === 0) return rows;
     return rows.filter((row) =>
-      filters
+      exportFilters
         .map((rowFilter) =>
           verifyTransactionFilter(rowFilter, {
             date: row.date,
@@ -51,7 +60,7 @@ export function ExportTransactionsButton({
         )
         .every((matched) => matched),
     );
-  }, [activities, filter, accounts, funds, filters]);
+  }, [activities, filter, accounts, funds, exportFilters]);
 
   const exportTransactions = () => {
     const csvFile = stringify([

@@ -13,6 +13,7 @@ import z from "zod";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { CategoryLabel } from "@/components/categories/category-label";
 import { CategorySettingsDialog } from "@/components/categories/category-settings-dialog";
@@ -112,11 +113,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           <div className="flex-1" />
           <SearchBar />
           {selectedCustomView === null && (
-            <>
-              <FilterActivitiesButton viewId={`category-${category.id}`} />
-              <ActivityViewSettingsButton viewId={`category-${category.id}`} />
-              <AddActivityButton category={category.id} />
-            </>
+            <AddActivityButton category={category.id} />
           )}
           {!summaryOpen && (
             <Button
@@ -169,13 +166,25 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
               />
             </TabsList>
             <div className="flex-1" />
-            {selectedCustomView !== null && (
+            {selectedCustomView !== null ? (
               <CustomViewActions
                 view={selectedCustomView}
                 onConfigChange={(config) =>
                   updateViewConfig(selectedCustomView, config)
                 }
               />
+            ) : (
+              <>
+                <FilterActivitiesButton viewId={`category-${category.id}`} />
+                <ActivityViewSettingsButton
+                  viewId={`category-${category.id}`}
+                />
+                <ExportActivitiesButton
+                  viewId={`category-${category.id}`}
+                  activities={viewActivities}
+                  className="hidden sm:flex"
+                />
+              </>
             )}
           </header>
 
