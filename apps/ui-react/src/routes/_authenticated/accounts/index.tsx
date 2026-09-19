@@ -7,7 +7,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
-import { PageBar } from "@/components/shared/page-bars";
+import { LedgerHeaderStrip, PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -40,6 +40,13 @@ function AccountsPage() {
           </Button>
         </CreateAccountDialog>
       </PageBar>
+
+      <LedgerHeaderStrip>
+        <div>Account</div>
+        <div className="flex-1" />
+        <div className="text-right">Transactions</div>
+        <div className="w-32 text-right">Balance</div>
+      </LedgerHeaderStrip>
 
       <AccountsTable />
     </SidebarInset>

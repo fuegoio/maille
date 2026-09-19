@@ -7,7 +7,7 @@ import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
-import { PageBar } from "@/components/shared/page-bars";
+import { LedgerHeaderStrip, PageBar } from "@/components/shared/page-bars";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -40,6 +40,13 @@ function CategoriesPage() {
           </Button>
         </CreateCategoryDialog>
       </PageBar>
+
+      <LedgerHeaderStrip>
+        <div>Category</div>
+        <div className="flex-1" />
+        <div className="text-right">Activities</div>
+        <div className="w-32 text-right">Total</div>
+      </LedgerHeaderStrip>
 
       <CategoriesTable />
     </SidebarInset>
