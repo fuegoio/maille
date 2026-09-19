@@ -35,6 +35,8 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
+import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -320,9 +322,21 @@ function AccountPage({ account }: { account: Account }) {
                       </Button>
                     )}
                     <AddActivityButton size="sm" />
+                    <FilterTransactionsButton
+                      viewId={`account-${account.id}-transactions`}
+                    />
                     <TableViewSettingsButton
                       kind="transaction"
                       viewId={`account-${account.id}-transactions`}
+                    />
+                    <ExportTransactionsButton
+                      filter={{
+                        kind: "account",
+                        accountId: account.id,
+                        fundFilter,
+                      }}
+                      viewId={`account-${account.id}-transactions`}
+                      className="hidden sm:flex"
                     />
                   </>
                 )}
