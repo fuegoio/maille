@@ -43,7 +43,10 @@ export function ExportTransactionsButton({
     viewId === undefined ? undefined : state.getTransactionView(viewId),
   );
 
-  const exportFilters = filters ?? storeView?.filters ?? [];
+  const exportFilters = React.useMemo(
+    () => filters ?? storeView?.filters ?? [],
+    [filters, storeView],
+  );
 
   const filteredRows = React.useMemo(() => {
     const rows = buildTransactionRows(activities, filter, accounts, funds);
