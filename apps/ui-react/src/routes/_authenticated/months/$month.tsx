@@ -40,7 +40,7 @@ import { useMovements } from "@/stores/movements";
 
 const searchParamsSchema = z.object({
   /** "activities", "movements", or a custom view's id. */
-  tab: z.string().optional(),
+  view: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/months/$month")({
@@ -79,8 +79,8 @@ function MonthPage() {
   const { month, year, monthDate } = Route.useLoaderData();
   const { month: monthParam } = Route.useParams();
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
-  const selectedTab = tab ?? "activities";
+  const { view } = Route.useSearch();
+  const selectedTab = view ?? "activities";
 
   const activities = useActivities((state) => state.activities);
   const movements = useMovements((state) => state.movements);
@@ -167,7 +167,7 @@ function MonthPage() {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value,
+                view: value,
               }),
             })
           }
@@ -191,7 +191,7 @@ function MonthPage() {
                 onSelect={(value) =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: value }),
+                    search: (prev) => ({ ...prev, view: value }),
                   })
                 }
               />
@@ -206,7 +206,7 @@ function MonthPage() {
                 onDeleted={() =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: "activities" }),
+                    search: (prev) => ({ ...prev, view: "activities" }),
                   })
                 }
               />
