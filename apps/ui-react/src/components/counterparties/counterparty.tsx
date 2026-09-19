@@ -375,7 +375,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
                       to="/activities/$id"
                       params={{ id: activity.id }}
                       className={cn(
-                        "group flex h-10 cursor-pointer items-center gap-2 px-4 text-sm hover:bg-muted",
+                        "group flex h-10 cursor-pointer items-center gap-2 px-4 text-sm transition-colors hover:bg-muted",
                         index !== counterpartyActivities.length - 1 &&
                           "border-b",
                       )}

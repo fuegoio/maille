@@ -106,7 +106,7 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
                 key={asset.id}
                 ref={registerRow(asset.id)}
                 className={cn(
-                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 pl-14 hover:bg-muted/50",
+                  "group flex h-10 w-full cursor-pointer items-center border-b pr-6 pl-14 transition-colors hover:bg-muted/50",
                   rowOutlines.has(asset.id) &&
                     rowOutlineClasses(rowOutlines.get(asset.id)!),
                 )}
