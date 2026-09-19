@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRightLeft, Link2 } from "lucide-react";
+import { CreditCard, Link2 } from "lucide-react";
 import z from "zod";
 
 import { AddMovementButton } from "@/components/movements/add-movement-button";
@@ -97,7 +97,7 @@ function MovementsPage() {
             className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
           >
             <TabsTrigger value="all">
-              <ArrowRightLeft />
+              <CreditCard />
               All movements
             </TabsTrigger>
             <TabsTrigger value="to-link">

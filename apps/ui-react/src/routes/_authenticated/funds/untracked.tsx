@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, ReceiptText, SquareChartGantt } from "lucide-react";
+import { ArrowRightLeft, ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -114,7 +114,7 @@ function UntrackedFundPage() {
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
             >
               <TabsTrigger value="transactions">
-                <ReceiptText />
+                <ArrowRightLeft />
                 Transactions
               </TabsTrigger>
               <CustomViewTabs

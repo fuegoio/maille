@@ -2,9 +2,9 @@ import { getFundAncestors } from "@maille/core/funds";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  ArrowRightLeft,
   ChevronRight,
   Plus,
-  ReceiptText,
   Settings,
   SquareChartGantt,
 } from "lucide-react";
@@ -196,7 +196,7 @@ function FundPage() {
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
             >
               <TabsTrigger value="transactions">
-                <ReceiptText />
+                <ArrowRightLeft />
                 Transactions
               </TabsTrigger>
               <CustomViewTabs

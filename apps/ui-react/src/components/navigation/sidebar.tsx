@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowRightLeft,
   BookMarked,
   Calendar,
+  CreditCard,
   Folder,
   LayoutDashboard,
   PiggyBank,
@@ -63,7 +63,7 @@ const data = {
     {
       title: "Movements",
       url: "/movements",
-      icon: ArrowRightLeft,
+      icon: CreditCard,
       items: [
         {
           title: "To link",
