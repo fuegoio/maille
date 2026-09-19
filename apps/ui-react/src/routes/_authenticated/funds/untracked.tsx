@@ -10,6 +10,8 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
+import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
@@ -80,12 +82,6 @@ function UntrackedFundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          {selectedCustomView === null && (
-            <TableViewSettingsButton
-              kind="transaction"
-              viewId="fund-untracked-transactions"
-            />
-          )}
           {!summaryOpen && (
             <Button
               variant="secondary"
@@ -132,13 +128,30 @@ function UntrackedFundPage() {
               />
             </TabsList>
             <div className="flex-1" />
-            {selectedCustomView !== null && (
+            {selectedCustomView !== null ? (
               <CustomViewActions
                 view={selectedCustomView}
                 onConfigChange={(config) =>
                   updateViewConfig(selectedCustomView, config)
                 }
               />
+            ) : (
+              <>
+                <FilterTransactionsButton viewId="fund-untracked-transactions" />
+                <TableViewSettingsButton
+                  kind="transaction"
+                  viewId="fund-untracked-transactions"
+                />
+                <ExportTransactionsButton
+                  filter={{
+                    kind: "fund",
+                    fundId: null,
+                    accountFilter,
+                  }}
+                  viewId="fund-untracked-transactions"
+                  className="hidden sm:flex"
+                />
+              </>
             )}
           </header>
 

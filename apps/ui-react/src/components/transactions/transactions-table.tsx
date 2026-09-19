@@ -83,7 +83,7 @@ export function TransactionsTable({
   );
 
   const transactionsFiltered = React.useMemo(() => {
-    const rowFilters = config?.filters ?? [];
+    const rowFilters = view.filters ?? [];
     return transactions
       .filter((t) => searchCompare(search, t.activity.name))
       .filter((t) => {
@@ -99,7 +99,7 @@ export function TransactionsTable({
           )
           .every((matched) => matched);
       });
-  }, [transactions, search, config?.filters]);
+  }, [transactions, search, view.filters]);
 
   const transactionsSorted = React.useMemo(
     () =>

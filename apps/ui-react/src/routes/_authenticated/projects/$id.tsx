@@ -15,6 +15,8 @@ import type { ActivitiesFilters } from "@/types/activities";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
@@ -118,10 +120,7 @@ function ProjectPage({ project }: { project: Project }) {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           {selectedCustomView === null && (
-            <>
-              <ActivityViewSettingsButton viewId="project-detail" hideProject />
-              <AddActivityButton project={projectId} />
-            </>
+            <AddActivityButton project={projectId} />
           )}
           <Button
             variant="outline"
@@ -184,13 +183,26 @@ function ProjectPage({ project }: { project: Project }) {
               />
             </TabsList>
             <div className="flex-1" />
-            {selectedCustomView !== null && (
+            {selectedCustomView !== null ? (
               <CustomViewActions
                 view={selectedCustomView}
                 onConfigChange={(config) =>
                   updateViewConfig(selectedCustomView, config)
                 }
               />
+            ) : (
+              <>
+                <FilterActivitiesButton viewId="project-detail" />
+                <ActivityViewSettingsButton
+                  viewId="project-detail"
+                  hideProject
+                />
+                <ExportActivitiesButton
+                  viewId="project-detail"
+                  activities={projectActivities}
+                  className="hidden sm:flex"
+                />
+              </>
             )}
           </header>
 
