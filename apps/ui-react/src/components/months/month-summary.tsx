@@ -13,8 +13,10 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getAccountsBalance, getBalanceForMonth } from "@/logic/accounts";
 import { useAccounts } from "@/stores/accounts";
@@ -27,6 +29,7 @@ interface MonthSummaryProps {
 
 export function MonthSummary({ monthDate }: MonthSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const chartAnimation = useChartAnimation();
 
   const activities = useActivities((state) => state.activities);
   const accounts = useAccounts((state) => state.accounts);
@@ -110,25 +113,25 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
           <div className="font-semibold">Balance</div>
           <div className="flex-1" />
           <span className="font-mono text-muted-foreground">
-            {currencyFormatter.format(
-              getBalanceForMonth({
+            <RollingAmount
+              value={getBalanceForMonth({
                 monthDate: previousMonthDate,
                 startingDate: user.startingDate,
                 activities,
                 accounts,
-              }),
-            )}
+              })}
+            />
           </span>
           <ArrowRight className="size-4 text-muted-foreground" />
           <span className="font-mono">
-            {currencyFormatter.format(
-              getBalanceForMonth({
+            <RollingAmount
+              value={getBalanceForMonth({
                 monthDate,
                 startingDate: user.startingDate,
                 activities,
                 accounts,
-              }),
-            )}
+              })}
+            />
           </span>
         </div>
 
@@ -141,7 +144,7 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
             ) : (
               <Minus className="size-3 text-red-400" />
             )}
-            {currencyFormatter.format(Math.abs(revenue - expense))}
+            <RollingAmount value={Math.abs(revenue - expense)} />
           </span>
         </div>
       </div>
@@ -191,7 +194,7 @@ export function MonthSummary({ monthDate }: MonthSummaryProps) {
             strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
-            isAnimationActive={false}
+            {...chartAnimation}
           />
         </LineChart>
       </ChartContainer>

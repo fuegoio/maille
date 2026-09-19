@@ -15,7 +15,7 @@ export function CheckboxIndicator({ checked }: { checked: boolean }) {
       data-state={checked ? "checked" : "unchecked"}
       className={cn(checkboxClassName, "pointer-events-none after:hidden")}
     >
-      {checked && <CheckIcon className="size-3.5" />}
+      {checked && <CheckIcon className="size-3.5 animate-check-in" />}
     </span>
   );
 }
@@ -32,7 +32,7 @@ function Checkbox({
     >
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
-        className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
+        className="grid animate-check-in place-content-center text-current transition-none [&>svg]:size-3.5"
       >
         <CheckIcon />
       </CheckboxPrimitive.Indicator>

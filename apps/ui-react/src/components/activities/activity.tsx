@@ -41,7 +41,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { getGraphQLDate } from "@/lib/date";
 import {
   activityCreateHistoryEvent,
@@ -169,8 +169,6 @@ export function ActivityPage({
       { key: "activities", label: "Activities", target: { to: "/activities" } },
     ],
   });
-
-  const currencyFormatter = useCurrencyFormatter();
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -429,12 +427,13 @@ export function ActivityPage({
                   (amount) => amount === 0,
                 ) ? (
                   <div className="font-mono text-2xl whitespace-nowrap tabular-nums">
-                    {currencyFormatter.format(activity.amount)}
+                    <RollingAmount value={activity.amount} />
                   </div>
                 ) : (
                   <ActivityAmountsValue
                     amounts={activity.amounts}
                     className="text-2xl"
+                    animated
                   />
                 )}
               </div>

@@ -4,8 +4,9 @@ import type { FundMove } from "@maille/core/funds";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 
+import { MotionItem, MotionList } from "@/components/ui/motion-list";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useAccountDefaultFunds } from "@/hooks/use-account-default-funds";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import {
   addTransactionHistoryEvent,
   removeTransactionHistoryEvent,
@@ -35,7 +36,6 @@ export function ActivityTransactions({
   activity,
   focusTransactionId,
 }: ActivityTransactionsProps) {
-  const currencyFormatter = useCurrencyFormatter();
   const mutate = useSync((state) => state.mutate);
   const accounts = useAccounts((state) => state.accounts);
   const defaultFundByAccount = useAccountDefaultFunds();
@@ -334,7 +334,7 @@ export function ActivityTransactions({
         </div>
         <div className="flex-1" />
         <div className="mr-4 font-mono text-sm whitespace-nowrap text-muted-foreground">
-          {currencyFormatter.format(transactionsSum)}
+          <RollingAmount value={transactionsSum} />
         </div>
         {/* Right edge flush with the rows' action column (leg p-3 + border) */}
         <div className="mr-1 flex items-center gap-2">
@@ -363,30 +363,36 @@ export function ActivityTransactions({
           </div>
         ) : (
           <>
-            {activity.transactions.map((transaction) => (
-              <TransactionComponent
-                key={transaction.id}
-                variant="flat"
-                transaction={transaction}
-                isFocused={transaction.id === focusTransactionId}
-                onUpdate={(update) =>
-                  handleTransactionUpdate(transaction, update)
-                }
-                onDelete={() => handleTransactionDelete(transaction)}
-              />
-            ))}
-            {stagedTransactions.map((transaction) => (
-              <TransactionComponent
-                key={transaction.id}
-                variant="flat"
-                transaction={transaction}
-                isStaged
-                onUpdate={(update) =>
-                  handleStagedTransactionUpdate(transaction.id, update)
-                }
-                onDelete={() => handleStagedTransactionDelete(transaction.id)}
-              />
-            ))}
+            <MotionList>
+              {activity.transactions.map((transaction) => (
+                <MotionItem key={transaction.id}>
+                  <TransactionComponent
+                    variant="flat"
+                    transaction={transaction}
+                    isFocused={transaction.id === focusTransactionId}
+                    onUpdate={(update) =>
+                      handleTransactionUpdate(transaction, update)
+                    }
+                    onDelete={() => handleTransactionDelete(transaction)}
+                  />
+                </MotionItem>
+              ))}
+              {stagedTransactions.map((transaction) => (
+                <MotionItem key={transaction.id}>
+                  <TransactionComponent
+                    variant="flat"
+                    transaction={transaction}
+                    isStaged
+                    onUpdate={(update) =>
+                      handleStagedTransactionUpdate(transaction.id, update)
+                    }
+                    onDelete={() =>
+                      handleStagedTransactionDelete(transaction.id)
+                    }
+                  />
+                </MotionItem>
+              ))}
+            </MotionList>
           </>
         )}
       </div>

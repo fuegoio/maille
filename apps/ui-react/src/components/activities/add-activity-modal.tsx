@@ -21,9 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { MotionItem, MotionList } from "@/components/ui/motion-list";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { Textarea } from "@/components/ui/textarea";
 import { useAccountDefaultFunds } from "@/hooks/use-account-default-funds";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
 import {
   activityCreateHistoryEvent,
@@ -215,7 +216,6 @@ function AddActivityForm({
   const defaultFundByAccount = useAccountDefaultFunds();
   const mutate = useSync((state) => state.mutate);
   const contextNavigate = useContextNavigate();
-  const currencyFormatter = useCurrencyFormatter();
 
   const bestTransaction = guessBestTransaction({
     movement,
@@ -279,6 +279,16 @@ function AddActivityForm({
   const date = watch("date");
   const transactions = watch("transactions");
 
+  // Stable row keys: the form's transactions carry no ids, so one key per
+  // row lives in a ref. The add / delete handlers keep it aligned, so a
+  // deleted row exits with its own content; the length guard covers resets.
+  const rowKeysRef = React.useRef<string[]>([]);
+  while (rowKeysRef.current.length < transactions.length) {
+    rowKeysRef.current.push(crypto.randomUUID());
+  }
+  rowKeysRef.current.length = transactions.length;
+  const rowKeys = rowKeysRef.current;
+
   // Calculate transactions sum
   const transactionsSum = transactions.reduce((sum, t) => sum + t.amount, 0);
 
@@ -306,6 +316,7 @@ function AddActivityForm({
 
   // Handle transaction deletion for the form
   const handleTransactionDelete = (transactionIndex: number) => {
+    rowKeysRef.current.splice(transactionIndex, 1);
     const updatedTransactions = [...transactions];
     updatedTransactions.splice(transactionIndex, 1);
     setValue("transactions", updatedTransactions);
@@ -313,6 +324,7 @@ function AddActivityForm({
 
   // Add a new transaction
   const addTransaction = React.useCallback(() => {
+    rowKeysRef.current.push(crypto.randomUUID());
     const { fromAccount, toAccount } = guessBestTransaction({
       movement,
       movements,
@@ -668,7 +680,7 @@ function AddActivityForm({
             <h3 className="text-sm font-medium">Transactions</h3>
             <div className="flex items-center gap-2">
               <span className="mr-2 font-mono text-sm text-muted-foreground">
-                {currencyFormatter.format(transactionsSum)}
+                <RollingAmount value={transactionsSum} />
               </span>
               {!movements && (
                 <TransactionDropdown
@@ -677,6 +689,11 @@ function AddActivityForm({
                     movement ? Math.abs(movement.amount) : transactionsSum
                   }
                   onApplyTemplate={(newTransactions) => {
+                    // The template replaces every row: fresh keys, so each
+                    // lands as a new row
+                    rowKeysRef.current = newTransactions.map(() =>
+                      crypto.randomUUID(),
+                    );
                     setValue(
                       "transactions",
                       newTransactions.map((t) => ({
@@ -698,18 +715,23 @@ function AddActivityForm({
           </div>
 
           <div className="space-y-3 pr-1">
-            {transactions.map((transaction, index) => (
-              <TransactionComponent
-                key={index}
-                transaction={transaction}
-                showMetadata={false}
-                className={index !== transactions.length - 1 ? "border-b" : ""}
-                onUpdate={(updateData) =>
-                  handleTransactionUpdate(index, updateData)
-                }
-                onDelete={() => handleTransactionDelete(index)}
-              />
-            ))}
+            <MotionList>
+              {transactions.map((transaction, index) => (
+                <MotionItem key={rowKeys[index] ?? index}>
+                  <TransactionComponent
+                    transaction={transaction}
+                    showMetadata={false}
+                    className={
+                      index !== transactions.length - 1 ? "border-b" : ""
+                    }
+                    onUpdate={(updateData) =>
+                      handleTransactionUpdate(index, updateData)
+                    }
+                    onDelete={() => handleTransactionDelete(index)}
+                  />
+                </MotionItem>
+              ))}
+            </MotionList>
           </div>
         </div>
 

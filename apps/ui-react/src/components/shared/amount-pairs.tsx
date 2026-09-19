@@ -1,3 +1,4 @@
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +19,15 @@ export function AmountPairsValue({
   pairs,
   className,
   hideZeros = true,
+  animated = false,
 }: {
   pairs: AmountPair[];
   className?: string;
   /** Rows carry their amount even at zero; totals stay quiet. */
   hideZeros?: boolean;
+  /** Roll amounts to their new value instead of swapping the text — for
+   * figures that change in place, not dense table rows. */
+  animated?: boolean;
 }) {
   const currencyFormatter = useCurrencyFormatter();
 
@@ -42,7 +47,11 @@ export function AmountPairsValue({
                 pair.dot,
               )}
             />
-            {currencyFormatter.format(pair.amount)}
+            {animated ? (
+              <RollingAmount value={pair.amount} />
+            ) : (
+              currencyFormatter.format(pair.amount)
+            )}
           </div>
         ),
       )}
