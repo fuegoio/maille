@@ -3,11 +3,11 @@ import {
   BookMarked,
   Calendar,
   CreditCard,
-  Folder,
+  Landmark,
   LayoutDashboard,
-  PiggyBank,
   Tag,
   TentTree,
+  Wallet,
 } from "lucide-react";
 import * as React from "react";
 
@@ -76,12 +76,12 @@ const data = {
     {
       title: "Accounts",
       url: "/accounts",
-      icon: Folder,
+      icon: Landmark,
     },
     {
       title: "Funds",
       url: "/funds",
-      icon: PiggyBank,
+      icon: Wallet,
     },
     {
       title: "Categories",
