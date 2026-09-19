@@ -11,6 +11,7 @@ import * as React from "react";
 import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { EntityContextMenu } from "@/components/shared/entity-actions";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
+import { VirtualLedgerRows } from "@/components/shared/virtual-ledger-rows";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroupedRows } from "@/hooks/use-grouped-rows";
 import { useScrollRestoration } from "@/hooks/use-scroll-restoration";
@@ -191,6 +192,7 @@ export function ActivitiesTable({
   const {
     rowOutlines,
     registerRow,
+    focusedId,
     selectedIds: selectedActivities,
     toggle: toggleActivity,
     selectOnly: selectOnlyActivity,
@@ -225,9 +227,12 @@ export function ActivitiesTable({
       <div className="flex flex-1 flex-col overflow-y-auto">
         {activitiesFiltered.length !== 0 ? (
           <ScrollArea className="flex-1" viewportRef={scrollRef}>
-            {items.map((item) => (
-              <React.Fragment key={item.id}>
-                {item.itemType === "group" ? (
+            <VirtualLedgerRows
+              items={items}
+              scrollRef={scrollRef}
+              focusedId={focusedId}
+              renderItem={(item) =>
+                item.itemType === "group" ? (
                   <TableGroupHeader
                     id={item.id}
                     folded={isFolded(item.id)}
@@ -273,9 +278,9 @@ export function ActivitiesTable({
                       />
                     </div>
                   </EntityContextMenu>
-                )}
-              </React.Fragment>
-            ))}
+                )
+              }
+            />
           </ScrollArea>
         ) : (
           <div className="flex flex-1 items-center justify-center overflow-hidden">
