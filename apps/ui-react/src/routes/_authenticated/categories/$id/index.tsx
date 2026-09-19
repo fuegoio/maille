@@ -37,7 +37,7 @@ import { useActivities } from "@/stores/activities";
 
 const searchParamsSchema = z.object({
   /** "activities", or a custom view's id. */
-  tab: z.string().optional(),
+  view: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/categories/$id/")({
@@ -68,8 +68,8 @@ function CategoryPageRoute() {
 
 function CategoryPage({ category }: { category: ActivityCategory }) {
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
-  const selectedTab = tab ?? "activities";
+  const { view } = Route.useSearch();
+  const selectedTab = view ?? "activities";
   const activities = useActivities((state) => state.activities);
 
   const isMobile = useIsMobile();
@@ -136,7 +136,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value === "activities" ? undefined : value,
+                view: value === "activities" ? undefined : value,
               }),
             })
           }
@@ -156,7 +156,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
                 onSelect={(value) =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: value }),
+                    search: (prev) => ({ ...prev, view: value }),
                   })
                 }
               />
@@ -171,7 +171,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
                 onDeleted={() =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: undefined }),
+                    search: (prev) => ({ ...prev, view: undefined }),
                   })
                 }
               />

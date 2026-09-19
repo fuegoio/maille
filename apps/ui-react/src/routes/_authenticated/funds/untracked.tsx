@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 
 const searchParamsSchema = z.object({
   /** "transactions", or a custom view's id. */
-  tab: z.string().optional(),
+  view: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/funds/untracked")({
@@ -41,8 +41,8 @@ export const Route = createFileRoute("/_authenticated/funds/untracked")({
 /** Untracked is the default fund: every null side of a fund move. */
 function UntrackedFundPage() {
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
-  const selectedTab = tab ?? "transactions";
+  const { view } = Route.useSearch();
+  const selectedTab = view ?? "transactions";
   const isMobile = useIsMobile();
   const [summaryOpen, setSummaryOpen] = useState(!isMobile);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
@@ -103,7 +103,7 @@ function UntrackedFundPage() {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value === "transactions" ? undefined : value,
+                view: value === "transactions" ? undefined : value,
               }),
             })
           }
@@ -123,7 +123,7 @@ function UntrackedFundPage() {
                 onSelect={(value) =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: value }),
+                    search: (prev) => ({ ...prev, view: value }),
                   })
                 }
               />
@@ -138,7 +138,7 @@ function UntrackedFundPage() {
                 onDeleted={() =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: undefined }),
+                    search: (prev) => ({ ...prev, view: undefined }),
                   })
                 }
               />

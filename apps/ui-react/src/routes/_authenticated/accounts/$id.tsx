@@ -66,8 +66,8 @@ const ACCOUNT_TABS_NAMES = {
 } as const;
 
 const searchParamsSchema = z.object({
-  /** A fixed tab, or a custom view's id. */
-  tab: z.string().optional(),
+  /** A fixed view, or a custom view's id. */
+  view: z.string().optional(),
   /** Filters the transactions by their fund on this account's side; "untracked" is Untracked. */
   fund: z.string().optional(),
 });
@@ -99,8 +99,8 @@ function AccountPageRoute() {
 function AccountPage({ account }: { account: Account }) {
   const accountId = account.id;
   const navigate = useNavigate();
-  const { tab, fund } = Route.useSearch();
-  const selectedTab = tab ?? "transactions";
+  const { view, fund } = Route.useSearch();
+  const selectedTab = view ?? "transactions";
   // The URL carries the fund id or the "untracked" sentinel; null is Untracked
   const fundFilter =
     fund === undefined ? undefined : fund === "untracked" ? null : fund;
@@ -123,7 +123,7 @@ function AccountPage({ account }: { account: Account }) {
       to: ".",
       search: (prev) => ({
         ...prev,
-        tab: "transactions",
+        view: "transactions",
         fund:
           value === undefined
             ? undefined
@@ -162,7 +162,7 @@ function AccountPage({ account }: { account: Account }) {
               target: {
                 to: "/accounts/$id",
                 params: { id: account.id },
-                search: { tab: selectedTab },
+                search: { view: selectedTab },
               },
             },
           ]
@@ -222,7 +222,7 @@ function AccountPage({ account }: { account: Account }) {
                 to: ".",
                 search: (prev) => ({
                   ...prev,
-                  tab: value,
+                  view: value,
                 }),
               })
             }
@@ -274,7 +274,7 @@ function AccountPage({ account }: { account: Account }) {
                   onSelect={(value) =>
                     navigate({
                       to: ".",
-                      search: (prev) => ({ ...prev, tab: value }),
+                      search: (prev) => ({ ...prev, view: value }),
                     })
                   }
                 />
@@ -296,7 +296,7 @@ function AccountPage({ account }: { account: Account }) {
                         to: ".",
                         search: (prev) => ({
                           ...prev,
-                          tab: "transactions",
+                          view: "transactions",
                         }),
                       })
                     }

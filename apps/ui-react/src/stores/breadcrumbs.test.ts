@@ -25,7 +25,7 @@ const movementsTabEntry: BreadcrumbEntry = {
   target: {
     to: "/accounts/$id",
     params: { id: "1" },
-    search: { tab: "movements" },
+    search: { view: "movements" },
   },
 };
 const movementsIndexEntry: BreadcrumbEntry = {

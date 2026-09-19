@@ -89,7 +89,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
         target: {
           to: "/accounts/$id",
           params: { id: counterparty?.account },
-          search: { tab: "counterparties" },
+          search: { view: "counterparties" },
         },
       },
     ],
@@ -151,7 +151,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
     void router.navigate({
       to: "/accounts/$id",
       params: { id: counterparty.account },
-      search: { tab: "counterparties" },
+      search: { view: "counterparties" },
     });
   };
 
@@ -228,7 +228,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
       void router.navigate({
         to: "/accounts/$id",
         params: { id: counterparty.account },
-        search: { tab: "counterparties" },
+        search: { view: "counterparties" },
       });
     } else {
       void router.navigate({ to: "/accounts" });

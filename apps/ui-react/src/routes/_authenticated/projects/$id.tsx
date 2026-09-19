@@ -38,7 +38,7 @@ import { useProjects } from "@/stores/projects";
 
 const searchParamsSchema = z.object({
   /** "activities", or a custom view's id. */
-  tab: z.string().optional(),
+  view: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/projects/$id")({
@@ -68,8 +68,8 @@ function ProjectPageRoute() {
 function ProjectPage({ project }: { project: Project }) {
   const projectId = project.id;
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
-  const selectedTab = tab ?? "activities";
+  const { view } = Route.useSearch();
+  const selectedTab = view ?? "activities";
   const activities = useActivities((state) => state.activities);
   const projectActivities = activities.filter((a) => a.project === projectId);
 
@@ -153,7 +153,7 @@ function ProjectPage({ project }: { project: Project }) {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value === "activities" ? undefined : value,
+                view: value === "activities" ? undefined : value,
               }),
             })
           }
@@ -173,7 +173,7 @@ function ProjectPage({ project }: { project: Project }) {
                 onSelect={(value) =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: value }),
+                    search: (prev) => ({ ...prev, view: value }),
                   })
                 }
               />
@@ -188,7 +188,7 @@ function ProjectPage({ project }: { project: Project }) {
                 onDeleted={() =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: undefined }),
+                    search: (prev) => ({ ...prev, view: undefined }),
                   })
                 }
               />

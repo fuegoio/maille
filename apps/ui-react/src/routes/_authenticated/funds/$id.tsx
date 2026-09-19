@@ -36,7 +36,7 @@ import { useFunds } from "@/stores/funds";
 
 const searchParamsSchema = z.object({
   /** "transactions", or a custom view's id. */
-  tab: z.string().optional(),
+  view: z.string().optional(),
 });
 
 export const Route = createFileRoute("/_authenticated/funds/$id")({
@@ -56,8 +56,8 @@ export const Route = createFileRoute("/_authenticated/funds/$id")({
 function FundPage() {
   const fundId = Route.useParams().id;
   const navigate = useNavigate();
-  const { tab } = Route.useSearch();
-  const selectedTab = tab ?? "transactions";
+  const { view } = Route.useSearch();
+  const selectedTab = view ?? "transactions";
   const funds = useFunds((state) => state.funds);
   const fund = useFunds((state) => state.getFundById(fundId));
   // Derived in a memo, not in the selector: a fresh array per snapshot would
@@ -179,7 +179,7 @@ function FundPage() {
               to: ".",
               search: (prev) => ({
                 ...prev,
-                tab: value === "transactions" ? undefined : value,
+                view: value === "transactions" ? undefined : value,
               }),
             })
           }
@@ -199,7 +199,7 @@ function FundPage() {
                 onSelect={(value) =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: value }),
+                    search: (prev) => ({ ...prev, view: value }),
                   })
                 }
               />
@@ -214,7 +214,7 @@ function FundPage() {
                 onDeleted={() =>
                   navigate({
                     to: ".",
-                    search: (prev) => ({ ...prev, tab: undefined }),
+                    search: (prev) => ({ ...prev, view: undefined }),
                   })
                 }
               />
