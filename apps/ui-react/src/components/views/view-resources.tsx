@@ -7,7 +7,6 @@ import type {
 import type { LucideIcon } from "lucide-react";
 
 import { deserializeViewScope } from "@maille/core/views";
-import { ArrowRightLeft, BookMarked, CreditCard } from "lucide-react";
 import * as React from "react";
 
 import type { ViewConfig, ViewDescriptor } from "@/types/views";
@@ -43,6 +42,7 @@ import {
   useScopedActivities,
   useScopedMovements,
 } from "@/components/views/view-scope-data";
+import { ActivityIcon, MovementIcon, TransactionIcon } from "@/lib/icons";
 import { useAccounts } from "@/stores/accounts";
 
 /** Which resources a scope's custom views can display. */
@@ -273,7 +273,7 @@ function TransactionsExportButton({
 export const VIEW_RESOURCES: Record<ViewResource, ViewResourceDefinition> = {
   activities: {
     label: "Activities",
-    icon: BookMarked,
+    icon: ActivityIcon,
     descriptor: activityViewDescriptor,
     defaultConfig: (scope) => ({
       resource: "activities",
@@ -290,7 +290,7 @@ export const VIEW_RESOURCES: Record<ViewResource, ViewResourceDefinition> = {
   },
   movements: {
     label: "Movements",
-    icon: CreditCard,
+    icon: MovementIcon,
     descriptor: movementViewDescriptor,
     defaultConfig: (scope) => ({
       resource: "movements",
@@ -307,7 +307,7 @@ export const VIEW_RESOURCES: Record<ViewResource, ViewResourceDefinition> = {
   },
   transactions: {
     label: "Transactions",
-    icon: ArrowRightLeft,
+    icon: TransactionIcon,
     descriptor: transactionViewDescriptor,
     defaultConfig: (scope) => ({
       resource: "transactions",

@@ -1,12 +1,7 @@
 import type { ActivityCategory } from "@maille/core/activities";
 
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import {
-  BookMarked,
-  ChevronRight,
-  Settings,
-  SquareChartGantt,
-} from "lucide-react";
+import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -36,6 +31,7 @@ import {
   useSelectedView,
 } from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ActivityIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 
@@ -152,7 +148,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
             >
               <TabsTrigger value="activities">
-                <BookMarked />
+                <ActivityIcon />
                 Activities
               </TabsTrigger>
               <CustomViewTabs

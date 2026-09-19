@@ -1,17 +1,12 @@
+import type { LucideIcon } from "lucide-react";
+
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  BookMarked,
   CircleCheck,
   CircleDashed,
   CircleDotDashed,
-  Folder,
-  Landmark,
-  Layers,
   Minus,
-  Tag,
-  Tags,
-  Wallet,
 } from "lucide-react";
 
 import type {
@@ -19,20 +14,30 @@ import type {
   GroupMarker as GroupMarkerData,
 } from "@/lib/view-grouping";
 
+import {
+  AccountIcon,
+  ActivityIcon,
+  CategoryIcon,
+  FundIcon,
+  MixedFundsIcon,
+  ProjectIcon,
+  SubcategoryIcon,
+  UntrackedIcon,
+} from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPES_COLOR } from "@/stores/accounts";
 import { ACTIVITY_TYPES_COLOR } from "@/stores/activities";
 
 const icons = {
-  category: Tag,
-  subcategory: Tags,
-  project: Folder,
-  activity: BookMarked,
-  account: Landmark,
-  fund: Wallet,
-  untracked: CircleDashed,
-  "mixed-funds": Layers,
-} satisfies Record<GroupIcon, typeof Tag>;
+  category: CategoryIcon,
+  subcategory: SubcategoryIcon,
+  project: ProjectIcon,
+  activity: ActivityIcon,
+  account: AccountIcon,
+  fund: FundIcon,
+  untracked: UntrackedIcon,
+  "mixed-funds": MixedFundsIcon,
+} satisfies Record<GroupIcon, LucideIcon>;
 
 /** The same identity marks as ledger rows, kept separate from the readable group name. */
 export function GroupMarker({ marker }: { marker: GroupMarkerData }) {

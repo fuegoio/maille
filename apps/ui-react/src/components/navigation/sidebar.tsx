@@ -1,14 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  BookMarked,
-  Calendar,
-  CreditCard,
-  Landmark,
-  LayoutDashboard,
-  Tag,
-  TentTree,
-  Wallet,
-} from "lucide-react";
+import { Calendar, LayoutDashboard } from "lucide-react";
 import * as React from "react";
 
 import { Logo } from "@/components/logo";
@@ -18,6 +9,14 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import {
+  AccountIcon,
+  ActivityIcon,
+  CategoryIcon,
+  FundIcon,
+  MovementIcon,
+  ProjectIcon,
+} from "@/lib/icons";
 import { useAuth } from "@/stores/auth";
 
 import { NavMain } from "./nav-main";
@@ -52,7 +51,7 @@ const data = {
     {
       title: "Activities",
       url: "/activities",
-      icon: BookMarked,
+      icon: ActivityIcon,
       items: [
         {
           title: "Needs reconciliation",
@@ -63,7 +62,7 @@ const data = {
     {
       title: "Movements",
       url: "/movements",
-      icon: CreditCard,
+      icon: MovementIcon,
       items: [
         {
           title: "To link",
@@ -76,22 +75,22 @@ const data = {
     {
       title: "Accounts",
       url: "/accounts",
-      icon: Landmark,
+      icon: AccountIcon,
     },
     {
       title: "Funds",
       url: "/funds",
-      icon: Wallet,
+      icon: FundIcon,
     },
     {
       title: "Categories",
       url: "/categories",
-      icon: Tag,
+      icon: CategoryIcon,
     },
     {
       title: "Projects",
       url: "/projects",
-      icon: TentTree,
+      icon: ProjectIcon,
     },
   ],
 };

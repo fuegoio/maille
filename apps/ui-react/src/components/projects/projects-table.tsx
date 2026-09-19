@@ -1,6 +1,5 @@
 import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
-import { TentTree } from "lucide-react";
 import { useMemo } from "react";
 
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
@@ -14,6 +13,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { ProjectIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { getActivityTypeTotalForProject } from "@/logic/activities";
 import { useActivities, ACTIVITY_TYPES_COLOR } from "@/stores/activities";
@@ -179,7 +179,7 @@ export function ProjectsTable() {
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <TentTree />
+                <ProjectIcon />
               </EmptyMedia>
               <EmptyTitle>No Projects Yet</EmptyTitle>
               <EmptyDescription>

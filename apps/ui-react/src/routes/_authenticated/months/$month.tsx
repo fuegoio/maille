@@ -1,10 +1,5 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import {
-  BookMarked,
-  CreditCard,
-  SquareChartGantt,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -38,6 +33,7 @@ import {
   useSelectedView,
 } from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ActivityIcon, MovementIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
@@ -183,11 +179,11 @@ function MonthPage() {
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
             >
               <TabsTrigger value="activities">
-                <BookMarked />
+                <ActivityIcon />
                 Activities
               </TabsTrigger>
               <TabsTrigger value="movements">
-                <CreditCard />
+                <MovementIcon />
                 Movements
               </TabsTrigger>
               <CustomViewTabs

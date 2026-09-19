@@ -1,7 +1,7 @@
 import { flattenFundTree } from "@maille/core/funds";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { ChevronRight, Wallet } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import {
@@ -21,6 +21,7 @@ import {
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useFundMoves } from "@/hooks/use-fund-moves";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
+import { FundIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { getFundTreeBalance, getUntrackedBalanceAtDate } from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
@@ -133,7 +134,7 @@ export function FundsTable() {
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <Wallet />
+              <FundIcon />
             </EmptyMedia>
             <EmptyTitle>No Funds Yet</EmptyTitle>
             <EmptyDescription>
