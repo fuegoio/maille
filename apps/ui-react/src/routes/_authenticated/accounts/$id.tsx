@@ -25,6 +25,7 @@ import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
 import { AddMovementButton } from "@/components/movements/add-movement-button";
+import { ExportMovementsButton } from "@/components/movements/export-movements-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
 import {
@@ -280,12 +281,17 @@ function AccountPage({ account }: { account: Account }) {
               <div className="flex-1" />
 
               {selectedCustomView !== null && (
-                <CustomViewActions
-                  view={selectedCustomView}
-                  onConfigChange={(config) =>
-                    updateViewConfig(selectedCustomView, config)
-                  }
-                />
+                <>
+                  {selectedCustomView.config.resource === "movements" && (
+                    <AddMovementButton size="sm" />
+                  )}
+                  <CustomViewActions
+                    view={selectedCustomView}
+                    onConfigChange={(config) =>
+                      updateViewConfig(selectedCustomView, config)
+                    }
+                  />
+                </>
               )}
 
               {selectedCustomView === null &&
@@ -322,13 +328,18 @@ function AccountPage({ account }: { account: Account }) {
                 )}
               {selectedCustomView === null && selectedTab === "movements" && (
                 <>
+                  <AddMovementButton size="sm" />
                   <FilterMovementsButton
                     viewId={`account-${account.id}-movements`}
                   />
-                  <AddMovementButton size="sm" />
                   <TableViewSettingsButton
                     kind="movement"
                     viewId={`account-${account.id}-movements`}
+                  />
+                  <ExportMovementsButton
+                    movements={viewMovements}
+                    viewId={`account-${account.id}-movements`}
+                    className="hidden sm:flex"
                   />
                 </>
               )}

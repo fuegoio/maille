@@ -13,9 +13,12 @@ import {
 } from "@/components/ui/tooltip";
 import { getGraphQLDate } from "@/lib/date";
 import { useAccounts } from "@/stores/accounts";
+import { useViews } from "@/stores/views";
 
 interface ExportMovementsButtonProps {
   movements: Movement[];
+  /** The store-backed view whose filters to export; ignored when filters is provided. */
+  viewId?: string;
   /** The view's filters, when exporting a custom view. */
   filters?: MovementFilter[];
   className?: string;
@@ -23,20 +26,29 @@ interface ExportMovementsButtonProps {
 
 export function ExportMovementsButton({
   movements,
+  viewId,
   filters,
   className,
 }: ExportMovementsButtonProps) {
   const accounts = useAccounts((state) => state.accounts);
+  const storeView = useViews((state) =>
+    viewId === undefined ? undefined : state.getMovementView(viewId),
+  );
+
+  const exportFilters = React.useMemo(
+    () => filters ?? storeView?.filters ?? [],
+    [filters, storeView],
+  );
 
   const filteredMovements = React.useMemo(() => {
     return movements.filter((movement) => {
-      if (!filters || filters.length === 0) return true;
+      if (exportFilters.length === 0) return true;
 
-      return filters
+      return exportFilters
         .map((filter) => verifyMovementFilter(filter, movement))
         .every((matched) => matched);
     });
-  }, [movements, filters]);
+  }, [movements, exportFilters]);
 
   const exportMovements = () => {
     const csvFile = stringify([
