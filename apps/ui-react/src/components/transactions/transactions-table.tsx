@@ -15,6 +15,7 @@ import { LedgerDate } from "@/components/shared/ledger-date";
 import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { TableGroupHeader } from "@/components/shared/table-group-header";
+import { VirtualLedgerRows } from "@/components/shared/virtual-ledger-rows";
 import { TransactionsFilters } from "@/components/transactions/filters/transactions-filters";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -140,6 +141,7 @@ export function TransactionsTable({
   const {
     rowOutlines,
     registerRow,
+    focusedId,
     selectedIds: selectedTransactions,
     toggle: toggleTransaction,
     selectOnly: selectOnlyTransaction,
@@ -177,9 +179,12 @@ export function TransactionsTable({
 
       <div className="flex flex-1 flex-col overflow-y-auto">
         <ScrollArea className="flex-1" viewportRef={scrollRef}>
-          {items.map((item) => (
-            <React.Fragment key={item.id}>
-              {item.itemType === "group" ? (
+          <VirtualLedgerRows
+            items={items}
+            scrollRef={scrollRef}
+            focusedId={focusedId}
+            renderItem={(item) =>
+              item.itemType === "group" ? (
                 <TableGroupHeader
                   id={item.id}
                   folded={isFolded(item.id)}
@@ -242,9 +247,9 @@ export function TransactionsTable({
                     />
                   </div>
                 </EntityContextMenu>
-              )}
-            </React.Fragment>
-          ))}
+              )
+            }
+          />
         </ScrollArea>
       </div>
 
