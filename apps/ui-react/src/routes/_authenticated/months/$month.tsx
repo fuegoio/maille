@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   BookMarked,
-  ArrowRightLeft,
+  CreditCard,
   SquareChartGantt,
   ChevronRight,
 } from "lucide-react";
@@ -187,7 +187,7 @@ function MonthPage() {
                 Activities
               </TabsTrigger>
               <TabsTrigger value="movements">
-                <ArrowRightLeft />
+                <CreditCard />
                 Movements
               </TabsTrigger>
               <CustomViewTabs

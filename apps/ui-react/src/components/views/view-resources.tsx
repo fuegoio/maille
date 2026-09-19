@@ -7,7 +7,7 @@ import type {
 import type { LucideIcon } from "lucide-react";
 
 import { deserializeViewScope } from "@maille/core/views";
-import { ArrowRightLeft, BookMarked, ReceiptText } from "lucide-react";
+import { ArrowRightLeft, BookMarked, CreditCard } from "lucide-react";
 import * as React from "react";
 
 import type { ViewConfig, ViewDescriptor } from "@/types/views";
@@ -290,7 +290,7 @@ export const VIEW_RESOURCES: Record<ViewResource, ViewResourceDefinition> = {
   },
   movements: {
     label: "Movements",
-    icon: ArrowRightLeft,
+    icon: CreditCard,
     descriptor: movementViewDescriptor,
     defaultConfig: (scope) => ({
       resource: "movements",
@@ -307,7 +307,7 @@ export const VIEW_RESOURCES: Record<ViewResource, ViewResourceDefinition> = {
   },
   transactions: {
     label: "Transactions",
-    icon: ReceiptText,
+    icon: ArrowRightLeft,
     descriptor: transactionViewDescriptor,
     defaultConfig: (scope) => ({
       resource: "transactions",

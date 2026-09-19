@@ -3,9 +3,9 @@ import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRightLeft,
   ChevronRight,
+  CreditCard,
   House,
   Plus,
-  ReceiptText,
   Settings,
   SquareChartGantt,
   Users,
@@ -235,12 +235,12 @@ function AccountPage({ account }: { account: Account }) {
                 className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
               >
                 <TabsTrigger value="transactions">
-                  <ReceiptText />
+                  <ArrowRightLeft />
                   Transactions
                 </TabsTrigger>
                 {account.movements ? (
                   <TabsTrigger value="movements">
-                    <ArrowRightLeft />
+                    <CreditCard />
                     Movements
                   </TabsTrigger>
                 ) : (
@@ -248,7 +248,7 @@ function AccountPage({ account }: { account: Account }) {
                     <TooltipTrigger asChild>
                       <span>
                         <TabsTrigger value="movements" disabled>
-                          <ArrowRightLeft />
+                          <CreditCard />
                           Movements
                         </TabsTrigger>
                       </span>
