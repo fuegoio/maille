@@ -65,20 +65,20 @@ export function scopeResources(scope: ViewScope): ViewResource[] {
 }
 
 /**
- * The resources offered when creating a view over a scope. Accounts
- * without movements enabled don't offer them, like their disabled tab.
+ * The resources a scope offers but that are turned off, so they render
+ * disabled instead of being hidden: accounts without movements enabled,
+ * like their disabled tab.
  */
-export function useScopeResources(scope: ViewScope): ViewResource[] {
+export function useDisabledResources(scope: ViewScope): ViewResource[] {
   const account = useAccounts((state) =>
     scope.kind === "account"
       ? state.getAccountById(scope.accountId)
       : undefined,
   );
-  const resources = scopeResources(scope);
   if (scope.kind === "account" && !account?.movements) {
-    return resources.filter((resource) => resource !== "movements");
+    return ["movements"];
   }
-  return resources;
+  return [];
 }
 
 /** The default grouping of a new view: months are already one period. */

@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { useViewMutations } from "@/components/views/view-mutations";
 import {
-  useScopeResources,
+  scopeResources,
+  useDisabledResources,
   VIEW_RESOURCES,
 } from "@/components/views/view-resources";
 
@@ -47,13 +48,15 @@ export function AddViewDialog({
   const [name, setName] = React.useState("");
   const { createView } = useViewMutations();
 
-  const resources = useScopeResources(scope);
+  const resources = scopeResources(scope);
+  const disabled = useDisabledResources(scope);
   const [requestedResource, setResource] = React.useState<ViewResource>(
     resources[0],
   );
-  const resource = resources.includes(requestedResource)
-    ? requestedResource
-    : resources[0];
+  // A disabled resource can't be picked: fall back to the first pickable one.
+  const resource = disabled.includes(requestedResource)
+    ? resources.find((entry) => !disabled.includes(entry))!
+    : requestedResource;
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -116,7 +119,11 @@ export function AddViewDialog({
                     const definition = VIEW_RESOURCES[entry];
                     const Icon = definition.icon;
                     return (
-                      <SelectItem key={entry} value={entry}>
+                      <SelectItem
+                        key={entry}
+                        value={entry}
+                        disabled={disabled.includes(entry)}
+                      >
                         <div className="flex items-center gap-1.5">
                           <Icon />
                           {definition.label}
