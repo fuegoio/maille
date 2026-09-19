@@ -13,8 +13,10 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -25,6 +27,7 @@ interface CategorySummaryProps {
 
 export function CategorySummary({ category }: CategorySummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const chartAnimation = useChartAnimation();
   const user = useAuth((state) => state.user!);
   const activities = useActivities((state) => state.activities);
   const subcategories = useActivities((state) => state.activitySubcategories);
@@ -127,11 +130,11 @@ export function CategorySummary({ category }: CategorySummaryProps) {
             <div className="font-semibold">Balance</div>
             <div className="flex-1" />
             <span className="font-mono text-muted-foreground">
-              {currencyFormatter.format(balancePrev)}
+              <RollingAmount value={balancePrev} />
             </span>
             <ArrowRight className="size-4 text-muted-foreground" />
             <span className="font-mono">
-              {currencyFormatter.format(balance)}
+              <RollingAmount value={balance} />
             </span>
           </div>
 
@@ -140,7 +143,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
             <div className="font-medium">In</div>
             <div className="flex-1" />
             <span className="flex items-center gap-1 font-mono font-medium">
-              {currencyFormatter.format(last30In)}
+              <RollingAmount value={last30In} />
             </span>
           </div>
 
@@ -149,7 +152,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
             <div className="font-medium">Out</div>
             <div className="flex-1" />
             <span className="flex items-center gap-1 font-mono font-medium">
-              {currencyFormatter.format(last30Out)}
+              <RollingAmount value={last30Out} />
             </span>
           </div>
         </div>
@@ -204,7 +207,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
               strokeWidth={1.5}
               dot={false}
               activeDot={{ r: 3, strokeWidth: 0 }}
-              isAnimationActive={false}
+              {...chartAnimation}
             />
           </LineChart>
         </ChartContainer>

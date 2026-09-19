@@ -95,6 +95,7 @@ export function ActivitiesFilters({
           amounts={activitiesTotal}
           types={visibleActivityAmountTypes(currentFields)}
           className="text-sm lg:pr-4"
+          animated
         />
       </div>
     </header>

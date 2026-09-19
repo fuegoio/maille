@@ -14,8 +14,10 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import {
   Tooltip,
   TooltipContent,
@@ -83,6 +85,7 @@ export function FundSummary({
   onSubfundFilterChange,
 }: FundSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const chartAnimation = useChartAnimation();
   const funds = useFunds((state) => state.funds);
   const fundMoves = useFundMoves();
   const fundAllocations = useFunds((state) => state.fundAllocations);
@@ -351,10 +354,12 @@ export function FundSummary({
           <div className="font-semibold">Balance</div>
           <div className="flex-1" />
           <span className="font-mono text-muted-foreground">
-            {currencyFormatter.format(balancePrev)}
+            <RollingAmount value={balancePrev} />
           </span>
           <ArrowRight className="size-4 text-muted-foreground" />
-          <span className="font-mono">{currencyFormatter.format(balance)}</span>
+          <span className="font-mono">
+            <RollingAmount value={balance} />
+          </span>
         </div>
 
         <div className="mt-3 flex items-center gap-2 text-sm">
@@ -362,7 +367,7 @@ export function FundSummary({
           <div className="font-medium">In</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            {currencyFormatter.format(last30In)}
+            <RollingAmount value={last30In} />
           </span>
         </div>
 
@@ -371,7 +376,7 @@ export function FundSummary({
           <div className="font-medium">Out</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            {currencyFormatter.format(last30Out)}
+            <RollingAmount value={last30Out} />
           </span>
         </div>
       </div>
@@ -424,7 +429,7 @@ export function FundSummary({
             strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
-            isAnimationActive={false}
+            {...chartAnimation}
           />
         </LineChart>
       </ChartContainer>

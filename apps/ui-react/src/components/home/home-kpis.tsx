@@ -3,7 +3,7 @@ import { subDays } from "date-fns";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
@@ -41,7 +41,6 @@ export function HomeKpis({
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
-  const currencyFormatter = useCurrencyFormatter();
 
   const kpiSpecs: KpiSpec[] = [
     {
@@ -162,7 +161,7 @@ export function HomeKpis({
             </span>
 
             <span className="truncate font-mono text-lg leading-none font-semibold tabular-nums">
-              {currencyFormatter.format(value)}
+              <RollingAmount value={value} />
             </span>
 
             <span
@@ -180,7 +179,7 @@ export function HomeKpis({
                     <TrendingDown className="size-3 shrink-0" />
                   )}
                   {delta >= 0 ? "+" : "-"}
-                  {currencyFormatter.format(Math.abs(delta))}
+                  <RollingAmount value={Math.abs(delta)} />
                   {percent !== null && (
                     <span className="hidden whitespace-nowrap opacity-70 sm:inline">
                       ({percent >= 0 ? "+" : "-"}

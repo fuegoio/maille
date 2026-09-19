@@ -14,8 +14,10 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
@@ -40,6 +42,7 @@ export function AccountSummary({
   onFundFilter,
 }: AccountSummaryProps) {
   const currencyFormatter = useCurrencyFormatter();
+  const chartAnimation = useChartAnimation();
   const account = useAccounts((state) => state.getAccountById(accountId));
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
@@ -154,10 +157,12 @@ export function AccountSummary({
           <div className="font-semibold">Balance</div>
           <div className="flex-1" />
           <span className="font-mono text-muted-foreground">
-            {currencyFormatter.format(balancePrev)}
+            <RollingAmount value={balancePrev} />
           </span>
           <ArrowRight className="size-4 text-muted-foreground" />
-          <span className="font-mono">{currencyFormatter.format(balance)}</span>
+          <span className="font-mono">
+            <RollingAmount value={balance} />
+          </span>
         </div>
 
         <div className="mt-3 flex items-center gap-2 text-sm">
@@ -165,7 +170,7 @@ export function AccountSummary({
           <div className="font-medium">In</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            {currencyFormatter.format(last30In)}
+            <RollingAmount value={last30In} />
           </span>
         </div>
 
@@ -174,7 +179,7 @@ export function AccountSummary({
           <div className="font-medium">Out</div>
           <div className="flex-1" />
           <span className="flex items-center gap-1 font-mono font-medium">
-            {currencyFormatter.format(last30Out)}
+            <RollingAmount value={last30Out} />
           </span>
         </div>
 
@@ -186,13 +191,13 @@ export function AccountSummary({
               {Math.abs(cashBalancePrev - cashBalance) >= 0.01 && (
                 <>
                   <span className="font-mono">
-                    {currencyFormatter.format(cashBalancePrev)}
+                    <RollingAmount value={cashBalancePrev} />
                   </span>
                   <ArrowRight className="size-3" />
                 </>
               )}
               <span className="font-mono">
-                {currencyFormatter.format(cashBalance)}
+                <RollingAmount value={cashBalance} />
               </span>
             </div>
           </div>
@@ -247,7 +252,7 @@ export function AccountSummary({
             strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
-            isAnimationActive={false}
+            {...chartAnimation}
           />
         </LineChart>
       </ChartContainer>

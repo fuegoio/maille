@@ -25,15 +25,20 @@ export function ActivityAmountsValue({
   amounts,
   className,
   types = AMOUNTS_ORDER,
+  animated = false,
 }: {
   amounts: ActivityAmounts;
   className?: string;
   types?: readonly ActivityType[];
+  /** Roll amounts to their new value — for figures that change in place. */
+  animated?: boolean;
 }) {
   const pairs: AmountPair[] = types.map((activityType) => ({
     dot: ACTIVITY_TYPES_COLOR[activityType],
     amount: amounts[activityType],
   }));
 
-  return <AmountPairsValue pairs={pairs} className={className} />;
+  return (
+    <AmountPairsValue pairs={pairs} className={className} animated={animated} />
+  );
 }

@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -361,3 +362,18 @@ export {
   ChartLegendContent,
   ChartStyle,
 };
+
+/**
+ * The app's chart line/bar motion: a 300ms ease-out transition between
+ * data states, off under reduced motion. Spread onto recharts Line /
+ * Bar / Area primitives.
+ */
+export function useChartAnimation() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  return {
+    isAnimationActive: !prefersReducedMotion,
+    animationDuration: 300,
+    animationEasing: "ease-out" as const,
+  };
+}

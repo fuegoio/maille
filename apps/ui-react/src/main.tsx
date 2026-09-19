@@ -1,5 +1,6 @@
 import "./index.css";
 import { Link, RouterProvider, createRouter } from "@tanstack/react-router";
+import { MotionConfig } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -43,7 +44,9 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
+      <MotionConfig reducedMotion="user">
+        <RouterProvider router={router} />
+      </MotionConfig>
     </StrictMode>,
   );
 }

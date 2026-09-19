@@ -210,8 +210,49 @@
   }
 }
 
+/* View transitions: a newly active tab panel or route enters with a short
+   fade-and-rise. Entrance only — the entering surface carries the class. */
+@theme {
+  --animate-view-in: view-in 150ms cubic-bezier(0.25, 1, 0.5, 1) both;
+
+  @keyframes view-in {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Checkbox check: the mark scales in when the box is checked. */
+@theme {
+  --animate-check-in: check-in 120ms cubic-bezier(0.25, 1, 0.5, 1) both;
+
+  @keyframes check-in {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-history-in {
+    animation: none;
+  }
+
+  .animate-view-in {
+    animation: none;
+  }
+
+  .animate-check-in {
     animation: none;
   }
 }

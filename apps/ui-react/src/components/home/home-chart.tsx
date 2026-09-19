@@ -15,6 +15,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
@@ -53,6 +54,7 @@ export function HomeChart({
   const activities = useActivities((state) => state.activities);
   const user = useAuth((state) => state.user!);
   const currencyFormatter = useCurrencyFormatter();
+  const chartAnimation = useChartAnimation();
   // Axis ticks are compact so any magnitude fits the fixed Y gutter; the
   // tooltip keeps the exact amount.
   const axisCurrencyFormatter = useCurrencyFormatter("compact");
@@ -227,7 +229,7 @@ export function HomeChart({
             strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
-            isAnimationActive={false}
+            {...chartAnimation}
           />
         ) : (
           <Bar
@@ -237,7 +239,7 @@ export function HomeChart({
             barSize={barSize}
             radius={[1, 1, 0, 0]}
             activeBar={{ fill: "var(--color-value)", fillOpacity: 1 }}
-            isAnimationActive={false}
+            {...chartAnimation}
           />
         )}
       </ComposedChart>

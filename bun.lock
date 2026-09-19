@@ -66,6 +66,7 @@
         "@fontsource-variable/geist": "^5.2.8",
         "@fontsource-variable/source-serif-4": "^5.3.0",
         "@hookform/resolvers": "5.2.0",
+        "@kitlangton/rolling-number": "^0.4.1",
         "@maille/core": "*",
         "@tanstack/react-hotkeys": "^0.1.3",
         "@tanstack/react-query": "^5.96.2",
@@ -571,6 +572,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "https://socket-registry.mistralai.com/npm/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "https://socket-registry.mistralai.com/npm/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@kitlangton/rolling-number": ["@kitlangton/rolling-number@0.4.1", "https://socket-registry.mistralai.com/npm/@kitlangton/rolling-number/-/rolling-number-0.4.1.tgz", { "peerDependencies": { "react": "^18.0.0 || ^19.0.0", "solid-js": "^1.9.0" }, "optionalPeers": ["react", "solid-js"] }, "sha512-wvtmA/iz2rZ8QKrHt32dsxWFq4AJk0RfeXUsk/eXHvto7m3bRQxJ5Nv3KzWZmE7FNB1Ysz567Oj/hILlvpCqLQ=="],
 
     "@maille/api": ["@maille/api@workspace:apps/api"],
 
