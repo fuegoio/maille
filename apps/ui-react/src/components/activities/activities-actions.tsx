@@ -1,12 +1,5 @@
 import { type Activity } from "@maille/core/activities";
-import {
-  Copy,
-  Tag,
-  TentTree,
-  TextCursor,
-  TextSelect,
-  Trash2,
-} from "lucide-react";
+import { Copy, TextCursor, TextSelect, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import type { EntityAction } from "@/components/shared/entity-actions";
@@ -17,6 +10,7 @@ import {
   activityUpdateHistoryEvent,
   unlinkMovementHistoryEvent,
 } from "@/lib/history-events";
+import { CategoryIcon, ProjectIcon } from "@/lib/icons";
 import { duplicateActivities } from "@/logic/activities";
 import {
   createActivityMutation,
@@ -192,7 +186,7 @@ export function useActivitiesEntityActions(
       {
         value: "category",
         label: "Change category",
-        icon: <Tag />,
+        icon: <CategoryIcon />,
         type: "select" as const,
         shortcut: "Y",
         getValues: () => [
@@ -219,7 +213,7 @@ export function useActivitiesEntityActions(
       {
         value: "subcategory",
         label: "Change subcategory",
-        icon: <Tag />,
+        icon: <CategoryIcon />,
         type: "select" as const,
         shortcut: "S",
         getValues: () => [
@@ -246,7 +240,7 @@ export function useActivitiesEntityActions(
       {
         value: "project",
         label: "Add to project",
-        icon: <TentTree />,
+        icon: <ProjectIcon />,
         type: "select" as const,
         shortcut: "P",
         getValues: () => [

@@ -1,9 +1,7 @@
 import { type Account, AccountType } from "@maille/core/accounts";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
-  ArrowRightLeft,
   ChevronRight,
-  CreditCard,
   House,
   Plus,
   Settings,
@@ -55,6 +53,7 @@ import {
   useSelectedView,
 } from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MovementIcon, TransactionIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useFunds } from "@/stores/funds";
@@ -235,12 +234,12 @@ function AccountPage({ account }: { account: Account }) {
                 className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
               >
                 <TabsTrigger value="transactions">
-                  <ArrowRightLeft />
+                  <TransactionIcon />
                   Transactions
                 </TabsTrigger>
                 {account.movements ? (
                   <TabsTrigger value="movements">
-                    <CreditCard />
+                    <MovementIcon />
                     Movements
                   </TabsTrigger>
                 ) : (
@@ -248,7 +247,7 @@ function AccountPage({ account }: { account: Account }) {
                     <TooltipTrigger asChild>
                       <span>
                         <TabsTrigger value="movements" disabled>
-                          <CreditCard />
+                          <MovementIcon />
                           Movements
                         </TabsTrigger>
                       </span>

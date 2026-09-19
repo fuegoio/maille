@@ -4,7 +4,6 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
 import _ from "lodash";
 import {
-  BookMarked,
   ChevronRight,
   CircleCheck,
   CircleDashed,
@@ -40,6 +39,7 @@ import {
   unlinkActivityHistoryEvent,
   unlinkMovementHistoryEvent,
 } from "@/lib/history-events";
+import { ActivityIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import {
   deleteMovementActivityMutation,
@@ -422,7 +422,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
 
             <div className="px-4 py-6 sm:px-8">
               <div className="flex items-center gap-1.5">
-                <BookMarked className="size-3.5 text-muted-foreground" />
+                <ActivityIcon className="size-3.5 text-muted-foreground" />
                 <div className="font-serif text-xl leading-none font-normal">
                   Activities
                 </div>

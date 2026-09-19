@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BookMarked, CircleDashed } from "lucide-react";
+import { CircleDashed } from "lucide-react";
 import z from "zod";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
@@ -22,6 +22,7 @@ import {
   CustomViewTabsContent,
   useSelectedView,
 } from "@/components/views/view-tabs";
+import { ActivityIcon } from "@/lib/icons";
 import { useActivities } from "@/stores/activities";
 
 const searchParamsSchema = z.object({
@@ -89,7 +90,7 @@ function ActivitiesPage() {
             className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
           >
             <TabsTrigger value="all">
-              <BookMarked />
+              <ActivityIcon />
               All activities
             </TabsTrigger>
             <TabsTrigger value="reconcile">

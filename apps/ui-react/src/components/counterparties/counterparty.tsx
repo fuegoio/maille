@@ -1,6 +1,6 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
-import { BookMarked, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserSelect } from "@/components/users/user-select";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { ActivityIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import {
   deleteCounterpartyMutation,
@@ -355,7 +356,7 @@ export function CounterpartyPage({ counterpartyId }: CounterpartyPageProps) {
 
             <div className="border-t px-4 py-6 sm:px-8">
               <div className="flex items-center gap-1.5">
-                <BookMarked className="size-3.5 text-muted-foreground" />
+                <ActivityIcon className="size-3.5 text-muted-foreground" />
                 <div className="text-sm font-medium">
                   Activities involving this counterparty
                 </div>
