@@ -35,7 +35,6 @@ import { useViews } from "@/stores/views";
 import {
   buildTransactionRows,
   transactionCounterpartGroup,
-  transactionFundGroup,
   transactionGroupAccessors,
   transactionOrderingAccessors,
   type TransactionRow,
@@ -280,7 +279,6 @@ function TransactionLine({
 }) {
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
-  const fund = transactionFundGroup(transaction, funds);
   const counterpart = transactionCounterpartGroup(
     transaction.counterpart,
     accounts,
@@ -355,14 +353,6 @@ function TransactionLine({
               {counterpart.label}
             </span>
           </div>
-        )}
-        {fields.includes("fund") && (
-          <span className="hidden items-center gap-1.5 text-xs text-muted-foreground md:inline-flex">
-            {fund.marker && <GroupMarker marker={fund.marker} />}
-            <span className="max-w-32 truncate text-ellipsis whitespace-nowrap">
-              {fund.label}
-            </span>
-          </span>
         )}
       </ContextLink>
 

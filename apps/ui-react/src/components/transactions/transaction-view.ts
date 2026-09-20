@@ -77,7 +77,6 @@ export const TRANSACTION_VIEW_FIELDS = [
   "status",
   "name",
   "counterpart",
-  "fund",
   "amount",
 ] as const;
 export const transactionViewDescriptor: ViewDescriptor = {
@@ -86,7 +85,6 @@ export const transactionViewDescriptor: ViewDescriptor = {
     { value: "status", text: "Status" },
     { value: "name", text: "Activity", locked: true },
     { value: "counterpart", text: "Counterpart" },
-    { value: "fund", text: "Fund" },
     { value: "amount", text: "Amount" },
   ],
   orderings: [
