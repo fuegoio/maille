@@ -1,12 +1,19 @@
 import type { Project } from "@maille/core/projects";
 
 import { ActivityType } from "@maille/core/activities";
+import { startOfDay, subDays } from "date-fns";
 import { format } from "date-fns";
-import { ArrowRight, CalendarIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarIcon,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
 import { useMemo } from "react";
 
 import type { ActivitiesFilters } from "@/types/activities";
 
+import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useActivities } from "@/stores/activities";
 
@@ -41,6 +48,20 @@ export function ProjectSummary({
         0,
       ),
     [projectActivities],
+  );
+
+  // In / Out of the last 30 days, like every other summary panel; the
+  // totals above stay the project's whole-life scope.
+  const flowsStart = subDays(startOfDay(new Date()), 29);
+  const last30 = projectActivities.filter(
+    (a) => startOfDay(a.date) >= flowsStart,
+  );
+  const last30In = last30.reduce(
+    (acc, a) => acc + a.amounts[ActivityType.REVENUE],
+    0,
+  );
+  const last30Out = Math.abs(
+    last30.reduce((acc, a) => acc + a.amounts[ActivityType.EXPENSE], 0),
   );
 
   const toDate = (value: Date | string | null | undefined): Date | null => {
@@ -78,6 +99,24 @@ export function ProjectSummary({
           <div className="flex-1" />
           <span className="font-mono font-medium">
             {currencyFormatter.format(total)}
+          </span>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 text-sm">
+          <TrendingUp className="size-3" />
+          <div className="font-medium">In</div>
+          <div className="flex-1" />
+          <span className="flex items-center gap-1 font-mono font-medium">
+            <RollingAmount value={last30In} />
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center gap-2 text-sm">
+          <TrendingDown className="size-3" />
+          <div className="font-medium">Out</div>
+          <div className="flex-1" />
+          <span className="flex items-center gap-1 font-mono font-medium">
+            <RollingAmount value={last30Out} />
           </span>
         </div>
       </div>

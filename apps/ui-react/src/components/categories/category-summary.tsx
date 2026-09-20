@@ -2,7 +2,7 @@ import type { ActivityCategory } from "@maille/core/activities";
 
 import { ActivityType } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import { addDays, eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import { ArrowRight, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
@@ -58,8 +58,11 @@ export function CategorySummary({ category }: CategorySummaryProps) {
   const balance = getBalanceAtDate(today);
   const balancePrev = getBalanceAtDate(thirtyDaysAgo);
 
+  // The chart's first day is its baseline: its flows sit in the starting
+  // point, not in the movement the line shows. In / Out start after it.
+  const flowsStart = addDays(thirtyDaysAgo, 1);
   const last30 = categoryActivities.filter(
-    (a) => startOfDay(a.date) >= thirtyDaysAgo,
+    (a) => startOfDay(a.date) >= flowsStart,
   );
   const last30In = last30.reduce(
     (acc, a) => acc + a.amounts[ActivityType.REVENUE],
