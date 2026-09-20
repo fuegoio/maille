@@ -1,5 +1,11 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, SquareChartGantt } from "lucide-react";
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarClock,
+  ChevronRight,
+  SquareChartGantt,
+} from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -137,6 +143,17 @@ function MonthPage() {
     ],
   });
 
+  // The month's phase against today, read like the months table's rows.
+  // The loader's date may be any day of the month, so compare the month.
+  const today = new Date();
+  const monthPhase: "past" | "current" | "future" =
+    monthDate.getFullYear() === today.getFullYear() &&
+    monthDate.getMonth() === today.getMonth()
+      ? "current"
+      : new Date(monthDate.getFullYear(), monthDate.getMonth(), 1) > today
+        ? "future"
+        : "past";
+
   return (
     <SidebarInset className="flex-row">
       <div
@@ -147,6 +164,16 @@ function MonthPage() {
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
+
+          {monthPhase === "past" && (
+            <CalendarCheck className="size-4 text-muted-foreground" />
+          )}
+          {monthPhase === "current" && (
+            <Calendar className="size-4 text-primary" />
+          )}
+          {monthPhase === "future" && (
+            <CalendarClock className="size-4 text-muted-foreground" />
+          )}
 
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
