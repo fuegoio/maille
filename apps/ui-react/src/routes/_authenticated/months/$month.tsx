@@ -130,19 +130,6 @@ function MonthPage() {
     });
   };
 
-  const breadcrumbs = usePageBreadcrumbs({
-    contextual: false,
-    routeKey: "/months/$month",
-    entries: [
-      { key: "months", label: "Months", target: { to: "/months" } },
-      {
-        key: `month:${month}`,
-        label: monthFormatter(monthDate),
-        target: { to: "/months/$month", params: { month: monthParam } },
-      },
-    ],
-  });
-
   // The month's phase against today, read like the months table's rows.
   // The loader's date may be any day of the month, so compare the month.
   const today = new Date();
@@ -153,6 +140,32 @@ function MonthPage() {
       : new Date(monthDate.getFullYear(), monthDate.getMonth(), 1) > today
         ? "future"
         : "past";
+  const monthPhaseIcon =
+    monthPhase === "past" ? (
+      <CalendarCheck className="size-4 text-muted-foreground" />
+    ) : monthPhase === "current" ? (
+      <Calendar className="size-4 text-primary" />
+    ) : (
+      <CalendarClock className="size-4 text-muted-foreground" />
+    );
+
+  const breadcrumbs = usePageBreadcrumbs({
+    contextual: false,
+    routeKey: "/months/$month",
+    entries: [
+      { key: "months", label: "Months", target: { to: "/months" } },
+      {
+        key: `month:${month}`,
+        label: (
+          <span className="flex items-center gap-1.5">
+            {monthPhaseIcon}
+            {monthFormatter(monthDate)}
+          </span>
+        ),
+        target: { to: "/months/$month", params: { month: monthParam } },
+      },
+    ],
+  });
 
   return (
     <SidebarInset className="flex-row">
@@ -164,16 +177,6 @@ function MonthPage() {
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">
           <SidebarTrigger className="mr-1" />
-
-          {monthPhase === "past" && (
-            <CalendarCheck className="size-4 text-muted-foreground" />
-          )}
-          {monthPhase === "current" && (
-            <Calendar className="size-4 text-primary" />
-          )}
-          {monthPhase === "future" && (
-            <CalendarClock className="size-4 text-muted-foreground" />
-          )}
 
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
