@@ -43,13 +43,15 @@ describe("shared filter values", () => {
           onDelete={() => {}}
         />,
       );
-      const firstButton = html.match(
-        /<button\b[^>]*>([\s\S]*?)<\/button>/,
-      )?.[1];
-      expect(firstButton).toBeDefined();
-      expect(firstButton).not.toContain(text);
-      expect(firstButton).toContain("is any of");
-      expect(firstButton).toContain("Completed");
+      const buttons = html.match(/<button\b[^>]*>([\s\S]*?)<\/button>/g) ?? [];
+      const operatorButton = buttons[0];
+      const valueButton = buttons[1];
+      expect(operatorButton).toBeDefined();
+      expect(operatorButton).not.toContain(text);
+      expect(operatorButton).toContain("is any of");
+      expect(operatorButton).not.toContain("Completed");
+      expect(valueButton).toBeDefined();
+      expect(valueButton).toContain("Completed");
       expect(html.indexOf(text + "</span>")).toBeLessThan(
         html.indexOf("<button"),
       );

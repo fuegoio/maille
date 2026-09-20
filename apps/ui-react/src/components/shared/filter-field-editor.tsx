@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-import { ArrowLeft, CheckIcon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,19 +9,13 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SelectSearchInput } from "@/components/ui/select-search-input";
 
 import {
-  filterSubmenuOffset,
   isEmptyFilterValue,
   resolveFilterUpdate,
   toggleFilterValue,
@@ -72,7 +66,11 @@ function handleInputKeyDown(event: React.KeyboardEvent) {
   if (event.key !== "Escape" && event.key !== "Tab") event.stopPropagation();
 }
 
-/** Both entry points use operators as submenus, with values one level deeper. */
+/**
+ * The operator list: a plain select. Picking an operator keeps a value
+ * already chosen for it; switching operators drops the old value, which
+ * the chip's own value editor sets right after.
+ */
 export function FilterFieldEditor<F extends FilterShape>({
   field,
   filter,
@@ -82,155 +80,54 @@ export function FilterFieldEditor<F extends FilterShape>({
   filter?: F;
   onChange: (filter: F | null) => void;
 }) {
-  const [activeOperator, setActiveOperator] = React.useState<string | null>(
-    null,
-  );
   return (
     <>
       <DropdownMenuLabel>{field.text}</DropdownMenuLabel>
       {field.operators.map((operator) => {
         const selected = filter?.operator === operator;
-        if (field.operatorsWithoutValue?.includes(operator)) {
-          return (
-            <DropdownMenuItem
-              key={operator}
-              className="min-h-11 gap-2 text-sm sm:min-h-8 sm:text-[13px]"
-              onSelect={() =>
-                onChange({
-                  ...filter,
-                  field: field.value,
-                  operator,
-                  value: undefined,
-                } as F)
-              }
-            >
-              <span className="flex-1">{operator}</span>
-              {selected && (
-                <CheckIcon className="size-4" aria-label="Selected operator" />
-              )}
-            </DropdownMenuItem>
-          );
-        }
         return (
-          <FilterOperatorSubmenu
+          <DropdownMenuItem
             key={operator}
-            field={field}
-            filter={filter}
-            operator={operator}
-            open={activeOperator === operator}
-            onOpenChange={(open) =>
-              setActiveOperator((current) =>
-                open ? operator : current === operator ? null : current,
-              )
+            className="min-h-11 gap-2 text-sm sm:min-h-8 sm:text-[13px]"
+            onSelect={() =>
+              onChange({
+                ...filter,
+                field: field.value,
+                operator,
+                value: selected ? filter?.value : undefined,
+              } as F)
             }
-            onChange={onChange}
-          />
+          >
+            <span className="flex-1">{operator}</span>
+            {selected && (
+              <CheckIcon className="size-4" aria-label="Selected operator" />
+            )}
+          </DropdownMenuItem>
         );
       })}
     </>
   );
 }
 
-function FilterOperatorSubmenu<F extends FilterShape>({
+/**
+ * The value editor of an operator's filter: the choice list or input the
+ * chip's value trigger opens, saving as soon as a value is complete.
+ */
+export function FilterValueEditor<F extends FilterShape>({
   field,
   filter,
-  operator,
-  open,
-  onOpenChange,
   onChange,
 }: {
   field: FilterFieldDefinition<F>;
-  filter?: F;
-  operator: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onChange: (filter: F | null) => void;
+  filter: F;
+  onChange: (filter: F) => void;
 }) {
-  const triggerRef = React.useRef<HTMLDivElement>(null);
-  const [sideOffset, setSideOffset] = React.useState(4);
-  const overlapping = sideOffset !== 4;
-  return (
-    <DropdownMenuSub
-      open={open}
-      onOpenChange={(nextOpen) => {
-        if (nextOpen && triggerRef.current) {
-          setSideOffset(
-            filterSubmenuOffset(
-              triggerRef.current.getBoundingClientRect(),
-              window.innerWidth,
-            ),
-          );
-        }
-        onOpenChange(nextOpen);
-      }}
-    >
-      <DropdownMenuSubTrigger
-        ref={triggerRef}
-        className="min-h-11 gap-2 text-sm sm:min-h-8 sm:text-[13px]"
-      >
-        <span className="min-w-0 flex-1 truncate">{operator}</span>
-        {filter?.operator === operator && (
-          <CheckIcon className="size-4" aria-label="Selected operator" />
-        )}
-      </DropdownMenuSubTrigger>
-      <DropdownMenuPortal>
-        <DropdownMenuSubContent
-          sideOffset={sideOffset}
-          collisionPadding={8}
-          aria-label={field.text + " " + operator + " values"}
-          className="max-h-(--radix-dropdown-menu-content-available-height) w-64 max-w-[calc(100vw-1rem)] overflow-y-auto motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
-          onFocusOutside={(event) => event.preventDefault()}
-          onKeyDown={handleFilterEditorKeyDown}
-        >
-          {overlapping && (
-            <DropdownMenuItem
-              onSelect={(event) => {
-                event.preventDefault();
-                onOpenChange(false);
-                triggerRef.current?.focus();
-              }}
-              className="min-h-11 gap-2 text-sm"
-            >
-              <ArrowLeft className="size-4" />
-              Back to operators
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuLabel>
-            {field.text} · {operator}
-          </DropdownMenuLabel>
-          {!("options" in field.input && field.input.options.length > 8) && (
-            <DropdownMenuSeparator />
-          )}
-          <FilterOperatorValues
-            field={field}
-            filter={filter}
-            operator={operator}
-            onChange={onChange}
-          />
-        </DropdownMenuSubContent>
-      </DropdownMenuPortal>
-    </DropdownMenuSub>
-  );
-}
-
-function FilterOperatorValues<F extends FilterShape>({
-  field,
-  filter,
-  operator,
-  onChange,
-}: {
-  field: FilterFieldDefinition<F>;
-  filter?: F;
-  operator: string;
-  onChange: (filter: F | null) => void;
-}) {
-  const [pending, setPending] = React.useState<F>(
-    () => ({ ...filter, field: field.value, operator }) as F,
-  );
+  const [pending, setPending] = React.useState<F>(() => filter);
   const update = (value: unknown) => {
     const result = resolveFilterUpdate(pending, { value } as Partial<F>);
     setPending(result.pending);
-    if (result.saved !== undefined) onChange(result.saved);
+    if (result.saved !== undefined && result.saved !== null)
+      onChange(result.saved);
   };
   const input = field.input;
   if (input.type === "text" || input.type === "number") {
@@ -244,22 +141,7 @@ function FilterOperatorValues<F extends FilterShape>({
     );
   }
   return (
-    <>
-      <FilterChoiceList input={input} value={pending.value} onChange={update} />
-      {filter &&
-        filter.operator !== operator &&
-        !isEmptyFilterValue(pending.value) && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => update(pending.value)}
-              className="min-h-11 text-sm sm:min-h-8 sm:text-[13px]"
-            >
-              Keep current values
-            </DropdownMenuItem>
-          </>
-        )}
-    </>
+    <FilterChoiceList input={input} value={pending.value} onChange={update} />
   );
 }
 

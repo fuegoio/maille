@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -11,6 +12,7 @@ import type { FilterShape } from "./filter-picker-state";
 
 import {
   FilterFieldEditor,
+  FilterValueEditor,
   FilterValueSummary,
   handleFilterEditorKeyDown,
   type FilterFieldDefinition,
@@ -30,6 +32,7 @@ export function FilterChip<F extends FilterShape>({
   const Icon = field.icon;
   const withoutValue =
     field.operatorsWithoutValue?.includes(filter.operator ?? "") ?? false;
+  const hasOperator = filter.operator !== undefined;
   return (
     <div className="flex h-6 w-fit max-w-full items-center rounded border border-input">
       <span className="flex h-full shrink-0 items-center gap-1 rounded-l border-r border-input bg-input/30 px-2 text-xs">
@@ -40,24 +43,19 @@ export function FilterChip<F extends FilterShape>({
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            aria-label={"Edit " + field.text.toLowerCase() + " filter"}
+            aria-label={"Edit " + field.text.toLowerCase() + " operator"}
             className="h-full min-w-0 gap-0 rounded-none px-0 text-xs font-normal"
           >
             <span className="shrink-0 px-2 text-muted-foreground">
               {filter.operator ?? "Choose operator"}
             </span>
-            {!withoutValue && (
-              <span className="flex h-full min-w-0 items-center gap-1.5 border-l border-input px-2">
-                <FilterValueSummary field={field} value={filter.value} />
-              </span>
-            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
           sideOffset={8}
           collisionPadding={8}
-          aria-label={field.text + " filter"}
+          aria-label={field.text + " operator"}
           className="w-48 max-w-[calc(100vw-1rem)] motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
           onKeyDown={handleFilterEditorKeyDown}
         >
@@ -68,6 +66,39 @@ export function FilterChip<F extends FilterShape>({
           />
         </DropdownMenuContent>
       </DropdownMenu>
+      {hasOperator && !withoutValue && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              aria-label={"Edit " + field.text.toLowerCase() + " value"}
+              className="h-full min-w-0 gap-0 rounded-none px-0 text-xs font-normal"
+            >
+              <span className="flex h-full min-w-0 items-center gap-1.5 border-l border-input px-2">
+                <FilterValueSummary field={field} value={filter.value} />
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            sideOffset={8}
+            collisionPadding={8}
+            aria-label={field.text + " value"}
+            className="w-64 max-w-[calc(100vw-1rem)] motion-reduce:animate-none motion-reduce:[&_*]:transition-none"
+            onKeyDown={handleFilterEditorKeyDown}
+          >
+            <DropdownMenuLabel>
+              {field.text} · {filter.operator}
+            </DropdownMenuLabel>
+            <FilterValueEditor
+              key={filter.operator}
+              field={field}
+              filter={filter}
+              onChange={onChange}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       <Button
         onClick={onDelete}
         aria-label="Delete filter"
