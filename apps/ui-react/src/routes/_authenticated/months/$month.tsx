@@ -8,11 +8,13 @@ import type { ActivitiesFilters } from "@/types/activities";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
+import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import { MonthAccountsSummary } from "@/components/months/month-accounts-summary";
 import { MonthActivitiesSummary } from "@/components/months/month-activities-summary";
 import { MonthFundsSummary } from "@/components/months/month-funds-summary";
 import { MonthSummary } from "@/components/months/month-summary";
+import { ExportMovementsButton } from "@/components/movements/export-movements-button";
 import { FilterMovementsButton } from "@/components/movements/filters/filter-movements-button";
 import { MovementsTable } from "@/components/movements/movements-table";
 import {
@@ -147,6 +149,7 @@ function MonthPage() {
           <div className="flex-1" />
 
           <SearchBar />
+          <AddActivityButton variant="default" date={monthDate} />
           {!summaryOpen && (
             <Button
               variant="default"
@@ -216,9 +219,13 @@ function MonthPage() {
                 <FilterActivitiesButton
                   viewId={`month-${month}-${year}-activities`}
                 />
-                <AddActivityButton size="sm" />
                 <ActivityViewSettingsButton
                   viewId={`month-${month}-${year}-activities`}
+                />
+                <ExportActivitiesButton
+                  viewId={`month-${month}-${year}-activities`}
+                  activities={monthActivities}
+                  className="hidden sm:flex"
                 />
               </>
             )}
@@ -230,6 +237,11 @@ function MonthPage() {
                 <TableViewSettingsButton
                   kind="movement"
                   viewId={`month-${month}-${year}-movements`}
+                />
+                <ExportMovementsButton
+                  viewId={`month-${month}-${year}-movements`}
+                  movements={monthMovements}
+                  className="hidden sm:flex"
                 />
               </>
             )}
