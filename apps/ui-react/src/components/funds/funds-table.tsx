@@ -23,7 +23,10 @@ import { useFundMoves } from "@/hooks/use-fund-moves";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { FundIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import { getFundTreeBalance, getUntrackedBalanceAtDate } from "@/logic/funds";
+import {
+  getFundTreeBalanceAtDate,
+  getUntrackedBalanceAtDate,
+} from "@/logic/funds";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
@@ -88,16 +91,26 @@ export function FundsTable() {
   }, [nodes, funds, collapsed]);
 
   // Every row shows its subtree rollup: money in the fund plus everything
-  // nested under it. For a leaf this is its own balance.
+  // nested under it, at the current date like the fund's summary. For a
+  // leaf this is its own balance.
   const balances = useMemo(
     () =>
       new Map(
         funds.map((fund) => [
           fund.id,
-          getFundTreeBalance(fund.id, funds, fundMoves, fundAllocations),
+          user
+            ? getFundTreeBalanceAtDate(
+                fund.id,
+                funds,
+                fundMoves,
+                fundAllocations,
+                user.startingDate,
+                new Date(),
+              )
+            : 0,
         ]),
       ),
-    [funds, fundMoves, fundAllocations],
+    [funds, fundMoves, fundAllocations, user],
   );
 
   const untrackedBalance = useMemo(
