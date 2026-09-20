@@ -7,7 +7,6 @@ import {
   Settings,
   SquareChartGantt,
   Users,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -56,7 +55,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MovementIcon, TransactionIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
-import { useFunds } from "@/stores/funds";
 import { useMovements } from "@/stores/movements";
 
 const ACCOUNT_TABS_NAMES = {
@@ -113,11 +111,6 @@ function AccountPage({ account }: { account: Account }) {
   const { updateViewConfig } = useViewMutations();
 
   const movements = useMovements((state) => state.movements);
-  const funds = useFunds((state) => state.funds);
-  const filterFund =
-    fundFilter != null
-      ? (funds.find((f) => f.id === fundFilter) ?? null)
-      : null;
   const setFundFilter = (value: string | null | undefined) =>
     navigate({
       to: ".",
@@ -307,28 +300,6 @@ function AccountPage({ account }: { account: Account }) {
               {selectedCustomView === null &&
                 selectedTab === "transactions" && (
                   <>
-                    {fundFilter !== undefined && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="gap-1.5"
-                        onClick={() => setFundFilter(undefined)}
-                      >
-                        <div
-                          className="size-3 shrink-0 rounded-sm"
-                          style={
-                            filterFund
-                              ? { backgroundColor: filterFund.color }
-                              : {
-                                  backgroundColor:
-                                    "color-mix(in srgb, currentColor 40%, transparent)",
-                                }
-                          }
-                        />
-                        {filterFund ? filterFund.name : "Untracked"}
-                        <X className="size-3.5" />
-                      </Button>
-                    )}
                     <AddActivityButton size="sm" />
                     <FilterTransactionsButton
                       viewId={`account-${account.id}-transactions`}
