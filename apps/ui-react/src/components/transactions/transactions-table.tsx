@@ -303,7 +303,7 @@ function TransactionLine({
     <div
       className={cn(
         ledgerRowClassName,
-        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5 text-sm lg:pr-6",
+        "group flex h-10 shrink-0 cursor-pointer items-center gap-2 border-b pr-2 pl-5.5 text-sm lg:pr-6",
         outlineSides && rowOutlineClasses(outlineSides),
       )}
     >
@@ -318,7 +318,7 @@ function TransactionLine({
           onCheckedChange(e);
         }}
         className={cn(
-          "mr-1.5 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
+          "mr-1 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex",
           checked && "opacity-100",
         )}
       />

@@ -56,7 +56,7 @@ export function TableGroupHeader({
         size="icon-xs"
         aria-label={`${folded ? "Expand" : "Collapse"} ${fullLabel}`}
         aria-expanded={!folded}
-        className="mr-1 -ml-1 text-muted-foreground"
+        className="mr-1 -ml-1.5 text-muted-foreground"
         onClick={() => onToggle(id)}
       >
         <ChevronDown
