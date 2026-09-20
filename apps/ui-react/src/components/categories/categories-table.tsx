@@ -53,7 +53,9 @@ export function CategoriesTable() {
             {category.emoji && (
               <span className="mr-2 text-sm">{category.emoji}</span>
             )}
-            <div className="text-sm font-medium">{category.name}</div>
+            <div className="text-sm font-medium whitespace-nowrap">
+              {category.name}
+            </div>
           </div>
 
           <div className="flex-1" />

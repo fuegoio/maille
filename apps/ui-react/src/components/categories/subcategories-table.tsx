@@ -73,7 +73,9 @@ export function SubcategoriesTable({ categoryId }: { categoryId: string }) {
             {subcategory.emoji && (
               <span className="text-sm">{subcategory.emoji}</span>
             )}
-            <div className="text-sm font-medium">{subcategory.name}</div>
+            <div className="text-sm font-medium whitespace-nowrap">
+              {subcategory.name}
+            </div>
           </div>
 
           <Badge className="ml-4" variant="outline">

@@ -46,7 +46,9 @@ export function ProjectsTable() {
         >
           <div className="flex items-center gap-2">
             {project.emoji && <span className="text-xl">{project.emoji}</span>}
-            <div className="text-sm font-medium">{project.name}</div>
+            <div className="text-sm font-medium whitespace-nowrap">
+              {project.name}
+            </div>
           </div>
 
           {project.startDate || project.endDate ? (

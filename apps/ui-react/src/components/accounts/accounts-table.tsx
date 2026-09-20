@@ -121,7 +121,9 @@ export function AccountsTable() {
                     "group flex h-10 w-full items-center border-b pr-6 pl-14",
                   )}
                 >
-                  <div className="text-sm font-medium">{account.name}</div>
+                  <div className="text-sm font-medium whitespace-nowrap">
+                    {account.name}
+                  </div>
                   {account.default && (
                     <Badge variant="outline" className="ml-4">
                       Default
