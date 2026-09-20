@@ -35,7 +35,8 @@ export type RowGroup = {
   key: string;
   label: string;
   shortLabel?: string;
-  calendar?: boolean;
+  /** A temporal group, read against today like the months table's rows. */
+  calendar?: "past" | "current" | "future";
   marker?: GroupMarker;
   parent?: { label: string; marker?: GroupMarker };
   sortValue?: number | string;
@@ -149,6 +150,13 @@ function dateGroup(date: Date, grouping: string): RowGroup {
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
   if (grouping === "period") start.setDate(1);
   if (grouping === "year") start.setMonth(0, 1);
+  // The group's last day, to tell a group holding today from a past one.
+  const end = new Date(start);
+  if (grouping === "week") end.setDate(end.getDate() + 6);
+  if (grouping === "period") end.setMonth(end.getMonth() + 1, 0);
+  if (grouping === "year") end.setMonth(11, 31);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const options: Intl.DateTimeFormatOptions =
     grouping === "year"
       ? { year: "numeric" }
@@ -167,7 +175,7 @@ function dateGroup(date: Date, grouping: string): RowGroup {
         ...options,
         month: grouping === "year" ? undefined : "short",
       }),
-    calendar: true,
+    calendar: start > today ? "future" : end < today ? "past" : "current",
     sortValue: start.getTime(),
   };
 }

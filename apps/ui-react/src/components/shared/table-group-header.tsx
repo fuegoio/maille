@@ -1,4 +1,10 @@
-import { Calendar, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarClock,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import * as React from "react";
 
 import type {
@@ -22,7 +28,8 @@ interface TableGroupHeaderProps {
   onToggle: (id: string) => void;
   label: string;
   shortLabel?: string;
-  calendar?: boolean;
+  /** The group's temporal phase, read against today like the months table. */
+  calendar?: "past" | "current" | "future";
   marker?: GroupMarkerData;
   parent?: RowGroup["parent"];
   count: number;
@@ -37,7 +44,7 @@ export function TableGroupHeader({
   onToggle,
   label,
   shortLabel = label,
-  calendar = false,
+  calendar,
   marker,
   parent,
   count,
@@ -66,8 +73,14 @@ export function TableGroupHeader({
           )}
         />
       </Button>
-      {calendar && (
-        <Calendar className="hidden size-3.5 text-muted-foreground sm:block" />
+      {calendar === "past" && (
+        <CalendarCheck className="hidden size-3.5 text-muted-foreground sm:block" />
+      )}
+      {calendar === "current" && (
+        <Calendar className="hidden size-3.5 text-primary sm:block" />
+      )}
+      {calendar === "future" && (
+        <CalendarClock className="hidden size-3.5 text-muted-foreground sm:block" />
       )}
       <div className="flex min-w-0 items-center gap-2" title={fullLabel}>
         {parent && (
