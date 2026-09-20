@@ -134,7 +134,7 @@ export function MonthsTable() {
 
                 {/* Balance */}
                 <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
-                  <div className="mr-3 size-2.5 shrink-0 rounded-sm bg-primary" />
+                  <div className="mr-3 size-2.5 shrink-0 rounded-sm bg-foreground" />
                   <div className="flex-1">
                     {currencyFormatter.format(balance)}
                   </div>

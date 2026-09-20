@@ -27,12 +27,13 @@ function RouteComponent() {
           <PageBreadcrumbs entries={breadcrumbs} />
         </PageBar>
 
-        <LedgerHeaderStrip className="gap-6">
+        <LedgerHeaderStrip className="gap-2">
           <div>Month</div>
           <div className="flex-1" />
-          <div className="w-32 text-right">Balance</div>
-          <div className="hidden w-32 text-right md:block">Revenue</div>
-          <div className="hidden w-32 text-right md:block">Investment</div>
+          <div className="mr-4 w-32 text-right">Balance</div>
+          <div className="mr-4 hidden w-32 text-right md:block">Revenue</div>
+          <div className="mr-4 hidden w-32 text-right md:block">Investment</div>
+          <div className="mr-4 hidden w-32 text-right md:block">Asset</div>
           <div className="hidden w-32 text-right md:block">Expenses</div>
         </LedgerHeaderStrip>
 
