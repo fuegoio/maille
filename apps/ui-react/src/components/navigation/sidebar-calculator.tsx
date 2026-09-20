@@ -31,7 +31,7 @@ function CalculatorPanel({ onClose }: { onClose: () => void }) {
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       className={cn(
-        "mt-2 overflow-hidden rounded-md border border-border bg-sidebar transition-colors outline-none",
+        "mx-auto mt-2 w-48 overflow-hidden rounded-md border border-border bg-sidebar transition-colors outline-none",
         focused && "border-ring ring-2 ring-ring/50",
       )}
     >
