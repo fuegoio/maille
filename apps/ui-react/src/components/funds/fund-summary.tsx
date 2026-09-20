@@ -1,6 +1,6 @@
 import { AccountType, type Account } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import { addDays, eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import {
   ArrowRight,
   ChevronRight,
@@ -95,6 +95,9 @@ export function FundSummary({
 
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
+  // The chart's first day is its baseline: its flows sit in the starting
+  // point, not in the movement the line shows. In / Out start after it.
+  const flowsStart = addDays(thirtyDaysAgo, 1);
 
   const positionsInput = useMemo(
     () =>
@@ -159,7 +162,7 @@ export function FundSummary({
           in: fundMoves
             .filter(
               (m) =>
-                m.date.getTime() >= thirtyDaysAgo.getTime() &&
+                m.date.getTime() >= flowsStart.getTime() &&
                 m.toFund === null &&
                 m.fromFund !== null &&
                 isLegNullSideUntracked(
@@ -176,7 +179,7 @@ export function FundSummary({
             fundMoves
               .filter(
                 (m) =>
-                  m.date.getTime() >= thirtyDaysAgo.getTime() &&
+                  m.date.getTime() >= flowsStart.getTime() &&
                   m.fromFund === null &&
                   m.toFund !== null &&
                   isLegNullSideUntracked(
@@ -193,7 +196,7 @@ export function FundSummary({
                   funds,
                   fundAllocations,
                   user.startingDate,
-                  thirtyDaysAgo,
+                  flowsStart,
                   today,
                 )
               : 0),
@@ -204,7 +207,7 @@ export function FundSummary({
           fundMoves,
           fundAllocations,
           user.startingDate,
-          thirtyDaysAgo,
+          flowsStart,
           today,
         );
   const last30In = flows.in;

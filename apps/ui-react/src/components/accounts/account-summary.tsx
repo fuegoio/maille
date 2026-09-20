@@ -1,6 +1,6 @@
 import { AccountType } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
-import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import { addDays, eachDayOfInterval, startOfDay, subDays } from "date-fns";
 import {
   ArrowRight,
   ChevronRight,
@@ -75,9 +75,12 @@ export function AccountSummary({
 
   const balance = getAccountTotal({});
   const balancePrev = getAccountTotal({ date: thirtyDaysAgo });
-  const last30In = getAccountTotal({ flow: "in", rangeStart: thirtyDaysAgo });
+  // The chart's first day is its baseline: its flows sit in the starting
+  // point, not in the movement the line shows. In / Out start after it.
+  const flowsStart = addDays(thirtyDaysAgo, 1);
+  const last30In = getAccountTotal({ flow: "in", rangeStart: flowsStart });
   const last30Out = Math.abs(
-    getAccountTotal({ flow: "out", rangeStart: thirtyDaysAgo }),
+    getAccountTotal({ flow: "out", rangeStart: flowsStart }),
   );
 
   const getAccountCashBalanceAtDate = (date: Date): number => {
