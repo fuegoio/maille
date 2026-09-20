@@ -26,9 +26,15 @@ const typeNames: Record<ActivityType, string> = {
   asset: "Asset",
   neutral: "Neutral",
 };
-export function visibleActivityAmountTypes(fields: readonly string[]) {
-  return ACTIVITY_AMOUNT_TYPES.filter((type) =>
-    fields.includes(`amount:${type}`),
+export function visibleActivityAmountTypes(
+  fields: readonly string[],
+  /** A quick filter's type: every other type's amount stays hidden. */
+  typeFilter?: ActivityType | null,
+) {
+  return ACTIVITY_AMOUNT_TYPES.filter(
+    (type) =>
+      fields.includes(`amount:${type}`) &&
+      (typeFilter == null || type === typeFilter),
   );
 }
 

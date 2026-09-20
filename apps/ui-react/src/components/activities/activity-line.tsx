@@ -1,4 +1,4 @@
-import { type Activity } from "@maille/core/activities";
+import { ActivityType, type Activity } from "@maille/core/activities";
 import { Link } from "@tanstack/react-router";
 import {
   ChevronRight,
@@ -37,6 +37,8 @@ interface ActivityLineProps {
   /** Hide the checkbox in summary contexts; selection stays a table-only concern. */
   showCheckbox?: boolean;
   accountFilter?: string | null;
+  /** A quick filter's activity type; other types' amounts stay hidden. */
+  activityTypeFilter?: ActivityType | null;
   /** Row fields to render; defaults to every field of the view system. */
   fields?: readonly ActivityViewField[];
   fullDate?: boolean;
@@ -52,6 +54,7 @@ export function ActivityLine({
   outlineSides,
   showCheckbox = true,
   accountFilter = null,
+  activityTypeFilter = null,
   fields = ACTIVITY_VIEW_FIELDS,
   fullDate = false,
   showTransactions = false,
@@ -228,7 +231,7 @@ export function ActivityLine({
 
         <ActivityAmountsValue
           amounts={activity.amounts}
-          types={visibleActivityAmountTypes(fields)}
+          types={visibleActivityAmountTypes(fields, activityTypeFilter)}
           className="text-sm"
         />
       </div>

@@ -246,7 +246,10 @@ export function ActivitiesTable({
                   >
                     <ActivityAmountsValue
                       amounts={sumActivityAmounts(item.rows)}
-                      types={visibleActivityAmountTypes(fields)}
+                      types={visibleActivityAmountTypes(
+                        fields,
+                        activityTypeFilter,
+                      )}
                       className="text-sm"
                     />
                   </TableGroupHeader>
@@ -266,6 +269,7 @@ export function ActivitiesTable({
                       <ActivityLine
                         activity={item}
                         accountFilter={accountFilter}
+                        activityTypeFilter={activityTypeFilter}
                         fields={fields}
                         fullDate={grouping !== "period"}
                         showTransactions={activityView.showTransactions}
