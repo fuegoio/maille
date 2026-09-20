@@ -119,12 +119,12 @@ function ProjectPage({ project }: { project: Project }) {
             <AddActivityButton project={projectId} />
           )}
           <Button
-            variant="outline"
+            variant="ghost"
+            size="icon"
             aria-label="Edit project"
             onClick={() => setShowSettingsDialog(true)}
           >
             <Settings />
-            <span className="hidden sm:inline">Edit</span>
           </Button>
 
           {!summaryOpen && (
