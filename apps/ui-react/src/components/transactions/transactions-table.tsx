@@ -287,7 +287,15 @@ function TransactionLine({
     funds,
   );
   const isInflow = transaction.direction === "in";
-  const amount = isInflow ? transaction.amount : -transaction.amount;
+  // Neutral transfers keep their positive amount: they neither enter
+  // nor leave the balance sheet.
+  const amount =
+    transaction.direction === "out" ? -transaction.amount : transaction.amount;
+  const amountDot = isInflow
+    ? "bg-green-400"
+    : transaction.direction === "zero"
+      ? "bg-muted-foreground/40"
+      : "bg-red-400";
 
   const getStatusIcon = () => {
     if (transaction.activity.status === "scheduled") {
@@ -360,7 +368,7 @@ function TransactionLine({
 
       {fields.includes("amount") && (
         <AmountPairsValue
-          pairs={[{ dot: isInflow ? "bg-green-400" : "bg-red-400", amount }]}
+          pairs={[{ dot: amountDot, amount }]}
           hideZeros={false}
         />
       )}

@@ -28,7 +28,8 @@ export type TransactionRow = {
   id: string;
   date: Date;
   activity: Activity;
-  direction: "in" | "out";
+  /** Read from the view's side; "zero" is a transfer inside the balance sheet. */
+  direction: "in" | "out" | "zero";
   counterpart: TransactionCounterpart;
   fund: string | null;
   fundIds: (string | null)[];
@@ -44,11 +45,17 @@ export type TransactionCounterpart =
   | { kind: "untracked" };
 
 /**
- * What a transactions table shows: one account's transactions, or the
+ * What a transactions table shows: one account's transactions, the
  * transactions crossing a fund's (or Untracked's, or a fund subtree's)
- * boundary.
+ * boundary, or every transaction of a month.
  */
 export type TransactionViewFilter =
+  | {
+      kind: "month";
+      /** 1-12, like the month pages' scope. */
+      month: number;
+      year: number;
+    }
   | {
       kind: "account";
       accountId: string;
@@ -101,7 +108,11 @@ export const transactionOrderingAccessors = {
   date: (row: TransactionRow) => row.date,
   name: (row: TransactionRow) => row.activity.name,
   amount: (row: TransactionRow) =>
-    row.direction === "in" ? row.amount : -row.amount,
+    row.direction === "out"
+      ? -row.amount
+      : row.direction === "zero"
+        ? 0
+        : row.amount,
 };
 export function transactionGroupAccessors(
   accounts: Pick<Account, "id" | "name" | "type">[],
@@ -200,7 +211,85 @@ export function buildTransactionRows(
   if (filter.kind === "account") {
     return buildAccountTransactionRows(activities, filter);
   }
+  if (filter.kind === "month") {
+    return buildMonthTransactionRows(activities, filter, accounts);
+  }
   return buildFundTransactionRows(activities, filter, accounts, funds);
+}
+
+/**
+ * The month's transactions, each read once from the balance sheet's
+ * side: money arriving from a Revenue account flows in, money reaching
+ * an Expense account flows out, and transfers between balance accounts
+ * stay neutral — they never enter or leave the balance sheet.
+ */
+function buildMonthTransactionRows(
+  activities: Activity[],
+  filter: Extract<TransactionViewFilter, { kind: "month" }>,
+  accounts: Pick<Account, "id" | "type">[],
+): TransactionRow[] {
+  const result: TransactionRow[] = [];
+
+  const isBalanceAccount = (accountId: string): boolean => {
+    const type = accounts.find((account) => account.id === accountId)?.type;
+    return type !== AccountType.EXPENSE && type !== AccountType.REVENUE;
+  };
+
+  for (const activity of activities) {
+    if (
+      activity.date.getFullYear() !== filter.year ||
+      activity.date.getMonth() !== filter.month - 1
+    ) {
+      continue;
+    }
+    for (const transaction of activity.transactions) {
+      // The counterpart is the side the balance sheet does not hold:
+      // the outside on revenue and expense transactions, the receiving
+      // account on internal transfers.
+      const fromIsBalance = isBalanceAccount(transaction.fromAccount);
+      const toIsBalance = isBalanceAccount(transaction.toAccount);
+      const direction: TransactionRow["direction"] = !fromIsBalance
+        ? "in"
+        : toIsBalance
+          ? "zero"
+          : "out";
+
+      // Every fund the transaction's legs touch, Untracked included;
+      // an unallocated remainder reads as Untracked too.
+      const legs = (transaction.fundMoves ?? []).filter(
+        (move) => move.amount > 0,
+      );
+      const fundIds = [
+        ...new Set(legs.flatMap((move) => [move.fromFund, move.toFund])),
+      ];
+      if (
+        transaction.amount > legs.reduce((sum, move) => sum + move.amount, 0)
+      ) {
+        fundIds.push(null);
+      }
+
+      result.push({
+        id: transaction.id,
+        date: activity.date,
+        activity,
+        direction,
+        counterpart: {
+          kind: "account",
+          account:
+            direction === "out"
+              ? transaction.toAccount
+              : direction === "in"
+                ? transaction.fromAccount
+                : transaction.toAccount,
+        },
+        fund: fundIds[0] ?? null,
+        fundIds: fundIds.length > 0 ? fundIds : [null],
+        amount: transaction.amount,
+      });
+    }
+  }
+
+  return result;
 }
 
 function buildAccountTransactionRows(

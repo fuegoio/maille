@@ -23,6 +23,9 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
+import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
+import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -35,7 +38,7 @@ import {
   useSelectedView,
 } from "@/components/views/view-tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ActivityIcon, MovementIcon } from "@/lib/icons";
+import { ActivityIcon, MovementIcon, TransactionIcon } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
 import { useMovements } from "@/stores/movements";
@@ -185,6 +188,10 @@ function MonthPage() {
                 <ActivityIcon />
                 Activities
               </TabsTrigger>
+              <TabsTrigger value="transactions">
+                <TransactionIcon />
+                Transactions
+              </TabsTrigger>
               <TabsTrigger value="movements">
                 <MovementIcon />
                 Movements
@@ -229,6 +236,22 @@ function MonthPage() {
                 />
               </>
             )}
+            {selectedCustomView === null && selectedTab === "transactions" && (
+              <>
+                <FilterTransactionsButton
+                  viewId={`month-${month}-${year}-transactions`}
+                />
+                <TableViewSettingsButton
+                  kind="transaction"
+                  viewId={`month-${month}-${year}-transactions`}
+                />
+                <ExportTransactionsButton
+                  filter={{ kind: "month", month, year }}
+                  viewId={`month-${month}-${year}-transactions`}
+                  className="hidden sm:flex"
+                />
+              </>
+            )}
             {selectedCustomView === null && selectedTab === "movements" && (
               <>
                 <FilterMovementsButton
@@ -256,6 +279,13 @@ function MonthPage() {
               subcategoryFilter={activitiesFilters.subcategory}
               accountFilter={activitiesFilters.account ?? null}
               fundFilter={activitiesFilters.fund}
+            />
+          </TabsContent>
+
+          <TabsContent value="transactions" className="flex h-full">
+            <TransactionsTable
+              filter={{ kind: "month", month, year }}
+              viewId={`month-${month}-${year}-transactions`}
             />
           </TabsContent>
 

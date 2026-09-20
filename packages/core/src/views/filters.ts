@@ -6,7 +6,8 @@ import type { TransactionFilter } from "./types";
 export type TransactionFilterRow = {
   date: Date;
   amount: number;
-  direction: "in" | "out";
+  /** "zero" is a transfer inside the balance sheet; no direction filter matches it. */
+  direction: "in" | "out" | "zero";
   status: string;
 };
 

@@ -14,6 +14,7 @@ const accounts = [
   { id: "bank", name: "Bank", type: AccountType.BANK_ACCOUNT },
   { id: "savings", name: "Savings", type: AccountType.BANK_ACCOUNT },
   { id: "expense", name: "Groceries", type: AccountType.EXPENSE },
+  { id: "revenue", name: "Salary", type: AccountType.REVENUE },
 ] as unknown as Account[];
 
 const fund = (id: string, parentFund: string | null = null): Fund => ({
@@ -265,5 +266,81 @@ describe("account transaction rows", () => {
       fundFilter: "trip",
     });
     expect(tripOnly.map((row) => row.id)).toEqual(["t1"]);
+  });
+});
+
+describe("month transaction rows", () => {
+  it("reads each transaction once from the balance sheet's side", () => {
+    const activities = [
+      activity("revenue", [
+        transaction("t1", 100, "revenue", "bank", undefined),
+      ]),
+      activity("expense", [
+        transaction("t2", 40, "bank", "expense", undefined),
+      ]),
+      activity("transfer", [
+        transaction("t3", 50, "bank", "savings", undefined),
+      ]),
+    ];
+    const rows = rowsFor(activities, {
+      kind: "month",
+      month: 9,
+      year: 2026,
+    });
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toMatchObject({
+      id: "t1",
+      direction: "in",
+      counterpart: { kind: "account", account: "revenue" },
+      amount: 100,
+    });
+    expect(rows[1]).toMatchObject({
+      id: "t2",
+      direction: "out",
+      counterpart: { kind: "account", account: "expense" },
+      amount: 40,
+    });
+    // A transfer inside the balance sheet is neutral: it never enters
+    // or leaves, so the counterpart is the receiving account.
+    expect(rows[2]).toMatchObject({
+      id: "t3",
+      direction: "zero",
+      counterpart: { kind: "account", account: "savings" },
+      amount: 50,
+    });
+  });
+
+  it("keeps to the month's activities", () => {
+    const inMonth = activity("in", [
+      transaction("t1", 100, "revenue", "bank", undefined),
+    ]);
+    const otherMonth = {
+      ...activity("out", [transaction("t2", 40, "bank", "expense", undefined)]),
+      date: new Date(2026, 9, 1),
+    } as unknown as Activity;
+    const rows = rowsFor([inMonth, otherMonth], {
+      kind: "month",
+      month: 9,
+      year: 2026,
+    });
+    expect(rows.map((row) => row.id)).toEqual(["t1"]);
+  });
+
+  it("lists every fund the legs touch, unallocated amounts Untracked", () => {
+    const activities = [
+      activity("a", [
+        transaction("t1", 100, "revenue", "bank", [
+          leg("l1", "trip", "europe", 30),
+        ]),
+      ]),
+    ];
+    const rows = rowsFor(activities, {
+      kind: "month",
+      month: 9,
+      year: 2026,
+    });
+    expect(rows[0]).toMatchObject({
+      fundIds: ["trip", "europe", null],
+    });
   });
 });

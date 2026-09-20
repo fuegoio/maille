@@ -1,6 +1,7 @@
 import type { Transaction } from "@maille/core/activities";
 import type { Fund, FundMove } from "@maille/core/funds";
 
+import { AccountType } from "@maille/core/accounts";
 import { DollarSign, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
 
@@ -92,6 +93,23 @@ export function useTransactionsEntityActions(
               updateFields.toAccount = update.account;
             } else {
               updateFields.fromAccount = update.account;
+            }
+          } else if (filter.kind === "month") {
+            // The month view reads from the balance sheet: retarget the
+            // outside side on revenue and expense transactions, the
+            // receiving account on internal transfers.
+            const isBalanceAccount = (accountId: string) => {
+              const type = accounts.find(
+                (account) => account.id === accountId,
+              )?.type;
+              return (
+                type !== AccountType.EXPENSE && type !== AccountType.REVENUE
+              );
+            };
+            if (!isBalanceAccount(transaction.fromAccount)) {
+              updateFields.fromAccount = update.account;
+            } else {
+              updateFields.toAccount = update.account;
             }
           } else {
             // A fund view holds no account of its own: the counterpart
@@ -227,7 +245,14 @@ export function useTransactionsEntityActions(
         });
       });
     },
-    [selectedTransactionsData, activities, mutate, filter, scopeLegsOf],
+    [
+      selectedTransactionsData,
+      activities,
+      mutate,
+      filter,
+      scopeLegsOf,
+      accounts,
+    ],
   );
 
   const deleteTransactions = React.useCallback(() => {
@@ -364,7 +389,11 @@ export function useTransactionsEntityActions(
         },
       },
     ];
-    return actions;
+    // A month view holds no fund side of its own, so fund retargeting
+    // has nothing to retarget there.
+    return filter.kind === "month"
+      ? actions.filter((action) => action.value !== "fund")
+      : actions;
   }, [
     selectedTransactionsData,
     accounts,
