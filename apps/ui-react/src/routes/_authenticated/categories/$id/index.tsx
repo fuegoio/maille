@@ -1,7 +1,7 @@
 import type { ActivityCategory } from "@maille/core/activities";
 
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -21,7 +21,7 @@ import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -112,15 +112,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
             <AddActivityButton category={category.id} />
           )}
           {!summaryOpen && (
-            <Button
-              variant="outline"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
+            <SummaryButton onClick={() => setSummaryOpen(true)} />
           )}
           <CategorySettingsDialog category={category}>
             <Button variant="ghost" size="icon">

@@ -1,13 +1,6 @@
 import { type Account, AccountType } from "@maille/core/accounts";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import {
-  ChevronRight,
-  House,
-  Plus,
-  Settings,
-  SquareChartGantt,
-  Users,
-} from "lucide-react";
+import { House, Plus, Settings, Users } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -37,7 +30,7 @@ import { FilterTransactionsButton } from "@/components/transactions/filters/filt
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -179,15 +172,7 @@ function AccountPage({ account }: { account: Account }) {
             <div className="flex-1" />
             <SearchBar />
             {!summaryOpen && (
-              <Button
-                variant="secondary"
-                aria-label="Show summary"
-                onClick={() => setSummaryOpen(true)}
-              >
-                <SquareChartGantt />
-                <span className="hidden sm:inline">Summary</span>
-                <ChevronRight className="hidden sm:block" />
-              </Button>
+              <SummaryButton onClick={() => setSummaryOpen(true)} />
             )}
             <ShareAccountDialog account={account}>
               <Button

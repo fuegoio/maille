@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, SquareChartGantt } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -13,9 +12,8 @@ import { TableViewSettingsButton } from "@/components/shared/table-view-settings
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
 import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
-import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -84,15 +82,7 @@ function UntrackedFundPage() {
           <div className="flex-1" />
           <SearchBar />
           {!summaryOpen && (
-            <Button
-              variant="secondary"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
+            <SummaryButton onClick={() => setSummaryOpen(true)} />
           )}
         </header>
 

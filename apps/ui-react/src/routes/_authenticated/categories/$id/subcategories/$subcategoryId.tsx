@@ -5,7 +5,7 @@ import type {
 
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { eachDayOfInterval, startOfDay, subDays } from "date-fns";
-import { ChevronRight, Settings, SquareChartGantt } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
@@ -30,7 +30,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -201,15 +201,7 @@ function SubcategoryPage({
             subcategory={subcategory.id}
           />
           {!summaryOpen && (
-            <Button
-              variant="secondary"
-              aria-label="Show summary"
-              onClick={() => setSummaryOpen(true)}
-            >
-              <SquareChartGantt />
-              <span className="hidden sm:inline">Summary</span>
-              <ChevronRight className="hidden sm:block" />
-            </Button>
+            <SummaryButton onClick={() => setSummaryOpen(true)} />
           )}
           <SubcategorySettingsDialog subcategory={subcategory}>
             <Button variant="ghost" size="icon">

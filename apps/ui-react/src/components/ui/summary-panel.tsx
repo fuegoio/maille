@@ -1,7 +1,27 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, SquareChartGantt } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+/**
+ * The top-bar toggle that opens a page's summary panel: a quiet view
+ * control, not an action — Ledger Green stays reserved for actions.
+ * Its counterpart inside the panel is the ghost close button.
+ */
+export function SummaryButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      aria-label="Show summary"
+      onClick={onClick}
+      className="text-muted-foreground"
+    >
+      <SquareChartGantt />
+      <span className="hidden sm:inline">Summary</span>
+      <ChevronRight className="hidden sm:block" />
+    </Button>
+  );
+}
 
 interface SummaryPanelProps {
   open: boolean;
