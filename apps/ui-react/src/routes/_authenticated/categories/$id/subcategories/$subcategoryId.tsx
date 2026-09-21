@@ -30,7 +30,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { useActivities } from "@/stores/activities";
@@ -200,9 +200,6 @@ function SubcategoryPage({
             category={category.id}
             subcategory={subcategory.id}
           />
-          {!summaryOpen && (
-            <SummaryButton onClick={() => setSummaryOpen(true)} />
-          )}
           <SubcategorySettingsDialog subcategory={subcategory}>
             <Button variant="ghost" size="icon">
               <Settings />
@@ -216,7 +213,11 @@ function SubcategoryPage({
         />
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+      <SummaryPanel
+        open={summaryOpen}
+        onOpen={() => setSummaryOpen(true)}
+        onClose={() => setSummaryOpen(false)}
+      >
         {/* KPIs + chart */}
         <div className="w-full border-b">
           <div className="p-6">

@@ -21,7 +21,7 @@ import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -111,9 +111,6 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           {selectedCustomView === null && (
             <AddActivityButton category={category.id} />
           )}
-          {!summaryOpen && (
-            <SummaryButton onClick={() => setSummaryOpen(true)} />
-          )}
           <CategorySettingsDialog category={category}>
             <Button variant="ghost" size="icon">
               <Settings />
@@ -193,7 +190,11 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
         </Tabs>
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+      <SummaryPanel
+        open={summaryOpen}
+        onOpen={() => setSummaryOpen(true)}
+        onClose={() => setSummaryOpen(false)}
+      >
         <CategorySummary category={category} />
       </SummaryPanel>
     </SidebarInset>

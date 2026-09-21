@@ -20,7 +20,7 @@ import { FilterTransactionsButton } from "@/components/transactions/filters/filt
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -144,9 +144,6 @@ function FundPage() {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           <SearchBar />
-          {!summaryOpen && (
-            <SummaryButton onClick={() => setSummaryOpen(true)} />
-          )}
           <CreateFundDialog defaultParent={fund.id}>
             <Button
               variant="outline"
@@ -237,7 +234,11 @@ function FundPage() {
         </Tabs>
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+      <SummaryPanel
+        open={summaryOpen}
+        onOpen={() => setSummaryOpen(true)}
+        onClose={() => setSummaryOpen(false)}
+      >
         <FundSummary
           fundId={fund.id}
           accountFilter={accountFilter ?? undefined}

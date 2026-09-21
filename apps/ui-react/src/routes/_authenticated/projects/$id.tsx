@@ -21,7 +21,7 @@ import { ProjectSummary } from "@/components/projects/project-summary";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -127,10 +127,6 @@ function ProjectPage({ project }: { project: Project }) {
             <Settings />
           </Button>
 
-          {!summaryOpen && (
-            <SummaryButton onClick={() => setSummaryOpen(true)} />
-          )}
-
           <ProjectSettingsDialog
             project={project}
             open={showSettingsDialog}
@@ -215,7 +211,11 @@ function ProjectPage({ project }: { project: Project }) {
         </Tabs>
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+      <SummaryPanel
+        open={summaryOpen}
+        onOpen={() => setSummaryOpen(true)}
+        onClose={() => setSummaryOpen(false)}
+      >
         <ProjectSummary
           project={project}
           activitiesFilters={activitiesFilters}

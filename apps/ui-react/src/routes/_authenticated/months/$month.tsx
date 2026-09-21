@@ -27,7 +27,7 @@ import { ExportTransactionsButton } from "@/components/transactions/export-trans
 import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { SummaryButton, SummaryPanel } from "@/components/ui/summary-panel";
+import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
@@ -176,9 +176,6 @@ function MonthPage() {
 
           <SearchBar />
           <AddActivityButton variant="default" date={monthDate} />
-          {!summaryOpen && (
-            <SummaryButton onClick={() => setSummaryOpen(true)} />
-          )}
         </header>
 
         <Tabs
@@ -316,7 +313,11 @@ function MonthPage() {
         </Tabs>
       </div>
 
-      <SummaryPanel open={summaryOpen} onClose={() => setSummaryOpen(false)}>
+      <SummaryPanel
+        open={summaryOpen}
+        onOpen={() => setSummaryOpen(true)}
+        onClose={() => setSummaryOpen(false)}
+      >
         <MonthSummary monthDate={monthDate} />
 
         <Tabs className="h-full" defaultValue="activities">
