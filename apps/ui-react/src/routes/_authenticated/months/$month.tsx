@@ -23,6 +23,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
 import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -191,7 +192,7 @@ function MonthPage() {
           }
           className="min-h-0 flex-1"
         >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
             <TabsList
               height="full"
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
@@ -235,49 +236,52 @@ function MonthPage() {
             )}
             {selectedCustomView === null && selectedTab === "activities" && (
               <>
-                <FilterActivitiesButton
-                  viewId={`month-${month}-${year}-activities`}
-                />
-                <ActivityViewSettingsButton
-                  viewId={`month-${month}-${year}-activities`}
-                />
-                <ExportActivitiesButton
-                  viewId={`month-${month}-${year}-activities`}
-                  activities={monthActivities}
-                  className="hidden sm:flex"
-                />
+                <ViewActions>
+                  <FilterActivitiesButton
+                    viewId={`month-${month}-${year}-activities`}
+                  />
+                  <ActivityViewSettingsButton
+                    viewId={`month-${month}-${year}-activities`}
+                  />
+                  <ExportActivitiesButton
+                    viewId={`month-${month}-${year}-activities`}
+                    activities={monthActivities}
+                  />
+                </ViewActions>
               </>
             )}
             {selectedCustomView === null && selectedTab === "transactions" && (
               <>
-                <FilterTransactionsButton
-                  viewId={`month-${month}-${year}-transactions`}
-                />
-                <TableViewSettingsButton
-                  kind="transaction"
-                  viewId={`month-${month}-${year}-transactions`}
-                />
-                <ExportTransactionsButton
-                  filter={{ kind: "month", month, year }}
-                  viewId={`month-${month}-${year}-transactions`}
-                  className="hidden sm:flex"
-                />
+                <ViewActions>
+                  <FilterTransactionsButton
+                    viewId={`month-${month}-${year}-transactions`}
+                  />
+                  <TableViewSettingsButton
+                    kind="transaction"
+                    viewId={`month-${month}-${year}-transactions`}
+                  />
+                  <ExportTransactionsButton
+                    filter={{ kind: "month", month, year }}
+                    viewId={`month-${month}-${year}-transactions`}
+                  />
+                </ViewActions>
               </>
             )}
             {selectedCustomView === null && selectedTab === "movements" && (
               <>
-                <FilterMovementsButton
-                  viewId={`month-${month}-${year}-movements`}
-                />
-                <TableViewSettingsButton
-                  kind="movement"
-                  viewId={`month-${month}-${year}-movements`}
-                />
-                <ExportMovementsButton
-                  viewId={`month-${month}-${year}-movements`}
-                  movements={monthMovements}
-                  className="hidden sm:flex"
-                />
+                <ViewActions>
+                  <FilterMovementsButton
+                    viewId={`month-${month}-${year}-movements`}
+                  />
+                  <TableViewSettingsButton
+                    kind="movement"
+                    viewId={`month-${month}-${year}-movements`}
+                  />
+                  <ExportMovementsButton
+                    viewId={`month-${month}-${year}-movements`}
+                    movements={monthMovements}
+                  />
+                </ViewActions>
               </>
             )}
           </header>

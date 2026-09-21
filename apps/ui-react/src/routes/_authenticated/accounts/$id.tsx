@@ -25,6 +25,7 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
 import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -203,7 +204,7 @@ function AccountPage({ account }: { account: Account }) {
             }
             className="min-h-0 flex-1"
           >
-            <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
               <TabsList
                 height="full"
                 className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
@@ -283,39 +284,41 @@ function AccountPage({ account }: { account: Account }) {
                 selectedTab === "transactions" && (
                   <>
                     <AddActivityButton size="sm" />
-                    <FilterTransactionsButton
-                      viewId={`account-${account.id}-transactions`}
-                    />
-                    <TableViewSettingsButton
-                      kind="transaction"
-                      viewId={`account-${account.id}-transactions`}
-                    />
-                    <ExportTransactionsButton
-                      filter={{
-                        kind: "account",
-                        accountId: account.id,
-                        fundFilter,
-                      }}
-                      viewId={`account-${account.id}-transactions`}
-                      className="hidden sm:flex"
-                    />
+                    <ViewActions>
+                      <FilterTransactionsButton
+                        viewId={`account-${account.id}-transactions`}
+                      />
+                      <TableViewSettingsButton
+                        kind="transaction"
+                        viewId={`account-${account.id}-transactions`}
+                      />
+                      <ExportTransactionsButton
+                        filter={{
+                          kind: "account",
+                          accountId: account.id,
+                          fundFilter,
+                        }}
+                        viewId={`account-${account.id}-transactions`}
+                      />
+                    </ViewActions>
                   </>
                 )}
               {selectedCustomView === null && selectedTab === "movements" && (
                 <>
                   <AddMovementButton size="sm" />
-                  <FilterMovementsButton
-                    viewId={`account-${account.id}-movements`}
-                  />
-                  <TableViewSettingsButton
-                    kind="movement"
-                    viewId={`account-${account.id}-movements`}
-                  />
-                  <ExportMovementsButton
-                    movements={viewMovements}
-                    viewId={`account-${account.id}-movements`}
-                    className="hidden sm:flex"
-                  />
+                  <ViewActions>
+                    <FilterMovementsButton
+                      viewId={`account-${account.id}-movements`}
+                    />
+                    <TableViewSettingsButton
+                      kind="movement"
+                      viewId={`account-${account.id}-movements`}
+                    />
+                    <ExportMovementsButton
+                      movements={viewMovements}
+                      viewId={`account-${account.id}-movements`}
+                    />
+                  </ViewActions>
                 </>
               )}
               {selectedCustomView === null && selectedTab === "assets" && (

@@ -9,6 +9,7 @@ import {
 } from "@/components/navigation/breadcrumbs";
 import { SearchBar } from "@/components/search-bar";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
+import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
 import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -96,7 +97,7 @@ function UntrackedFundPage() {
           }
           className="min-h-0 flex-1"
         >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
             <TabsList
               height="full"
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
@@ -131,20 +132,21 @@ function UntrackedFundPage() {
               />
             ) : (
               <>
-                <FilterTransactionsButton viewId="fund-untracked-transactions" />
-                <TableViewSettingsButton
-                  kind="transaction"
-                  viewId="fund-untracked-transactions"
-                />
-                <ExportTransactionsButton
-                  filter={{
-                    kind: "fund",
-                    fundId: null,
-                    accountFilter,
-                  }}
-                  viewId="fund-untracked-transactions"
-                  className="hidden sm:flex"
-                />
+                <ViewActions>
+                  <FilterTransactionsButton viewId="fund-untracked-transactions" />
+                  <TableViewSettingsButton
+                    kind="transaction"
+                    viewId="fund-untracked-transactions"
+                  />
+                  <ExportTransactionsButton
+                    filter={{
+                      kind: "fund",
+                      fundId: null,
+                      accountFilter,
+                    }}
+                    viewId="fund-untracked-transactions"
+                  />
+                </ViewActions>
               </>
             )}
           </header>

@@ -19,6 +19,7 @@ import {
 import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
 import { ProjectSummary } from "@/components/projects/project-summary";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
+import { ViewActions } from "@/components/shared/view-actions";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SummaryPanel } from "@/components/ui/summary-panel";
@@ -147,7 +148,7 @@ function ProjectPage({ project }: { project: Project }) {
           }
           className="min-h-0 flex-1"
         >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
             <TabsList
               height="full"
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
@@ -182,16 +183,17 @@ function ProjectPage({ project }: { project: Project }) {
               />
             ) : (
               <>
-                <FilterActivitiesButton viewId="project-detail" />
-                <ActivityViewSettingsButton
-                  viewId="project-detail"
-                  hideProject
-                />
-                <ExportActivitiesButton
-                  viewId="project-detail"
-                  activities={projectActivities}
-                  className="hidden sm:flex"
-                />
+                <ViewActions>
+                  <FilterActivitiesButton viewId="project-detail" />
+                  <ActivityViewSettingsButton
+                    viewId="project-detail"
+                    hideProject
+                  />
+                  <ExportActivitiesButton
+                    viewId="project-detail"
+                    activities={projectActivities}
+                  />
+                </ViewActions>
               </>
             )}
           </header>

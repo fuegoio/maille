@@ -3,6 +3,7 @@ import type { View, ViewConfig as CustomViewConfig } from "@maille/core/views";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import * as React from "react";
 
+import { ViewActions } from "@/components/shared/view-actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,9 +64,11 @@ export function CustomViewActions({
 
   return (
     <>
-      <DefinitionFilterButton view={view} onConfigChange={onConfigChange} />
-      <DefinitionSettingsButton view={view} onConfigChange={onConfigChange} />
-      <DefinitionExportButton view={view} className="hidden sm:flex" />
+      <ViewActions>
+        <DefinitionFilterButton view={view} onConfigChange={onConfigChange} />
+        <DefinitionSettingsButton view={view} onConfigChange={onConfigChange} />
+        <DefinitionExportButton view={view} />
+      </ViewActions>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
