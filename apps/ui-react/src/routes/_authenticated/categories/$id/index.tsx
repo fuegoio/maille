@@ -97,11 +97,11 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
   const viewActivities = activities.filter((a) => a.category === category.id);
 
   return (
-    <SidebarInset className="flex-row">
+    <SidebarInset className="@container flex-row">
       <div
         className={cn(
           "flex min-w-0 flex-1 flex-col",
-          summaryOpen && "hidden md:flex",
+          summaryOpen && "hidden @min-[45rem]:flex",
         )}
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b pr-4 pl-4">

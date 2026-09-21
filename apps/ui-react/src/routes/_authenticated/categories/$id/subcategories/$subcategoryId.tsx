@@ -179,11 +179,11 @@ function SubcategoryPage({
   } satisfies ChartConfig;
 
   return (
-    <SidebarInset className="flex-row">
+    <SidebarInset className="@container flex-row">
       <div
         className={cn(
           "flex min-w-0 flex-1 flex-col",
-          summaryOpen && "hidden md:flex",
+          summaryOpen && "hidden @min-[45rem]:flex",
         )}
       >
         <PageBar>

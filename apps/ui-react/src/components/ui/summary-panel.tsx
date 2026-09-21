@@ -18,6 +18,11 @@ interface SummaryPanelProps {
  * A page's summary panel, mounted either way: closed it is the narrow
  * rail reading "Summary" down its edge — the same component, expanded
  * by a width transition when opened, contracted when closed.
+ *
+ * The page's inset is a @container; below 45rem of it the panel takes
+ * the full width instead of squeezing the content column unreadably
+ * (the sidebar has already taken its share of the viewport). Pages
+ * hide their content column at the same width.
  */
 export function SummaryPanel({
   open,
@@ -34,7 +39,11 @@ export function SummaryPanel({
       aria-label={title}
       className={cn(
         "flex h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden border-l bg-card transition-[width] duration-200 ease-out motion-reduce:transition-none",
-        open ? (width === "md" ? "md:w-[26rem]" : "md:w-[32rem]") : "w-9",
+        open
+          ? width === "md"
+            ? "@min-[45rem]:w-[26rem]"
+            : "@min-[45rem]:w-[32rem]"
+          : "w-9",
       )}
     >
       {open ? (
