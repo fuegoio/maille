@@ -26,6 +26,7 @@ import { SummaryPanel } from "@/components/ui/summary-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomViewActions } from "@/components/views/custom-view-actions";
 import { useViewMutations } from "@/components/views/view-mutations";
+import { ViewSelect } from "@/components/views/view-select";
 import {
   CustomViewTabs,
   CustomViewTabsContent,
@@ -149,9 +150,30 @@ function ProjectPage({ project }: { project: Project }) {
           className="min-h-0 flex-1"
         >
           <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <ViewSelect
+              className="sm:hidden"
+              scope={viewScope}
+              value={selectedTab}
+              onSelect={(value) =>
+                navigate({
+                  to: ".",
+                  search: (prev) => ({
+                    ...prev,
+                    view: value,
+                  }),
+                })
+              }
+              builtIn={[
+                {
+                  value: "activities",
+                  label: "Activities",
+                  icon: ActivityIcon,
+                },
+              ]}
+            />
             <TabsList
               height="full"
-              className="min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 [&_[data-slot=tabs-trigger]]:after:bottom-0"
+              className="hidden min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 sm:flex [&_[data-slot=tabs-trigger]]:after:bottom-0"
             >
               <TabsTrigger value="activities">
                 <ActivityIcon />
