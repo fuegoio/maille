@@ -49,6 +49,7 @@ function seedActivity(id: string, fromAccount: string) {
     category: null,
     subcategory: null,
     project: null,
+    depreciation: null,
     sharing: [],
     transactions: [
       {

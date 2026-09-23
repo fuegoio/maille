@@ -20,6 +20,7 @@ type Activity {
   amounts: ActivityAmounts!
   category: String
   date: Date!
+  depreciation: String
   description: String
   history: [HistoryEntry!]!
   id: String!
@@ -85,6 +86,18 @@ type Asset {
   name: String!
 }
 
+type AssetDepreciation {
+  asset: String!
+  basis: Float!
+  category: String
+  expenseAccount: String!
+  id: String!
+  method: String!
+  months: Int!
+  startMonth: Date!
+  subcategory: String
+}
+
 type Contact {
   contact: ContactUser!
   createdAt: Date!
@@ -118,6 +131,11 @@ type DeleteAccountResponse {
 }
 
 type DeleteActivityResponse {
+  id: String!
+  success: Boolean!
+}
+
+type DeleteAssetDepreciationResponse {
   id: String!
   success: Boolean!
 }
@@ -258,6 +276,7 @@ type Mutation {
   createActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   createActivitySubCategory(category: String!, emoji: String, id: String!, name: String!): ActivitySubCategory!
   createAsset(account: String!, description: String, id: String!, location: String, name: String!): Asset!
+  createAssetDepreciation(asset: String!, basis: Float!, category: String, expenseAccount: String!, id: String!, method: String!, months: Int!, startMonth: Date!, subcategory: String): AssetDepreciation!
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
   createFund(color: String, endDate: Date, id: String!, name: String!, parentFund: String, startDate: Date): Fund!
@@ -270,6 +289,7 @@ type Mutation {
   deleteActivityCategory(id: String!): DeleteActivityResponse!
   deleteActivitySubCategory(id: String!): DeleteActivityResponse!
   deleteAsset(id: String!): DeleteAssetResponse!
+  deleteAssetDepreciation(id: String!): DeleteAssetDepreciationResponse!
   deleteContact(id: String!): Boolean!
   deleteCounterparty(id: String!): Boolean!
   deleteFund(id: String!): Boolean!
@@ -296,6 +316,7 @@ type Mutation {
   updateActivityCategory(emoji: String, id: String!, name: String!): ActivityCategory!
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
+  updateAssetDepreciation(basis: Float, category: String, expenseAccount: String, id: String!, months: Int, startMonth: Date, subcategory: String): AssetDepreciation!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateFund(color: String, endDate: Date, id: String!, name: String, parentFund: String, startDate: Date): Fund!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
@@ -318,6 +339,7 @@ type Query {
   activities: [Activity!]!
   activityCategories: [ActivityCategory!]!
   activitySubcategories: [ActivitySubCategory!]!
+  assetDepreciations: [AssetDepreciation!]!
   assets: [Asset!]!
   contacts: [Contact!]!
   counterparties: [Counterparty!]!

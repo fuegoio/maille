@@ -49,6 +49,11 @@ ActivitySchema.implement({
       resolve: (parent) => parent.project,
       nullable: true,
     }),
+    depreciation: t.field({
+      type: "String",
+      resolve: (parent) => parent.depreciation,
+      nullable: true,
+    }),
     amount: t.exposeFloat("amount"),
     status: t.exposeString("status"),
     transactions: t.field({

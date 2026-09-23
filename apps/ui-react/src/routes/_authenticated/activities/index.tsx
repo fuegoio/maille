@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { CircleDashed } from "lucide-react";
+import { CircleCheck, CircleDashed } from "lucide-react";
 import z from "zod";
 
 import { ActivitiesTable } from "@/components/activities/activities-table";
@@ -28,7 +28,7 @@ import { ActivityIcon } from "@/lib/icons";
 import { useActivities } from "@/stores/activities";
 
 const searchParamsSchema = z.object({
-  /** "all", "reconcile", or a custom view's id. */
+  /** "all", "until-now", "reconcile", or a custom view's id. */
   view: z.string().optional(),
 });
 
@@ -37,21 +37,49 @@ export const Route = createFileRoute("/_authenticated/activities/")({
   validateSearch: searchParamsSchema,
 });
 
+/**
+ * The stored view configuration behind each built-in tab, so its filters,
+ * ordering and grouping stay independent per tab.
+ */
+const activitiesViewId = (tab: string) =>
+  tab === "reconcile"
+    ? "activities-reconciliate-page"
+    : tab === "until-now"
+      ? "activities-until-now-page"
+      : "activities-page";
+
 /** The scope this page's custom views attach to. */
 const viewScope = { kind: "page", page: "activities" } as const;
+
+const endOfToday = () => {
+  const now = new Date();
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999,
+  ).getTime();
+};
 
 function ActivitiesPage() {
   const activities = useActivities((state) => state.activities);
   const navigate = useNavigate();
   const { view } = Route.useSearch();
-  const selectedTab = view ?? "all";
+  const selectedTab = view ?? "until-now";
   const selectedCustomView = useSelectedView(viewScope, selectedTab);
   const { updateViewConfig } = useViewMutations();
 
   const viewActivities =
     selectedTab === "reconcile"
       ? activities.filter((activity) => activity.status === "incomplete")
-      : activities;
+      : selectedTab === "until-now"
+        ? activities.filter(
+            (activity) => activity.date.getTime() <= endOfToday(),
+          )
+        : activities;
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: false,
@@ -66,7 +94,7 @@ function ActivitiesPage() {
       to: ".",
       search: (prev) => ({
         ...prev,
-        view: value === "all" ? undefined : value,
+        view: value === "until-now" ? undefined : value,
       }),
     });
   };
@@ -93,6 +121,7 @@ function ActivitiesPage() {
             value={selectedTab}
             onSelect={selectTab}
             builtIn={[
+              { value: "until-now", label: "Until now", icon: CircleCheck },
               { value: "all", label: "All activities", icon: ActivityIcon },
               {
                 value: "reconcile",
@@ -105,6 +134,10 @@ function ActivitiesPage() {
             height="full"
             className="hidden min-w-0 justify-start overflow-x-auto overflow-y-hidden sm:ml-5 sm:flex [&_[data-slot=tabs-trigger]]:after:bottom-0"
           >
+            <TabsTrigger value="until-now">
+              <CircleCheck />
+              Until now
+            </TabsTrigger>
             <TabsTrigger value="all">
               <ActivityIcon />
               All activities
@@ -122,37 +155,32 @@ function ActivitiesPage() {
               onConfigChange={(config) =>
                 updateViewConfig(selectedCustomView, config)
               }
-              onDeleted={() => selectTab("all")}
+              onDeleted={() => selectTab("until-now")}
             />
           ) : (
             <>
               <ViewActions>
                 <FilterActivitiesButton
-                  viewId={
-                    selectedTab === "reconcile"
-                      ? "activities-reconciliate-page"
-                      : "activities-page"
-                  }
+                  viewId={activitiesViewId(selectedTab)}
                 />
                 <ActivityViewSettingsButton
-                  viewId={
-                    selectedTab === "reconcile"
-                      ? "activities-reconciliate-page"
-                      : "activities-page"
-                  }
+                  viewId={activitiesViewId(selectedTab)}
                 />
                 <ExportActivitiesButton
-                  viewId={
-                    selectedTab === "reconcile"
-                      ? "activities-reconciliate-page"
-                      : "activities-page"
-                  }
+                  viewId={activitiesViewId(selectedTab)}
                   activities={viewActivities}
                 />
               </ViewActions>
             </>
           )}
         </header>
+
+        <TabsContent value="until-now" className="flex h-full">
+          <ActivitiesTable
+            viewId="activities-until-now-page"
+            activities={viewActivities}
+          />
+        </TabsContent>
 
         <TabsContent value="all" className="flex h-full">
           <ActivitiesTable viewId="activities-page" activities={activities} />

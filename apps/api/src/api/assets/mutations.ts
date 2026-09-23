@@ -1,9 +1,10 @@
 import { builder } from "../builder";
 import { AssetSchema, DeleteAssetResponseSchema } from "./schemas";
 import { db } from "@/database";
-import { accounts, assets, transactions } from "@/tables";
+import { accounts, assetDepreciations, assets, transactions } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
+import { deleteAssetDepreciation } from "@/services/depreciations";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 
@@ -177,6 +178,16 @@ export const registerAssetsMutations = () => {
         )[0]?.assets;
         if (!asset) {
           throw new GraphQLError("Asset not found");
+        }
+
+        // The asset's depreciation schedule goes with it: its future
+        // generated activities are deleted, past ones become ordinary
+        // ledger rows.
+        const plan = (
+          await db.select().from(assetDepreciations).where(eq(assetDepreciations.asset, asset.id))
+        )[0];
+        if (plan) {
+          await deleteAssetDepreciation(ctx.user.id, ctx.session.id, plan.id);
         }
 
         await db.delete(assets).where(eq(assets.id, asset.id));
