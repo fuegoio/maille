@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSelect } from "@/components/accounts/account-select";
 import {
   AlertDialog,
@@ -53,6 +54,7 @@ import {
 } from "@/components/ui/select";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { getAssetValue } from "@/logic/assets";
 import {
   createAssetDepreciationMutation,
@@ -83,55 +85,104 @@ export function AssetDepreciationSection({
   const [scheduleOpen, setScheduleOpen] = useState(false);
 
   return (
-    <section className="shrink-0 border-b">
-      <header className="flex h-11 items-center gap-2 px-4 sm:px-8">
-        <TrendingDown className="size-3.5 text-muted-foreground" />
-        <div className="font-serif text-xl leading-none font-normal">
-          Depreciation
+    <section className="shrink-0 border-b px-4 py-6 sm:px-8">
+      <div className="flex items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <TrendingDown className="size-3.5 text-muted-foreground" />
+            <div className="font-serif text-xl leading-none font-normal">
+              Depreciation
+            </div>
+          </div>
+          <div className="mt-1 truncate text-xs text-muted-foreground">
+            {plan
+              ? `Linear — one expense activity on the 1st of each month, for ${plan.months} ${plan.months === 1 ? "month" : "months"}.`
+              : "Spread the asset's value into monthly expense activities."}
+          </div>
         </div>
+
         {plan && (
-          <div className="ml-1 hidden min-w-0 truncate text-sm text-muted-foreground md:block">
-            {currencyFormatter.format(plan.basis / plan.months)} / month for{" "}
-            {plan.months} {plan.months === 1 ? "month" : "months"}
+          <div className="font-mono text-sm whitespace-nowrap text-muted-foreground">
+            {currencyFormatter.format(plan.basis / plan.months)} / month
           </div>
         )}
-        <div className="flex-1" />
-
-        {plan ? (
-          <>
+        <div className="flex shrink-0 items-center gap-1">
+          {plan ? (
+            <>
+              <DepreciationScheduleDialog
+                asset={asset}
+                plan={plan}
+                open={scheduleOpen}
+                onOpenChange={setScheduleOpen}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Edit schedule"
+                  >
+                    <Pencil />
+                  </Button>
+                }
+              />
+              <DeleteScheduleButton plan={plan} />
+            </>
+          ) : (
             <DepreciationScheduleDialog
               asset={asset}
-              plan={plan}
+              plan={null}
               open={scheduleOpen}
               onOpenChange={setScheduleOpen}
               trigger={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Edit schedule"
-                >
-                  <Pencil />
+                <Button variant="outline" size="sm">
+                  <Plus />
+                  Add schedule
                 </Button>
               }
             />
-            <DeleteScheduleButton plan={plan} />
-          </>
-        ) : (
-          <DepreciationScheduleDialog
-            asset={asset}
-            plan={null}
-            open={scheduleOpen}
-            onOpenChange={setScheduleOpen}
-            trigger={
-              <Button variant="outline" size="sm">
-                <Plus />
-                Add schedule
-              </Button>
-            }
-          />
-        )}
-      </header>
+          )}
+        </div>
+      </div>
+
+      {plan && <ScheduleFacts plan={plan} />}
     </section>
+  );
+}
+
+/** The schedule's own line items, as a quiet definition list. */
+function ScheduleFacts({ plan }: { plan: AssetDepreciation }) {
+  const currencyFormatter = useCurrencyFormatter();
+  const first = plan.startMonth;
+  const last = addMonths(plan.startMonth, plan.months - 1);
+
+  const facts: { label: string; value: React.ReactNode }[] = [
+    { label: "Basis", value: currencyFormatter.format(plan.basis) },
+    {
+      label: "Schedule",
+      value: `${format(first, "MMM yyyy")} – ${format(last, "MMM yyyy")}`,
+    },
+    {
+      label: "Expense account",
+      value: <AccountLabel accountId={plan.expenseAccount} />,
+    },
+  ];
+
+  return (
+    <div className="mt-5 rounded-lg border">
+      {facts.map((fact, index) => (
+        <div
+          key={fact.label}
+          className={cn(
+            "flex h-10 items-center px-4 text-sm",
+            index !== facts.length - 1 && "border-b",
+          )}
+        >
+          <div className="w-32 shrink-0 text-xs text-muted-foreground">
+            {fact.label}
+          </div>
+          <div className="min-w-0 truncate">{fact.value}</div>
+        </div>
+      ))}
+    </div>
   );
 }
 
