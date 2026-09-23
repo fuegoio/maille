@@ -162,7 +162,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
 
   return (
     <SidebarInset>
-      <div className="flex h-full flex-col">
+      <div className="@container flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="mr-1" />
           <PageBreadcrumbs entries={breadcrumbs} className="flex-1" />
@@ -191,7 +191,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
           </AlertDialog>
         </header>
 
-        <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
+        <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
           <div className="shrink-0 border-b px-4 py-6 sm:px-8">
             <div className="flex items-baseline justify-between gap-4">
               <DebouncedInput
