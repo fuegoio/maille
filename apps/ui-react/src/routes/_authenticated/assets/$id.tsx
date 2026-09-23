@@ -1,10 +1,17 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import z from "zod";
 
 import { AssetPage } from "@/components/accounts/assets/asset";
 import { DeletedRedirect } from "@/components/shared/deleted-redirect";
 import { useAssets } from "@/stores/assets";
 
+const searchParamsSchema = z.object({
+  /** "asset", "activities", or "transactions". */
+  view: z.enum(["asset", "activities", "transactions"]).optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/assets/$id")({
+  validateSearch: searchParamsSchema,
   loader: async ({ params }) => {
     const asset = useAssets.getState().getAssetById(params.id);
     if (!asset) {

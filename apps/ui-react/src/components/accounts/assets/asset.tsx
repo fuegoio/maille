@@ -1,5 +1,13 @@
-import { useRouter } from "@tanstack/react-router";
-import { MapPin, Trash2 } from "lucide-react";
+import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleDotDashed,
+  House,
+  Trash2,
+  TrendingDown,
+} from "lucide-react";
+import { MapPin } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -14,6 +22,7 @@ import {
   DebouncedInput,
   DebouncedTextarea,
 } from "@/components/shared/debounced-text-field";
+import { LedgerDate } from "@/components/shared/ledger-date";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
@@ -34,8 +43,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RollingAmount } from "@/components/ui/rolling-amount";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { TransactionIcon } from "@/lib/icons";
-import { getAssetTotals, getAssetValue } from "@/logic/assets";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
+import { ActivityIcon, TransactionIcon } from "@/lib/icons";
+import { assetActivities, getAssetTotals, getAssetValue } from "@/logic/assets";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
@@ -47,10 +58,25 @@ interface AssetPageProps {
 
 export function AssetPage({ assetId }: AssetPageProps) {
   const router = useRouter();
+  const navigate = useNavigate();
   const mutate = useSync((state) => state.mutate);
 
   const asset = useAssets((state) => state.getAssetById(assetId));
   const activities = useActivities((state) => state.activities);
+
+  const { view } = useSearch({ from: "/_authenticated/assets/$id" });
+  const selectedTab = view ?? "asset";
+  const selectTab = (value: string) =>
+    navigate({
+      to: ".",
+      search: (prev) => ({
+        ...prev,
+        view:
+          value === "asset"
+            ? undefined
+            : (value as "activities" | "transactions"),
+      }),
+    });
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: true,
@@ -163,7 +189,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
 
   return (
     <SidebarInset>
-      <div className="@container flex h-full flex-col">
+      <div className="flex h-full flex-col">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="mr-1" />
           <PageBreadcrumbs entries={breadcrumbs} className="flex-1" />
@@ -192,105 +218,215 @@ export function AssetPage({ assetId }: AssetPageProps) {
           </AlertDialog>
         </header>
 
-        <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
-          <div className="shrink-0 border-b px-4 py-6 sm:px-8">
-            <div className="flex items-baseline justify-between gap-4">
-              <DebouncedInput
-                key={asset.id}
-                id="name"
-                aria-label="Asset name"
-                value={asset.name}
-                onCommit={(name) => handleUpdateAsset({ name })}
-                placeholder="Asset name"
-                className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
-              />
-              <div
-                className="shrink-0 font-mono text-2xl leading-snug whitespace-nowrap tabular-nums"
-                title="Current value"
-              >
-                <RollingAmount value={value} />
-              </div>
-            </div>
-
-            <DebouncedTextarea
-              key={asset.id}
-              id="description"
-              aria-label="Description"
-              value={asset.description || ""}
-              onCommit={(description) =>
-                handleUpdateAsset({ description: description || null })
-              }
-              placeholder="Add a description ..."
-              rows={1}
-              className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
-            />
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                asChild
-                className="h-6 [a]:hover:bg-border/50"
-              >
-                <ContextLink
-                  to="/accounts/$id"
-                  params={{ id: asset.account }}
-                  search={{ view: "assets" }}
-                >
-                  <AccountLabel accountId={asset.account} size="sm" />
-                </ContextLink>
-              </Badge>
-
-              <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
-                <MapPin className="size-3 shrink-0 text-muted-foreground" />
-                <DebouncedInput
-                  key={asset.id}
-                  aria-label="Location"
-                  value={asset.location || ""}
-                  onCommit={(location) =>
-                    handleUpdateAsset({ location: location || null })
-                  }
-                  placeholder="Add a location ..."
-                  className="h-auto w-40 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
-                />
-              </label>
-            </div>
-          </div>
-
-          <AssetDepreciationSection asset={asset} />
-
-          <section className="flex min-h-0 flex-1 flex-col">
-            <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-4 sm:px-8">
-              <TransactionIcon className="size-3.5 text-muted-foreground" />
-              <div className="font-serif text-xl leading-none font-normal">
+        <Tabs
+          value={selectedTab}
+          onValueChange={selectTab}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <TabsList
+              height="full"
+              className="min-w-0 justify-start overflow-x-auto overflow-y-hidden [&_[data-slot=tabs-trigger]]:after:bottom-0"
+            >
+              <TabsTrigger value="asset">
+                <House />
+                Asset
+              </TabsTrigger>
+              <TabsTrigger value="activities">
+                <ActivityIcon />
+                Activities
+              </TabsTrigger>
+              <TabsTrigger value="transactions">
+                <TransactionIcon />
                 Transactions
-              </div>
-              <div className="flex-1" />
+              </TabsTrigger>
+            </TabsList>
+          </header>
 
-              <AmountPairsValue
-                className="mr-2 text-sm"
-                pairs={[
-                  { dot: "bg-green-400", amount: totals.in },
-                  { dot: "bg-red-400", amount: -totals.out },
-                ]}
-              />
+          <TabsContent value="asset" className="flex min-h-0 flex-1 flex-col">
+            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
+              <div className="shrink-0 border-b px-4 py-6 sm:px-8">
+                <div className="flex items-baseline justify-between gap-4">
+                  <DebouncedInput
+                    key={asset.id}
+                    id="name"
+                    aria-label="Asset name"
+                    value={asset.name}
+                    onCommit={(name) => handleUpdateAsset({ name })}
+                    placeholder="Asset name"
+                    className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                  />
+                  <div
+                    className="shrink-0 font-mono text-2xl leading-snug whitespace-nowrap tabular-nums"
+                    title="Current value"
+                  >
+                    <RollingAmount value={value} />
+                  </div>
+                </div>
 
-              <ViewActions>
-                <FilterTransactionsButton viewId={viewId} />
-                <TableViewSettingsButton kind="transaction" viewId={viewId} />
-                <ExportTransactionsButton
-                  filter={{ kind: "asset", assetId: asset.id }}
-                  viewId={viewId}
+                <DebouncedTextarea
+                  key={asset.id}
+                  id="description"
+                  aria-label="Description"
+                  value={asset.description || ""}
+                  onCommit={(description) =>
+                    handleUpdateAsset({ description: description || null })
+                  }
+                  placeholder="Add a description ..."
+                  rows={1}
+                  className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
                 />
-              </ViewActions>
-            </header>
 
-            <TransactionsTable
-              viewId={viewId}
-              filter={{ kind: "asset", assetId: asset.id }}
-            />
-          </section>
-        </div>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    asChild
+                    className="h-6 [a]:hover:bg-border/50"
+                  >
+                    <ContextLink
+                      to="/accounts/$id"
+                      params={{ id: asset.account }}
+                      search={{ view: "assets" }}
+                    >
+                      <AccountLabel accountId={asset.account} size="sm" />
+                    </ContextLink>
+                  </Badge>
+
+                  <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                    <MapPin className="size-3 shrink-0 text-muted-foreground" />
+                    <DebouncedInput
+                      key={asset.id}
+                      aria-label="Location"
+                      value={asset.location || ""}
+                      onCommit={(location) =>
+                        handleUpdateAsset({ location: location || null })
+                      }
+                      placeholder="Add a location ..."
+                      className="h-auto w-40 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <AssetDepreciationSection asset={asset} />
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="activities"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <AssetActivities assetId={asset.id} />
+          </TabsContent>
+
+          <TabsContent
+            value="transactions"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
+              <section className="flex min-h-0 flex-1 flex-col">
+                <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-4 sm:px-8">
+                  <div className="flex-1" />
+
+                  <AmountPairsValue
+                    className="mr-2 text-sm"
+                    pairs={[
+                      { dot: "bg-green-400", amount: totals.in },
+                      { dot: "bg-red-400", amount: -totals.out },
+                    ]}
+                  />
+
+                  <ViewActions>
+                    <FilterTransactionsButton viewId={viewId} />
+                    <TableViewSettingsButton
+                      kind="transaction"
+                      viewId={viewId}
+                    />
+                    <ExportTransactionsButton
+                      filter={{ kind: "asset", assetId: asset.id }}
+                      viewId={viewId}
+                    />
+                  </ViewActions>
+                </header>
+
+                <TransactionsTable
+                  viewId={viewId}
+                  filter={{ kind: "asset", assetId: asset.id }}
+                />
+              </section>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </SidebarInset>
   );
+}
+
+/**
+ * Every activity that touches the asset — purchases, sales, and the
+ * depreciation schedule's generated rows, marked with their schedule.
+ */
+function AssetActivities({ assetId }: { assetId: string }) {
+  const activities = useActivities((state) => state.activities);
+  const currencyFormatter = useCurrencyFormatter();
+  const rows = React.useMemo(
+    () => assetActivities(activities, assetId),
+    [activities, assetId],
+  );
+
+  return (
+    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b px-4 sm:px-8">
+        <ActivityIcon className="size-3.5 text-muted-foreground" />
+        <div className="font-serif text-xl leading-none font-normal">
+          Activities
+        </div>
+        <div className="flex-1" />
+        <div className="text-xs text-muted-foreground">
+          {rows.length} {rows.length === 1 ? "activity" : "activities"}
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto">
+        {rows.length === 0 ? (
+          <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+            No activity involves this asset yet.
+          </div>
+        ) : (
+          rows.map(({ activity, amount }) => (
+            <ContextLink
+              key={activity.id}
+              to="/activities/$id"
+              params={{ id: activity.id }}
+              className="group flex h-10 items-center gap-2 border-b px-4 text-sm transition-colors hover:bg-muted/50 sm:px-8"
+            >
+              <LedgerDate date={activity.date} full />
+              <ActivityStatusIcon status={activity.status} />
+              {activity.depreciation != null && (
+                <TrendingDown
+                  aria-label="Generated by a depreciation schedule"
+                  className="mr-1 size-3.5 shrink-0 text-muted-foreground"
+                />
+              )}
+              <div className="min-w-0 truncate">{activity.name}</div>
+              <div className="flex-1" />
+              <div className="font-mono whitespace-nowrap">
+                {currencyFormatter.format(amount)}
+              </div>
+            </ContextLink>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ActivityStatusIcon({ status }: { status: string }) {
+  if (status === "scheduled") {
+    return <CircleDashed className="size-4 shrink-0 text-muted-foreground" />;
+  }
+  if (status === "incomplete") {
+    return <CircleDotDashed className="size-4 shrink-0 text-warning" />;
+  }
+  return <CircleCheck className="size-4 shrink-0 text-primary" />;
 }

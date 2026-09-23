@@ -64,6 +64,45 @@ export function getAssetValue(
   );
 }
 
+/** An activity as the asset sees it: the activity, and how much of it flowed through the asset. */
+export type AssetActivity = {
+  activity: Activity;
+  amount: number;
+};
+
+/**
+ * Every activity touching the asset, newest first, with the sum of the
+ * transactions that involve it. Depreciation-generated ones are
+ * recognizable by their schedule link.
+ */
+export function assetActivities(
+  activities: Activity[],
+  assetId: string,
+): AssetActivity[] {
+  const result: AssetActivity[] = [];
+
+  for (const activity of activities) {
+    let amount = 0;
+    let touches = false;
+    for (const transaction of activity.transactions) {
+      if (
+        transaction.fromAsset === assetId ||
+        transaction.toAsset === assetId
+      ) {
+        touches = true;
+        amount += transaction.amount;
+      }
+    }
+    if (touches) {
+      result.push({ activity, amount });
+    }
+  }
+
+  return result.sort(
+    (a, b) => b.activity.date.getTime() - a.activity.date.getTime(),
+  );
+}
+
 /** The money that came in and went out of the asset, as two totals. */
 export function getAssetTotals(
   activities: Activity[],
