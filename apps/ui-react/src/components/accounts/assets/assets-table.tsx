@@ -1,10 +1,12 @@
 import { House, Plus } from "lucide-react";
 import { useMemo } from "react";
 
+import { useContextNavigate } from "@/components/navigation/breadcrumbs";
 import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
+import { getAssetValue } from "@/logic/assets";
 import { useActivities } from "@/stores/activities";
 import { useAssets } from "@/stores/assets";
 
@@ -25,9 +27,8 @@ interface AssetsTableProps {
 }
 
 export function AssetsTable({ accountId }: AssetsTableProps) {
+  const contextNavigate = useContextNavigate();
   const assets = useAssets((state) => state.assets);
-  const focusedAsset = useAssets((state) => state.focusedAsset);
-  const setFocusedAsset = useAssets((state) => state.setFocusedAsset);
   const activities = useActivities((state) => state.activities);
   const currencyFormatter = useCurrencyFormatter();
 
@@ -42,31 +43,18 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
 
   const { rowOutlines, registerRow } = useTableRows({
     rows,
-    // The outline also covers the asset whose panel is open
-    forcedSelectedIds: focusedAsset !== null ? [focusedAsset] : undefined,
     onOpen: (id) => {
-      setFocusedAsset(id);
+      void contextNavigate({ to: "/assets/$id", params: { id } });
     },
   });
 
-  const getAssetValue = (assetId: string) => {
-    return activities
-      .flatMap((activity) => activity.transactions)
-      .filter(
-        (transaction) =>
-          transaction.fromAsset === assetId || transaction.toAsset === assetId,
-      )
-      .reduce((total, transaction) => {
-        // If money flows TO the asset, it adds value
-        if (transaction.toAsset === assetId) {
-          return total + transaction.amount;
-        }
-        // If money flows FROM the asset, it subtracts value
-        else if (transaction.fromAsset === assetId) {
-          return total - transaction.amount;
-        }
-        return total;
-      }, 0);
+  const openAsset = (event: React.MouseEvent) => {
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    const id = (event.currentTarget as HTMLElement).dataset.assetId;
+    if (!id) return;
+    void contextNavigate({ to: "/assets/$id", params: { id } });
   };
 
   return (
@@ -105,12 +93,13 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
               <div
                 key={asset.id}
                 ref={registerRow(asset.id)}
+                data-asset-id={asset.id}
                 className={cn(
                   "group flex h-10 w-full cursor-pointer items-center border-b pr-6 pl-14 transition-colors hover:bg-muted/50",
                   rowOutlines.has(asset.id) &&
                     rowOutlineClasses(rowOutlines.get(asset.id)!),
                 )}
-                onClick={() => setFocusedAsset(asset.id)}
+                onClick={openAsset}
               >
                 <div className="text-sm font-semibold">{asset.name}</div>
                 {asset.description && (
@@ -127,7 +116,9 @@ export function AssetsTable({ accountId }: AssetsTableProps) {
                 )}
 
                 <div className="text-right font-mono text-sm">
-                  {currencyFormatter.format(getAssetValue(asset.id))}
+                  {currencyFormatter.format(
+                    getAssetValue(activities, asset.id),
+                  )}
                 </div>
               </div>
             ))}
