@@ -191,8 +191,8 @@ export function AssetPage({ assetId }: AssetPageProps) {
           </AlertDialog>
         </header>
 
-        <div className="shrink-0 border-b px-4 py-6 sm:px-8">
-          <div className="mx-auto w-full max-w-5xl">
+        <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
+          <div className="shrink-0 border-b px-4 py-6 sm:px-8">
             <div className="flex items-baseline justify-between gap-4">
               <DebouncedInput
                 key={asset.id}
@@ -254,39 +254,39 @@ export function AssetPage({ assetId }: AssetPageProps) {
               </label>
             </div>
           </div>
-        </div>
 
-        <section className="flex min-h-0 flex-1 flex-col">
-          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
-            <TransactionIcon className="size-3.5 text-muted-foreground" />
-            <div className="font-serif text-xl leading-none font-normal">
-              Transactions
-            </div>
-            <div className="flex-1" />
+          <section className="flex min-h-0 flex-1 flex-col">
+            <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-4 sm:px-8">
+              <TransactionIcon className="size-3.5 text-muted-foreground" />
+              <div className="font-serif text-xl leading-none font-normal">
+                Transactions
+              </div>
+              <div className="flex-1" />
 
-            <AmountPairsValue
-              className="mr-2 text-sm"
-              pairs={[
-                { dot: "bg-green-400", amount: totals.in },
-                { dot: "bg-red-400", amount: -totals.out },
-              ]}
-            />
-
-            <ViewActions>
-              <FilterTransactionsButton viewId={viewId} />
-              <TableViewSettingsButton kind="transaction" viewId={viewId} />
-              <ExportTransactionsButton
-                filter={{ kind: "asset", assetId: asset.id }}
-                viewId={viewId}
+              <AmountPairsValue
+                className="mr-2 text-sm"
+                pairs={[
+                  { dot: "bg-green-400", amount: totals.in },
+                  { dot: "bg-red-400", amount: -totals.out },
+                ]}
               />
-            </ViewActions>
-          </header>
 
-          <TransactionsTable
-            viewId={viewId}
-            filter={{ kind: "asset", assetId: asset.id }}
-          />
-        </section>
+              <ViewActions>
+                <FilterTransactionsButton viewId={viewId} />
+                <TableViewSettingsButton kind="transaction" viewId={viewId} />
+                <ExportTransactionsButton
+                  filter={{ kind: "asset", assetId: asset.id }}
+                  viewId={viewId}
+                />
+              </ViewActions>
+            </header>
+
+            <TransactionsTable
+              viewId={viewId}
+              filter={{ kind: "asset", assetId: asset.id }}
+            />
+          </section>
+        </div>
       </div>
     </SidebarInset>
   );
