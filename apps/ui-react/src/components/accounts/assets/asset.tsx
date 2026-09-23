@@ -23,6 +23,7 @@ import {
   DebouncedTextarea,
 } from "@/components/shared/debounced-text-field";
 import { LedgerDate } from "@/components/shared/ledger-date";
+import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
@@ -46,6 +47,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ActivityIcon, TransactionIcon } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 import { assetActivities, getAssetTotals, getAssetValue } from "@/logic/assets";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
 import { useActivities } from "@/stores/activities";
@@ -223,7 +225,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
           onValueChange={selectTab}
           className="flex min-h-0 flex-1 flex-col"
         >
-          <header className="flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
             <TabsList
               height="full"
               className="min-w-0 justify-start overflow-x-auto overflow-y-hidden [&_[data-slot=tabs-trigger]]:after:bottom-0"
@@ -241,6 +243,27 @@ export function AssetPage({ assetId }: AssetPageProps) {
                 Transactions
               </TabsTrigger>
             </TabsList>
+            <div className="flex-1" />
+
+            {selectedTab === "transactions" && (
+              <>
+                <AmountPairsValue
+                  className="mr-2 text-sm"
+                  pairs={[
+                    { dot: "bg-green-400", amount: totals.in },
+                    { dot: "bg-red-400", amount: -totals.out },
+                  ]}
+                />
+                <ViewActions>
+                  <FilterTransactionsButton viewId={viewId} />
+                  <TableViewSettingsButton kind="transaction" viewId={viewId} />
+                  <ExportTransactionsButton
+                    filter={{ kind: "asset", assetId: asset.id }}
+                    viewId={viewId}
+                  />
+                </ViewActions>
+              </>
+            )}
           </header>
 
           <TabsContent value="asset" className="flex min-h-0 flex-1 flex-col">
@@ -323,38 +346,10 @@ export function AssetPage({ assetId }: AssetPageProps) {
             value="transactions"
             className="flex min-h-0 flex-1 flex-col"
           >
-            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
-              <section className="flex min-h-0 flex-1 flex-col">
-                <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-4 sm:px-8">
-                  <div className="flex-1" />
-
-                  <AmountPairsValue
-                    className="mr-2 text-sm"
-                    pairs={[
-                      { dot: "bg-green-400", amount: totals.in },
-                      { dot: "bg-red-400", amount: -totals.out },
-                    ]}
-                  />
-
-                  <ViewActions>
-                    <FilterTransactionsButton viewId={viewId} />
-                    <TableViewSettingsButton
-                      kind="transaction"
-                      viewId={viewId}
-                    />
-                    <ExportTransactionsButton
-                      filter={{ kind: "asset", assetId: asset.id }}
-                      viewId={viewId}
-                    />
-                  </ViewActions>
-                </header>
-
-                <TransactionsTable
-                  viewId={viewId}
-                  filter={{ kind: "asset", assetId: asset.id }}
-                />
-              </section>
-            </div>
+            <TransactionsTable
+              viewId={viewId}
+              filter={{ kind: "asset", assetId: asset.id }}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -375,48 +370,38 @@ function AssetActivities({ assetId }: { assetId: string }) {
   );
 
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b px-4 sm:px-8">
-        <ActivityIcon className="size-3.5 text-muted-foreground" />
-        <div className="font-serif text-xl leading-none font-normal">
-          Activities
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      {rows.length === 0 ? (
+        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+          No activity involves this asset yet.
         </div>
-        <div className="flex-1" />
-        <div className="text-xs text-muted-foreground">
-          {rows.length} {rows.length === 1 ? "activity" : "activities"}
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto">
-        {rows.length === 0 ? (
-          <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-            No activity involves this asset yet.
-          </div>
-        ) : (
-          rows.map(({ activity, amount }) => (
-            <ContextLink
-              key={activity.id}
-              to="/activities/$id"
-              params={{ id: activity.id }}
-              className="group flex h-10 items-center gap-2 border-b px-4 text-sm transition-colors hover:bg-muted/50 sm:px-8"
-            >
-              <LedgerDate date={activity.date} full />
-              <ActivityStatusIcon status={activity.status} />
-              {activity.depreciation != null && (
-                <TrendingDown
-                  aria-label="Generated by a depreciation schedule"
-                  className="mr-1 size-3.5 shrink-0 text-muted-foreground"
-                />
-              )}
-              <div className="min-w-0 truncate">{activity.name}</div>
-              <div className="flex-1" />
-              <div className="font-mono whitespace-nowrap">
-                {currencyFormatter.format(amount)}
-              </div>
-            </ContextLink>
-          ))
-        )}
-      </div>
+      ) : (
+        rows.map(({ activity, amount }) => (
+          <ContextLink
+            key={activity.id}
+            to="/activities/$id"
+            params={{ id: activity.id }}
+            className={cn(
+              ledgerRowClassName,
+              "group flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-muted/50 lg:pr-6",
+            )}
+          >
+            <LedgerDate date={activity.date} full />
+            <ActivityStatusIcon status={activity.status} />
+            {activity.depreciation != null && (
+              <TrendingDown
+                aria-label="Generated by a depreciation schedule"
+                className="mr-1 size-3.5 shrink-0 text-muted-foreground"
+              />
+            )}
+            <div className="min-w-0 truncate">{activity.name}</div>
+            <div className="flex-1" />
+            <div className="font-mono whitespace-nowrap">
+              {currencyFormatter.format(amount)}
+            </div>
+          </ContextLink>
+        ))
+      )}
     </div>
   );
 }
