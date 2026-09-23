@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES } from "@maille/core/accounts";
+import { ACCOUNT_TYPES, AccountType } from "@maille/core/accounts";
 import { useMemo } from "react";
 
 import {
@@ -20,6 +20,8 @@ interface AccountSelectProps {
   onChange: (value: string | undefined) => void;
   disabled?: boolean;
   movementsOnly?: boolean;
+  /** Restrict the selectable accounts to these types. */
+  types?: AccountType[];
   placeholder?: string;
   className?: string;
   id?: string;
@@ -32,14 +34,16 @@ export function AccountSelect({
   disabled = false,
   placeholder = "Account",
   movementsOnly = false,
+  types,
   className,
 }: AccountSelectProps) {
   const accounts = useAccounts((state) => state.accounts);
 
   const accountsToDisplay = useMemo(() => {
     if (movementsOnly) return accounts.filter((a) => a.movements);
+    if (types) return accounts.filter((a) => types.includes(a.type));
     return accounts;
-  }, [accounts, movementsOnly]);
+  }, [accounts, movementsOnly, types]);
 
   const accountTypesToDisplay = useMemo(() => {
     return ACCOUNT_TYPES.filter((accountType) => {

@@ -43,3 +43,5 @@ export type Account = {
   movements: boolean;
   sharing: AccountSharing[];
 };
+
+export * from "./depreciation";

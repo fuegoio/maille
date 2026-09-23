@@ -19,6 +19,7 @@ import { useAssets } from "./stores/assets";
 import { useContacts } from "./stores/contacts";
 import { useCounterparties } from "./stores/counterparties";
 import { useCustomViews } from "./stores/customViews";
+import { useAssetDepreciations } from "./stores/depreciations";
 import { useFunds } from "./stores/funds";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
@@ -63,6 +64,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       category
       subcategory
       project
+      depreciation
       transactions {
         id
         amount
@@ -195,6 +197,18 @@ const userDataQuery = graphql(/* GraphQL */ `
       location
     }
 
+    assetDepreciations {
+      id
+      asset
+      method
+      basis
+      months
+      startMonth
+      expenseAccount
+      category
+      subcategory
+    }
+
     counterparties {
       id
       account
@@ -292,6 +306,15 @@ export const fetchUserData = async () => {
           date: new Date(fundMove.date),
         })),
       })),
+    });
+  });
+
+  // Populate asset depreciations
+  userData.assetDepreciations.forEach((depreciation) => {
+    useAssetDepreciations.getState().addDepreciation({
+      ...depreciation,
+      method: "linear",
+      startMonth: new Date(depreciation.startMonth),
     });
   });
 
@@ -405,6 +428,7 @@ export const clearAllStores = () => {
     activitySubcategories: [],
   });
   useAssets.setState({ assets: [] });
+  useAssetDepreciations.setState({ depreciations: [] });
   useContacts.setState({ contacts: [] });
   useCounterparties.setState({ counterparties: [] });
   useMovements.setState({ movements: [] });

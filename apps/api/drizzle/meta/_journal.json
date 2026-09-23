@@ -134,6 +134,13 @@
       "when": 1789742048881,
       "tag": "0018_nappy_slyde",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790180227812,
+      "tag": "0019_cheerful_dragon_man",
+      "breakpoints": true
     }
   ]
 }

@@ -103,3 +103,17 @@ describe("getAssetTotals", () => {
     expect(getAssetTotals([activity], "gold")).toEqual({ in: 120, out: 30 });
   });
 });
+
+describe("getAssetValue", () => {
+  it("ignores scheduled future transactions, like a depreciation schedule's", () => {
+    const past = makeActivity([
+      makeTransaction({ id: "in", toAsset: "gold", amount: 1200 }),
+    ]);
+    const future = makeActivity(
+      [makeTransaction({ id: "out", fromAsset: "gold", amount: 50 })],
+      { date: new Date("2100-01-01") },
+    );
+
+    expect(getAssetValue([past, future], "gold")).toBe(1200);
+  });
+});

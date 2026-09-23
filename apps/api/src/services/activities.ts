@@ -6,13 +6,21 @@ import {
   getActivityStatus,
   type ActivityMovement,
 } from "@maille/core/activities";
-import { buildCreateEntry, buildLinkEntry, diffActivity } from "@maille/core/history";
-import { and, eq, like } from "drizzle-orm";
+import {
+  buildCreateEntry,
+  buildLinkEntry,
+  buildUnlinkEntry,
+  buildUpdateTransactionEntry,
+  diffActivity,
+  diffTransaction,
+} from "@maille/core/history";
+import { and, eq, like, ne } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { db } from "@/database";
 import {
   accounts,
   activities,
+  activitiesSharing,
   activityCategories,
   activitySubcategories,
   assets,
@@ -25,14 +33,16 @@ import {
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "@/api/events";
 import { computeHistory, emitHistoryEvents } from "@/api/history/history";
-import { loadHistoryLabels } from "@/api/history/labels";
+import { loadHistoryLabels, transactionLeg } from "@/api/history/labels";
 import { getActivitySharings } from "@/services/sharing";
 import {
   buildTransactionFundMoves,
   serializeFundMoves,
   toFundMoves,
 } from "@/api/funds/transactions";
+import type { FundMove } from "@maille/core/funds";
 import type { FundMoveInput } from "@/api/funds/types";
+import { logger } from "@/logger";
 import { cancelWorkflowIfActive, workflowClientId } from "@/workflows/store";
 
 export type TransactionInputArgs = {
@@ -61,6 +71,8 @@ export type CreateActivityArgs = {
   category?: string | null;
   subcategory?: string | null;
   project?: string | null;
+  /** The depreciation schedule generating this activity, if any. */
+  depreciation?: string | null;
   transactions?: TransactionInputArgs[] | null;
   movement?: ActivityMovementInputArgs | null;
 };
@@ -126,6 +138,7 @@ export async function createActivity(userId: string, clientId: string, args: Cre
     category,
     subcategory,
     project,
+    depreciation: args.depreciation ?? null,
     history: createHistory.history,
   });
 
@@ -295,6 +308,7 @@ export async function createActivity(userId: string, clientId: string, args: Cre
       category: category ?? null,
       subcategory: subcategory ?? null,
       project: project ?? null,
+      depreciation: args.depreciation ?? null,
       transactions: newTransactions.map((transaction) => ({
         ...transaction,
         fundMoves: serializeFundMoves(transaction.fundMoves),
@@ -328,6 +342,7 @@ export async function createActivity(userId: string, clientId: string, args: Cre
     category: category ?? null,
     subcategory: subcategory ?? null,
     project: project ?? null,
+    depreciation: args.depreciation ?? null,
     transactions: newTransactions,
     movements: newMovements,
     history: createHistory.history,
@@ -356,6 +371,8 @@ export type UpdateActivityArgs = {
   category?: string | null;
   subcategory?: string | null;
   project?: string | null;
+  /** Provenance, kept in step by the depreciation schedule's regeneration. */
+  depreciation?: string | null;
 };
 
 /**
@@ -432,6 +449,11 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
             .limit(1)
         )[0]?.id ?? null)
       : args.project;
+  }
+  // Provenance, not content: the schedule's regeneration rewrites it
+  // without a history entry.
+  if (args.depreciation !== undefined) {
+    activityUpdates.depreciation = args.depreciation;
   }
 
   // History: derive the diff from the before/after rows.
@@ -578,5 +600,350 @@ export async function updateActivity(userId: string, clientId: string, args: Upd
       await getActivitySharings(activity.id, userId),
       userId,
     ),
+  };
+}
+
+/**
+ * Deletes an activity with its sharing, movement links and their history.
+ * The canonical implementation shared by the `deleteActivity` GraphQL
+ * mutation and the depreciation schedules, so both go through the same
+ * unlink history and sync events.
+ */
+export async function deleteActivity(userId: string, clientId: string, id: string) {
+  const writer = { user: { id: userId }, session: { id: clientId } };
+
+  const activity = (
+    await db
+      .select()
+      .from(activities)
+      .where(and(like(activities.id, idPattern(id)), eq(activities.user, userId)))
+      .limit(1)
+  )[0];
+  if (!activity) {
+    return {
+      id: id,
+      success: true,
+    };
+  }
+
+  // Update activities sharing
+  const sharingId = (
+    await db.select().from(activitiesSharing).where(eq(activitiesSharing.activity, activity.id))
+  )[0]?.sharingId;
+  const activitySharings = sharingId
+    ? await db
+        .select()
+        .from(activitiesSharing)
+        .where(and(ne(activitiesSharing.user, userId), eq(activitiesSharing.sharingId, sharingId)))
+    : [];
+  await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, activity.id));
+  activitySharings.forEach(async (as) => {
+    const sharing = getActivitySharingsReconciliation(
+      await getActivitySharings(as.activity, as.user),
+      as.user,
+    );
+    await addEvent({
+      type: "updateActivitySharing",
+      payload: {
+        activityId: as.activity,
+        sharing: sharing,
+      },
+      createdAt: new Date(),
+      clientId: clientId,
+      user: as.user,
+    });
+  });
+
+  // History: unlink entries on the movements this activity was linked to.
+  const linkedMovements = await db
+    .select({
+      linkAmount: movementsActivities.amount,
+      movement: movements,
+    })
+    .from(movementsActivities)
+    .innerJoin(movements, eq(movementsActivities.movement, movements.id))
+    .where(eq(movementsActivities.activity, activity.id));
+
+  for (const { linkAmount, movement } of linkedMovements) {
+    const { history, emitted } = computeHistory(writer, movement.history, [
+      buildUnlinkEntry(
+        "movement",
+        movement.id,
+        {
+          type: "activity",
+          id: activity.id,
+          label: activity.name,
+        },
+        linkAmount,
+      ),
+    ]);
+    await db.update(movements).set({ history }).where(eq(movements.id, movement.id));
+    await emitHistoryEvents(writer, emitted);
+  }
+
+  await db.delete(activities).where(eq(activities.id, activity.id));
+
+  void addEvent({
+    type: "deleteActivity",
+    payload: {
+      id: activity.id,
+    },
+    createdAt: new Date(),
+    clientId: clientId,
+    user: userId,
+  });
+
+  return {
+    id: activity.id,
+    success: true,
+  };
+}
+
+export type UpdateTransactionArgs = {
+  activityId: string;
+  id: string;
+  amount?: number | null;
+  fromAccount?: string | null;
+  fromAsset?: string | null;
+  fromCounterparty?: string | null;
+  toAccount?: string | null;
+  toAsset?: string | null;
+  toCounterparty?: string | null;
+  fundMoves?: FundMoveInput[] | null;
+};
+
+/**
+ * Updates a transaction leg with its fund moves, history and sharing
+ * events. The canonical implementation shared by the `updateTransaction`
+ * GraphQL mutation and the depreciation schedules, so both go through
+ * the same history, sync events and workflow hooks.
+ */
+export async function updateTransaction(
+  userId: string,
+  clientId: string,
+  args: UpdateTransactionArgs,
+) {
+  const writer = { user: { id: userId }, session: { id: clientId } };
+
+  const activity = (
+    await db
+      .select()
+      .from(activities)
+      .where(and(like(activities.id, idPattern(args.activityId)), eq(activities.user, userId)))
+      .limit(1)
+  )[0];
+  if (!activity) {
+    throw new GraphQLError("Activity not found");
+  }
+
+  const transaction = (
+    await db
+      .select()
+      .from(transactions)
+      .where(and(like(transactions.id, idPattern(args.id)), eq(transactions.activity, activity.id)))
+      .limit(1)
+  )[0];
+  if (!transaction) {
+    throw new GraphQLError("Transaction not found");
+  }
+
+  const updatedFields: Partial<typeof transaction> = {};
+  if (args.amount !== null && args.amount !== undefined) updatedFields.amount = args.amount;
+  if (args.fromAccount)
+    updatedFields.fromAccount =
+      (
+        await db
+          .select({ id: accounts.id })
+          .from(accounts)
+          .where(and(like(accounts.id, idPattern(args.fromAccount)), eq(accounts.user, userId)))
+          .limit(1)
+      )[0]?.id ?? args.fromAccount;
+  if (args.fromAsset !== undefined)
+    updatedFields.fromAsset = args.fromAsset
+      ? (
+          await db
+            .select({ id: assets.id })
+            .from(assets)
+            .where(and(like(assets.id, idPattern(args.fromAsset)), eq(assets.user, userId)))
+            .limit(1)
+        )[0]?.id
+      : args.fromAsset;
+  if (args.fromCounterparty !== undefined)
+    updatedFields.fromCounterparty = args.fromCounterparty
+      ? (
+          await db
+            .select({ id: counterparties.id })
+            .from(counterparties)
+            .where(
+              and(
+                like(counterparties.id, idPattern(args.fromCounterparty)),
+                eq(counterparties.user, userId),
+              ),
+            )
+            .limit(1)
+        )[0]?.id
+      : args.fromCounterparty;
+  if (args.toAccount)
+    updatedFields.toAccount =
+      (
+        await db
+          .select({ id: accounts.id })
+          .from(accounts)
+          .where(and(like(accounts.id, idPattern(args.toAccount)), eq(accounts.user, userId)))
+          .limit(1)
+      )[0]?.id ?? args.toAccount;
+  if (args.toAsset !== undefined)
+    updatedFields.toAsset = args.toAsset
+      ? (
+          await db
+            .select({ id: assets.id })
+            .from(assets)
+            .where(and(like(assets.id, idPattern(args.toAsset)), eq(assets.user, userId)))
+            .limit(1)
+        )[0]?.id
+      : args.toAsset;
+  if (args.toCounterparty !== undefined)
+    updatedFields.toCounterparty = args.toCounterparty
+      ? (
+          await db
+            .select({ id: counterparties.id })
+            .from(counterparties)
+            .where(
+              and(
+                like(counterparties.id, idPattern(args.toCounterparty)),
+                eq(counterparties.user, userId),
+              ),
+            )
+            .limit(1)
+        )[0]?.id
+      : args.toCounterparty;
+
+  // Replace fund legs when provided (undefined = keep existing legs).
+  // Legs live on the transaction row, stored with the activity's date.
+  let updatedFundMoves: FundMove[] | null = null;
+  if (args.fundMoves !== null && args.fundMoves !== undefined) {
+    const legs = await buildTransactionFundMoves({
+      userId: userId,
+      transactionDate: activity.date,
+      amount: args.amount !== null && args.amount !== undefined ? args.amount : transaction.amount,
+      fromAccount: updatedFields.fromAccount ?? transaction.fromAccount,
+      toAccount: updatedFields.toAccount ?? transaction.toAccount,
+      fundMovesInput: args.fundMoves,
+    });
+    updatedFundMoves = toFundMoves(transaction.id, legs);
+    if (legs.length > 0 || (transaction.fundMoves ?? []).length > 0) {
+      updatedFields.fundMoves = legs;
+    }
+  }
+
+  const updatedTransactions =
+    Object.keys(updatedFields).length > 0
+      ? await db
+          .update(transactions)
+          .set(updatedFields)
+          .where(eq(transactions.id, transaction.id))
+          .returning()
+      : await db.select().from(transactions).where(eq(transactions.id, transaction.id));
+  const updatedTransaction = updatedTransactions[0];
+
+  if (!updatedTransaction) {
+    throw new GraphQLError("Failed to update transaction");
+  }
+
+  // The stored legs stay on the row; the event carries the serialized
+  // moves instead.
+  const { fundMoves: _storedLegs, ...updatedFieldsWithoutLegs } = updatedFields;
+
+  await addEvent({
+    type: "updateTransaction",
+    payload: {
+      activityId: transaction.activity,
+      id: transaction.id,
+      ...updatedFieldsWithoutLegs,
+      ...(updatedFundMoves !== null ? { fundMoves: serializeFundMoves(updatedFundMoves) } : {}),
+    },
+    createdAt: new Date(),
+    clientId: clientId,
+    user: userId,
+  });
+
+  // History: updateTransaction entry on the activity timeline.
+  const labels = await loadHistoryLabels(userId);
+  const updateTransactionChanges = diffTransaction(
+    {
+      amount: transaction.amount,
+      from: transactionLeg(
+        transaction.fromAccount,
+        transaction.fromAsset,
+        transaction.fromCounterparty,
+        labels,
+      ),
+      to: transactionLeg(
+        transaction.toAccount,
+        transaction.toAsset,
+        transaction.toCounterparty,
+        labels,
+      ),
+    },
+    {
+      amount: updatedTransaction.amount,
+      from: transactionLeg(
+        updatedTransaction.fromAccount,
+        updatedTransaction.fromAsset,
+        updatedTransaction.fromCounterparty,
+        labels,
+      ),
+      to: transactionLeg(
+        updatedTransaction.toAccount,
+        updatedTransaction.toAsset,
+        updatedTransaction.toCounterparty,
+        labels,
+      ),
+    },
+  );
+  const updateTransactionEntry = buildUpdateTransactionEntry(
+    "activity",
+    activity.id,
+    updateTransactionChanges,
+  );
+  if (updateTransactionEntry) {
+    const { history, emitted } = computeHistory(writer, activity.history, [updateTransactionEntry]);
+    await db.update(activities).set({ history }).where(eq(activities.id, activity.id));
+    await emitHistoryEvents(writer, emitted);
+  }
+
+  // Update sharing
+  const sharingId = (
+    await db
+      .select()
+      .from(activitiesSharing)
+      .where(eq(activitiesSharing.activity, transaction.activity))
+  )[0]?.sharingId;
+  const activitySharings = sharingId
+    ? await db.select().from(activitiesSharing).where(eq(activitiesSharing.sharingId, sharingId))
+    : [];
+
+  logger.info({ updatedTransaction, activitySharings }, "Updating activity sharing");
+  await Promise.all(
+    activitySharings.map(async (activitySharing) => {
+      await addEvent({
+        type: "updateActivitySharing",
+        payload: {
+          activityId: activitySharing.activity,
+          sharing: getActivitySharingsReconciliation(
+            await getActivitySharings(activitySharing.activity, activitySharing.user),
+            activitySharing.user,
+          ),
+        },
+        createdAt: new Date(),
+        clientId: clientId,
+        user: activitySharing.user,
+      });
+    }),
+  );
+
+  return {
+    ...updatedTransaction,
+    fundMoves: updatedFundMoves ?? toFundMoves(updatedTransaction.id, updatedTransaction.fundMoves),
   };
 }

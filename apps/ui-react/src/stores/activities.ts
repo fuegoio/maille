@@ -95,6 +95,7 @@ interface ActivitiesState {
       category?: string | null;
       subcategory?: string | null;
       project?: string | null;
+      depreciation?: string | null;
       sharing?: ActivitySharing[];
       history?: SerializedHistoryEntry[];
     },
@@ -407,6 +408,7 @@ export const useActivities = create<ActivitiesState>()(
           category?: string | null;
           subcategory?: string | null;
           project?: string | null;
+          depreciation?: string | null;
           sharing?: ActivitySharing[];
           history?: SerializedHistoryEntry[];
         },
@@ -607,6 +609,7 @@ export const useActivities = create<ActivitiesState>()(
           get().addActivity({
             ...event.payload,
             date: new Date(event.payload.date),
+            depreciation: event.payload.depreciation ?? null,
             sharing: event.payload.sharing ?? [],
             movements: event.payload.movement ? [event.payload.movement] : [],
             transactions: event.payload.transactions.map<Transaction>(
@@ -839,7 +842,7 @@ export const useActivities = create<ActivitiesState>()(
     }),
     {
       name: "activities",
-      version: 2,
+      version: 3,
       storage: storage,
       migrate: (persisted) => {
         const state = persisted as { activities?: Activity[] };
@@ -847,6 +850,7 @@ export const useActivities = create<ActivitiesState>()(
         // the transactions, never stored. Persisted rows predate them and
         // would crash the UI before the refetch replaces them, so they are
         // dropped; the flag below triggers an immediate refetch.
+        // v3: activities gain the depreciation provenance field.
         migrationFlags.refetchUserData = true;
         state.activities = [];
         return state;

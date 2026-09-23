@@ -39,6 +39,7 @@ const makeActivity = (overrides: Partial<Activity> = {}): Activity => ({
   category: null,
   subcategory: null,
   project: null,
+  depreciation: null,
   transactions: [],
   movements: [],
   sharing: [],

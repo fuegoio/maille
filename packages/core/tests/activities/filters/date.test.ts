@@ -87,6 +87,7 @@ describe("date filters on activity", () => {
       category: null,
       subcategory: null,
       project: null,
+      depreciation: null,
       amount: 10,
       transactions: [],
       movements: [],

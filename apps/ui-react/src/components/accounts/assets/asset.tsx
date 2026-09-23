@@ -3,6 +3,7 @@ import { MapPin, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { AssetDepreciationSection } from "@/components/accounts/assets/asset-depreciation";
 import {
   ContextLink,
   PageBreadcrumbs,
@@ -254,6 +255,8 @@ export function AssetPage({ assetId }: AssetPageProps) {
               </label>
             </div>
           </div>
+
+          <AssetDepreciationSection asset={asset} />
 
           <section className="flex min-h-0 flex-1 flex-col">
             <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-4 sm:px-8">

@@ -1,11 +1,5 @@
 import { getActivitySharingsReconciliation } from "@maille/core/activities";
-import {
-  buildAddTransactionEntry,
-  buildRemoveTransactionEntry,
-  buildUnlinkEntry,
-  buildUpdateTransactionEntry,
-  diffTransaction,
-} from "@maille/core/history";
+import { buildAddTransactionEntry, buildRemoveTransactionEntry } from "@maille/core/history";
 import { builder } from "../builder";
 import {
   ActivityCategorySchema,
@@ -25,8 +19,6 @@ import {
   assets,
   contacts,
   counterparties,
-  movements,
-  movementsActivities,
   transactions,
 } from "@/tables";
 import { db } from "@/database";
@@ -40,11 +32,15 @@ import {
   serializeFundMoves,
   toFundMoves,
 } from "@/api/funds/transactions";
-import type { FundMove } from "@maille/core/funds";
-import { and, eq, like, ne } from "drizzle-orm";
+import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
 import { logger } from "@/logger";
-import { createActivity, updateActivity } from "@/services/activities";
+import {
+  createActivity,
+  deleteActivity,
+  updateActivity,
+  updateTransaction,
+} from "@/services/activities";
 
 const TransactionInput = builder.inputType("TransactionInput", {
   fields: (t) => ({
@@ -164,101 +160,7 @@ export const registerActivitiesMutations = () => {
           type: "String",
         }),
       },
-      resolve: async (root, args, ctx) => {
-        const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(and(like(activities.id, idPattern(args.id)), eq(activities.user, ctx.user.id)))
-            .limit(1)
-        )[0];
-        if (!activity) {
-          return {
-            id: args.id,
-            success: true,
-          };
-        }
-
-        // Update activities sharing
-        const sharingId = (
-          await db
-            .select()
-            .from(activitiesSharing)
-            .where(eq(activitiesSharing.activity, activity.id))
-        )[0]?.sharingId;
-        const activitySharings = sharingId
-          ? await db
-              .select()
-              .from(activitiesSharing)
-              .where(
-                and(
-                  ne(activitiesSharing.user, ctx.user.id),
-                  eq(activitiesSharing.sharingId, sharingId),
-                ),
-              )
-          : [];
-        await db.delete(activitiesSharing).where(eq(activitiesSharing.activity, activity.id));
-        activitySharings.forEach(async (as) => {
-          const sharing = getActivitySharingsReconciliation(
-            await getActivitySharings(as.activity, as.user),
-            as.user,
-          );
-          await addEvent({
-            type: "updateActivitySharing",
-            payload: {
-              activityId: as.activity,
-              sharing: sharing,
-            },
-            createdAt: new Date(),
-            clientId: ctx.session.id,
-            user: as.user,
-          });
-        });
-
-        // History: unlink entries on the movements this activity was linked to.
-        const linkedMovements = await db
-          .select({
-            linkAmount: movementsActivities.amount,
-            movement: movements,
-          })
-          .from(movementsActivities)
-          .innerJoin(movements, eq(movementsActivities.movement, movements.id))
-          .where(eq(movementsActivities.activity, activity.id));
-
-        for (const { linkAmount, movement } of linkedMovements) {
-          const { history, emitted } = computeHistory(ctx, movement.history, [
-            buildUnlinkEntry(
-              "movement",
-              movement.id,
-              {
-                type: "activity",
-                id: activity.id,
-                label: activity.name,
-              },
-              linkAmount,
-            ),
-          ]);
-          await db.update(movements).set({ history }).where(eq(movements.id, movement.id));
-          await emitHistoryEvents(ctx, emitted);
-        }
-
-        await db.delete(activities).where(eq(activities.id, activity.id));
-
-        void addEvent({
-          type: "deleteActivity",
-          payload: {
-            id: activity.id,
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-
-        return {
-          id: activity.id,
-          success: true,
-        };
-      },
+      resolve: (root, args, ctx) => deleteActivity(ctx.user.id, ctx.session.id, args.id),
     }),
   );
 
@@ -650,259 +552,7 @@ export const registerActivitiesMutations = () => {
         }),
         fundMoves: t.arg({ type: [FundMoveInput], required: false }),
       },
-      resolve: async (root, args, ctx) => {
-        const activity = (
-          await db
-            .select()
-            .from(activities)
-            .where(
-              and(
-                like(activities.id, idPattern(args.activityId)),
-                eq(activities.user, ctx.user.id),
-              ),
-            )
-            .limit(1)
-        )[0];
-        if (!activity) {
-          throw new GraphQLError("Activity not found");
-        }
-
-        const transaction = (
-          await db
-            .select()
-            .from(transactions)
-            .where(
-              and(
-                like(transactions.id, idPattern(args.id)),
-                eq(transactions.activity, activity.id),
-              ),
-            )
-            .limit(1)
-        )[0];
-        if (!transaction) {
-          throw new GraphQLError("Transaction not found");
-        }
-
-        const updatedFields: Partial<typeof transaction> = {};
-        if (args.amount !== null && args.amount !== undefined) updatedFields.amount = args.amount;
-        if (args.fromAccount)
-          updatedFields.fromAccount =
-            (
-              await db
-                .select({ id: accounts.id })
-                .from(accounts)
-                .where(
-                  and(
-                    like(accounts.id, idPattern(args.fromAccount)),
-                    eq(accounts.user, ctx.user.id),
-                  ),
-                )
-                .limit(1)
-            )[0]?.id ?? args.fromAccount;
-        if (args.fromAsset !== undefined)
-          updatedFields.fromAsset = args.fromAsset
-            ? (
-                await db
-                  .select({ id: assets.id })
-                  .from(assets)
-                  .where(
-                    and(like(assets.id, idPattern(args.fromAsset)), eq(assets.user, ctx.user.id)),
-                  )
-                  .limit(1)
-              )[0]?.id
-            : args.fromAsset;
-        if (args.fromCounterparty !== undefined)
-          updatedFields.fromCounterparty = args.fromCounterparty
-            ? (
-                await db
-                  .select({ id: counterparties.id })
-                  .from(counterparties)
-                  .where(
-                    and(
-                      like(counterparties.id, idPattern(args.fromCounterparty)),
-                      eq(counterparties.user, ctx.user.id),
-                    ),
-                  )
-                  .limit(1)
-              )[0]?.id
-            : args.fromCounterparty;
-        if (args.toAccount)
-          updatedFields.toAccount =
-            (
-              await db
-                .select({ id: accounts.id })
-                .from(accounts)
-                .where(
-                  and(like(accounts.id, idPattern(args.toAccount)), eq(accounts.user, ctx.user.id)),
-                )
-                .limit(1)
-            )[0]?.id ?? args.toAccount;
-        if (args.toAsset !== undefined)
-          updatedFields.toAsset = args.toAsset
-            ? (
-                await db
-                  .select({ id: assets.id })
-                  .from(assets)
-                  .where(
-                    and(like(assets.id, idPattern(args.toAsset)), eq(assets.user, ctx.user.id)),
-                  )
-                  .limit(1)
-              )[0]?.id
-            : args.toAsset;
-        if (args.toCounterparty !== undefined)
-          updatedFields.toCounterparty = args.toCounterparty
-            ? (
-                await db
-                  .select({ id: counterparties.id })
-                  .from(counterparties)
-                  .where(
-                    and(
-                      like(counterparties.id, idPattern(args.toCounterparty)),
-                      eq(counterparties.user, ctx.user.id),
-                    ),
-                  )
-                  .limit(1)
-              )[0]?.id
-            : args.toCounterparty;
-
-        // Replace fund legs when provided (undefined = keep existing legs).
-        // Legs live on the transaction row, stored with the activity's date.
-        let updatedFundMoves: FundMove[] | null = null;
-        if (args.fundMoves !== null && args.fundMoves !== undefined) {
-          const legs = await buildTransactionFundMoves({
-            userId: ctx.user.id,
-            transactionDate: activity.date,
-            amount:
-              args.amount !== null && args.amount !== undefined ? args.amount : transaction.amount,
-            fromAccount: updatedFields.fromAccount ?? transaction.fromAccount,
-            toAccount: updatedFields.toAccount ?? transaction.toAccount,
-            fundMovesInput: args.fundMoves,
-          });
-          updatedFundMoves = toFundMoves(transaction.id, legs);
-          if (legs.length > 0 || (transaction.fundMoves ?? []).length > 0) {
-            updatedFields.fundMoves = legs;
-          }
-        }
-
-        const updatedTransactions =
-          Object.keys(updatedFields).length > 0
-            ? await db
-                .update(transactions)
-                .set(updatedFields)
-                .where(eq(transactions.id, transaction.id))
-                .returning()
-            : await db.select().from(transactions).where(eq(transactions.id, transaction.id));
-        const updatedTransaction = updatedTransactions[0];
-
-        if (!updatedTransaction) {
-          throw new GraphQLError("Failed to update transaction");
-        }
-
-        // The stored legs stay on the row; the event carries the serialized
-        // moves instead.
-        const { fundMoves: _storedLegs, ...updatedFieldsWithoutLegs } = updatedFields;
-
-        await addEvent({
-          type: "updateTransaction",
-          payload: {
-            activityId: transaction.activity,
-            id: transaction.id,
-            ...updatedFieldsWithoutLegs,
-            ...(updatedFundMoves !== null
-              ? { fundMoves: serializeFundMoves(updatedFundMoves) }
-              : {}),
-          },
-          createdAt: new Date(),
-          clientId: ctx.session.id,
-          user: ctx.user.id,
-        });
-
-        // History: updateTransaction entry on the activity timeline.
-        const labels = await loadHistoryLabels(ctx.user.id);
-        const updateTransactionChanges = diffTransaction(
-          {
-            amount: transaction.amount,
-            from: transactionLeg(
-              transaction.fromAccount,
-              transaction.fromAsset,
-              transaction.fromCounterparty,
-              labels,
-            ),
-            to: transactionLeg(
-              transaction.toAccount,
-              transaction.toAsset,
-              transaction.toCounterparty,
-              labels,
-            ),
-          },
-          {
-            amount: updatedTransaction.amount,
-            from: transactionLeg(
-              updatedTransaction.fromAccount,
-              updatedTransaction.fromAsset,
-              updatedTransaction.fromCounterparty,
-              labels,
-            ),
-            to: transactionLeg(
-              updatedTransaction.toAccount,
-              updatedTransaction.toAsset,
-              updatedTransaction.toCounterparty,
-              labels,
-            ),
-          },
-        );
-        const updateTransactionEntry = buildUpdateTransactionEntry(
-          "activity",
-          activity.id,
-          updateTransactionChanges,
-        );
-        if (updateTransactionEntry) {
-          const { history, emitted } = computeHistory(ctx, activity.history, [
-            updateTransactionEntry,
-          ]);
-          await db.update(activities).set({ history }).where(eq(activities.id, activity.id));
-          await emitHistoryEvents(ctx, emitted);
-        }
-
-        // Update sharing
-        const sharingId = (
-          await db
-            .select()
-            .from(activitiesSharing)
-            .where(eq(activitiesSharing.activity, transaction.activity))
-        )[0]?.sharingId;
-        const activitySharings = sharingId
-          ? await db
-              .select()
-              .from(activitiesSharing)
-              .where(eq(activitiesSharing.sharingId, sharingId))
-          : [];
-
-        logger.info({ updatedTransaction, activitySharings }, "Updating activity sharing");
-        await Promise.all(
-          activitySharings.map(async (activitySharing) => {
-            await addEvent({
-              type: "updateActivitySharing",
-              payload: {
-                activityId: activitySharing.activity,
-                sharing: getActivitySharingsReconciliation(
-                  await getActivitySharings(activitySharing.activity, activitySharing.user),
-                  activitySharing.user,
-                ),
-              },
-              createdAt: new Date(),
-              clientId: ctx.session.id,
-              user: activitySharing.user,
-            });
-          }),
-        );
-
-        return {
-          ...updatedTransaction,
-          fundMoves:
-            updatedFundMoves ?? toFundMoves(updatedTransaction.id, updatedTransaction.fundMoves),
-        };
-      },
+      resolve: (root, args, ctx) => updateTransaction(ctx.user.id, ctx.session.id, args),
     }),
   );
 

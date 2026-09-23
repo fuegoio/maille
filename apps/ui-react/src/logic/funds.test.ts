@@ -99,6 +99,7 @@ const activity = (
   category: null,
   subcategory: null,
   project: null,
+  depreciation: null,
   transactions,
   movements: [],
   amount: 0,

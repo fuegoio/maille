@@ -34,15 +34,32 @@ export function assetTransactions(
 }
 
 /**
- * The asset's current value: the money it received minus the money it
- * gave, exactly as the ledger's transactions record it.
+ * The asset's current value: the money it has received minus the money it
+ * has given, as of `now` — scheduled future transactions (a depreciation
+ * schedule's, typically) don't count until their date arrives.
  */
-export function getAssetValue(activities: Activity[], assetId: string): number {
+export function getAssetValue(
+  activities: Activity[],
+  assetId: string,
+  now: Date = new Date(),
+): number {
+  const endOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999,
+  ).getTime();
+
   return assetTransactions(activities, assetId).reduce(
-    (total, { transaction, direction }) =>
-      direction === "in"
-        ? total + transaction.amount
-        : total - transaction.amount,
+    (total, { activity, transaction, direction }) =>
+      activity.date.getTime() <= endOfToday
+        ? direction === "in"
+          ? total + transaction.amount
+          : total - transaction.amount
+        : total,
     0,
   );
 }
