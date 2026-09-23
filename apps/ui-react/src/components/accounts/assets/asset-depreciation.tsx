@@ -3,8 +3,6 @@ import type { Asset, AssetDepreciation } from "@maille/core/accounts";
 import { AccountType, addMonths, firstOfMonth } from "@maille/core/accounts";
 import { format } from "date-fns";
 import {
-  CircleCheck,
-  CircleDashed,
   ChevronLeft,
   ChevronRight,
   Pencil,
@@ -12,10 +10,9 @@ import {
   Trash2,
   TrendingDown,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
-import { ContextLink } from "@/components/navigation/breadcrumbs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,9 +69,9 @@ interface AssetDepreciationSectionProps {
 }
 
 /**
- * The asset's depreciation: the schedule's summary, the activities it
- * manages, and the form that creates or reshapes it. Generated activities
- * arrive as ordinary ledger rows; this section is their schedule's home.
+ * The asset's depreciation schedule: its summary and the form that
+ * creates or reshapes it. The activities it manages are ordinary ledger
+ * rows — the page's Activities tab lists them.
  */
 export function AssetDepreciationSection({
   asset,
@@ -83,16 +80,7 @@ export function AssetDepreciationSection({
   const plan = useAssetDepreciations((state) =>
     state.getDepreciationByAsset(asset.id),
   );
-  const activities = useActivities((state) => state.activities);
   const [scheduleOpen, setScheduleOpen] = useState(false);
-
-  const scheduledActivities = useMemo(
-    () =>
-      activities
-        .filter((activity) => activity.depreciation === (plan?.id ?? "none"))
-        .sort((a, b) => a.date.getTime() - b.date.getTime()),
-    [activities, plan?.id],
-  );
 
   return (
     <section className="shrink-0 border-b">
@@ -101,14 +89,16 @@ export function AssetDepreciationSection({
         <div className="font-serif text-xl leading-none font-normal">
           Depreciation
         </div>
+        {plan && (
+          <div className="ml-1 hidden min-w-0 truncate text-sm text-muted-foreground md:block">
+            {currencyFormatter.format(plan.basis / plan.months)} / month for{" "}
+            {plan.months} {plan.months === 1 ? "month" : "months"}
+          </div>
+        )}
         <div className="flex-1" />
 
         {plan ? (
           <>
-            <div className="hidden min-w-0 truncate text-sm text-muted-foreground md:block">
-              {currencyFormatter.format(plan.basis / plan.months)} / month for{" "}
-              {plan.months} {plan.months === 1 ? "month" : "months"}
-            </div>
             <DepreciationScheduleDialog
               asset={asset}
               plan={plan}
@@ -141,44 +131,6 @@ export function AssetDepreciationSection({
           />
         )}
       </header>
-
-      {plan && (
-        <div className="max-h-56 overflow-y-auto">
-          {scheduledActivities.length === 0 ? (
-            <div className="px-4 py-4 text-xs text-muted-foreground sm:px-8">
-              No activity generated yet.
-            </div>
-          ) : (
-            scheduledActivities.map((activity) => (
-              <ContextLink
-                key={activity.id}
-                to="/activities/$id"
-                params={{ id: activity.id }}
-                className="group flex h-10 items-center gap-2 border-t px-4 text-sm transition-colors first:border-t-0 hover:bg-muted/50 sm:px-8"
-              >
-                <div className="w-20 shrink-0 text-muted-foreground">
-                  {format(activity.date, "MMM yyyy")}
-                </div>
-                {activity.status === "scheduled" ? (
-                  <CircleDashed className="size-4 shrink-0 text-muted-foreground" />
-                ) : (
-                  <CircleCheck className="size-4 shrink-0 text-primary" />
-                )}
-                <div className="min-w-0 truncate">{activity.name}</div>
-                <div className="flex-1" />
-                <div className="font-mono whitespace-nowrap">
-                  {currencyFormatter.format(
-                    activity.transactions.reduce(
-                      (sum, transaction) => sum + transaction.amount,
-                      0,
-                    ),
-                  )}
-                </div>
-              </ContextLink>
-            ))
-          )}
-        </div>
-      )}
     </section>
   );
 }
