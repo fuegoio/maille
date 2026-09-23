@@ -78,6 +78,7 @@ export function ExportActivitiesButton({
           variant="ghost"
           size="icon"
           className={className}
+          aria-label="Export activities"
           onClick={exportActivities}
         >
           <Download className="h-4 w-4" />

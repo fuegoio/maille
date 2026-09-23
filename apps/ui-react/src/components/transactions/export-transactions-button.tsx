@@ -93,6 +93,7 @@ export function ExportTransactionsButton({
           variant="ghost"
           size="icon"
           className={className}
+          aria-label="Export transactions"
           onClick={exportTransactions}
         >
           <Download className="h-4 w-4" />

@@ -1,17 +1,14 @@
 import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
-import {
-  CircleCheck,
-  CircleDashed,
-  CircleDotDashed,
-  House,
-  Trash2,
-  TrendingDown,
-} from "lucide-react";
+import { House, Trash2 } from "lucide-react";
 import { MapPin } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AssetDepreciationSection } from "@/components/accounts/assets/asset-depreciation";
+import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
+import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import {
   ContextLink,
   PageBreadcrumbs,
@@ -22,8 +19,6 @@ import {
   DebouncedInput,
   DebouncedTextarea,
 } from "@/components/shared/debounced-text-field";
-import { LedgerDate } from "@/components/shared/ledger-date";
-import { ledgerRowClassName } from "@/components/shared/ledger-table";
 import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { ViewActions } from "@/components/shared/view-actions";
 import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
@@ -45,9 +40,7 @@ import { Button } from "@/components/ui/button";
 import { RollingAmount } from "@/components/ui/rolling-amount";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { ActivityIcon, TransactionIcon } from "@/lib/icons";
-import { cn } from "@/lib/utils";
 import { assetActivities, getAssetTotals, getAssetValue } from "@/logic/assets";
 import { deleteAssetMutation, updateAssetMutation } from "@/mutations/assets";
 import { useActivities } from "@/stores/activities";
@@ -188,6 +181,10 @@ export function AssetPage({ assetId }: AssetPageProps) {
   if (!asset) return null;
 
   const viewId = `asset-${asset.id}-transactions`;
+  const activitiesViewId = `asset-${asset.id}-activities`;
+  const assetActivitiesList = assetActivities(activities, asset.id).map(
+    ({ activity }) => activity,
+  );
 
   return (
     <SidebarInset>
@@ -244,6 +241,17 @@ export function AssetPage({ assetId }: AssetPageProps) {
               </TabsTrigger>
             </TabsList>
             <div className="flex-1" />
+
+            {selectedTab === "activities" && (
+              <ViewActions>
+                <FilterActivitiesButton viewId={activitiesViewId} />
+                <ActivityViewSettingsButton viewId={activitiesViewId} />
+                <ExportActivitiesButton
+                  viewId={activitiesViewId}
+                  activities={assetActivitiesList}
+                />
+              </ViewActions>
+            )}
 
             {selectedTab === "transactions" && (
               <>
@@ -339,7 +347,10 @@ export function AssetPage({ assetId }: AssetPageProps) {
             value="activities"
             className="flex min-h-0 flex-1 flex-col"
           >
-            <AssetActivities assetId={asset.id} />
+            <ActivitiesTable
+              viewId={activitiesViewId}
+              activities={assetActivitiesList}
+            />
           </TabsContent>
 
           <TabsContent
@@ -355,63 +366,4 @@ export function AssetPage({ assetId }: AssetPageProps) {
       </div>
     </SidebarInset>
   );
-}
-
-/**
- * Every activity that touches the asset — purchases, sales, and the
- * depreciation schedule's generated rows, marked with their schedule.
- */
-function AssetActivities({ assetId }: { assetId: string }) {
-  const activities = useActivities((state) => state.activities);
-  const currencyFormatter = useCurrencyFormatter();
-  const rows = React.useMemo(
-    () => assetActivities(activities, assetId),
-    [activities, assetId],
-  );
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-      {rows.length === 0 ? (
-        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-          No activity involves this asset yet.
-        </div>
-      ) : (
-        rows.map(({ activity, amount }) => (
-          <ContextLink
-            key={activity.id}
-            to="/activities/$id"
-            params={{ id: activity.id }}
-            className={cn(
-              ledgerRowClassName,
-              "group flex h-10 shrink-0 items-center gap-2 border-b pr-2 pl-5.5 text-sm transition-colors hover:bg-muted/50 lg:pr-6",
-            )}
-          >
-            <LedgerDate date={activity.date} full />
-            <ActivityStatusIcon status={activity.status} />
-            {activity.depreciation != null && (
-              <TrendingDown
-                aria-label="Generated by a depreciation schedule"
-                className="mr-1 size-3.5 shrink-0 text-muted-foreground"
-              />
-            )}
-            <div className="min-w-0 truncate">{activity.name}</div>
-            <div className="flex-1" />
-            <div className="font-mono whitespace-nowrap">
-              {currencyFormatter.format(amount)}
-            </div>
-          </ContextLink>
-        ))
-      )}
-    </div>
-  );
-}
-
-function ActivityStatusIcon({ status }: { status: string }) {
-  if (status === "scheduled") {
-    return <CircleDashed className="size-4 shrink-0 text-muted-foreground" />;
-  }
-  if (status === "incomplete") {
-    return <CircleDotDashed className="size-4 shrink-0 text-warning" />;
-  }
-  return <CircleCheck className="size-4 shrink-0 text-primary" />;
 }
