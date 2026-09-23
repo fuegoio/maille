@@ -17,6 +17,7 @@ import {
   statusGroup,
   type GroupAccessors,
 } from "@/lib/view-grouping";
+import { assetTransactions } from "@/logic/assets";
 import { getTransactionSideFund, isLegNullSideUntracked } from "@/logic/funds";
 
 /**
@@ -61,6 +62,10 @@ export type TransactionViewFilter =
       accountId: string;
       /** Keep only transactions holding this fund on the account's side; null is Untracked. */
       fundFilter?: string | null;
+    }
+  | {
+      kind: "asset";
+      assetId: string;
     }
   | {
       kind: "fund";
@@ -209,6 +214,9 @@ export function buildTransactionRows(
   if (filter.kind === "account") {
     return buildAccountTransactionRows(activities, filter);
   }
+  if (filter.kind === "asset") {
+    return buildAssetTransactionRows(activities, filter);
+  }
   if (filter.kind === "month") {
     return buildMonthTransactionRows(activities, filter, accounts);
   }
@@ -328,6 +336,39 @@ function buildAccountTransactionRows(
   }
 
   return result;
+}
+
+function buildAssetTransactionRows(
+  activities: Activity[],
+  filter: Extract<TransactionViewFilter, { kind: "asset" }>,
+): TransactionRow[] {
+  const { assetId } = filter;
+
+  return assetTransactions(activities, assetId).map(
+    ({ activity, transaction, direction }) => {
+      // The asset rides on one side of the leg; funds read from that
+      // side's account, the counterpart from the other one.
+      const sideAccount =
+        direction === "in" ? transaction.toAccount : transaction.fromAccount;
+
+      return {
+        id: transaction.id,
+        date: activity.date,
+        activity,
+        direction,
+        counterpart: {
+          kind: "account",
+          account:
+            direction === "in"
+              ? transaction.fromAccount
+              : transaction.toAccount,
+        },
+        fund: getTransactionSideFund(transaction, sideAccount),
+        fundIds: accountTransactionFunds(transaction, sideAccount),
+        amount: transaction.amount,
+      };
+    },
+  );
 }
 
 function buildFundTransactionRows(

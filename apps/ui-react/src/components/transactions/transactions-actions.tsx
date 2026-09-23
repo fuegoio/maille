@@ -94,6 +94,14 @@ export function useTransactionsEntityActions(
             } else {
               updateFields.fromAccount = update.account;
             }
+          } else if (filter.kind === "asset") {
+            // The asset rides on one side of the leg; the counterpart
+            // is the account on the other side.
+            if (transaction.fromAsset === filter.assetId) {
+              updateFields.toAccount = update.account;
+            } else {
+              updateFields.fromAccount = update.account;
+            }
           } else if (filter.kind === "month") {
             // The month view reads from the balance sheet: retarget the
             // outside side on revenue and expense transactions, the
@@ -127,18 +135,29 @@ export function useTransactionsEntityActions(
         // every other leg alone; an amount change carries over to the
         // existing legs.
         const existingFundMoves = transaction.fundMoves ?? [];
+        // The account whose side of the transaction the view holds: fund
+        // retargeting writes that side's leg. An asset view holds the
+        // account its asset rides on.
+        const sideAccount =
+          filter.kind === "account"
+            ? filter.accountId
+            : filter.kind === "asset"
+              ? transaction.fromAsset === filter.assetId
+                ? transaction.fromAccount
+                : transaction.toAccount
+              : null;
         let effectiveFundMoves: FundMove[] | undefined;
-        if (update.fund !== undefined && filter.kind === "account") {
+        if (update.fund !== undefined && sideAccount !== null) {
           const trackedFromFund =
             existingFundMoves.find((m) => m.fromFund)?.fromFund ?? null;
           const trackedToFund =
             existingFundMoves.find((m) => m.toFund)?.toFund ?? null;
           const fromFund =
-            transaction.fromAccount === filter.accountId
+            transaction.fromAccount === sideAccount
               ? update.fund
               : trackedFromFund;
           const toFund =
-            transaction.fromAccount === filter.accountId
+            transaction.fromAccount === sideAccount
               ? trackedToFund
               : update.fund;
           effectiveFundMoves =

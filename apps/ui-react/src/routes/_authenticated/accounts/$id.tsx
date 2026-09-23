@@ -8,7 +8,6 @@ import { AccountLabel } from "@/components/accounts/account-label";
 import { AccountSettingsDialog } from "@/components/accounts/account-settings-dialog";
 import { AccountSummary } from "@/components/accounts/account-summary";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
-import { Asset } from "@/components/accounts/assets/asset";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
@@ -437,8 +436,6 @@ function AccountPage({ account }: { account: Account }) {
           />
         </SummaryPanel>
       </SidebarInset>
-
-      {selectedTab === "assets" && <Asset />}
     </>
   );
 }
