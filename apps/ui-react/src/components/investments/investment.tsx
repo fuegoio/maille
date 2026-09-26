@@ -434,6 +434,7 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
                       <Link
                         to="/accounts/$id"
                         params={{ id: investment.account }}
+                        search={{ view: "investments" }}
                       >
                         <AccountLabel accountId={investment.account} />
                       </Link>
