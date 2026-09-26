@@ -114,6 +114,7 @@ export function AccountSummary({
     account?.type === AccountType.INVESTMENT_ACCOUNT
       ? getAccountEstimation(
           investments,
+          activities,
           investmentPrices,
           accountId,
           estimationAt,

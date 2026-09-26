@@ -29,7 +29,7 @@ import { useSync } from "@/stores/sync";
 const createInvestmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
   symbol: z.string().optional(),
-  quantity: z.string().optional(),
+  initialQuantity: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -57,20 +57,22 @@ export function AddInvestmentModal({
     defaultValues: {
       name: "",
       symbol: "",
-      quantity: "",
+      initialQuantity: "",
       description: "",
     },
   });
 
   const onSubmit = async (data: CreateInvestmentFormValues) => {
-    const quantity = data.quantity ? Number(data.quantity) : 0;
+    const initialQuantity = data.initialQuantity
+      ? Number(data.initialQuantity)
+      : 0;
     const investment = {
       id: crypto.randomUUID(),
       account: accountId,
       name: data.name,
       symbol: data.symbol || null,
       description: data.description || null,
-      quantity: Number.isFinite(quantity) ? quantity : 0,
+      initialQuantity: Number.isFinite(initialQuantity) ? initialQuantity : 0,
     };
 
     mutate({
@@ -125,19 +127,20 @@ export function AddInvestmentModal({
           </Field>
 
           <Field>
-            <FieldLabel>Quantity (optional)</FieldLabel>
+            <FieldLabel>Initial quantity (optional)</FieldLabel>
             <FieldContent>
               <Input
-                {...register("quantity")}
+                {...register("initialQuantity")}
                 type="number"
                 step="any"
                 placeholder="0"
               />
             </FieldContent>
             <FieldDescription>
-              Units held: shares, coins, fund parts. Update it as you trade.
+              The units already held when the position starts tracking; buys and
+              sells then derive the current quantity.
             </FieldDescription>
-            <FieldError>{errors.quantity?.message}</FieldError>
+            <FieldError>{errors.initialQuantity?.message}</FieldError>
           </Field>
 
           <Field>

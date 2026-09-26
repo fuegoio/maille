@@ -1,3 +1,4 @@
+import type { Transaction } from "../activities/types";
 import { latestValueAt } from "../valuations";
 
 export type Investment = {
@@ -7,11 +8,12 @@ export type Investment = {
   symbol: string | null;
   description: string | null;
   /**
-   * Units held: shares, coins, fund parts; fractional is valid.
-   * Whole-position investments (a contract, a rental property) are
-   * quantity 1.
+   * The baseline units held before any ledger movement: the position's
+   * opening state, like an account's starting balance. Units held at any
+   * date derive from it plus the transaction legs referencing the
+   * investment.
    */
-  quantity: number;
+  initialQuantity: number;
 };
 
 /**
@@ -53,15 +55,39 @@ export function latestInvestmentPrice(
 }
 
 /**
- * The investment's market value at `at`: quantity times the unit price
- * in effect then. Null when unpriced: the caller decides how absence
- * is displayed, and never books it.
+ * Units held: the initial quantity plus every leg quantity flowing in,
+ * minus every leg quantity flowing out. Callers pass only the
+ * transactions dated at or before the date they ask about: future
+ * activities are previsions, and do not count until their date arrives.
+ */
+export function investmentQuantityAt(
+  investment: Investment,
+  transactions: readonly Transaction[],
+): number {
+  let quantity = investment.initialQuantity;
+  for (const transaction of transactions) {
+    if (transaction.toInvestment === investment.id) {
+      quantity += transaction.toQuantity ?? 0;
+    }
+    if (transaction.fromInvestment === investment.id) {
+      quantity -= transaction.fromQuantity ?? 0;
+    }
+  }
+  return quantity;
+}
+
+/**
+ * The investment's market value at `at`: units held (derived from the
+ * ledger legs) times the unit price in effect then. Null when unpriced:
+ * the caller decides how absence is displayed, and never books it.
  */
 export function investmentValueAt(
   investment: Investment,
+  transactions: readonly Transaction[],
   prices: readonly InvestmentPrice[],
   at: Date,
 ): number | null {
   const price = latestInvestmentPrice(prices, investment.id, at);
-  return price === null ? null : investment.quantity * price.price;
+  if (price === null) return null;
+  return investmentQuantityAt(investment, transactions) * price.price;
 }

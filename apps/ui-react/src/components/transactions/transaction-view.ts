@@ -19,6 +19,7 @@ import {
 } from "@/lib/view-grouping";
 import { assetTransactions } from "@/logic/assets";
 import { getTransactionSideFund, isLegNullSideUntracked } from "@/logic/funds";
+import { investmentTransactions } from "@/logic/investments";
 
 /**
  * A transaction as seen from a view's side: one account (the account
@@ -66,6 +67,10 @@ export type TransactionViewFilter =
   | {
       kind: "asset";
       assetId: string;
+    }
+  | {
+      kind: "investment";
+      investmentId: string;
     }
   | {
       kind: "fund";
@@ -217,6 +222,9 @@ export function buildTransactionRows(
   if (filter.kind === "asset") {
     return buildAssetTransactionRows(activities, filter);
   }
+  if (filter.kind === "investment") {
+    return buildInvestmentTransactionRows(activities, filter);
+  }
   if (filter.kind === "month") {
     return buildMonthTransactionRows(activities, filter, accounts);
   }
@@ -348,6 +356,43 @@ function buildAssetTransactionRows(
     ({ activity, transaction, direction }) => {
       // The asset rides on one side of the leg; funds read from that
       // side's account, the counterpart from the other one.
+      const sideAccount =
+        direction === "in" ? transaction.toAccount : transaction.fromAccount;
+
+      return {
+        id: transaction.id,
+        date: activity.date,
+        activity,
+        direction,
+        counterpart: {
+          kind: "account",
+          account:
+            direction === "in"
+              ? transaction.fromAccount
+              : transaction.toAccount,
+        },
+        fund: getTransactionSideFund(transaction, sideAccount),
+        fundIds: accountTransactionFunds(transaction, sideAccount),
+        amount: transaction.amount,
+      };
+    },
+  );
+}
+
+/**
+ * The position's transactions: every leg referencing the investment,
+ * buys flowing in, sells flowing out.
+ */
+function buildInvestmentTransactionRows(
+  activities: Activity[],
+  filter: Extract<TransactionViewFilter, { kind: "investment" }>,
+): TransactionRow[] {
+  const { investmentId } = filter;
+
+  return investmentTransactions(activities, investmentId).map(
+    ({ activity, transaction, direction }) => {
+      // The position rides on one side of the leg; funds read from
+      // that side's account, the counterpart from the other one.
       const sideAccount =
         direction === "in" ? transaction.toAccount : transaction.fromAccount;
 

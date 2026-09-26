@@ -74,6 +74,7 @@ export function AccountsTable() {
     type === AccountType.INVESTMENT_ACCOUNT
       ? getAccountEstimation(
           investments,
+          activities,
           investmentPrices,
           accountId,
           estimationAt,

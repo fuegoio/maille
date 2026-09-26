@@ -446,7 +446,7 @@ export interface CreateInvestmentEvent extends BaseSyncEvent {
     name: string;
     symbol: string | null;
     description: string | null;
-    quantity: number;
+    initialQuantity: number;
   };
 }
 
@@ -458,7 +458,7 @@ export interface UpdateInvestmentEvent extends BaseSyncEvent {
     name?: string;
     symbol?: string | null;
     description?: string | null;
-    quantity?: number;
+    initialQuantity?: number;
   };
 }
 

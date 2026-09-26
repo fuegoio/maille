@@ -1,7 +1,5 @@
-import {
-  investmentValueAt,
-  latestInvestmentPrice,
-} from "@maille/core/accounts";
+import type { InvestmentPrice } from "@maille/core/accounts";
+
 import { ChartLine, Plus } from "lucide-react";
 import { useMemo } from "react";
 
@@ -11,7 +9,14 @@ import { rowOutlineClasses } from "@/components/shared/row-outline";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { useTableRows, type TableRow } from "@/hooks/use-table-rows";
 import { cn } from "@/lib/utils";
-import { endOfToday } from "@/logic/investments";
+import {
+  endOfToday,
+  getInvestmentTotals,
+  investmentQuantityAsOf,
+  investmentValueAsOf,
+  latestInvestmentPrice,
+} from "@/logic/investments";
+import { useActivities } from "@/stores/activities";
 import { useInvestments } from "@/stores/investments";
 
 import { Button } from "../../ui/button";
@@ -28,10 +33,19 @@ interface InvestmentsTableProps {
   accountId: string;
 }
 
+/** The per-position facts of one row, derived from ledger and prices. */
+type InvestmentRow = {
+  quantity: number;
+  invested: number | null;
+  lastPrice: InvestmentPrice | null;
+  value: number | null;
+};
+
 export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
   const contextNavigate = useContextNavigate();
   const investments = useInvestments((state) => state.investments);
   const prices = useInvestments((state) => state.investmentPrices);
+  const activities = useActivities((state) => state.activities);
   const currencyFormatter = useCurrencyFormatter();
 
   const accountInvestments = useMemo(
@@ -39,19 +53,38 @@ export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
     [investments, accountId],
   );
 
-  // Largest value first; positions without a price keep store order
-  // after the priced ones.
+  const rowsData = useMemo(() => {
+    const now = new Date(endOfToday());
+    const data = new Map<string, InvestmentRow>();
+    for (const investment of accountInvestments) {
+      const totals = getInvestmentTotals(activities, investment.id);
+      const lastPrice = latestInvestmentPrice(prices, investment.id, now);
+      data.set(investment.id, {
+        quantity: investmentQuantityAsOf(investment, activities, now),
+        invested:
+          totals.in - totals.out === 0 && totals.in === 0
+            ? null
+            : totals.in - totals.out,
+        lastPrice,
+        value: investmentValueAsOf(investment, activities, prices, now),
+      });
+    }
+    return data;
+  }, [accountInvestments, activities, prices]);
+
+  // Largest value first; positions without a value keep store order
+  // after the valued ones.
   const sortedInvestments = useMemo(() => {
     const now = new Date(endOfToday());
     return [...accountInvestments].sort((a, b) => {
-      const aValue = investmentValueAt(a, prices, now);
-      const bValue = investmentValueAt(b, prices, now);
+      const aValue = investmentValueAsOf(a, activities, prices, now);
+      const bValue = investmentValueAsOf(b, activities, prices, now);
       if (aValue === null && bValue === null) return 0;
       if (aValue === null) return 1;
       if (bValue === null) return -1;
       return bValue - aValue;
     });
-  }, [accountInvestments, prices]);
+  }, [accountInvestments, activities, prices]);
 
   const rows = useMemo<TableRow[]>(
     () => accountInvestments.map((investment) => ({ id: investment.id })),
@@ -77,7 +110,11 @@ export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
   const now = new Date(endOfToday());
   const pricedTotal = accountInvestments.reduce(
     (total, investment) =>
-      total + (investmentValueAt(investment, prices, now) ?? 0),
+      total + (investmentValueAsOf(investment, activities, prices, now) ?? 0),
+    0,
+  );
+  const investedTotal = accountInvestments.reduce(
+    (total, investment) => total + (rowsData.get(investment.id)?.invested ?? 0),
     0,
   );
   const unpriced =
@@ -116,14 +153,15 @@ export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
         <div className="flex flex-1 flex-col overflow-x-hidden">
           <header className="flex h-8 items-center border-b bg-muted/50 pr-6 pl-14 text-xs font-medium text-muted-foreground">
             <div className="flex-1">Investment</div>
+            <div className="hidden w-32 text-right sm:block">Invested</div>
             <div className="hidden w-28 text-right sm:block">Quantity</div>
             <div className="hidden w-32 text-right sm:block">Last price</div>
             <div className="w-32 text-right">Value</div>
           </header>
 
           {sortedInvestments.map((investment) => {
-            const lastPrice = latestInvestmentPrice(prices, investment.id, now);
-            const value = investmentValueAt(investment, prices, now);
+            const rowData = rowsData.get(investment.id);
+            if (!rowData) return null;
 
             return (
               <div
@@ -148,24 +186,30 @@ export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
                   )}
                 </div>
 
+                <div className="hidden w-32 text-right font-mono text-sm text-muted-foreground sm:block">
+                  {rowData.invested !== null
+                    ? currencyFormatter.format(rowData.invested)
+                    : "—"}
+                </div>
+
                 <div className="hidden w-28 text-right font-mono text-sm text-muted-foreground sm:block">
-                  {investment.quantity}
+                  {rowData.quantity}
                 </div>
 
                 <div
                   className="hidden w-32 text-right font-mono text-sm sm:block"
-                  title={lastPrice ? "Unit price" : "No price yet"}
+                  title={rowData.lastPrice ? "Unit price" : "No price yet"}
                 >
-                  {lastPrice ? (
-                    currencyFormatter.format(lastPrice.price)
+                  {rowData.lastPrice ? (
+                    currencyFormatter.format(rowData.lastPrice.price)
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
                 </div>
 
                 <div className="w-32 text-right font-mono text-sm">
-                  {value !== null ? (
-                    currencyFormatter.format(value)
+                  {rowData.value !== null ? (
+                    currencyFormatter.format(rowData.value)
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
@@ -182,6 +226,9 @@ export function InvestmentsTable({ accountId }: InvestmentsTableProps) {
                   {unpriced} without price
                 </span>
               )}
+            </div>
+            <div className="hidden w-32 text-right font-mono text-foreground sm:block">
+              {currencyFormatter.format(investedTotal)}
             </div>
             <div className="hidden w-28 sm:block" />
             <div className="hidden w-32 sm:block" />

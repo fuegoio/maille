@@ -72,9 +72,13 @@ const userDataQuery = graphql(/* GraphQL */ `
         fromAccount
         fromAsset
         fromCounterparty
+        fromInvestment
+        fromQuantity
         toAccount
         toAsset
         toCounterparty
+        toInvestment
+        toQuantity
         fundMoves {
           id
           fromFund
@@ -232,7 +236,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       name
       symbol
       description
-      quantity
+      initialQuantity
     }
 
     investmentPrices {
