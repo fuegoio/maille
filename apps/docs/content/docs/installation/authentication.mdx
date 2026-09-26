@@ -1,0 +1,49 @@
+---
+title: Authentication
+description: Sign in through the web UI or authorize the Maille CLI.
+---
+
+Maille uses Better Auth for browser sessions and CLI device authorization. The
+API supports email/password and Google sign-in.
+
+## Web authentication
+
+Create an account at `/signup` or sign in at `/login`. Email/password accounts
+must use a password with at least eight characters, one number, and one special
+character. Google sign-in uses the OAuth client configured on the API.
+
+When a user is created, Maille also creates the default ledger accounts needed
+by the application.
+
+<Callout type="info">
+  `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are currently required by API environment
+  validation, even if your users only use email/password.
+</Callout>
+
+## CLI device authorization
+
+The CLI starts a device flow against the API, opens the configured web UI, and
+waits for you to approve the displayed code:
+
+```bash
+maille login \
+  --url http://localhost:3000/api \
+  --ui-url http://localhost:5173
+```
+
+The resulting API URL, UI URL, bearer token, and user metadata are stored in
+`~/.maille/config.json` with mode `0600`.
+
+Useful auth commands:
+
+```bash
+maille auth whoami
+maille auth logout
+```
+
+## Trusted local origins
+
+The API currently trusts `http://localhost:3000` and
+`http://localhost:5173`. If you deploy Maille on different origins, update the
+Better Auth trusted origins and the API's CORS origin together. Authentication
+cookies and browser requests depend on both settings agreeing.

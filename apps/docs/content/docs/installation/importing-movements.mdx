@@ -1,0 +1,46 @@
+---
+title: Import movements
+description: Bring bank statement lines into Maille without turning them into ledger entries prematurely.
+---
+
+Movements represent what an external account statement reports. Importing them
+does not decide what happened financially; that interpretation belongs to
+activities and transactions during reconciliation.
+
+## CSV import
+
+Open **Movements**, choose the import action, and select **CSV file**. The import
+flow lets you:
+
+1. choose the account receiving the movements;
+2. select or auto-detect the delimiter;
+3. map the name, date, and one or more amount columns;
+4. apply a ratio when the source amounts need scaling;
+5. review and edit every row before import.
+
+Maille recognizes `dd/MM/yyyy`, `d/M/yyyy`, and `yyyy-MM-dd` dates. When several
+amount columns are mapped, their parsed values are added together.
+
+## Duplicate detection
+
+A row is marked as a duplicate when an existing movement has the same account,
+name (case-insensitive), calendar day, and an amount within `0.05`. Duplicate
+rows are skipped by default, but the preview keeps the decision visible before
+anything is written.
+
+## Paste and extract
+
+The **Paste text** mode accepts a bank statement, email, receipt, or HTML page.
+When AI workflows are configured, Maille extracts candidate movements into the
+same review screen used by CSV imports.
+
+<Callout type="warning">
+  Extraction creates a preview, not authoritative ledger data. Check the account, date, name, sign,
+  and amount before importing each row.
+</Callout>
+
+## After import
+
+New movements remain incomplete until their linked activity amounts explain the
+full statement amount. Continue with
+[Movements & reconciliation](/docs/financial/movements-and-reconciliation).

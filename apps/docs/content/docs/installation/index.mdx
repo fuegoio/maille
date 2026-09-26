@@ -1,0 +1,82 @@
+---
+title: Install Maille
+description: Run the Maille database, API, and web UI on your own machine.
+---
+
+Maille is self-hosted: you run the API against your own Postgres database, and
+the web UI talks to it over GraphQL. This guide starts a local instance from a
+clone of the repository.
+
+## Requirements
+
+- [Bun](https://bun.sh) 1.2 or later
+- Postgres 17 — a `docker-compose.yaml` is provided
+- Google OAuth credentials — currently required at API startup, even though the
+  UI also supports email/password authentication
+
+## 1. Install dependencies
+
+From the repository root:
+
+```bash
+bun install
+```
+
+## 2. Start Postgres
+
+```bash
+cd apps/api
+docker compose up -d
+```
+
+This starts `postgres:17-alpine` with a `maille` database at
+`localhost:5432`, using `postgres` for both the user and password. Data is
+persisted in the `postgres_data` volume.
+
+## 3. Configure the API
+
+Create `apps/api/.env`:
+
+```bash title="apps/api/.env"
+DATABASE_URL="postgres://postgres:postgres@localhost:5432/maille"
+GOOGLE_CLIENT_ID="…"
+GOOGLE_CLIENT_SECRET="…"
+LOG_LEVEL="info"
+```
+
+<Callout>
+  The movement-to-activity assistant is optional. Without `MISTRAL_API_KEY`, AI workflows remain
+  disabled and the rest of Maille continues to work.
+</Callout>
+
+## 4. Run the API
+
+From `apps/api`:
+
+```bash
+bun run dev
+```
+
+The API runs database migrations at startup and listens on
+`http://localhost:3000` by default. GraphQL is available at
+`http://localhost:3000/api/graphql`. The current schema is written to
+`apps/api/schema.graphql` when the process starts.
+
+## 5. Run the web UI
+
+In a second terminal:
+
+```bash
+cd apps/ui-react
+VITE_API_URL=http://localhost:3000/api bun run dev
+```
+
+Open `http://localhost:5173`, create an account, and choose the ledger's
+starting date and currency.
+
+## Next steps
+
+- [Authentication](/docs/installation/authentication)
+- [Ledger settings](/docs/installation/settings)
+- [Import movements](/docs/installation/importing-movements)
+- [CLI reference](/docs/installation/cli)

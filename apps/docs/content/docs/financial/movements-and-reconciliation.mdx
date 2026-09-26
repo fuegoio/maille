@@ -1,0 +1,63 @@
+---
+title: Movements & reconciliation
+description: Keep bank evidence separate from the ledger, then prove that the two agree.
+---
+
+A **movement** is an external statement line: an amount, date, name, and account
+reported by a bank or broker. It is evidence that value moved, but it does not
+say why. The explanation belongs to one or more activities and their
+transactions.
+
+## Why movements are separate
+
+Importing a statement directly as expenses would force a financial
+interpretation too early. A card payment might be a purchase, a transfer, a
+shared expense, or one part of a larger event. Maille preserves the source line
+first and asks you to reconcile it explicitly.
+
+This separation gives you two independently useful records:
+
+- the movement preserves what the institution reported;
+- the activity preserves what you concluded happened.
+
+## Reconciliation links
+
+A reconciliation link joins a movement to an activity and records the amount
+attributed to that link. The relationship is many-to-many:
+
+- one activity can explain several movements;
+- one movement can be split across several activities.
+
+A movement is `completed` when the sum of its linked amounts equals its own
+amount exactly. Otherwise it remains `incomplete`.
+
+An activity is complete when the transaction totals for every movement-tracked
+account are matched by its linked movement amounts. Accounts with movement
+tracking disabled do not require external evidence.
+
+## Example: one payment, two purposes
+
+A `€120` card movement contains groceries for `€80` and household supplies for
+`€40`:
+
+1. keep the original movement at `€120`;
+2. create two activities with their own expense transactions and categories;
+3. link `€80` of the movement to the first activity;
+4. link `€40` to the second.
+
+The movement becomes complete at `€120`, while the reporting remains precise.
+No statement data is rewritten to fit the categorization.
+
+## Working the queue
+
+Use **Movements → To link** to find imported lines that still need an
+explanation. Use **Activities → Needs reconciliation** to find ledger events
+whose movement-tracked account totals are not fully backed by statement lines.
+
+<Callout type="info">
+  Reconciliation is an equality check, not a confidence score. A record is complete only when the
+  linked amounts account for the expected total.
+</Callout>
+
+See [Import movements](/docs/installation/importing-movements) for CSV and
+paste-based ingestion.

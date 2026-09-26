@@ -1,0 +1,6 @@
+{
+  "title": "Installation & usage",
+  "description": "Deploy, configure, and operate Maille.",
+  "root": true,
+  "pages": ["index", "authentication", "settings", "importing-movements", "cli"]
+}

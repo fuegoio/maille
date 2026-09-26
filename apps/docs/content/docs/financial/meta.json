@@ -1,0 +1,13 @@
+{
+  "title": "Financial model",
+  "description": "Understand the ledger choices behind Maille.",
+  "root": true,
+  "pages": [
+    "index",
+    "accounts",
+    "activities-and-transactions",
+    "movements-and-reconciliation",
+    "funds",
+    "categories-projects-and-sharing"
+  ]
+}

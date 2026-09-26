@@ -1,0 +1,64 @@
+---
+title: Accounts
+description: The places value is held, owed, earned, and spent.
+---
+
+An account is a ledger location. A transaction always moves an amount from one
+account to another, so choosing the right account type determines how Maille
+interprets the movement.
+
+## Account types
+
+| Type                 | Role in the model                            | Typical examples                 |
+| -------------------- | -------------------------------------------- | -------------------------------- |
+| `bank_account`       | Money held by a financial institution        | Current account, savings account |
+| `investment_account` | Invested value and available investment cash | Brokerage account                |
+| `cash`               | Money held directly                          | Wallet, cash envelope            |
+| `assets`             | Non-cash value you own                       | Car, home, equipment             |
+| `liabilities`        | Amounts you owe                              | Loan, credit balance             |
+| `expense`            | Destination for consumed value               | Groceries, rent, fees            |
+| `revenue`            | Source of earned value                       | Salary, interest, refund         |
+
+The balance, investment, asset, and liability types answer **where value is**.
+Expense and revenue accounts answer **why value changed**. A transfer between
+two balance accounts changes location without becoming income or expense.
+
+## Defaults
+
+When a user is created, Maille bootstraps Revenue, Expense, Cash, Assets,
+Liabilities, Bank account, and Investment account records. The first five are
+marked as defaults; bank and investment accounts are examples that you can
+rename or replace with the institutions you actually use.
+
+## Opening balances
+
+A starting balance describes the account at the ledger's starting date. It is
+not a synthetic transaction. This keeps imported history honest: Maille knows
+where tracking begins instead of inventing an unexplained event before it.
+
+Investment-style accounts can also carry a starting cash balance so available
+cash remains distinct from total account value.
+
+<Callout type="warning">
+  Opening balances and the ledger starting date define the historical boundary. Enter them before
+  relying on balance or fund reports.
+</Callout>
+
+## Movement tracking
+
+The `movements` setting controls whether an account is expected to reconcile
+against external statement lines. Enable it for bank and broker accounts you
+import. Leave it disabled for conceptual accounts such as Expense or Revenue,
+which have no external statement of their own.
+
+## Assets and liabilities
+
+An asset record can be attached to an `assets` account. Its value is derived
+from asset-tagged transaction flows. A linear depreciation plan produces
+monthly activities, keeping depreciation in the same ledger as every other
+change.
+
+Liability accounts represent obligations. Shared liabilities are not guessed
+from the account name or balance; they are calculated from the shared activity
+transactions and mappings described in
+[Categories, projects & sharing](/docs/financial/categories-projects-and-sharing).

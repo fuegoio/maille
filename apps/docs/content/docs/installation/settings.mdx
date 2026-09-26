@@ -1,0 +1,48 @@
+---
+title: Ledger settings
+description: Set the currency, starting date, theme, and account opening values.
+---
+
+Open the user menu in the sidebar and choose **Settings**. These values are not
+cosmetic defaults: they determine how the ledger is displayed and where its
+history begins.
+
+## Currency
+
+Enter a three-letter ISO currency code such as `EUR`, `USD`, or `GBP`. Maille
+uses that code to format every amount in the interface.
+
+Changing the currency does not convert existing values. It changes the unit
+used to display them, so only change it when the ledger itself is denominated in
+the new currency.
+
+## Starting date
+
+The starting date is the boundary of the ledger:
+
+- transactions before it are excluded from balances;
+- account opening balances apply at that boundary;
+- a fund without its own start date uses the ledger starting date for its
+  opening allocations.
+
+Choose the earliest date from which your opening balances and imported history
+are reliable. Moving it later can exclude transactions that previously
+contributed to reports; moving it earlier requires the corresponding history or
+correct opening balances.
+
+## Account opening values
+
+Each account can define a **starting balance**. Accounts that distinguish cash
+from total value can also define a **starting cash balance**. These are opening
+positions, not transactions, and should describe the account at the ledger's
+starting boundary.
+
+Accounts can also enable movement tracking. Enable it for accounts whose bank or
+broker statement lines you plan to import and reconcile.
+
+## Theme and contacts
+
+The same user menu contains the light/dark/system theme switcher and contact
+management. Theme choice is stored locally in the browser. Contacts participate
+in shared activities and account mappings; they do not change the ledger until
+those relationships are used by transactions.

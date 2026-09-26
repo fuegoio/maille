@@ -1,0 +1,62 @@
+---
+title: Financial model
+description: The choices behind Maille's ledger, and why each concept stays explicit.
+---
+
+Maille separates the events in your life, the accounting entries that describe
+them, and the evidence imported from financial institutions. That separation is
+the basis for every number in the application.
+
+<Cards>
+  <Card title="Accounts" href="/docs/financial/accounts">
+    Where value is held, owed, earned, or spent — and why account types matter.
+  </Card>
+  <Card title="Activities & transactions" href="/docs/financial/activities-and-transactions">
+    Human-readable events backed by equal and opposite ledger movements.
+  </Card>
+  <Card title="Movements & reconciliation" href="/docs/financial/movements-and-reconciliation">
+    External statement evidence linked explicitly to its financial explanation.
+  </Card>
+  <Card title="Funds" href="/docs/financial/funds">
+    What money is for, independently of the account where it is held.
+  </Card>
+  <Card
+    title="Categories, projects & sharing"
+    href="/docs/financial/categories-projects-and-sharing"
+  >
+    Different dimensions for reporting, grouping, and shared liability.
+  </Card>
+</Cards>
+
+## One event, several views
+
+A grocery purchase illustrates the model:
+
+1. The bank statement line enters Maille as a **movement**.
+2. You create an **activity** named “Groceries”.
+3. A **transaction** moves value from a bank account to an expense account.
+4. You link the movement to the activity and attribute the matching amount.
+5. A **category** groups the expense for reporting.
+6. An optional **fund leg** records which purpose paid for it.
+
+These are related records, not interchangeable labels. Keeping them separate
+lets Maille answer different questions without approximation:
+
+| Question                             | Source of truth                        |
+| ------------------------------------ | -------------------------------------- |
+| Where is the money?                  | Account balances                       |
+| What happened?                       | Activities and transactions            |
+| Does the ledger agree with the bank? | Reconciliation links                   |
+| What was the money for?              | Funds                                  |
+| How should the event be reported?    | Categories and projects                |
+| Who ultimately owes what?            | Shared transactions and counterparties |
+
+## Why double-entry
+
+Every transaction names a source account, a destination account, and an amount.
+The same amount leaves one side and enters the other. Maille therefore derives
+balances, activity types, and reports from the same records instead of storing
+separate totals that can drift apart.
+
+Starting balances are explicit exceptions at the ledger boundary. They describe
+the state when tracking begins; transactions describe every change after it.
