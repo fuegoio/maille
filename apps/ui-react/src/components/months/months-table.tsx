@@ -135,7 +135,7 @@ export function MonthsTable() {
                 {/* Balance */}
                 <div className="mr-4 flex w-32 items-center pl-4 text-right font-mono text-sm">
                   <div className="mr-3 size-2.5 shrink-0 rounded-sm bg-foreground" />
-                  <div className="flex-1">
+                  <div className="flex-1 whitespace-nowrap">
                     {currencyFormatter.format(balance)}
                   </div>
                 </div>
@@ -148,7 +148,7 @@ export function MonthsTable() {
                       ACTIVITY_TYPES_COLOR[ActivityType.REVENUE],
                     )}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 whitespace-nowrap">
                     {currencyFormatter.format(revenue)}
                   </div>
                 </div>
@@ -161,7 +161,7 @@ export function MonthsTable() {
                       ACTIVITY_TYPES_COLOR[ActivityType.INVESTMENT],
                     )}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 whitespace-nowrap">
                     {currencyFormatter.format(investment)}
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export function MonthsTable() {
                       ACTIVITY_TYPES_COLOR[ActivityType.ASSET],
                     )}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 whitespace-nowrap">
                     {currencyFormatter.format(asset)}
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export function MonthsTable() {
                       ACTIVITY_TYPES_COLOR[ActivityType.EXPENSE],
                     )}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 whitespace-nowrap">
                     {currencyFormatter.format(expense)}
                   </div>
                 </div>
