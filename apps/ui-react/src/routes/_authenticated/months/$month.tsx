@@ -323,6 +323,8 @@ function MonthPage() {
               subcategoryFilter={activitiesFilters.subcategory}
               accountFilter={activitiesFilters.account ?? null}
               fundFilter={activitiesFilters.fund}
+              // The page already names the month, so row dates stay short
+              fullDate={false}
             />
           </TabsContent>
 

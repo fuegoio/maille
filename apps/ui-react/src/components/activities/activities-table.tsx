@@ -59,6 +59,11 @@ interface ActivitiesTableProps {
   /** A fund the activities must touch; null is Untracked, undefined is off. */
   fundFilter?: string | null;
   hideProject?: boolean;
+  /**
+   * Row dates carry the month and year, unless the page already names them
+   * (a month page) — pass false to pin the short form.
+   */
+  fullDate?: boolean;
 }
 
 export function ActivitiesTable({
@@ -73,6 +78,7 @@ export function ActivitiesTable({
   activityTypeFilter = null,
   fundFilter,
   hideProject = false,
+  fullDate,
 }: ActivitiesTableProps) {
   const contextNavigate = useContextNavigate();
 
@@ -271,7 +277,7 @@ export function ActivitiesTable({
                         accountFilter={accountFilter}
                         activityTypeFilter={activityTypeFilter}
                         fields={fields}
-                        fullDate={grouping !== "period"}
+                        fullDate={fullDate ?? grouping !== "period"}
                         showTransactions={activityView.showTransactions}
                         hideProject={hideProject}
                         checked={selectedActivities.includes(item.id)}
