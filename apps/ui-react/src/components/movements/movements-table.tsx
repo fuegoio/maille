@@ -41,6 +41,11 @@ interface MovementsTableProps {
     config: Extract<CustomViewConfig, { resource: "movements" }>,
   ) => void;
   accountFilter?: string | null;
+  /**
+   * Row dates carry the month and year, unless the page already names them
+   * (a month page) — pass false to pin the short form.
+   */
+  fullDate?: boolean;
 }
 
 export function MovementsTable({
@@ -49,6 +54,7 @@ export function MovementsTable({
   config,
   onConfigChange,
   accountFilter = null,
+  fullDate,
 }: MovementsTableProps) {
   const contextNavigate = useContextNavigate();
   const { search } = useViewSearch();
@@ -196,7 +202,9 @@ export function MovementsTable({
                       <MovementLine
                         movement={item}
                         fields={movementView.fields}
-                        fullDate={movementView.grouping !== "period"}
+                        fullDate={
+                          fullDate ?? movementView.grouping !== "period"
+                        }
                         checked={selectedMovements.includes(item.id)}
                         outlineSides={rowOutlines.get(item.id)}
                         onCheckedChange={(event) =>

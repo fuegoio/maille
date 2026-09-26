@@ -59,6 +59,11 @@ interface TransactionsTableProps {
   onConfigChange?: (
     config: Extract<CustomViewConfig, { resource: "transactions" }>,
   ) => void;
+  /**
+   * Row dates carry the month and year, unless the page already names them
+   * (a month page) — pass false to pin the short form.
+   */
+  fullDate?: boolean;
 }
 
 export function TransactionsTable({
@@ -66,6 +71,7 @@ export function TransactionsTable({
   viewId,
   config,
   onConfigChange,
+  fullDate,
 }: TransactionsTableProps) {
   const contextNavigate = useContextNavigate();
   const activities = useActivities((state) => state.activities);
@@ -242,7 +248,7 @@ export function TransactionsTable({
                     <TransactionLine
                       transaction={item}
                       fields={view.fields}
-                      fullDate={view.grouping !== "period"}
+                      fullDate={fullDate ?? view.grouping !== "period"}
                       checked={selectedTransactions.includes(item.id)}
                       outlineSides={rowOutlines.get(item.id)}
                       onCheckedChange={(event) =>

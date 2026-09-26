@@ -332,6 +332,8 @@ function MonthPage() {
             <TransactionsTable
               filter={{ kind: "month", month, year }}
               viewId={`month-${month}-${year}-transactions`}
+              // The page already names the month, so row dates stay short
+              fullDate={false}
             />
           </TabsContent>
 
@@ -340,6 +342,8 @@ function MonthPage() {
               viewId={`month-${month}-${year}-movements`}
               movements={monthMovements}
               accountFilter={activitiesFilters.account ?? null}
+              // The page already names the month, so row dates stay short
+              fullDate={false}
             />
           </TabsContent>
 

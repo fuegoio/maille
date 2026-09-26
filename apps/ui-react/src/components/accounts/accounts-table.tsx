@@ -73,7 +73,9 @@ export function AccountsTable() {
           <div
             className={cn(
               ledgerHeaderClassName,
-              "flex h-9 shrink-0 items-center gap-2 px-6",
+              // The strip's responsive padding, so the type totals stay
+              // over the rows' balance column at every width
+              "flex h-9 shrink-0 items-center gap-2 px-4 sm:px-6",
             )}
           >
             <Button
@@ -124,7 +126,10 @@ export function AccountsTable() {
                   params={{ id: account.id }}
                   className={cn(
                     ledgerRowClassName,
-                    "group flex h-10 w-full items-center border-b pr-6 pl-14",
+                    // The strip's responsive right padding, so the
+                    // transactions count and balance stay under their
+                    // headers at every width
+                    "group flex h-10 w-full items-center border-b pr-4 pl-14 sm:pr-6",
                   )}
                 >
                   <div className="text-sm font-medium whitespace-nowrap">
