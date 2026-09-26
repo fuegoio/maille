@@ -142,9 +142,13 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
     $fromAccount: String!
     $fromAsset: String
     $fromCounterparty: String
+    $fromInvestment: String
+    $fromQuantity: Float
     $toAccount: String!
     $toAsset: String
     $toCounterparty: String
+    $toInvestment: String
+    $toQuantity: Float
     $fundMoves: [FundMoveInput!]
   ) {
     addTransaction(
@@ -154,9 +158,13 @@ export const addTransactionMutation = graphql(/* GraphQL */ `
       fromAccount: $fromAccount
       fromAsset: $fromAsset
       fromCounterparty: $fromCounterparty
+      fromInvestment: $fromInvestment
+      fromQuantity: $fromQuantity
       toAccount: $toAccount
       toAsset: $toAsset
       toCounterparty: $toCounterparty
+      toInvestment: $toInvestment
+      toQuantity: $toQuantity
       fundMoves: $fundMoves
     ) {
       id
@@ -172,9 +180,13 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
     $fromAccount: String
     $fromAsset: String
     $fromCounterparty: String
+    $fromInvestment: String
+    $fromQuantity: Float
     $toAccount: String
     $toAsset: String
     $toCounterparty: String
+    $toInvestment: String
+    $toQuantity: Float
     $fundMoves: [FundMoveInput!]
   ) {
     updateTransaction(
@@ -184,9 +196,13 @@ export const updateTransactionMutation = graphql(/* GraphQL */ `
       fromAccount: $fromAccount
       fromAsset: $fromAsset
       fromCounterparty: $fromCounterparty
+      fromInvestment: $fromInvestment
+      fromQuantity: $fromQuantity
       toAccount: $toAccount
       toAsset: $toAsset
       toCounterparty: $toCounterparty
+      toInvestment: $toInvestment
+      toQuantity: $toQuantity
       fundMoves: $fundMoves
     ) {
       id

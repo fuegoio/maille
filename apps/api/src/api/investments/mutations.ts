@@ -5,7 +5,7 @@ import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
-import { accounts, investmentPrices, investments } from "@/tables";
+import { accounts, investmentPrices, investments, transactions } from "@/tables";
 
 /** The investment, scoped to the user, resolved from its possibly-prefixed id. */
 const getUserInvestment = async (investmentId: string, userId: string) => {
@@ -31,7 +31,7 @@ export const registerInvestmentsMutations = () => {
         name: t.arg.string(),
         symbol: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
-        quantity: t.arg.float({ required: false }),
+        initialQuantity: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const account = (
@@ -55,7 +55,7 @@ export const registerInvestmentsMutations = () => {
               name: args.name,
               symbol: args.symbol || undefined,
               description: args.description || undefined,
-              quantity: args.quantity ?? 0,
+              initialQuantity: args.initialQuantity ?? 0,
             })
             .returning()
         )[0];
@@ -71,7 +71,7 @@ export const registerInvestmentsMutations = () => {
             name: investment.name,
             symbol: investment.symbol,
             description: investment.description,
-            quantity: investment.quantity,
+            initialQuantity: investment.initialQuantity,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -92,7 +92,7 @@ export const registerInvestmentsMutations = () => {
         name: t.arg.string({ required: false }),
         symbol: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
-        quantity: t.arg.float({ required: false }),
+        initialQuantity: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const investment = await getUserInvestment(args.id, ctx.user.id);
@@ -123,8 +123,8 @@ export const registerInvestmentsMutations = () => {
         if (args.description !== undefined) {
           updates.description = args.description;
         }
-        if (args.quantity != null) {
-          updates.quantity = args.quantity;
+        if (args.initialQuantity != null) {
+          updates.initialQuantity = args.initialQuantity;
         }
 
         const updatedInvestment = (
@@ -162,6 +162,17 @@ export const registerInvestmentsMutations = () => {
       },
       resolve: async (root, args, ctx) => {
         const investment = await getUserInvestment(args.id, ctx.user.id);
+
+        // Transactions referencing it keep their money: the leg is
+        // cleared, the ledger row stays.
+        await db
+          .update(transactions)
+          .set({ fromInvestment: null })
+          .where(eq(transactions.fromInvestment, investment.id));
+        await db
+          .update(transactions)
+          .set({ toInvestment: null })
+          .where(eq(transactions.toInvestment, investment.id));
 
         // Its price points go with it: the cascade owns them.
         await db.delete(investments).where(eq(investments.id, investment.id));

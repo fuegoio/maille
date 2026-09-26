@@ -1,21 +1,36 @@
 import type { InvestmentPrice } from "@maille/core/accounts";
 
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { Link, useRouter } from "@tanstack/react-router";
+import {
+  Link,
+  useNavigate,
+  useRouter,
+  useSearch,
+} from "@tanstack/react-router";
 import { format } from "date-fns";
-import { Hash, Tag, Trash2 } from "lucide-react";
+import { ChartLine, Hash, Layers, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
+import { ActivitiesTable } from "@/components/activities/activities-table";
+import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
+import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
+import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import {
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
+import { AmountPairsValue } from "@/components/shared/amount-pairs";
 import {
   DebouncedInput,
   DebouncedTextarea,
 } from "@/components/shared/debounced-text-field";
+import { TableViewSettingsButton } from "@/components/shared/table-view-settings-button";
 import { ValuationTimeline } from "@/components/shared/valuation-timeline";
+import { ViewActions } from "@/components/shared/view-actions";
+import { ExportTransactionsButton } from "@/components/transactions/export-transactions-button";
+import { FilterTransactionsButton } from "@/components/transactions/filters/filter-transactions-button";
+import { TransactionsTable } from "@/components/transactions/transactions-table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +46,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RollingAmount } from "@/components/ui/rolling-amount";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getGraphQLDate } from "@/lib/date";
+import { ActivityIcon, TransactionIcon } from "@/lib/icons";
+import {
+  endOfToday,
+  getInvestmentTotals,
+  investmentQuantityAsOf,
+  investmentTransactions,
+  investmentValueAsOf,
+} from "@/logic/investments";
 import {
   addInvestmentPriceMutation,
   deleteInvestmentMutation,
@@ -39,6 +63,7 @@ import {
   updateInvestmentMutation,
   updateInvestmentPriceMutation,
 } from "@/mutations/investments";
+import { useActivities } from "@/stores/activities";
 import { useInvestments } from "@/stores/investments";
 import { useSync } from "@/stores/sync";
 
@@ -53,6 +78,7 @@ const sameDay = (a: Date, b: Date) =>
 
 export function InvestmentPage({ investmentId }: InvestmentPageProps) {
   const router = useRouter();
+  const navigate = useNavigate();
   const mutate = useSync((state) => state.mutate);
 
   const investment = useInvestments((state) =>
@@ -60,6 +86,21 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
   );
   const investments = useInvestments((state) => state.investments);
   const prices = useInvestments((state) => state.investmentPrices);
+  const activities = useActivities((state) => state.activities);
+
+  const { view } = useSearch({ from: "/_authenticated/investments/$id" });
+  const selectedTab = view ?? "investment";
+  const selectTab = (value: string) =>
+    navigate({
+      to: ".",
+      search: (prev) => ({
+        ...prev,
+        view:
+          value === "investment"
+            ? undefined
+            : (value as "activities" | "transactions"),
+      }),
+    });
 
   const breadcrumbs = usePageBreadcrumbs({
     contextual: true,
@@ -100,8 +141,10 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
     ],
   });
 
-  // The position's value reads from the price series: the valuation
-  // layer, never the ledger. The newest observation values it.
+  // The position's facts read from two layers that never meet: the
+  // units and the invested money derive from the ledger's transaction
+  // legs, the value from the price series.
+  const now = React.useMemo(() => new Date(endOfToday()), []);
   const investmentPriceList = React.useMemo(
     () =>
       prices
@@ -110,8 +153,32 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
     [prices, investmentId],
   );
   const lastPrice = investmentPriceList[0] ?? null;
-  const value =
-    investment && lastPrice ? investment.quantity * lastPrice.price : null;
+
+  const quantity = investment
+    ? investmentQuantityAsOf(investment, activities, now)
+    : 0;
+  const value = investment
+    ? investmentValueAsOf(investment, activities, prices, now)
+    : null;
+  const totals = React.useMemo(
+    () => getInvestmentTotals(activities, investmentId),
+    [activities, investmentId],
+  );
+
+  const positionTransactions = React.useMemo(
+    () => investmentTransactions(activities, investmentId),
+    [activities, investmentId],
+  );
+  const positionActivities = React.useMemo(() => {
+    const seen = new Set<string>();
+    const result = [];
+    for (const { activity } of positionTransactions) {
+      if (seen.has(activity.id)) continue;
+      seen.add(activity.id);
+      result.push(activity);
+    }
+    return result;
+  }, [positionTransactions]);
 
   const deleteInvestment = () => {
     if (!investment) return;
@@ -138,7 +205,7 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
     name?: string;
     symbol?: string | null;
     description?: string | null;
-    quantity?: number;
+    initialQuantity?: number;
   }) => {
     if (!investment) return;
     mutate({
@@ -250,6 +317,9 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
 
   if (!investment) return null;
 
+  const viewId = `investment-${investment.id}-transactions`;
+  const activitiesViewId = `investment-${investment.id}-activities`;
+
   return (
     <SidebarInset>
       <div className="flex h-full flex-col">
@@ -275,8 +345,8 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
                   {investmentPriceList.length === 1
                     ? "price point"
                     : `${investmentPriceList.length} price points`}
-                  ? The account's ledger transactions stay untouched. This
-                  action cannot be undone.
+                  ? The ledger's transactions stay: their investment legs are
+                  cleared, the money rows remain. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -292,100 +362,207 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
           </AlertDialog>
         </header>
 
-        <div className="flex-1 overflow-y-auto pb-20">
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="border-b px-4 py-6 sm:px-8">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" asChild className="h-6">
-                  <Link to="/accounts/$id" params={{ id: investment.account }}>
-                    <AccountLabel accountId={investment.account} />
-                  </Link>
-                </Badge>
-              </div>
+        <Tabs
+          value={selectedTab}
+          onValueChange={selectTab}
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <header className="@container flex h-11 shrink-0 items-center gap-2 border-b bg-muted/30 px-2 sm:pr-4 sm:pl-7">
+            <TabsList
+              height="full"
+              className="min-w-0 justify-start overflow-x-auto overflow-y-hidden [&_[data-slot=tabs-trigger]]:after:bottom-0"
+            >
+              <TabsTrigger value="investment">
+                <ChartLine />
+                Investment
+              </TabsTrigger>
+              <TabsTrigger value="activities">
+                <ActivityIcon />
+                Activities
+              </TabsTrigger>
+              <TabsTrigger value="transactions">
+                <TransactionIcon />
+                Transactions
+              </TabsTrigger>
+            </TabsList>
+            <div className="flex-1" />
 
-              <div className="mt-3 flex items-baseline justify-between gap-4">
-                <DebouncedInput
-                  key={investment.id}
-                  aria-label="Investment name"
-                  value={investment.name}
-                  onCommit={(name) => handleUpdateInvestment({ name })}
-                  placeholder="Investment name"
-                  className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+            {selectedTab === "activities" && (
+              <ViewActions>
+                <FilterActivitiesButton viewId={activitiesViewId} />
+                <ActivityViewSettingsButton viewId={activitiesViewId} />
+                <ExportActivitiesButton
+                  viewId={activitiesViewId}
+                  activities={positionActivities}
                 />
-                <div
-                  className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap tabular-nums"
-                  title={lastPrice ? "Market value" : "No price yet"}
-                >
-                  {value !== null ? (
-                    <RollingAmount value={value} />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </div>
-              </div>
+              </ViewActions>
+            )}
 
-              <div className="mt-1 text-sm text-muted-foreground">
-                {lastPrice
-                  ? `Market value as of ${format(lastPrice.date, "dd MMM yyyy")}`
-                  : "Market value: add a first price below"}
-              </div>
-
-              <DebouncedTextarea
-                key={investment.id}
-                aria-label="Description"
-                value={investment.description || ""}
-                onCommit={(description) =>
-                  handleUpdateInvestment({
-                    description: description || null,
-                  })
-                }
-                placeholder="Add a description ..."
-                rows={1}
-                className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
-              />
-
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
-                  <Hash className="size-3 shrink-0 text-muted-foreground" />
-                  <DebouncedInput
-                    key={investment.id}
-                    aria-label="Symbol"
-                    value={investment.symbol || ""}
-                    onCommit={(symbol) =>
-                      handleUpdateInvestment({ symbol: symbol || null })
-                    }
-                    placeholder="Add a symbol ..."
-                    className="h-auto w-40 border-0 bg-transparent px-0 py-0 font-mono text-xs uppercase dark:bg-transparent"
+            {selectedTab === "transactions" && (
+              <>
+                <AmountPairsValue
+                  className="mr-2 text-sm"
+                  pairs={[
+                    { dot: "bg-green-400", amount: totals.in },
+                    { dot: "bg-red-400", amount: -totals.out },
+                  ]}
+                />
+                <ViewActions>
+                  <FilterTransactionsButton viewId={viewId} />
+                  <TableViewSettingsButton kind="transaction" viewId={viewId} />
+                  <ExportTransactionsButton
+                    filter={{
+                      kind: "investment",
+                      investmentId: investment.id,
+                    }}
+                    viewId={viewId}
                   />
-                </label>
+                </ViewActions>
+              </>
+            )}
+          </header>
 
-                <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
-                  <Tag className="size-3 shrink-0 text-muted-foreground" />
-                  <DebouncedInput
+          <TabsContent
+            value="investment"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <div className="flex-1 overflow-y-auto pb-20">
+              <div className="mx-auto w-full max-w-5xl">
+                <div className="border-b px-4 py-6 sm:px-8">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" asChild className="h-6">
+                      <Link
+                        to="/accounts/$id"
+                        params={{ id: investment.account }}
+                      >
+                        <AccountLabel accountId={investment.account} />
+                      </Link>
+                    </Badge>
+                  </div>
+
+                  <div className="mt-3 flex items-baseline justify-between gap-4">
+                    <DebouncedInput
+                      key={investment.id}
+                      aria-label="Investment name"
+                      value={investment.name}
+                      onCommit={(name) => handleUpdateInvestment({ name })}
+                      placeholder="Investment name"
+                      className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                    />
+                    <div
+                      className="shrink-0 font-mono text-2xl leading-snug font-semibold whitespace-nowrap tabular-nums"
+                      title={lastPrice ? "Market value" : "No price yet"}
+                    >
+                      {value !== null ? (
+                        <RollingAmount value={value} />
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {lastPrice
+                      ? `Market value as of ${format(lastPrice.date, "dd MMM yyyy")}`
+                      : "Market value: add a first price below"}
+                  </div>
+
+                  <DebouncedTextarea
                     key={investment.id}
-                    aria-label="Quantity"
-                    value={String(investment.quantity)}
-                    onCommit={(quantity) =>
+                    aria-label="Description"
+                    value={investment.description || ""}
+                    onCommit={(description) =>
                       handleUpdateInvestment({
-                        quantity: quantity === "" ? 0 : Number(quantity),
+                        description: description || null,
                       })
                     }
-                    placeholder="Quantity"
-                    className="h-auto w-32 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
+                    placeholder="Add a description ..."
+                    rows={1}
+                    className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
                   />
-                  <span className="text-xs text-muted-foreground">units</span>
-                </label>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                      <Hash className="size-3 shrink-0 text-muted-foreground" />
+                      <DebouncedInput
+                        key={investment.id}
+                        aria-label="Symbol"
+                        value={investment.symbol || ""}
+                        onCommit={(symbol) =>
+                          handleUpdateInvestment({ symbol: symbol || null })
+                        }
+                        placeholder="Add a symbol ..."
+                        className="h-auto w-40 border-0 bg-transparent px-0 py-0 font-mono text-xs uppercase dark:bg-transparent"
+                      />
+                    </label>
+
+                    <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                      <Layers className="size-3 shrink-0 text-muted-foreground" />
+                      <DebouncedInput
+                        key={investment.id}
+                        aria-label="Initial quantity"
+                        value={String(investment.initialQuantity)}
+                        onCommit={(initialQuantity) =>
+                          handleUpdateInvestment({
+                            initialQuantity:
+                              initialQuantity === ""
+                                ? 0
+                                : Number(initialQuantity),
+                          })
+                        }
+                        placeholder="Initial quantity"
+                        className="h-auto w-24 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        initial
+                      </span>
+                    </label>
+
+                    <div className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                      <Tag className="size-3 shrink-0 text-muted-foreground" />
+                      <span className="font-mono text-xs">
+                        {quantity} units
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        held
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <UnitPriceSection
+                  investmentId={investment.id}
+                  prices={investmentPriceList}
+                  onUpdatePrice={updatePrice}
+                  onDeletePrice={deletePrice}
+                />
               </div>
             </div>
+          </TabsContent>
 
-            <UnitPriceSection
-              investmentId={investment.id}
-              prices={investmentPriceList}
-              onUpdatePrice={updatePrice}
-              onDeletePrice={deletePrice}
+          <TabsContent
+            value="activities"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <ActivitiesTable
+              viewId={activitiesViewId}
+              activities={positionActivities}
             />
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent
+            value="transactions"
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            <TransactionsTable
+              viewId={viewId}
+              filter={{
+                kind: "investment",
+                investmentId: investment.id,
+              }}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </SidebarInset>
   );

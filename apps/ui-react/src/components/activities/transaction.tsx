@@ -4,7 +4,7 @@ import type { FundMove } from "@maille/core/funds";
 import { AccountType } from "@maille/core/accounts";
 import { motion, useReducedMotion } from "framer-motion";
 import { Ellipsis, MoveDown, MoveRight, TrashIcon } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import * as React from "react";
 
 import { AccountSelect } from "@/components/accounts/account-select";
 import { FundSelect } from "@/components/funds/fund-select";
@@ -22,12 +22,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAccounts } from "@/stores/accounts";
 import { useFunds } from "@/stores/funds";
 
 import { AssetSelect } from "../accounts/assets/assets-select";
 import { CounterpartiesSelect } from "../accounts/counterparties/counterparties-select";
+import { InvestmentSelect } from "../accounts/investments/investments-select";
 
 /** A side's metadata: a quiet label naming the select next to it. */
 function MetadataChip({
@@ -35,7 +37,7 @@ function MetadataChip({
   children,
 }: {
   label: string;
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
     <label className="flex items-center gap-1.5">
@@ -44,6 +46,55 @@ function MetadataChip({
       </span>
       {children}
     </label>
+  );
+}
+
+/**
+ * The units a leg moves, when it references an investment: typed
+ * locally, committed on blur or Enter so one trade is one mutation.
+ */
+function UnitsInput({
+  value,
+  onCommit,
+}: {
+  value: number | null;
+  onCommit: (units: number | null) => void;
+}) {
+  const [text, setText] = React.useState(value === null ? "" : String(value));
+
+  // Adopt external changes (a template, a sync event) when the field
+  // is not being edited.
+  const [focused, setFocused] = React.useState(false);
+  React.useEffect(() => {
+    if (!focused) setText(value === null ? "" : String(value));
+  }, [value, focused]);
+
+  const commit = () => {
+    onCommit(text === "" || Number.isNaN(Number(text)) ? null : Number(text));
+  };
+
+  return (
+    <Input
+      type="number"
+      step="any"
+      min="0"
+      aria-label="Units"
+      value={text}
+      onChange={(event) => setText(event.target.value)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        commit();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          (event.target as HTMLElement).blur();
+        }
+      }}
+      placeholder="units"
+      className="h-7 w-20 border-dashed bg-transparent px-2 font-mono text-xs dark:bg-transparent"
+    />
   );
 }
 
@@ -75,12 +126,12 @@ export function Transaction({
 }: TransactionProps) {
   const accounts = useAccounts((state) => state.accounts);
   const funds = useFunds((state) => state.funds);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   // A focused transaction arrives via a deep link: bring it into view so
   // the highlight lands where the user is already looking
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isFocused) return;
     rootRef.current?.scrollIntoView({
       block: "center",
@@ -141,10 +192,12 @@ export function Transaction({
   // border + 10px trigger padding + half the size-3 swatch = 17px.
   const fromNeedsSub =
     fromAccount?.type === AccountType.LIABILITIES ||
-    fromAccount?.type === AccountType.ASSETS;
+    fromAccount?.type === AccountType.ASSETS ||
+    fromAccount?.type === AccountType.INVESTMENT_ACCOUNT;
   const toNeedsSub =
     toAccount?.type === AccountType.LIABILITIES ||
-    toAccount?.type === AccountType.ASSETS;
+    toAccount?.type === AccountType.ASSETS ||
+    toAccount?.type === AccountType.INVESTMENT_ACCOUNT;
   const subRowExists = fromNeedsSub || toNeedsSub;
   const fundRowExists = Boolean(isFromBalance) || Boolean(isToBalance);
   const fromHasChips = showMetadata && (fromNeedsSub || Boolean(isFromBalance));
@@ -176,6 +229,8 @@ export function Transaction({
                     fromAccount: account,
                     fromCounterparty: null,
                     fromAsset: null,
+                    fromInvestment: null,
+                    fromQuantity: null,
                   })
                 }
               />
@@ -210,6 +265,29 @@ export function Transaction({
                             })
                           }
                           placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : fromAccount?.type === AccountType.INVESTMENT_ACCOUNT ? (
+                      <MetadataChip label="Position">
+                        <InvestmentSelect
+                          size="sm"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
+                          accountId={transaction.fromAccount}
+                          value={transaction.fromInvestment || ""}
+                          onValueChange={(investment) =>
+                            onUpdate?.({
+                              fromInvestment: investment,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                        <UnitsInput
+                          value={transaction.fromQuantity ?? null}
+                          onCommit={(units) =>
+                            onUpdate?.({
+                              fromQuantity: units,
+                            })
+                          }
                         />
                       </MetadataChip>
                     ) : (
@@ -254,6 +332,8 @@ export function Transaction({
                     toAccount: account,
                     toCounterparty: null,
                     toAsset: null,
+                    toInvestment: null,
+                    toQuantity: null,
                   })
                 }
               />
@@ -288,6 +368,29 @@ export function Transaction({
                             })
                           }
                           placeholder="None"
+                        />
+                      </MetadataChip>
+                    ) : toAccount?.type === AccountType.INVESTMENT_ACCOUNT ? (
+                      <MetadataChip label="Position">
+                        <InvestmentSelect
+                          size="sm"
+                          className="w-fit bg-popover text-xs hover:bg-popover dark:bg-popover dark:hover:bg-popover"
+                          accountId={transaction.toAccount}
+                          value={transaction.toInvestment || ""}
+                          onValueChange={(investment) =>
+                            onUpdate?.({
+                              toInvestment: investment,
+                            })
+                          }
+                          placeholder="None"
+                        />
+                        <UnitsInput
+                          value={transaction.toQuantity ?? null}
+                          onCommit={(units) =>
+                            onUpdate?.({
+                              toQuantity: units,
+                            })
+                          }
                         />
                       </MetadataChip>
                     ) : (

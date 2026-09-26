@@ -199,6 +199,42 @@ export const projects = pgTable("projects", {
   endDate: timestamp("end_date", { mode: "date" }),
 });
 
+// A position held in an investment account: units of a security, fund,
+// coin, or a whole-position product at quantity 1. The ledger tracks
+// the account's cash flows; quantity is the valuation layer's input.
+export const investments = pgTable("investments", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  account: text("account")
+    .notNull()
+    .references(() => accounts.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  symbol: text("symbol"),
+  description: text("description"),
+  initialQuantity: real("initial_quantity").notNull().default(0),
+});
+
+// A dated observation of an investment's unit price. One price per day:
+// adding a price for an existing date replaces it. The series is the
+// valuation layer; it never books into the ledger.
+export const investmentPrices = pgTable(
+  "investment_prices",
+  {
+    id: text("id").primaryKey(),
+    user: text("user")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    investment: text("investment")
+      .notNull()
+      .references(() => investments.id, { onDelete: "cascade" }),
+    date: timestamp("date", { mode: "date" }).notNull(),
+    price: real("price").notNull(),
+  },
+  (table) => [unique("investment_prices_investment_date_key").on(table.investment, table.date)],
+);
+
 export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
   activity: text("activity")
@@ -212,6 +248,13 @@ export const transactions = pgTable("transactions", {
   fromCounterparty: text("from_counterparty").references(() => counterparties.id, {
     onDelete: "set null",
   }),
+  // The investment this leg's money belongs to, with the units it
+  // moves: a buy labels the to-leg, a sell the from-leg. Provenance
+  // for the money; units derive the position's held quantity.
+  fromInvestment: text("from_investment").references(() => investments.id, {
+    onDelete: "set null",
+  }),
+  fromQuantity: real("from_quantity"),
   toAccount: text("to_account")
     .notNull()
     .references(() => accounts.id, { onDelete: "cascade" }),
@@ -219,6 +262,10 @@ export const transactions = pgTable("transactions", {
   toCounterparty: text("to_counterparty").references(() => counterparties.id, {
     onDelete: "set null",
   }),
+  toInvestment: text("to_investment").references(() => investments.id, {
+    onDelete: "set null",
+  }),
+  toQuantity: real("to_quantity"),
   // The transaction's fund legs, stored with it: fund money always has an
   // account-side location through its transaction. There is no separate
   // fund move collection — a leg exists only as part of its transaction.
@@ -375,42 +422,6 @@ export const counterparties = pgTable("counterparties", {
   contact: text("contact").references(() => user.id, { onDelete: "set null" }),
   initialBalance: real("initial_balance"),
 });
-
-// A position held in an investment account: units of a security, fund,
-// coin, or a whole-position product at quantity 1. The ledger tracks
-// the account's cash flows; quantity is the valuation layer's input.
-export const investments = pgTable("investments", {
-  id: text("id").primaryKey(),
-  user: text("user")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  account: text("account")
-    .notNull()
-    .references(() => accounts.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  symbol: text("symbol"),
-  description: text("description"),
-  quantity: real("quantity").notNull().default(0),
-});
-
-// A dated observation of an investment's unit price. One price per day:
-// adding a price for an existing date replaces it. The series is the
-// valuation layer; it never books into the ledger.
-export const investmentPrices = pgTable(
-  "investment_prices",
-  {
-    id: text("id").primaryKey(),
-    user: text("user")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    investment: text("investment")
-      .notNull()
-      .references(() => investments.id, { onDelete: "cascade" }),
-    date: timestamp("date", { mode: "date" }).notNull(),
-    price: real("price").notNull(),
-  },
-  (table) => [unique("investment_prices_investment_date_key").on(table.investment, table.date)],
-);
 
 export const funds = pgTable("funds", {
   id: text("id").primaryKey(),

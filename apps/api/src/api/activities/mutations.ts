@@ -54,6 +54,10 @@ const TransactionInput = builder.inputType("TransactionInput", {
     toAccount: t.field({ type: "String" }),
     toAsset: t.field({ type: "String", required: false }),
     toCounterparty: t.field({ type: "String", required: false }),
+    fromInvestment: t.field({ type: "String", required: false }),
+    fromQuantity: t.field({ type: "Float", required: false }),
+    toInvestment: t.field({ type: "String", required: false }),
+    toQuantity: t.field({ type: "Float", required: false }),
     fundMoves: t.field({ type: [FundMoveInput], required: false }),
   }),
 });
@@ -312,6 +316,10 @@ export const registerActivitiesMutations = () => {
         toAccount: t.arg({ type: "String" }),
         toAsset: t.arg({ type: "String", required: false }),
         toCounterparty: t.arg({ type: "String", required: false }),
+        fromInvestment: t.arg({ type: "String", required: false }),
+        fromQuantity: t.arg({ type: "Float", required: false }),
+        toInvestment: t.arg({ type: "String", required: false }),
+        toQuantity: t.arg({ type: "Float", required: false }),
         fundMoves: t.arg({ type: [FundMoveInput], required: false }),
       },
       resolve: async (root, args, ctx) => {
@@ -548,6 +556,22 @@ export const registerActivitiesMutations = () => {
         }),
         toCounterparty: t.arg({
           type: "String",
+          required: false,
+        }),
+        fromInvestment: t.arg({
+          type: "String",
+          required: false,
+        }),
+        fromQuantity: t.arg({
+          type: "Float",
+          required: false,
+        }),
+        toInvestment: t.arg({
+          type: "String",
+          required: false,
+        }),
+        toQuantity: t.arg({
+          type: "Float",
           required: false,
         }),
         fundMoves: t.arg({ type: [FundMoveInput], required: false }),

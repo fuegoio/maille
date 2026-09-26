@@ -177,6 +177,26 @@ TransactionSchema.implement({
       nullable: true,
       resolve: (parent) => parent.toCounterparty,
     }),
+    fromInvestment: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (parent) => parent.fromInvestment,
+    }),
+    fromQuantity: t.field({
+      type: "Float",
+      nullable: true,
+      resolve: (parent) => parent.fromQuantity ?? null,
+    }),
+    toInvestment: t.field({
+      type: "String",
+      nullable: true,
+      resolve: (parent) => parent.toInvestment,
+    }),
+    toQuantity: t.field({
+      type: "Float",
+      nullable: true,
+      resolve: (parent) => parent.toQuantity ?? null,
+    }),
     fundMoves: t.field({
       type: [FundMoveSchema],
       nullable: true,

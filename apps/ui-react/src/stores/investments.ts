@@ -6,7 +6,7 @@ import { persist } from "zustand/middleware";
 
 import type { Mutation } from "@/mutations";
 
-import { storage } from "./storage";
+import { migrationFlags, storage } from "./storage";
 
 interface InvestmentsState {
   investments: Investment[];
@@ -235,7 +235,27 @@ export const useInvestments = create<InvestmentsState>()(
     }),
     {
       name: "investments",
+      version: 1,
       storage: storage,
+      migrate: (persisted) => {
+        // Version 0 stored the position's current quantity; it became the
+        // derived-from-ledger model's baseline, initialQuantity.
+        const state = persisted as {
+          investments?: Record<string, unknown>[];
+        };
+        if (state.investments) {
+          state.investments = state.investments.map((investment) =>
+            "initialQuantity" in investment
+              ? investment
+              : {
+                  ...investment,
+                  initialQuantity: investment.quantity ?? 0,
+                },
+          );
+        }
+        migrationFlags.refetchUserData = true;
+        return state;
+      },
     },
   ),
 );

@@ -7,9 +7,15 @@ export type Transaction = {
   fromAccount: string;
   fromCounterparty?: string | null;
   fromAsset?: string | null;
+  fromInvestment?: string | null;
+  /** Units the from-leg moves, when it references an investment. */
+  fromQuantity?: number | null;
   toAccount: string;
   toCounterparty?: string | null;
   toAsset?: string | null;
+  toInvestment?: string | null;
+  /** Units the to-leg moves, when it references an investment. */
+  toQuantity?: number | null;
   fundMoves?: FundMove[];
 };
 

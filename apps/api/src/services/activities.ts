@@ -25,6 +25,7 @@ import {
   activitySubcategories,
   assets,
   counterparties,
+  investments,
   movements,
   movementsActivities,
   projects,
@@ -51,9 +52,13 @@ export type TransactionInputArgs = {
   fromAccount: string;
   fromAsset?: string | null;
   fromCounterparty?: string | null;
+  fromInvestment?: string | null;
+  fromQuantity?: number | null;
   toAccount: string;
   toAsset?: string | null;
   toCounterparty?: string | null;
+  toInvestment?: string | null;
+  toQuantity?: number | null;
   fundMoves?: FundMoveInput[] | null;
 };
 
@@ -213,6 +218,34 @@ export async function createActivity(userId: string, clientId: string, args: Cre
               .limit(1)
           )[0]?.id
         : transaction.toCounterparty;
+      const fromInvestment = transaction.fromInvestment
+        ? (
+            await db
+              .select({ id: investments.id })
+              .from(investments)
+              .where(
+                and(
+                  like(investments.id, idPattern(transaction.fromInvestment)),
+                  eq(investments.user, userId),
+                ),
+              )
+              .limit(1)
+          )[0]?.id
+        : transaction.fromInvestment;
+      const toInvestment = transaction.toInvestment
+        ? (
+            await db
+              .select({ id: investments.id })
+              .from(investments)
+              .where(
+                and(
+                  like(investments.id, idPattern(transaction.toInvestment)),
+                  eq(investments.user, userId),
+                ),
+              )
+              .limit(1)
+          )[0]?.id
+        : transaction.toInvestment;
       const fundMoves = await buildTransactionFundMoves({
         userId,
         transactionDate: new Date(args.date),
@@ -232,6 +265,10 @@ export async function createActivity(userId: string, clientId: string, args: Cre
           toAsset,
           fromCounterparty,
           toCounterparty,
+          fromInvestment,
+          toInvestment,
+          fromQuantity: transaction.fromQuantity ?? null,
+          toQuantity: transaction.toQuantity ?? null,
           activity: args.id,
           fundMoves,
         })
@@ -709,6 +746,10 @@ export type UpdateTransactionArgs = {
   toAccount?: string | null;
   toAsset?: string | null;
   toCounterparty?: string | null;
+  toInvestment?: string | null;
+  toQuantity?: number | null;
+  fromInvestment?: string | null;
+  fromQuantity?: number | null;
   fundMoves?: FundMoveInput[] | null;
 };
 
@@ -817,6 +858,35 @@ export async function updateTransaction(
             .limit(1)
         )[0]?.id
       : args.toCounterparty;
+  if (args.fromInvestment !== undefined)
+    updatedFields.fromInvestment = args.fromInvestment
+      ? (
+          await db
+            .select({ id: investments.id })
+            .from(investments)
+            .where(
+              and(
+                like(investments.id, idPattern(args.fromInvestment)),
+                eq(investments.user, userId),
+              ),
+            )
+            .limit(1)
+        )[0]?.id
+      : args.fromInvestment;
+  if (args.toInvestment !== undefined)
+    updatedFields.toInvestment = args.toInvestment
+      ? (
+          await db
+            .select({ id: investments.id })
+            .from(investments)
+            .where(
+              and(like(investments.id, idPattern(args.toInvestment)), eq(investments.user, userId)),
+            )
+            .limit(1)
+        )[0]?.id
+      : args.toInvestment;
+  if (args.fromQuantity !== undefined) updatedFields.fromQuantity = args.fromQuantity;
+  if (args.toQuantity !== undefined) updatedFields.toQuantity = args.toQuantity;
 
   // Replace fund legs when provided (undefined = keep existing legs).
   // Legs live on the transaction row, stored with the activity's date.
