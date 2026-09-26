@@ -266,7 +266,7 @@ function SubcategoryPage({
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    className="w-[150px]"
+                    className="w-auto whitespace-nowrap"
                     nameKey="views"
                     formatter={(value) =>
                       currencyFormatter.format(value as number)

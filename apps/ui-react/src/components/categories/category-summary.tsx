@@ -187,7 +187,7 @@ export function CategorySummary({ category }: CategorySummaryProps) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className="w-[160px]"
+                  className="w-auto whitespace-nowrap"
                   nameKey="views"
                   formatter={(value) =>
                     currencyFormatter.format(value as number)
