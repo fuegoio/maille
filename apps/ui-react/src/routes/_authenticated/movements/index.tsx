@@ -86,7 +86,7 @@ function MovementsPage() {
         <div className="flex-1" />
         <SearchBar />
         <ImportMovementsButton className="hidden sm:flex" />
-        <AddMovementButton />
+        <AddMovementButton hotkey />
       </PageBar>
 
       <Tabs

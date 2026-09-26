@@ -20,6 +20,9 @@ interface AddActivityButtonProps {
   project?: string;
   date?: Date;
   iconOnly?: boolean;
+  /** Whether this instance responds to the "C" hotkey. Enable on a single
+   * instance per page, otherwise every mounted button opens its own modal. */
+  hotkey?: boolean;
 }
 
 export function AddActivityButton({
@@ -33,6 +36,7 @@ export function AddActivityButton({
   project,
   date,
   iconOnly = false,
+  hotkey = false,
 }: AddActivityButtonProps) {
   const [showModal, setShowModal] = useState(false);
 
@@ -43,10 +47,14 @@ export function AddActivityButton({
     setShowModal(true);
   };
 
-  useHotkey("C", (event) => {
-    if (event.key !== "c") return;
-    setShowModal(true);
-  });
+  useHotkey(
+    "C",
+    (event) => {
+      if (event.key !== "c") return;
+      setShowModal(true);
+    },
+    { enabled: hotkey },
+  );
 
   return (
     <>

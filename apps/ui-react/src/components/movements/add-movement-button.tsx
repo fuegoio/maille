@@ -48,9 +48,16 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddMovementButtonProps {
   className?: string;
   size?: "sm" | "default";
+  /** Whether this instance responds to the "C" hotkey. Enable on a single
+   * instance per page, otherwise every mounted button opens its own dialog. */
+  hotkey?: boolean;
 }
 
-export function AddMovementButton({ className, size }: AddMovementButtonProps) {
+export function AddMovementButton({
+  className,
+  size,
+  hotkey = false,
+}: AddMovementButtonProps) {
   const mutate = useSync((state) => state.mutate);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
@@ -105,10 +112,14 @@ export function AddMovementButton({ className, size }: AddMovementButtonProps) {
   };
 
   // Hotkeys
-  useHotkey("C", (event) => {
-    if (event.key !== "c") return;
-    openDialog();
-  });
+  useHotkey(
+    "C",
+    (event) => {
+      if (event.key !== "c") return;
+      openDialog();
+    },
+    { enabled: hotkey },
+  );
 
   return (
     <>

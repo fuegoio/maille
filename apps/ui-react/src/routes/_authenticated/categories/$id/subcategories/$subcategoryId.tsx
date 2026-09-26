@@ -199,6 +199,7 @@ function SubcategoryPage({
           <AddActivityButton
             category={category.id}
             subcategory={subcategory.id}
+            hotkey
           />
           <SubcategorySettingsDialog subcategory={subcategory}>
             <Button variant="ghost" size="icon">

@@ -106,7 +106,7 @@ function ActivitiesPage() {
         <PageBreadcrumbs entries={breadcrumbs} />
         <div className="flex-1" />
         <SearchBar />
-        <AddActivityButton variant="default" />
+        <AddActivityButton variant="default" hotkey />
       </PageBar>
 
       <Tabs

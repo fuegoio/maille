@@ -118,7 +118,7 @@ function ProjectPage({ project }: { project: Project }) {
           <PageBreadcrumbs entries={breadcrumbs} />
           <div className="flex-1" />
           {selectedCustomView === null && (
-            <AddActivityButton project={projectId} />
+            <AddActivityButton project={projectId} hotkey />
           )}
           <Button
             variant="ghost"

@@ -177,7 +177,7 @@ function MonthPage() {
           <div className="flex-1" />
 
           <SearchBar />
-          <AddActivityButton variant="default" date={monthDate} />
+          <AddActivityButton variant="default" date={monthDate} hotkey />
         </header>
 
         <Tabs

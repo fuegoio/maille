@@ -111,7 +111,7 @@ function CategoryPage({ category }: { category: ActivityCategory }) {
           <div className="flex-1" />
           <SearchBar />
           {selectedCustomView === null && (
-            <AddActivityButton category={category.id} />
+            <AddActivityButton category={category.id} hotkey />
           )}
           <CategorySettingsDialog category={category}>
             <Button variant="ghost" size="icon">

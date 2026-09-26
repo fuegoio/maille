@@ -299,7 +299,7 @@ function AccountPage({ account }: { account: Account }) {
               {selectedCustomView !== null && (
                 <>
                   {selectedCustomView.config.resource === "movements" && (
-                    <AddMovementButton size="sm" />
+                    <AddMovementButton size="sm" hotkey />
                   )}
                   <CustomViewActions
                     view={selectedCustomView}
@@ -322,7 +322,7 @@ function AccountPage({ account }: { account: Account }) {
               {selectedCustomView === null &&
                 selectedTab === "transactions" && (
                   <>
-                    <AddActivityButton size="sm" />
+                    <AddActivityButton size="sm" hotkey />
                     <ViewActions>
                       <FilterTransactionsButton
                         viewId={`account-${account.id}-transactions`}
@@ -344,7 +344,7 @@ function AccountPage({ account }: { account: Account }) {
                 )}
               {selectedCustomView === null && selectedTab === "movements" && (
                 <>
-                  <AddMovementButton size="sm" />
+                  <AddMovementButton size="sm" hotkey />
                   <ViewActions>
                     <FilterMovementsButton
                       viewId={`account-${account.id}-movements`}
