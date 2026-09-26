@@ -1,4 +1,9 @@
-import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
+import {
+  Link,
+  useNavigate,
+  useRouter,
+  useSearch,
+} from "@tanstack/react-router";
 import { House, Trash2 } from "lucide-react";
 import { MapPin } from "lucide-react";
 import * as React from "react";
@@ -11,7 +16,6 @@ import { ActivityViewSettingsButton } from "@/components/activities/activity-vie
 import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
 import { FilterActivitiesButton } from "@/components/activities/filters/filter-activities-button";
 import {
-  ContextLink,
   PageBreadcrumbs,
   usePageBreadcrumbs,
 } from "@/components/navigation/breadcrumbs";
@@ -282,73 +286,77 @@ export function AssetPage({ assetId }: AssetPageProps) {
           </header>
 
           <TabsContent value="asset" className="flex min-h-0 flex-1 flex-col">
-            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col @min-[70rem]:border-x">
-              <div className="shrink-0 border-b px-4 py-6 sm:px-8">
-                <div className="flex items-baseline justify-between gap-4">
-                  <DebouncedInput
+            <div className="flex-1 overflow-y-auto pb-20">
+              <div className="mx-auto w-full max-w-5xl">
+                <div className="border-b px-4 py-6 sm:px-8">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" asChild className="h-6">
+                      <Link
+                        to="/accounts/$id"
+                        params={{ id: asset.account }}
+                        search={{ view: "assets" }}
+                      >
+                        <AccountLabel accountId={asset.account} size="sm" />
+                      </Link>
+                    </Badge>
+                  </div>
+
+                  <div className="mt-3 flex items-baseline justify-between gap-4">
+                    <DebouncedInput
+                      key={asset.id}
+                      id="name"
+                      aria-label="Asset name"
+                      value={asset.name}
+                      onCommit={(name) => handleUpdateAsset({ name })}
+                      placeholder="Asset name"
+                      className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                    />
+                    <div
+                      className="shrink-0 font-mono text-2xl leading-snug whitespace-nowrap tabular-nums"
+                      title="Book value"
+                    >
+                      <RollingAmount value={value} />
+                    </div>
+                  </div>
+
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Book value
+                  </div>
+
+                  <DebouncedTextarea
                     key={asset.id}
-                    id="name"
-                    aria-label="Asset name"
-                    value={asset.name}
-                    onCommit={(name) => handleUpdateAsset({ name })}
-                    placeholder="Asset name"
-                    className="h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0.5 text-3xl font-semibold md:text-3xl dark:bg-transparent"
+                    id="description"
+                    aria-label="Description"
+                    value={asset.description || ""}
+                    onCommit={(description) =>
+                      handleUpdateAsset({ description: description || null })
+                    }
+                    placeholder="Add a description ..."
+                    rows={1}
+                    className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
                   />
-                  <div
-                    className="shrink-0 font-mono text-2xl leading-snug whitespace-nowrap tabular-nums"
-                    title="Current value"
-                  >
-                    <RollingAmount value={value} />
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                      <MapPin className="size-3 shrink-0 text-muted-foreground" />
+                      <DebouncedInput
+                        key={asset.id}
+                        aria-label="Location"
+                        value={asset.location || ""}
+                        onCommit={(location) =>
+                          handleUpdateAsset({ location: location || null })
+                        }
+                        placeholder="Add a location ..."
+                        className="h-auto w-40 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
+                      />
+                    </label>
                   </div>
                 </div>
 
-                <DebouncedTextarea
-                  key={asset.id}
-                  id="description"
-                  aria-label="Description"
-                  value={asset.description || ""}
-                  onCommit={(description) =>
-                    handleUpdateAsset({ description: description || null })
-                  }
-                  placeholder="Add a description ..."
-                  rows={1}
-                  className="mt-2 min-h-16 w-full resize-none border-0 bg-transparent px-0 py-0.5 text-sm dark:bg-transparent"
-                />
+                <AssetDepreciationSection asset={asset} />
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    asChild
-                    className="h-6 [a]:hover:bg-border/50"
-                  >
-                    <ContextLink
-                      to="/accounts/$id"
-                      params={{ id: asset.account }}
-                      search={{ view: "assets" }}
-                    >
-                      <AccountLabel accountId={asset.account} size="sm" />
-                    </ContextLink>
-                  </Badge>
-
-                  <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
-                    <MapPin className="size-3 shrink-0 text-muted-foreground" />
-                    <DebouncedInput
-                      key={asset.id}
-                      aria-label="Location"
-                      value={asset.location || ""}
-                      onCommit={(location) =>
-                        handleUpdateAsset({ location: location || null })
-                      }
-                      placeholder="Add a location ..."
-                      className="h-auto w-40 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
-                    />
-                  </label>
-                </div>
+                <AssetValuationSection asset={asset} />
               </div>
-
-              <AssetDepreciationSection asset={asset} />
-
-              <AssetValuationSection asset={asset} />
             </div>
           </TabsContent>
 
