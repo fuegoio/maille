@@ -1,6 +1,6 @@
 import { type Account, AccountType } from "@maille/core/accounts";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { House, Plus, Settings, Users } from "lucide-react";
+import { ChartLine, House, Plus, Settings, Users } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -10,6 +10,8 @@ import { AccountSummary } from "@/components/accounts/account-summary";
 import { AddAssetModal } from "@/components/accounts/assets/add-asset-modal";
 import { AssetsTable } from "@/components/accounts/assets/assets-table";
 import { CounterpartiesTable } from "@/components/accounts/counterparties/counterparties-table";
+import { AddInvestmentModal } from "@/components/accounts/investments/add-investment-modal";
+import { InvestmentsTable } from "@/components/accounts/investments/investments-table";
 import { ShareAccountDialog } from "@/components/accounts/share-account-dialog";
 import { AddActivityButton } from "@/components/activities/add-activity-button";
 import { AddCounterpartyModal } from "@/components/counterparties/add-counterparty-modal";
@@ -55,6 +57,7 @@ const ACCOUNT_TABS_NAMES = {
   movements: "Movements",
   assets: "Assets",
   counterparties: "Counterparties",
+  investments: "Investments",
 } as const;
 
 const searchParamsSchema = z.object({
@@ -242,6 +245,15 @@ function AccountPage({ account }: { account: Account }) {
                         },
                       ]
                     : []),
+                  ...(account.type === AccountType.INVESTMENT_ACCOUNT
+                    ? [
+                        {
+                          value: "investments",
+                          label: "Investments",
+                          icon: ChartLine,
+                        },
+                      ]
+                    : []),
                 ]}
               />
               <TabsList
@@ -282,6 +294,12 @@ function AccountPage({ account }: { account: Account }) {
                   <TabsTrigger value="counterparties">
                     <Users />
                     Counterparties
+                  </TabsTrigger>
+                )}
+                {account.type === AccountType.INVESTMENT_ACCOUNT && (
+                  <TabsTrigger value="investments">
+                    <ChartLine />
+                    Investments
                   </TabsTrigger>
                 )}
                 <CustomViewTabs
@@ -387,6 +405,19 @@ function AccountPage({ account }: { account: Account }) {
                     </Button>
                   </AddCounterpartyModal>
                 )}
+              {selectedCustomView === null && selectedTab === "investments" && (
+                <AddInvestmentModal accountId={accountId}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    aria-label="Add investment"
+                    className="w-7 px-0 sm:w-auto sm:px-2.5"
+                  >
+                    <Plus />
+                    <span className="hidden sm:inline">Add investment</span>
+                  </Button>
+                </AddInvestmentModal>
+              )}
             </header>
 
             <TabsContent value="transactions" className="flex h-full">
@@ -417,6 +448,12 @@ function AccountPage({ account }: { account: Account }) {
             {account.type === AccountType.LIABILITIES && (
               <TabsContent value="counterparties" className="flex h-full">
                 <CounterpartiesTable accountId={account.id} />
+              </TabsContent>
+            )}
+
+            {account.type === AccountType.INVESTMENT_ACCOUNT && (
+              <TabsContent value="investments" className="flex h-full">
+                <InvestmentsTable accountId={account.id} />
               </TabsContent>
             )}
 

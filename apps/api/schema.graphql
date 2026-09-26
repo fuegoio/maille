@@ -231,6 +231,22 @@ type HistoryEntry {
   user: String!
 }
 
+type Investment {
+  account: String!
+  description: String
+  id: String!
+  name: String!
+  quantity: Float!
+  symbol: String
+}
+
+type InvestmentPrice {
+  date: Date!
+  id: String!
+  investment: String!
+  price: Float!
+}
+
 type Movement {
   account: String!
   activities: [MovementActivity!]!
@@ -265,6 +281,7 @@ type MovementWorkflow {
 }
 
 type Mutation {
+  addInvestmentPrice(date: Date!, id: String!, investment: String!, price: Float!): InvestmentPrice!
   addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromAsset: String, fromCounterparty: String, fundMoves: [FundMoveInput!], id: String!, toAccount: String!, toAsset: String, toCounterparty: String): Transaction!
 
   """
@@ -280,6 +297,7 @@ type Mutation {
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
   createFund(color: String, endDate: Date, id: String!, name: String!, parentFund: String, startDate: Date): Fund!
+  createInvestment(account: String!, description: String, id: String!, name: String!, quantity: Float, symbol: String): Investment!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
@@ -293,6 +311,8 @@ type Mutation {
   deleteContact(id: String!): Boolean!
   deleteCounterparty(id: String!): Boolean!
   deleteFund(id: String!): Boolean!
+  deleteInvestment(id: String!): Boolean!
+  deleteInvestmentPrice(id: String!): Boolean!
   deleteMovement(id: String!): DeleteMovementResponse!
   deleteMovementActivity(id: String!): DeleteMovementActivityResponse!
   deleteProject(id: String!): Boolean!
@@ -319,6 +339,8 @@ type Mutation {
   updateAssetDepreciation(basis: Float, category: String, expenseAccount: String, id: String!, months: Int, startMonth: Date, subcategory: String): AssetDepreciation!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateFund(color: String, endDate: Date, id: String!, name: String, parentFund: String, startDate: Date): Fund!
+  updateInvestment(account: String, description: String, id: String!, name: String, quantity: Float, symbol: String): Investment!
+  updateInvestmentPrice(date: Date, id: String!, price: Float): InvestmentPrice!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!
   updateProject(emoji: String, endDate: Date, id: String!, name: String, startDate: Date): Project!
@@ -346,6 +368,8 @@ type Query {
   events(lastSync: Float!): [Event!]!
   fundAllocations: [FundAllocation!]!
   funds: [Fund!]!
+  investmentPrices: [InvestmentPrice!]!
+  investments: [Investment!]!
   movements: [Movement!]!
   projects: [Project!]!
   views: [View!]!

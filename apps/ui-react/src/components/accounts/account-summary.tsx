@@ -1,6 +1,12 @@
 import { AccountType } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
-import { addDays, eachDayOfInterval, startOfDay, subDays } from "date-fns";
+import {
+  addDays,
+  eachDayOfInterval,
+  format,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import {
   ArrowRight,
   ChevronRight,
@@ -22,10 +28,12 @@ import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
 import { getAccountSpreadAcrossFunds } from "@/logic/funds";
+import { endOfToday, getAccountEstimation } from "@/logic/investments";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
+import { useInvestments } from "@/stores/investments";
 import { useMovements } from "@/stores/movements";
 
 interface AccountSummaryProps {
@@ -91,6 +99,23 @@ export function AccountSummary({
   // The prevision: where the balance lands once every future activity has
   // landed too
   const longTermBalance = getAccountTotal({});
+
+  // The market estimation reads the positions' price series — the
+  // valuation layer, next to the ledger's balance. Only investment
+  // accounts hold positions.
+  const investments = useInvestments((state) => state.investments);
+  const investmentPrices = useInvestments((state) => state.investmentPrices);
+  const estimation =
+    account?.type === AccountType.INVESTMENT_ACCOUNT
+      ? getAccountEstimation(
+          investments,
+          investmentPrices,
+          accountId,
+          new Date(endOfToday()),
+        )
+      : null;
+  const estimationDelta =
+    estimation !== null ? estimation.value - balance : null;
 
   const getAccountCashBalanceAtDate = (date: Date): number => {
     if (!account?.movements) return 0;
@@ -237,6 +262,45 @@ export function AccountSummary({
             </span>
           </div>
         </div>
+
+        {estimation && (
+          <div className="mt-4 border-t pt-3">
+            <div className="flex items-center gap-2 text-sm">
+              <div className="font-medium">Estimation</div>
+              <div className="flex-1" />
+              <span className="font-mono tabular-nums">
+                <RollingAmount value={estimation.value} />
+              </span>
+            </div>
+            {estimationDelta !== null && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                <span
+                  className={cn(
+                    "font-mono",
+                    estimationDelta >= 0
+                      ? "text-activity-revenue"
+                      : "text-activity-expense",
+                  )}
+                >
+                  {estimationDelta >= 0 ? "+" : ""}
+                  {currencyFormatter.format(estimationDelta)}
+                </span>{" "}
+                unrealized vs balance
+                {Math.abs(balance) >= 0.01 && (
+                  <>
+                    {" "}
+                    ({estimationDelta >= 0 ? "+" : ""}
+                    {Math.round((estimationDelta / balance) * 100)}%)
+                  </>
+                )}
+                {estimation.asOf &&
+                  ` · as of ${format(estimation.asOf, "dd MMM yyyy")}`}
+                {estimation.priced < estimation.positions &&
+                  ` · ${estimation.priced} of ${estimation.positions} priced`}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <ChartContainer
