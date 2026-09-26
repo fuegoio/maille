@@ -232,47 +232,6 @@ export function AccountSummary({
           </span>
         </div>
 
-        {/* The estimation reads the valuation layer — priced positions
-        or valued assets — next to the ledger's balance above. */}
-        {estimation && (
-          <>
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <div className="font-medium">Estimation</div>
-              <div className="flex-1" />
-              <span className="flex items-center gap-1 font-mono font-medium">
-                <RollingAmount value={estimation.value} />
-              </span>
-            </div>
-            {estimationDelta !== null && (
-              <div className="mt-1 text-right text-xs text-muted-foreground">
-                <span
-                  className={cn(
-                    "font-mono",
-                    estimationDelta >= 0
-                      ? "text-activity-revenue"
-                      : "text-activity-expense",
-                  )}
-                >
-                  {estimationDelta >= 0 ? "+" : ""}
-                  {currencyFormatter.format(estimationDelta)}
-                </span>{" "}
-                unrealized
-                {Math.abs(balance) >= 0.01 && (
-                  <>
-                    {" "}
-                    ({estimationDelta >= 0 ? "+" : ""}
-                    {Math.round((estimationDelta / balance) * 100)}%)
-                  </>
-                )}
-                {estimation.asOf &&
-                  ` · as of ${format(estimation.asOf, "dd MMM yyyy")}`}
-                {estimation.valued < estimation.positions &&
-                  ` · ${estimation.valued} of ${estimation.positions} valued`}
-              </div>
-            )}
-          </>
-        )}
-
         {account?.movements && (
           <div className="mt-4 flex items-center text-xs text-muted-foreground">
             <div className="font-medium">Cash balance</div>
@@ -369,6 +328,48 @@ export function AccountSummary({
           />
         </LineChart>
       </ChartContainer>
+
+      {/* The estimation reads the valuation layer — priced positions
+        or valued assets — next to the ledger's balance above. Its own
+        bordered section, below the chart. */}
+      {estimation && (
+        <div className="border-t p-6">
+          <div className="flex items-center gap-2 text-sm">
+            <div className="font-medium">Estimation</div>
+            <div className="flex-1" />
+            <span className="flex items-center gap-1 font-mono font-medium">
+              <RollingAmount value={estimation.value} />
+            </span>
+          </div>
+          {estimationDelta !== null && (
+            <div className="mt-1 text-right text-xs text-muted-foreground">
+              <span
+                className={cn(
+                  "font-mono",
+                  estimationDelta >= 0
+                    ? "text-activity-revenue"
+                    : "text-activity-expense",
+                )}
+              >
+                {estimationDelta >= 0 ? "+" : ""}
+                {currencyFormatter.format(estimationDelta)}
+              </span>{" "}
+              unrealized
+              {Math.abs(balance) >= 0.01 && (
+                <>
+                  {" "}
+                  ({estimationDelta >= 0 ? "+" : ""}
+                  {Math.round((estimationDelta / balance) * 100)}%)
+                </>
+              )}
+              {estimation.asOf &&
+                ` · as of ${format(estimation.asOf, "dd MMM yyyy")}`}
+              {estimation.valued < estimation.positions &&
+                ` · ${estimation.valued} of ${estimation.positions} valued`}
+            </div>
+          )}
+        </div>
+      )}
 
       {fundSpread.some(({ fund }) => fund !== null) && (
         <div className="border-t p-6">
