@@ -116,7 +116,9 @@ export function CategoriesTable() {
                       }}
                       className={cn(
                         ledgerRowClassName,
-                        "flex flex-1 items-center gap-2",
+                        // No gap: the activities cell keeps its mr-4, so
+                        // it stays under the header strip's Activities
+                        "flex flex-1 items-center",
                       )}
                     >
                       <div className="flex items-center gap-2">

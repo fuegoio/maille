@@ -87,7 +87,7 @@ export function ProjectsTable() {
                 ACTIVITY_TYPES_COLOR[ActivityType.REVENUE],
               )}
             />
-            <div className="flex-1">
+            <div className="flex-1 whitespace-nowrap">
               {currencyFormatter.format(
                 getActivityTypeTotalForProject({
                   projectId: project.id,
@@ -106,7 +106,7 @@ export function ProjectsTable() {
                 ACTIVITY_TYPES_COLOR[ActivityType.INVESTMENT],
               )}
             />
-            <div className="flex-1">
+            <div className="flex-1 whitespace-nowrap">
               {currencyFormatter.format(
                 getActivityTypeTotalForProject({
                   projectId: project.id,
@@ -125,7 +125,7 @@ export function ProjectsTable() {
                 ACTIVITY_TYPES_COLOR[ActivityType.ASSET],
               )}
             />
-            <div className="flex-1">
+            <div className="flex-1 whitespace-nowrap">
               {currencyFormatter.format(
                 getActivityTypeTotalForProject({
                   projectId: project.id,
@@ -144,7 +144,7 @@ export function ProjectsTable() {
                 ACTIVITY_TYPES_COLOR[ActivityType.EXPENSE],
               )}
             />
-            <div className="flex-1">
+            <div className="flex-1 whitespace-nowrap">
               {currencyFormatter.format(
                 getActivityTypeTotalForProject({
                   projectId: project.id,
@@ -163,7 +163,7 @@ export function ProjectsTable() {
                 ACTIVITY_TYPES_COLOR[ActivityType.NEUTRAL],
               )}
             />
-            <div className="flex-1">
+            <div className="flex-1 whitespace-nowrap">
               {currencyFormatter.format(
                 getActivityTypeTotalForProject({
                   projectId: project.id,
