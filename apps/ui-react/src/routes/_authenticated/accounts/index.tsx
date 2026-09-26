@@ -45,6 +45,7 @@ function AccountsPage() {
         <div>Account</div>
         <div className="flex-1" />
         <div className="text-right">Transactions</div>
+        <div className="hidden w-32 text-right sm:block">Estimation</div>
         <div className="w-32 text-right">Balance</div>
       </LedgerHeaderStrip>
 

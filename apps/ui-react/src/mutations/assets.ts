@@ -1,8 +1,11 @@
-import type { Asset } from "@maille/core/accounts";
+import type { Asset, AssetValuation } from "@maille/core/accounts";
 import type {
   CreateAssetEvent,
   UpdateAssetEvent,
   DeleteAssetEvent,
+  AddAssetValuationEvent,
+  UpdateAssetValuationEvent,
+  DeleteAssetValuationEvent,
 } from "@maille/core/sync";
 
 import { graphql } from "@/gql";
@@ -75,11 +78,62 @@ export type UpdateAssetMutation = MutationType<
 export type DeleteAssetMutation = MutationType<
   "deleteAsset",
   typeof deleteAssetMutation,
-  Asset,
+  { asset: Asset; valuations: AssetValuation[] },
   [DeleteAssetEvent]
+>;
+
+export const addAssetValuationMutation = graphql(/* GraphQL */ `
+  mutation AddAssetValuation(
+    $id: String!
+    $asset: String!
+    $date: Date!
+    $value: Float!
+  ) {
+    addAssetValuation(id: $id, asset: $asset, date: $date, value: $value) {
+      id
+    }
+  }
+`);
+
+export const updateAssetValuationMutation = graphql(/* GraphQL */ `
+  mutation UpdateAssetValuation($id: String!, $date: Date, $value: Float) {
+    updateAssetValuation(id: $id, date: $date, value: $value) {
+      id
+    }
+  }
+`);
+
+export const deleteAssetValuationMutation = graphql(/* GraphQL */ `
+  mutation DeleteAssetValuation($id: String!) {
+    deleteAssetValuation(id: $id)
+  }
+`);
+
+export type AddAssetValuationMutation = MutationType<
+  "addAssetValuation",
+  typeof addAssetValuationMutation,
+  undefined,
+  [AddAssetValuationEvent]
+>;
+
+export type UpdateAssetValuationMutation = MutationType<
+  "updateAssetValuation",
+  typeof updateAssetValuationMutation,
+  AssetValuation,
+  [UpdateAssetValuationEvent]
+>;
+
+export type DeleteAssetValuationMutation = MutationType<
+  "deleteAssetValuation",
+  typeof deleteAssetValuationMutation,
+  AssetValuation,
+  [DeleteAssetValuationEvent]
 >;
 
 export type AssetMutation =
   | CreateAssetMutation
   | UpdateAssetMutation
-  | DeleteAssetMutation;
+  | DeleteAssetMutation
+  | AddAssetValuationMutation
+  | UpdateAssetValuationMutation
+  | DeleteAssetValuationMutation;

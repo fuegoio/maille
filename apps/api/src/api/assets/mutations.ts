@@ -1,12 +1,27 @@
 import { builder } from "../builder";
-import { AssetSchema, DeleteAssetResponseSchema } from "./schemas";
+import { AssetSchema, AssetValuationSchema, DeleteAssetResponseSchema } from "./schemas";
 import { db } from "@/database";
-import { accounts, assetDepreciations, assets, transactions } from "@/tables";
+import { accounts, assetValuations, assetDepreciations, assets, transactions } from "@/tables";
 import { idPattern } from "@/api/idPrefix";
 import { addEvent } from "../events";
 import { deleteAssetDepreciation } from "@/services/depreciations";
 import { and, eq, like } from "drizzle-orm";
 import { GraphQLError } from "graphql";
+
+/** The asset, scoped to the user, resolved from its possibly-prefixed id. */
+const getUserAsset = async (assetId: string, userId: string) => {
+  const asset = (
+    await db
+      .select()
+      .from(assets)
+      .innerJoin(accounts, eq(accounts.id, assets.account))
+      .where(and(like(assets.id, idPattern(assetId)), eq(accounts.user, userId)))
+  )[0]?.assets;
+  if (!asset) {
+    throw new GraphQLError("Asset not found");
+  }
+  return asset;
+};
 
 export const registerAssetsMutations = () => {
   builder.mutationField("createAsset", (t) =>
@@ -214,6 +229,173 @@ export const registerAssetsMutations = () => {
           id: asset.id,
           success: true,
         };
+      },
+    }),
+  );
+
+  builder.mutationField("addAssetValuation", (t) =>
+    t.field({
+      type: AssetValuationSchema,
+      args: {
+        id: t.arg({ type: "String" }),
+        asset: t.arg({ type: "String" }),
+        date: t.arg({ type: "Date" }),
+        value: t.arg.float(),
+      },
+      resolve: async (root, args, ctx) => {
+        const asset = await getUserAsset(args.asset, ctx.user.id);
+
+        // One valuation per day: adding one for a day that already has
+        // it replaces the day's row.
+        const existing = (
+          await db
+            .select()
+            .from(assetValuations)
+            .where(and(eq(assetValuations.asset, asset.id), eq(assetValuations.date, args.date)))
+            .limit(1)
+        )[0];
+
+        const valuation = existing
+          ? (
+              await db
+                .update(assetValuations)
+                .set({ value: args.value })
+                .where(eq(assetValuations.id, existing.id))
+                .returning()
+            )[0]
+          : (
+              await db
+                .insert(assetValuations)
+                .values({
+                  id: args.id,
+                  user: ctx.user.id,
+                  asset: asset.id,
+                  date: args.date,
+                  value: args.value,
+                })
+                .returning()
+            )[0];
+        if (!valuation) {
+          throw new GraphQLError("Failed to save asset valuation");
+        }
+
+        await addEvent({
+          type: "addAssetValuation",
+          payload: {
+            id: valuation.id,
+            asset: valuation.asset,
+            date: valuation.date.toISOString(),
+            value: valuation.value,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        return valuation;
+      },
+    }),
+  );
+
+  builder.mutationField("updateAssetValuation", (t) =>
+    t.field({
+      type: AssetValuationSchema,
+      args: {
+        id: t.arg({ type: "String" }),
+        date: t.arg({ type: "Date", required: false }),
+        value: t.arg.float({ required: false }),
+      },
+      resolve: async (root, args, ctx) => {
+        const valuation = (
+          await db
+            .select()
+            .from(assetValuations)
+            .where(
+              and(
+                like(assetValuations.id, idPattern(args.id)),
+                eq(assetValuations.user, ctx.user.id),
+              ),
+            )
+        )[0];
+        if (!valuation) {
+          throw new GraphQLError("Asset valuation not found");
+        }
+
+        const updates: Partial<typeof valuation> = {};
+        if (args.date != null) {
+          updates.date = args.date;
+        }
+        if (args.value != null) {
+          updates.value = args.value;
+        }
+
+        const updatedValuation = (
+          await db
+            .update(assetValuations)
+            .set(updates)
+            .where(eq(assetValuations.id, valuation.id))
+            .returning()
+        )[0];
+        if (!updatedValuation) {
+          throw new GraphQLError("Failed to update asset valuation");
+        }
+
+        await addEvent({
+          type: "updateAssetValuation",
+          payload: {
+            id: valuation.id,
+            asset: valuation.asset,
+            ...(updatedValuation.date !== valuation.date
+              ? { date: updatedValuation.date.toISOString() }
+              : {}),
+            ...(updates.value !== undefined ? { value: updatedValuation.value } : {}),
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        return updatedValuation;
+      },
+    }),
+  );
+
+  builder.mutationField("deleteAssetValuation", (t) =>
+    t.field({
+      type: "Boolean",
+      args: {
+        id: t.arg({ type: "String" }),
+      },
+      resolve: async (root, args, ctx) => {
+        const valuation = (
+          await db
+            .select()
+            .from(assetValuations)
+            .where(
+              and(
+                like(assetValuations.id, idPattern(args.id)),
+                eq(assetValuations.user, ctx.user.id),
+              ),
+            )
+        )[0];
+        if (!valuation) {
+          throw new GraphQLError("Asset valuation not found");
+        }
+
+        await db.delete(assetValuations).where(eq(assetValuations.id, valuation.id));
+
+        await addEvent({
+          type: "deleteAssetValuation",
+          payload: {
+            id: valuation.id,
+            asset: valuation.asset,
+          },
+          createdAt: new Date(),
+          clientId: ctx.session.id,
+          user: ctx.user.id,
+        });
+
+        return true;
       },
     }),
   );

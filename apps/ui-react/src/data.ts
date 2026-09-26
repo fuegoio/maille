@@ -198,6 +198,13 @@ const userDataQuery = graphql(/* GraphQL */ `
       location
     }
 
+    assetValuations {
+      id
+      asset
+      date
+      value
+    }
+
     assetDepreciations {
       id
       asset
@@ -393,6 +400,15 @@ export const fetchUserData = async () => {
     })),
   });
 
+  // Populate asset estimated values
+  useAssets.setState({
+    assets: useAssets.getState().assets,
+    assetValuations: userData.assetValuations.map((valuation) => ({
+      ...valuation,
+      date: new Date(valuation.date),
+    })),
+  });
+
   // Populate contacts
   userData.contacts.forEach((contact) => {
     useContacts.getState().addContact({
@@ -453,7 +469,7 @@ export const clearAllStores = () => {
     activityCategories: [],
     activitySubcategories: [],
   });
-  useAssets.setState({ assets: [] });
+  useAssets.setState({ assets: [], assetValuations: [] });
   useAssetDepreciations.setState({ depreciations: [] });
   useContacts.setState({ contacts: [] });
   useCounterparties.setState({ counterparties: [] });

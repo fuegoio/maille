@@ -11,15 +11,15 @@ export {
   latestInvestmentPrice,
 } from "@maille/core/accounts";
 
-/** What an account's positions are worth at `at`, for the summary. */
+/** What an account's positions or assets are worth at `at`, for the summary. */
 export type AccountEstimation = {
-  /** Sum of the priced positions' values. */
+  /** Sum of the observed positions' values. */
   value: number;
-  /** Positions with at least one price at or before `at`. */
-  priced: number;
-  /** Every position in the account, priced or not. */
+  /** Positions or assets with at least one observation at or before `at`. */
+  valued: number;
+  /** Every position or asset in the account, observed or not. */
   positions: number;
-  /** The most recent price date the estimation rests on. */
+  /** The most recent observation date the estimation rests on. */
   asOf: Date | null;
 };
 
@@ -40,20 +40,20 @@ export function getAccountEstimation(
   if (accountPositions.length === 0) return null;
 
   let value = 0;
-  let priced = 0;
+  let valued = 0;
   let asOf: Date | null = null;
   for (const investment of accountPositions) {
     const price = latestInvestmentPrice(prices, investment.id, at);
     if (price === null) continue;
-    priced += 1;
+    valued += 1;
     value += investmentValueAt(investment, prices, at) ?? 0;
     if (asOf === null || price.date.getTime() > asOf.getTime()) {
       asOf = price.date;
     }
   }
 
-  if (priced === 0) return null;
-  return { value, priced, positions: accountPositions.length, asOf };
+  if (valued === 0) return null;
+  return { value, valued, positions: accountPositions.length, asOf };
 }
 
 /** The end of today: prices land whole days, values never peek ahead. */

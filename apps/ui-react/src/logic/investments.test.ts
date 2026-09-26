@@ -59,7 +59,7 @@ describe("getAccountEstimation", () => {
     const estimation = getAccountEstimation(investments, prices, "acc-1", at);
     expect(estimation).toEqual({
       value: 10 * 100 + 2 * 50,
-      priced: 2,
+      valued: 2,
       positions: 2,
       asOf: new Date("2026-01-20"),
     });
@@ -94,7 +94,7 @@ describe("getAccountEstimation", () => {
     const estimation = getAccountEstimation(investments, prices, "acc-1", at);
     expect(estimation).toEqual({
       value: 100,
-      priced: 1,
+      valued: 1,
       positions: 1,
       asOf: new Date("2026-01-15"),
     });
@@ -116,7 +116,7 @@ describe("getAccountEstimation", () => {
     const estimation = getAccountEstimation(investments, prices, "acc-1", at);
     expect(estimation).toMatchObject({
       value: 1000,
-      priced: 1,
+      valued: 1,
       positions: 2,
     });
   });

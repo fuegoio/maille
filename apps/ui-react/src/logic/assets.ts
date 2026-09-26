@@ -117,3 +117,40 @@ export function getAssetTotals(
     { in: 0, out: 0 },
   );
 }
+
+import type { Asset, AssetValuation } from "@maille/core/accounts";
+
+import { latestAssetValuation } from "@maille/core/accounts";
+
+import type { AccountEstimation } from "./investments";
+
+/**
+ * An assets account's estimation: the sum of its assets' estimated
+ * values at their latest observation. Null when the account holds no
+ * asset or none has ever been valued — absence, never a zero.
+ */
+export function getAssetsAccountEstimation(
+  assets: readonly Asset[],
+  valuations: readonly AssetValuation[],
+  accountId: string,
+  at: Date,
+): AccountEstimation | null {
+  const accountAssets = assets.filter((asset) => asset.account === accountId);
+  if (accountAssets.length === 0) return null;
+
+  let value = 0;
+  let valued = 0;
+  let asOf: Date | null = null;
+  for (const asset of accountAssets) {
+    const valuation = latestAssetValuation(valuations, asset.id, at);
+    if (valuation === null) continue;
+    valued += 1;
+    value += valuation.value;
+    if (asOf === null || valuation.date.getTime() > asOf.getTime()) {
+      asOf = valuation.date;
+    }
+  }
+
+  if (valued === 0) return null;
+  return { value, valued, positions: accountAssets.length, asOf };
+}

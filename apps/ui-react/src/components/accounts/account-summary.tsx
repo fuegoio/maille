@@ -27,10 +27,12 @@ import { RollingAmount } from "@/components/ui/rolling-amount";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
+import { getAssetsAccountEstimation } from "@/logic/assets";
 import { getAccountSpreadAcrossFunds } from "@/logic/funds";
 import { endOfToday, getAccountEstimation } from "@/logic/investments";
 import { useAccounts } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAssets } from "@/stores/assets";
 import { useAuth } from "@/stores/auth";
 import { useFunds } from "@/stores/funds";
 import { useInvestments } from "@/stores/investments";
@@ -100,20 +102,30 @@ export function AccountSummary({
   // landed too
   const longTermBalance = getAccountTotal({});
 
-  // The market estimation reads the positions' price series — the
-  // valuation layer, next to the ledger's balance. Only investment
-  // accounts hold positions.
+  // The estimation reads the valuation layer next to the ledger's
+  // balance: investment accounts hold priced positions, assets
+  // accounts hold valued assets.
   const investments = useInvestments((state) => state.investments);
   const investmentPrices = useInvestments((state) => state.investmentPrices);
+  const assetValuations = useAssets((state) => state.assetValuations);
+  const assets = useAssets((state) => state.assets);
+  const estimationAt = new Date(endOfToday());
   const estimation =
     account?.type === AccountType.INVESTMENT_ACCOUNT
       ? getAccountEstimation(
           investments,
           investmentPrices,
           accountId,
-          new Date(endOfToday()),
+          estimationAt,
         )
-      : null;
+      : account?.type === AccountType.ASSETS
+        ? getAssetsAccountEstimation(
+            assets,
+            assetValuations,
+            accountId,
+            estimationAt,
+          )
+        : null;
   const estimationDelta =
     estimation !== null ? estimation.value - balance : null;
 
@@ -295,8 +307,8 @@ export function AccountSummary({
                 )}
                 {estimation.asOf &&
                   ` · as of ${format(estimation.asOf, "dd MMM yyyy")}`}
-                {estimation.priced < estimation.positions &&
-                  ` · ${estimation.priced} of ${estimation.positions} priced`}
+                {estimation.valued < estimation.positions &&
+                  ` · ${estimation.valued} of ${estimation.positions} valued`}
               </div>
             )}
           </div>

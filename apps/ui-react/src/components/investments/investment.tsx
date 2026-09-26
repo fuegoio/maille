@@ -3,9 +3,8 @@ import type { InvestmentPrice } from "@maille/core/accounts";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, useRouter } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { ChartLine, Hash, Plus, Tag, Trash2 } from "lucide-react";
+import { Hash, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import {
@@ -16,6 +15,7 @@ import {
   DebouncedInput,
   DebouncedTextarea,
 } from "@/components/shared/debounced-text-field";
+import { ValuationTimeline } from "@/components/shared/valuation-timeline";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,22 +27,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AmountInput } from "@/components/ui/amount-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  useChartAnimation,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { Input } from "@/components/ui/input";
 import { RollingAmount } from "@/components/ui/rolling-amount";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
-import { cn } from "@/lib/utils";
 import {
   addInvestmentPriceMutation,
   deleteInvestmentMutation,
@@ -402,14 +391,6 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
   );
 }
 
-const chartConfig = {
-  views: { label: "Unit price" },
-  price: {
-    label: "Unit price",
-    color: "var(--color-primary)",
-  },
-} satisfies ChartConfig;
-
 interface UnitPriceSectionProps {
   investmentId: string;
   prices: InvestmentPrice[];
@@ -418,9 +399,8 @@ interface UnitPriceSectionProps {
 }
 
 /**
- * The price timeline: observations of the unit price, newest first, with
- * the add form and the chart. The series is the valuation layer — it
- * never books into the ledger.
+ * The position's price timeline: the shared valuation series with the
+ * investment mutations wired in. One price per day.
  */
 function UnitPriceSection({
   investmentId,
@@ -429,211 +409,61 @@ function UnitPriceSection({
   onDeletePrice,
 }: UnitPriceSectionProps) {
   const mutate = useSync((state) => state.mutate);
-  const currencyFormatter = useCurrencyFormatter();
-  const chartAnimation = useChartAnimation();
 
-  const [date, setDate] = React.useState(() => getGraphQLDate(new Date()));
-  const [price, setPrice] = React.useState<number | null>(null);
-
-  const addPrice = () => {
-    if (price === null || price < 0 || date === "") return;
-    const priceDate = new Date(`${date}T00:00:00Z`);
-    if (Number.isNaN(priceDate.getTime())) return;
-
+  const addPrice = (date: Date, price: number) => {
     // One price per day: a day that already has one is updated in
     // place, matching the server's upsert.
-    const existing = prices.find((point) => sameDay(point.date, priceDate));
+    const existing = prices.find((point) => sameDay(point.date, date));
     if (existing) {
-      mutate({
-        name: "updateInvestmentPrice",
-        mutation: updateInvestmentPriceMutation,
-        variables: { id: existing.id, price },
-        rollbackData: { ...existing },
-        events: [
-          {
-            type: "updateInvestmentPrice",
-            payload: {
-              id: existing.id,
-              investment: investmentId,
-              price,
-            },
-          },
-        ],
-      });
-    } else {
-      const id = crypto.randomUUID();
-      mutate({
-        name: "addInvestmentPrice",
-        mutation: addInvestmentPriceMutation,
-        variables: { id, investment: investmentId, date, price },
-        rollbackData: undefined,
-        events: [
-          {
-            type: "addInvestmentPrice",
-            payload: {
-              id,
-              investment: investmentId,
-              date: priceDate.toISOString(),
-              price,
-            },
-          },
-        ],
-      });
+      onUpdatePrice(existing, price);
+      return;
     }
 
-    setPrice(null);
+    const id = crypto.randomUUID();
+    mutate({
+      name: "addInvestmentPrice",
+      mutation: addInvestmentPriceMutation,
+      variables: {
+        id,
+        investment: investmentId,
+        date: getGraphQLDate(date),
+        price,
+      },
+      rollbackData: undefined,
+      events: [
+        {
+          type: "addInvestmentPrice",
+          payload: {
+            id,
+            investment: investmentId,
+            date: date.toISOString(),
+            price,
+          },
+        },
+      ],
+    });
   };
 
-  const chartData = React.useMemo(
-    () =>
-      [...prices]
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-        .map((point) => ({
-          date: point.date.toISOString(),
-          price: point.price,
-        })),
-    [prices],
-  );
-
   return (
-    <section className="px-4 py-6 sm:px-8">
-      <div className="flex items-center gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <ChartLine className="size-3.5 text-muted-foreground" />
-            <div className="font-serif text-xl leading-none font-normal">
-              Unit price
-            </div>
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            Dated price observations. The latest one values the position — none
-            of them ever touch the ledger.
-          </div>
-        </div>
-      </div>
-
-      {/* The add form: the daily path stays inline and keyboard-first */}
-      <div className="mt-4 flex items-center gap-2">
-        <Input
-          type="date"
-          aria-label="Price date"
-          value={date}
-          onChange={(event) => setDate(event.target.value)}
-          className="w-40 font-mono text-sm"
-        />
-        <AmountInput
-          value={price}
-          onChange={setPrice}
-          mode="field"
-          placeholder="Unit price"
-          className="w-36"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={addPrice}
-          disabled={price === null || price < 0 || date === ""}
-        >
-          <Plus />
-          Add price
-        </Button>
-      </div>
-
-      {chartData.length > 0 && (
-        <ChartContainer
-          config={chartConfig}
-          className="mt-4 aspect-auto h-[180px] w-full rounded-md border p-3"
-        >
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{ left: 12, right: 12, top: 8 }}
-          >
-            <CartesianGrid vertical strokeDasharray="2 3" />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={4}
-              minTickGap={20}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                });
-              }}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[160px]"
-                  nameKey="views"
-                  formatter={(value) =>
-                    currencyFormatter.format(value as number)
-                  }
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleString("default", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  }
-                />
-              }
-            />
-            <YAxis domain={["auto", "auto"]} hide />
-            <Line
-              type="stepAfter"
-              dataKey="price"
-              stroke="var(--color-price)"
-              strokeWidth={1.5}
-              dot={chartData.length <= 31}
-              activeDot={{ r: 3, strokeWidth: 0 }}
-              {...chartAnimation}
-            />
-          </LineChart>
-        </ChartContainer>
-      )}
-
-      <div className="mt-4 mb-2 rounded border bg-muted/50">
-        {prices.length === 0 ? (
-          <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
-            No price yet — the position's value appears with its first
-            observation.
-          </div>
-        ) : (
-          prices.map((pricePoint, index) => (
-            <div
-              key={pricePoint.id}
-              className={cn(
-                "group flex h-10 items-center gap-4 px-4 text-sm transition-colors hover:bg-muted",
-                index !== prices.length - 1 && "border-b",
-              )}
-            >
-              <div className="w-28 shrink-0 font-mono text-muted-foreground">
-                {format(pricePoint.date, "dd MMM yyyy")}
-              </div>
-              <div className="flex-1" />
-              <AmountInput
-                value={pricePoint.price}
-                onChange={(value) => onUpdatePrice(pricePoint, value)}
-                mode="cell"
-                className="justify-end"
-              />
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Delete price point"
-                className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                onClick={() => onDeletePrice(pricePoint)}
-              >
-                <Trash2 />
-              </Button>
-            </div>
-          ))
-        )}
-      </div>
-    </section>
+    <ValuationTimeline
+      title="Unit price"
+      description="Dated price observations. The latest one values the position — none of them ever touch the ledger."
+      valueLabel="Unit price"
+      emptyText="No price yet — the position's value appears with its first observation."
+      points={prices.map(({ id, date, price: value }) => ({
+        id,
+        date,
+        value,
+      }))}
+      onAdd={addPrice}
+      onUpdateValue={(pointId, value) => {
+        const point = prices.find((p) => p.id === pointId);
+        if (point) onUpdatePrice(point, value);
+      }}
+      onDelete={(pointId) => {
+        const point = prices.find((p) => p.id === pointId);
+        if (point) onDeletePrice(point);
+      }}
+    />
   );
 }

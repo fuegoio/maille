@@ -13,19 +13,27 @@ import { Button } from "@/components/ui/button";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { cn } from "@/lib/utils";
 import { getAccountBalanceAtDate } from "@/logic/accounts";
+import { getAssetsAccountEstimation } from "@/logic/assets";
+import { endOfToday, getAccountEstimation } from "@/logic/investments";
 import {
   useAccounts,
   ACCOUNT_TYPES_COLOR,
   ACCOUNT_TYPES_NAME,
 } from "@/stores/accounts";
 import { useActivities } from "@/stores/activities";
+import { useAssets } from "@/stores/assets";
 import { useAuth } from "@/stores/auth";
+import { useInvestments } from "@/stores/investments";
 
 import { Badge } from "../ui/badge";
 
 export function AccountsTable() {
   const accounts = useAccounts((state) => state.accounts);
   const activities = useActivities((state) => state.activities);
+  const assets = useAssets((state) => state.assets);
+  const assetValuations = useAssets((state) => state.assetValuations);
+  const investments = useInvestments((state) => state.investments);
+  const investmentPrices = useInvestments((state) => state.investmentPrices);
   const user = useAuth((state) => state.user!);
 
   const [groupsFolded, setGroupsFolded] = useState<AccountType[]>([]);
@@ -57,6 +65,27 @@ export function AccountsTable() {
       startingDate: user.startingDate,
       date: today,
     });
+
+  // The estimation reads the valuation layer — priced positions for
+  // investment accounts, valued assets for assets accounts. Other
+  // account types hold no estimation: their balance is their value.
+  const estimationAt = new Date(endOfToday());
+  const getAccountEstimationFor = (accountId: string, type: AccountType) =>
+    type === AccountType.INVESTMENT_ACCOUNT
+      ? getAccountEstimation(
+          investments,
+          investmentPrices,
+          accountId,
+          estimationAt,
+        )
+      : type === AccountType.ASSETS
+        ? getAssetsAccountEstimation(
+            assets,
+            assetValuations,
+            accountId,
+            estimationAt,
+          )
+        : null;
 
   const getAccountTypeTotal = (accountType: AccountType) => {
     return accounts
@@ -111,6 +140,37 @@ export function AccountsTable() {
             <div>{ACCOUNT_TYPES_NAME[accountType]}</div>
             <div className="flex-1" />
 
+            <div
+              className={cn(
+                ledgerAmountClassName,
+                "hidden w-32 pl-4 text-xs text-muted-foreground sm:block",
+              )}
+            >
+              {(() => {
+                if (
+                  accountType !== AccountType.INVESTMENT_ACCOUNT &&
+                  accountType !== AccountType.ASSETS
+                ) {
+                  return "";
+                }
+                // No account holds an estimation: the cell stays
+                // empty — absence, never a zero.
+                const estimations = accounts
+                  .filter((account) => account.type === accountType)
+                  .map((account) =>
+                    getAccountEstimationFor(account.id, accountType),
+                  );
+                if (estimations.every((estimation) => estimation === null)) {
+                  return "";
+                }
+                return currencyFormatter.format(
+                  estimations.reduce(
+                    (total, estimation) => total + (estimation?.value ?? 0),
+                    0,
+                  ),
+                );
+              })()}
+            </div>
             <div className={cn(ledgerAmountClassName, "w-32 pl-4 text-xs")}>
               {currencyFormatter.format(getAccountTypeTotal(accountType))}
             </div>
@@ -151,6 +211,22 @@ export function AccountsTable() {
                     {getTransactionsLinkedToAccount(account.id)} transactions
                   </div>
 
+                  <div
+                    className={cn(
+                      ledgerAmountClassName,
+                      "hidden w-32 text-sm text-muted-foreground sm:block",
+                    )}
+                  >
+                    {(() => {
+                      const estimation = getAccountEstimationFor(
+                        account.id,
+                        account.type,
+                      );
+                      return estimation === null
+                        ? ""
+                        : currencyFormatter.format(estimation.value);
+                    })()}
+                  </div>
                   <div className={cn(ledgerAmountClassName, "w-32 text-sm")}>
                     {currencyFormatter.format(getAccountTotal(account.id))}
                   </div>
