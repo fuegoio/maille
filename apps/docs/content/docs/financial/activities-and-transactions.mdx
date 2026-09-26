@@ -1,0 +1,73 @@
+---
+title: Activities & transactions
+description: Human-readable financial events backed by explicit ledger movements.
+---
+
+An **activity** is the event you recognize: salary, groceries, rent, a transfer,
+or an investment purchase. A **transaction** is the accounting statement that
+moves an amount from one account to another.
+
+Keeping these concepts separate gives one event a readable identity while
+allowing it to contain as many ledger movements as it needs.
+
+## Transactions are the source of truth
+
+Each transaction contains:
+
+- an amount;
+- a source account;
+- a destination account;
+- optional asset or counterparty references on either side;
+- optional fund legs.
+
+For example:
+
+| Activity        | From         | To              | Meaning                       |
+| --------------- | ------------ | --------------- | ----------------------------- |
+| Salary          | Revenue      | Bank account    | Earned value entered the bank |
+| Groceries       | Bank account | Expense         | Value was consumed            |
+| Move to savings | Bank account | Savings account | Value changed location        |
+
+The transfer is neither revenue nor expense because neither transaction side is
+a revenue or expense account.
+
+## Types are derived, not selected
+
+Maille derives an activity's types from the account types touched by its
+transactions:
+
+- an Expense leg contributes `expense`;
+- a Revenue leg contributes `revenue`;
+- an Investment account leg contributes `investment`;
+- an Assets leg contributes `asset`;
+- a transaction without a typed side contributes `neutral`.
+
+An activity can have several types. This is important because classification
+cannot contradict the ledger: changing the transactions changes the derived
+type and amount together.
+
+## Activity status
+
+An activity is:
+
+- `scheduled` when its date is in the future;
+- `incomplete` when transaction totals on movement-tracked accounts are not
+  fully explained by linked movements;
+- `completed` when those reconciliation totals agree.
+
+Accounts without movement tracking do not require bank evidence. This lets
+cash-only or conceptual entries complete without manufacturing a movement.
+
+## Why activities can contain several transactions
+
+Real events are often compound. A purchase can involve a bank account, an
+expense account, an asset, a shared counterparty, and multiple fund legs. One
+activity keeps that context together while its transactions preserve the exact
+accounting effect.
+
+Categories, subcategories, and projects belong to the activity because they
+describe the event. Account and fund movements belong to transactions because
+they describe the financial effect.
+
+Continue with [Movements & reconciliation](/docs/financial/movements-and-reconciliation)
+to see how external statement evidence connects to this model.

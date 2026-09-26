@@ -1,51 +1,34 @@
 ---
 title: Introduction
-description: A precise, double-entry personal ledger for developers who self-host.
+description: Install Maille, learn the product, and understand the financial model behind every number.
 ---
 
-Maille is a personal finance tool built on a strict double-entry ledger. Every
-activity is backed by transactions between accounts, movement reconciliation is
-explicit, sharing and liability are computed rather than eyeballed, and money can
-be labeled by purpose (funds) independently of where it lives (accounts).
-
-It is built for developers who run their own instance against their own Postgres
-database, sync bank movements from their own machine, and spend short daily or
-weekly sessions reconciling, categorizing, and reviewing their money.
-
-## Why Maille
-
-- **Zero approximation.** The balance, the fund allocation, the shared
-  liability, and the reconciled status all derive from the same ledger. If a
-  number is on screen, you can trace it to the transactions underneath.
-- **The model is visible.** Activities, transactions, movements, accounts, and
-  funds are first-class. The interface exposes ledger structure instead of
-  hiding it behind summaries.
-- **Self-hosted by design.** Your ledger lives in your Postgres database. You
-  control the API and UI that read it; external services are limited to the
-  authentication and optional workflow providers you configure.
-
-## Where to start
+Maille is a self-hosted personal finance tool built on a strict double-entry
+ledger. Its documentation has two distinct parts: operating the software and
+understanding the financial choices it makes.
 
 <Cards>
-  <Card title="Self-hosting" href="/docs/self-hosting">
-    Run the API, the database, and the web UI on your own machine.
+  <Card title="Installation & usage" href="/docs/installation">
+    Run Maille, authenticate, configure the ledger, import movements, and use the CLI.
   </Card>
-  <Card title="The ledger model" href="/docs/ledger">
-    Accounts, activities, transactions, movements, and funds — how every euro is accounted for.
-  </Card>
-  <Card title="CLI reference" href="/docs/cli">
-    Log in and work with supported resources from your terminal.
+  <Card title="Financial model" href="/docs/financial">
+    Understand accounts, activities, transactions, movements, funds, and why Maille keeps them
+    separate.
   </Card>
 </Cards>
 
-## The daily loop
+## What Maille optimizes for
 
-The primary workflow is a short reconcile–categorize–review cycle:
+- **Traceability.** A displayed amount should lead back to the transactions that
+  produced it.
+- **Explicit reconciliation.** A bank movement and its financial explanation
+  remain separate until you link them.
+- **Purpose without duplication.** Funds describe what money is for without
+  pretending that purpose is another bank account.
+- **Self-hosted control.** Your ledger lives in your Postgres database. You
+  choose the authentication and optional workflow providers connected to it.
 
-1. **Import** bank movements through the web UI, or create them individually
-   with the CLI.
-2. **Reconcile** each movement to the activities that explain it, or record a new
-   activity.
-3. **Categorize** activities into categories and funds.
-4. **Review** balances and fund allocations — every figure is derived from the
-   ledger, so what you see is what the model says.
+If you are setting up an instance, begin with
+[Installation & usage](/docs/installation). If the application is already
+running, read [Financial model](/docs/financial) before entering your opening
+balances.

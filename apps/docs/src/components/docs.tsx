@@ -11,9 +11,25 @@ const GITHUB_URL = "https://github.com/fuegoio/maille";
 
 function MailleWordmark() {
   return (
-    <span className="inline-flex items-baseline gap-[3px] font-serif text-lg leading-none">
+    <span className="inline-flex items-center gap-2 font-serif text-lg leading-none">
+      <svg
+        viewBox="0 0 363 223"
+        fill="none"
+        aria-hidden
+        className="h-4 w-7 shrink-0 text-fd-primary"
+      >
+        <circle cx="111.5" cy="111.5" r="106.5" stroke="currentColor" strokeWidth="10" />
+        <circle
+          cx="251.5"
+          cy="111.5"
+          r="106.5"
+          fill="currentColor"
+          fillOpacity="0.16"
+          stroke="currentColor"
+          strokeWidth="10"
+        />
+      </svg>
       Maille
-      <span aria-hidden className="mb-[2px] size-[6px] shrink-0 rounded-[1px] bg-primary" />
     </span>
   );
 }

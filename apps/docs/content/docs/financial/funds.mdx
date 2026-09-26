@@ -1,0 +1,70 @@
+---
+title: Funds
+description: Track what money is for without confusing purpose with location.
+---
+
+Accounts answer **where money is**. Funds answer **what money is for**. Maille
+keeps those dimensions independent because a purpose can span several accounts,
+and one account can hold money reserved for several purposes.
+
+A Vacation fund, for example, may include part of a savings account and part of
+a current account. Moving the cash between those accounts should not erase its
+purpose.
+
+## Fund balances
+
+A fund balance is calculated as:
+
+```text
+opening allocations + inflows - outflows
+```
+
+It is not a second account balance. The same underlying money remains in its
+bank, cash, or investment account while the fund records its intended use.
+
+## Opening allocations
+
+A fund can allocate opening amounts from several accounts. The allocation takes
+effect on the fund's start date, falling back to — and never preceding — the
+ledger starting date.
+
+Opening allocations describe purpose at the historical boundary. They do not
+move money between accounts.
+
+## Fund legs on transactions
+
+Transactions can carry fund legs with an amount, date, optional note, and two
+sides:
+
+- `fromFund` — the purpose losing the amount;
+- `toFund` — the purpose receiving the amount.
+
+Either side can be null. A null side represents **Untracked** or a crossing of
+the tracked balance-sheet boundary:
+
+| From      | To        | Meaning                                  |
+| --------- | --------- | ---------------------------------------- |
+| Untracked | Vacation  | Assign existing money to Vacation        |
+| Vacation  | Untracked | Release or consume Vacation money        |
+| Vacation  | Emergency | Reassign purpose without moving accounts |
+
+## Hierarchy
+
+Funds can form a tree. A parent fund's tree balance includes all descendants.
+Moves between funds inside the same subtree cancel when the subtree is viewed as
+a whole; only amounts crossing its boundary change the tree total.
+
+Cycles are rejected. A fund cannot become its own parent or be placed below one
+of its descendants.
+
+## Why over-allocation is rejected
+
+Assigning more money to funds than the underlying account position supports
+would make the purpose view contradict the balance sheet. Maille rejects that
+state. Money without a fund remains visible as **Untracked** rather than being
+silently assigned.
+
+<Callout>
+  A transfer between bank accounts and a transfer between funds answer different questions. Record
+  the account transaction for location and the fund leg for purpose when both change.
+</Callout>

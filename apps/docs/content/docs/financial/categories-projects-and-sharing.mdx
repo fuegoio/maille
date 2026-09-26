@@ -1,0 +1,64 @@
+---
+title: Categories, projects & sharing
+description: Add reporting and shared-liability dimensions without changing the ledger.
+---
+
+Transactions determine balances. Categories, projects, contacts, and
+counterparties add context around those transactions. Keeping context separate
+means you can reorganize reporting without rewriting the financial event.
+
+## Categories and subcategories
+
+A category and optional subcategory classify an activity. They answer questions
+such as “How much did I spend on housing?” without becoming accounts themselves.
+
+This distinction matters:
+
+- the Expense account establishes that value was consumed;
+- the category explains the kind of expense;
+- changing the category does not change either account balance.
+
+Categories form a two-level reporting hierarchy. Use broad categories for stable
+reporting and subcategories for detail you expect to compare.
+
+## Projects
+
+A project groups activities that belong to the same real-world effort or period,
+even when their categories differ. A move, a renovation, or a trip can contain
+transport, fees, equipment, and meals while still being reviewed as one project.
+
+Projects can define start and end dates. Those dates describe the project's
+scope; the activity date still determines when the transaction affects the
+ledger.
+
+## Contacts and counterparties
+
+A **contact** is another Maille user connected to you. A **counterparty** is the
+ledger-side identity used in transactions and can be mapped to a contact.
+Separating them allows a financial relationship to remain explicit even when it
+is not tied to another Maille account.
+
+## Shared liability
+
+Account-sharing records identify primary and secondary relationships and retain
+a proportion. The current shared-liability calculation is derived from shared
+activity transactions, counterparties, and mapped accounts — not from a manually
+entered summary balance.
+
+Transaction direction matters: value flowing from or to a counterparty changes
+that contact's computed liability. The activity then exposes both the liability
+and the affected account amounts.
+
+## Why these are not accounts
+
+Turning every reporting label or person into a balance account would overload
+the ledger with concepts that answer different questions. Maille instead keeps:
+
+- accounts for location and financial role;
+- categories for reporting;
+- projects for cross-cutting scope;
+- counterparties and contacts for ownership and liability;
+- funds for purpose.
+
+That separation is what lets one activity participate in several useful views
+without duplicating its transactions.
