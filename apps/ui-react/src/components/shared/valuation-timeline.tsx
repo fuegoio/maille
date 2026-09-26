@@ -12,6 +12,23 @@ import {
   useChartAnimation,
   type ChartConfig,
 } from "@/components/ui/chart";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { getGraphQLDate } from "@/lib/date";
@@ -61,17 +78,6 @@ export function ValuationTimeline({
   const currencyFormatter = useCurrencyFormatter();
   const chartAnimation = useChartAnimation();
 
-  const [date, setDate] = React.useState(() => getGraphQLDate(new Date()));
-  const [value, setValue] = React.useState<number | null>(null);
-
-  const add = () => {
-    if (value === null || value < 0 || date === "") return;
-    const observedAt = new Date(`${date}T00:00:00Z`);
-    if (Number.isNaN(observedAt.getTime())) return;
-    onAdd(observedAt, value);
-    setValue(null);
-  };
-
   const chartConfig = {
     views: { label: valueLabel },
     value: {
@@ -105,33 +111,12 @@ export function ValuationTimeline({
             {description}
           </div>
         </div>
-      </div>
 
-      {/* The add form: the daily path stays inline and keyboard-first */}
-      <div className="mt-4 flex items-center gap-2">
-        <Input
-          type="date"
-          aria-label={`${valueLabel} date`}
-          value={date}
-          onChange={(event) => setDate(event.target.value)}
-          className="w-40 font-mono text-sm"
+        <AddObservationDialog
+          valueLabel={valueLabel}
+          points={points}
+          onAdd={onAdd}
         />
-        <AmountInput
-          value={value}
-          onChange={setValue}
-          mode="field"
-          placeholder={valueLabel}
-          className="w-36"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={add}
-          disabled={value === null || value < 0 || date === ""}
-        >
-          <Plus />
-          Add {valueLabel.toLowerCase()}
-        </Button>
       </div>
 
       {chartData.length > 0 && (
@@ -229,5 +214,127 @@ export function ValuationTimeline({
         )}
       </div>
     </section>
+  );
+}
+
+const sameDay = (a: Date, b: Date) =>
+  a.getUTCFullYear() === b.getUTCFullYear() &&
+  a.getUTCMonth() === b.getUTCMonth() &&
+  a.getUTCDate() === b.getUTCDate();
+
+interface AddObservationDialogProps {
+  /** What the observed amount is called: labels the form. */
+  valueLabel: string;
+  /** The existing observations, to warn when a day is being replaced. */
+  points: ValuationTimelinePoint[];
+  onAdd: (date: Date, value: number) => void;
+}
+
+/**
+ * The add-observation form: date and observed value, with a quiet
+ * notice when the day already carries an observation, since one
+ * replaces the other.
+ */
+function AddObservationDialog({
+  valueLabel,
+  points,
+  onAdd,
+}: AddObservationDialogProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [date, setDate] = React.useState(() => getGraphQLDate(new Date()));
+  const [value, setValue] = React.useState<number | null>(null);
+
+  const observedAt = date === "" ? null : new Date(`${date}T00:00:00Z`);
+  const isValid =
+    observedAt !== null &&
+    !Number.isNaN(observedAt.getTime()) &&
+    value !== null &&
+    value >= 0;
+  const replaced =
+    observedAt !== null &&
+    !Number.isNaN(observedAt.getTime()) &&
+    points.some((point) => sameDay(point.date, observedAt));
+
+  const submit = () => {
+    if (!isValid || observedAt === null) return;
+    onAdd(observedAt, value as number);
+    setIsOpen(false);
+    setValue(null);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Plus />
+          Add {valueLabel.toLowerCase()}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add {valueLabel.toLowerCase()}</DialogTitle>
+          <DialogDescription>
+            One observation per day: a day that already has one is replaced.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Keyed by the open state so the form re-seeds every time the
+        dialog opens */}
+        <form
+          key={`${isOpen}`}
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit();
+          }}
+          className="space-y-4"
+        >
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="observation-date">Date</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="observation-date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  className="w-full font-mono text-sm"
+                  autoFocus
+                />
+              </FieldContent>
+            </Field>
+
+            <Field>
+              <FieldLabel>{valueLabel}</FieldLabel>
+              <FieldContent>
+                <AmountInput
+                  value={value}
+                  onChange={setValue}
+                  mode="field"
+                  placeholder={valueLabel}
+                  className="w-full"
+                />
+              </FieldContent>
+              {replaced && (
+                <FieldDescription>
+                  Replaces the observation of{" "}
+                  {format(observedAt as Date, "dd MMM yyyy")}.
+                </FieldDescription>
+              )}
+            </Field>
+          </FieldGroup>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={!isValid}>
+              Add {valueLabel.toLowerCase()}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
