@@ -1,0 +1,39 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+        working-directory: apps/docs
+
+      - name: Typecheck
+        run: bun run typecheck
+        working-directory: apps/docs
+
+      - name: Format check
+        run: bun run fmt:check
+        working-directory: apps/docs
+
+      - name: Build
+        run: bun run build
+        working-directory: apps/docs

@@ -33,12 +33,12 @@ colors:
   sidebar-dark: "#090e09"
 typography:
   display:
-    fontFamily: "Source Serif 4 Variable, Georgia, serif"
+    fontFamily: "Merriweather Variable, Georgia, serif"
     fontSize: "2.25rem"
     fontWeight: 400
     lineHeight: 1
   headline:
-    fontFamily: "Source Serif 4 Variable, Georgia, serif"
+    fontFamily: "Merriweather Variable, Georgia, serif"
     fontSize: "1.5rem"
     fontWeight: 400
     lineHeight: 1
@@ -48,7 +48,7 @@ typography:
     fontWeight: 600
     lineHeight: 1
   section:
-    fontFamily: "Source Serif 4 Variable, Georgia, serif"
+    fontFamily: "Merriweather Variable, Georgia, serif"
     fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1
@@ -131,7 +131,7 @@ components:
 
 Maille is a double-entry personal ledger for developers, and the interface commits to the accountant's discipline updated for a screen: ruled hairlines instead of printed grid paper, tabular numerals aligned in columns, status carried by quiet marks rather than loud badges. Every surface should feel like a page in a well-kept ledger — orderly, dense where density aids scanning, and completely trustworthy.
 
-The system is deliberately quiet. Ledger Green appears only where the user acts (primary buttons, active nav, focus) or where the interface must assert state; everything else is a near-monochrome, green-tinted neutral. Source Serif 4 gives brand and authentication moments an archival ledger voice, while Geist remains the workhorse for product UI. Amounts are always monospaced and right-aligned — alignment is correctness made visible, and in a bookkeeping tool a misaligned number column is a defect. Density is tuned to the compact type scale (base 0.9375rem), which fits the instrument register: more rows visible, less scrolling, more context per screen.
+The system is deliberately quiet. Ledger Green appears only where the user acts (primary buttons, active nav, focus) or where the interface must assert state; everything else is a near-monochrome, green-tinted neutral. Merriweather gives brand and authentication moments an archival ledger voice, while Geist remains the workhorse for product UI. Amounts are always monospaced and right-aligned — alignment is correctness made visible, and in a bookkeeping tool a misaligned number column is a defect. Density is tuned to the compact type scale (base 0.9375rem), which fits the instrument register: more rows visible, less scrolling, more context per screen.
 
 This system explicitly rejects generic SaaS-admin chrome — identical KPI card grids, hero metrics with gradient accents, dashboard decoration for its own sake — and consumer-fintech cuteness (pastel gradients, mascots, confetti on financial events). Maille surfaces ledger structure: which accounts, which fund, reconciled or not.
 
@@ -174,18 +174,18 @@ The palette is a near-monochrome, green-tinted neutral ramp with one saturated v
 
 ## 3. Typography
 
-**Brand Display Font:** Source Serif 4 Variable (fallback: Georgia, serif)
+**Brand Display Font:** Merriweather Variable (fallback: Georgia, serif)
 **Body / Product Font:** Geist Variable (fallback: sans-serif)
 
-Source Serif 4 is the editorial voice inside the product: use it for static headings that orient the user, never for editable names, buttons, labels, table rows, or numeric data.
+Merriweather is the editorial voice inside the product: use it for static headings that orient the user, never for editable names, buttons, labels, table rows, or numeric data.
 **Numeric Font:** system monospace (`ui-monospace, SFMono-Regular, Menlo, monospace`) — via Tailwind `font-mono`
 
-**Character:** Source Serif 4 is competent, archival, and restrained; it appears in brand moments, authentication headings, the wordmark, and selected static section or analytical titles. Geist remains geometric, technical, and slightly engineered across product UI. The monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
+**Character:** Merriweather is competent, archival, and restrained; it appears in brand moments, authentication headings, the wordmark, and selected static section or analytical titles. Geist remains geometric, technical, and slightly engineered across product UI. The monospace counterpart for numerals makes alignment the visible expression of the "zero approximation" claim.
 
 ### Hierarchy
 
-- **Brand Display** (400, 2.25rem–4.5rem, lh 0.95–1, Source Serif 4): authentication and brand statements only.
-- **Headline** (400, 1.5rem, lh 1, Source Serif 4): authentication, summary-panel titles, static detail-section titles, and major analytical headings. Dialog headers and editable entity names remain Geist.
+- **Brand Display** (400, 2.25rem–4.5rem, lh 0.95–1, Merriweather): authentication and brand statements only.
+- **Headline** (400, 1.5rem, lh 1, Merriweather): authentication, summary-panel titles, static detail-section titles, and major analytical headings. Dialog headers and editable entity names remain Geist.
 - **Title** (600, 1.25rem, lh 1): task-oriented section headers and page subtitles (e.g. "New fund").
 - **Body** (400, 0.9375rem, lh 1.5): primary reading size. Longest prose stays within 65–75ch.
 - **Label / table text** (400–500, 0.8125rem–0.875rem, lh 1): table rows, form labels, metadata — the workhorse register of the app. Table headers use `text-xs font-medium text-muted-foreground`.
@@ -269,7 +269,7 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 ### Authentication
 
 - Desktop authentication uses a Ledger Green brand field beside an unboxed form. Mobile collapses to a compact wordmark above the form.
-- Source Serif 4 is reserved for the wordmark and authentication statements; form controls remain Geist.
+- Merriweather is reserved for the wordmark and authentication statements; form controls remain Geist.
 
 ## 6. Do's and Don'ts
 
@@ -288,6 +288,6 @@ Components feel confident-soft: crisp hairline structure, compact but roomy padd
 - Don't add card grids of KPI tiles, gradient text, or decorative shadows on in-page surfaces.
 - Don't use saturated color for anything that isn't an action or a status.
 - Don't wrap or truncate money figures; use fewer decimals or a smaller mono size instead.
-- Don't use Source Serif 4 in labels, controls, tables, or data; Geist and mono carry the product hierarchy.
+- Don't use Merriweather in labels, controls, tables, or data; Geist and mono carry the product hierarchy.
 - Don't celebrate financial events with confetti, illustrations, or animation flourishes — the ledger marks, it doesn't cheer.
 - Don't replace the table with cards for primary data views. Tables are the product.

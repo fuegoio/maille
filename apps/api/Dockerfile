@@ -9,6 +9,7 @@ COPY apps/ui-react/package.json ./apps/ui-react/
 COPY apps/cli/package.json ./apps/cli/
 COPY packages/core/package.json ./packages/core/
 COPY packages/workflows/package.json ./packages/workflows/
+COPY packages/theme/package.json ./packages/theme/
 RUN bun install --frozen-lockfile
 
 COPY packages/core/package.json ./packages/core/

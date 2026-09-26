@@ -1,0 +1,98 @@
+@import "tailwindcss";
+@import "@maille/theme/fonts.css";
+@import "@maille/theme/tokens.css";
+@import "@maille/theme/tailwind.css";
+@import "@maille/theme/base.css";
+
+/* Fumadocs: registers fd utilities from default colors, then remaps every
+   fd-* variable onto the Maille tokens above (same shadcn-style names),
+   so the docs and the app render the exact same palette in both themes. */
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+
+/* ---------------------------------------------------------------------------
+   Maille docs layer — voice on top of the shared tokens.
+   The ruled-line rule: structure from hairlines, depth only where it floats.
+--------------------------------------------------------------------------- */
+
+/* Docs headings carry the archival brand voice (Merriweather); body copy,
+   navigation and UI chrome stay Geist. */
+#nd-page h1,
+#nd-page .prose h2,
+#nd-page .prose h3,
+.nd-subnav-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+#nd-page h1 {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+#nd-page .prose h2 {
+  border-bottom: 1px solid var(--color-fd-border);
+  padding-bottom: 0.5rem;
+}
+
+.nd-subnav-title {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* Ledger monospace for inline code and code blocks: numerals align. */
+#nd-page code,
+#nd-page pre,
+.prose code {
+  font-family: var(--font-mono);
+}
+
+/* The compact instrument scale: fumadocs defaults to 1rem body; Maille
+   reads at 0.9375rem. */
+#nd-page {
+  font-size: var(--text-base);
+}
+
+/* Active sidebar page: Ledger Green is the only saturated voice — carried
+   by the hairline mark, not a fill. */
+[data-active="true"]:not(:hover) {
+  color: var(--color-fd-primary);
+}
+
+/* Imported Fumadocs content components keep their behavior while the Maille
+   wrappers apply the flat, ruled visual system. */
+.maille-cards {
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--color-fd-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-fd-border);
+}
+
+.maille-card {
+  border: 0;
+  border-radius: 0;
+  background: var(--color-fd-card);
+}
+
+.maille-callout {
+  padding-inline-start: 0.75rem;
+  box-shadow: none;
+}
+
+.maille-callout > [role="none"]:first-child {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

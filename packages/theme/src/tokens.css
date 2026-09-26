@@ -1,0 +1,96 @@
+/* Maille design tokens (canonical). Shared by every Maille app.
+   Canonical values also mirrored in DESIGN.md at the repo root. */
+
+:root {
+  --radius: 0.25rem;
+
+  --background: oklch(0.985 0.004 145);
+  --foreground: oklch(0.18 0.012 145);
+  --card: oklch(0.995 0.002 145);
+  --card-foreground: oklch(0.18 0.012 145);
+  --popover: oklch(0.995 0.002 145);
+  --popover-foreground: oklch(0.18 0.012 145);
+  --primary: oklch(0.46 0.105 150);
+  --primary-foreground: oklch(0.985 0.004 145);
+  --secondary: oklch(0.95 0.008 145);
+  --secondary-foreground: oklch(0.22 0.015 145);
+  --muted: oklch(0.95 0.008 145);
+  --muted-foreground: oklch(0.47 0.022 145);
+  --accent: oklch(0.93 0.018 145);
+  --accent-foreground: oklch(0.22 0.015 145);
+  --destructive: oklch(0.54 0.2 27);
+  --warning: oklch(0.47 0.12 70);
+  --activity-revenue: oklch(0.58 0.13 150);
+  --activity-expense: oklch(0.62 0.17 28);
+  --activity-investment: oklch(75% 0.183 55.934);
+  --activity-asset: oklch(0.62 0.17 293.541);
+  --activity-neutral: oklch(0.5 0.025 145);
+  --account-bank: oklch(0.62 0.17 276.935);
+  --account-cash: oklch(0.62 0.015 145);
+  --account-liabilities: oklch(0.62 0.14 232.661);
+  --account-assets: oklch(0.62 0.17 293.541);
+  --border: oklch(0.86 0.012 145);
+  --input: oklch(0.82 0.016 145);
+  --ring: oklch(0.46 0.105 150);
+  --chart-1: oklch(0.78 0.08 150);
+  --chart-2: oklch(0.64 0.105 150);
+  --chart-3: oklch(0.46 0.105 150);
+  --chart-4: oklch(0.38 0.09 150);
+  --chart-5: oklch(0.3 0.065 150);
+
+  --sidebar: oklch(0.965 0.007 145);
+  --sidebar-foreground: oklch(0.18 0.012 145);
+  --sidebar-primary: oklch(0.46 0.105 150);
+  --sidebar-primary-foreground: oklch(0.985 0.004 145);
+  --sidebar-accent: oklch(0.92 0.018 145);
+  --sidebar-accent-foreground: oklch(0.22 0.015 145);
+  --sidebar-border: oklch(0.84 0.014 145);
+  --sidebar-ring: oklch(0.46 0.105 150);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: oklch(0.18 0.012 145);
+  --foreground: oklch(0.96 0.006 145);
+  --card: oklch(0.2 0.012 145);
+  --card-foreground: oklch(0.96 0.006 145);
+  --popover: oklch(0.22 0.014 145);
+  --popover-foreground: oklch(0.96 0.006 145);
+  --primary: oklch(0.7 0.12 150);
+  --primary-foreground: oklch(0.18 0.012 145);
+  --secondary: oklch(0.26 0.014 145);
+  --secondary-foreground: oklch(0.96 0.006 145);
+  --muted: oklch(0.26 0.014 145);
+  --muted-foreground: oklch(0.72 0.018 145);
+  --accent: oklch(0.3 0.025 145);
+  --accent-foreground: oklch(0.96 0.006 145);
+  --destructive: oklch(0.68 0.18 25);
+  --warning: oklch(0.78 0.12 78);
+  --activity-revenue: oklch(0.72 0.12 150);
+  --activity-expense: oklch(0.7 0.17 25);
+  --activity-investment: oklch(75% 0.183 55.934);
+  --activity-asset: oklch(0.72 0.17 293.541);
+  --activity-neutral: oklch(0.72 0.018 145);
+  --account-bank: oklch(0.72 0.17 276.935);
+  --account-cash: oklch(0.72 0.015 145);
+  --account-liabilities: oklch(0.72 0.14 232.661);
+  --account-assets: oklch(0.72 0.17 293.541);
+  --border: oklch(0.96 0.006 145 / 14%);
+  --input: oklch(0.96 0.006 145 / 22%);
+  --ring: oklch(0.7 0.12 150);
+  --chart-1: oklch(0.8 0.08 150);
+  --chart-2: oklch(0.7 0.12 150);
+  --chart-3: oklch(0.6 0.11 150);
+  --chart-4: oklch(0.5 0.09 150);
+  --chart-5: oklch(0.4 0.07 150);
+
+  --sidebar: oklch(0.155 0.012 145);
+  --sidebar-foreground: oklch(0.96 0.006 145);
+  --sidebar-primary: oklch(0.7 0.12 150);
+  --sidebar-primary-foreground: oklch(0.18 0.012 145);
+  --sidebar-accent: oklch(0.25 0.022 145);
+  --sidebar-accent-foreground: oklch(0.96 0.006 145);
+  --sidebar-border: oklch(0.96 0.006 145 / 14%);
+  --sidebar-ring: oklch(0.7 0.12 150);
+}

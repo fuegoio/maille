@@ -1,0 +1,15 @@
+/* Maille base styles. Apps add their own root/container rules on top. */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply h-full w-full font-sans;
+  }
+
+  body {
+    @apply h-full w-full bg-background text-base text-foreground;
+  }
+}
