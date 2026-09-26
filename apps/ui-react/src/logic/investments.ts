@@ -26,7 +26,7 @@ export type AccountEstimation = {
 /**
  * The account's market estimation: the sum of its positions' values at
  * their latest price. Null when the account holds no position or none
- * is priced — absence is honest, and never a zero.
+ * is priced: absence is honest and never a zero.
  */
 export function getAccountEstimation(
   investments: readonly Investment[],

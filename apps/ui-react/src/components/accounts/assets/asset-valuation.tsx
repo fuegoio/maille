@@ -23,7 +23,7 @@ interface AssetValuationSectionProps {
 
 /**
  * The asset's estimated-value timeline: dated observations of what it
- * is worth, next to the ledger's book value. The valuation layer — it
+ * is worth, next to the ledger's book value. The valuation layer; it
  * never books into the ledger.
  */
 export function AssetValuationSection({ asset }: AssetValuationSectionProps) {
@@ -114,9 +114,9 @@ export function AssetValuationSection({ asset }: AssetValuationSectionProps) {
   return (
     <ValuationTimeline
       title="Estimated value"
-      description="Dated observations of what the asset is worth — an appraisal, a trusted comp. Displayed next to the ledger's book value, never booked."
+      description="Dated observations of what the asset is worth, an appraisal or a trusted comp. Displayed next to the ledger's book value, never booked."
       valueLabel="Estimated value"
-      emptyText="No estimate yet — the book value stands alone until the first observation."
+      emptyText="No estimate yet: the book value stands alone until the first observation."
       points={assetValuationList.map(({ id, date, value }) => ({
         id,
         date,

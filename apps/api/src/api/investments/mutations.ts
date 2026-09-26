@@ -163,7 +163,7 @@ export const registerInvestmentsMutations = () => {
       resolve: async (root, args, ctx) => {
         const investment = await getUserInvestment(args.id, ctx.user.id);
 
-        // Its price points go with it — the cascade owns them.
+        // Its price points go with it: the cascade owns them.
         await db.delete(investments).where(eq(investments.id, investment.id));
 
         await addEvent({

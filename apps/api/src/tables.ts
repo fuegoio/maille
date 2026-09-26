@@ -266,7 +266,7 @@ export const assets = pgTable("assets", {
   location: text("location"),
 });
 
-// A dated observation of an asset's estimated value — an appraisal, a
+// A dated observation of an asset's estimated value, an appraisal or
 // trusted comp. The valuation layer: displayed next to the asset's
 // ledger book value, never booked into it.
 export const assetValuations = pgTable(
@@ -377,7 +377,7 @@ export const counterparties = pgTable("counterparties", {
 });
 
 // A position held in an investment account: units of a security, fund,
-// coin — or a whole-position product at quantity 1. The ledger tracks
+// coin, or a whole-position product at quantity 1. The ledger tracks
 // the account's cash flows; quantity is the valuation layer's input.
 export const investments = pgTable("investments", {
   id: text("id").primaryKey(),
@@ -395,7 +395,7 @@ export const investments = pgTable("investments", {
 
 // A dated observation of an investment's unit price. One price per day:
 // adding a price for an existing date replaces it. The series is the
-// valuation layer — it never books into the ledger.
+// valuation layer; it never books into the ledger.
 export const investmentPrices = pgTable(
   "investment_prices",
   {

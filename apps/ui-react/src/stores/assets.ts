@@ -99,7 +99,7 @@ export const useAssets = create<AssetsState>()(
         }));
       },
 
-      // A deleted asset takes its valuations with it — the cascade owns
+      // A deleted asset takes its valuations with it: the cascade owns
       // them on the server too.
       deleteAsset: (assetId) => {
         set((state) => ({

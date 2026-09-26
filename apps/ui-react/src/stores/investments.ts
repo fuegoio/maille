@@ -99,7 +99,7 @@ export const useInvestments = create<InvestmentsState>()(
         }));
       },
 
-      // A deleted investment takes its price points with it — the
+      // A deleted investment takes its price points with it: the
       // cascade owns them on the server too.
       deleteInvestment: (investmentId) => {
         set((state) => ({

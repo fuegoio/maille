@@ -7,7 +7,7 @@ export type Investment = {
   symbol: string | null;
   description: string | null;
   /**
-   * Units held: shares, coins, fund parts — fractional is valid.
+   * Units held: shares, coins, fund parts; fractional is valid.
    * Whole-position investments (a contract, a rental property) are
    * quantity 1.
    */
@@ -38,7 +38,7 @@ export function investmentPrices(
 
 /**
  * The unit price in effect at `at`: the latest point at or before it.
- * Null means the investment has never been priced — no value exists,
+ * Null means the investment has never been priced: no value exists,
  * as opposed to a value of zero.
  */
 export function latestInvestmentPrice(
@@ -54,7 +54,7 @@ export function latestInvestmentPrice(
 
 /**
  * The investment's market value at `at`: quantity times the unit price
- * in effect then. Null when unpriced — the caller decides how absence
+ * in effect then. Null when unpriced: the caller decides how absence
  * is displayed, and never books it.
  */
 export function investmentValueAt(

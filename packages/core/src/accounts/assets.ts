@@ -9,7 +9,7 @@ export type Asset = {
 };
 
 /**
- * A dated observation of the asset's estimated value — an appraisal, a
+ * A dated observation of the asset's estimated value, an appraisal or
  * trusted comp. The whole asset's value, not a unit price. It is the
  * valuation layer: displayed next to the ledger's book value, never
  * booked.
@@ -33,7 +33,7 @@ export function assetValuations(
 
 /**
  * The estimated value in effect at `at`: the latest valuation at or
- * before it. Null means the asset has never been valued — no estimate
+ * before it. Null means the asset has never been valued: no estimate
  * exists, as opposed to an estimate of zero.
  */
 export function latestAssetValuation(
