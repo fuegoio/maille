@@ -296,7 +296,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
                         params={{ id: asset.account }}
                         search={{ view: "assets" }}
                       >
-                        <AccountLabel accountId={asset.account} size="sm" />
+                        <AccountLabel accountId={asset.account} />
                       </Link>
                     </Badge>
                   </div>
