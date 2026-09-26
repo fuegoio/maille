@@ -300,12 +300,27 @@ function AddActivityForm({
     const updatedTransactions = [...transactions];
     const current = updatedTransactions[transactionIndex];
     const newAmount = updateData.amount ?? current.amount;
+    const accountChanged =
+      updateData.fromAccount !== undefined ||
+      updateData.toAccount !== undefined;
     const newFundMoves =
       updateData.fundMoves ??
-      current.fundMoves?.map((move) => ({
-        ...move,
-        amount: newAmount,
-      }));
+      // An account change re-pins each side to its account's default fund:
+      // a row that started untracked picks the new account's fund, and a
+      // row leaving a funded account drops back to untracked
+      (accountChanged
+        ? classifyFundMoves({
+            fromAccount: updateData.fromAccount ?? current.fromAccount,
+            toAccount: updateData.toAccount ?? current.toAccount,
+            amount: newAmount,
+            accounts,
+            defaultFundByAccount,
+            date: date ?? new Date(),
+          })
+        : current.fundMoves?.map((move) => ({
+            ...move,
+            amount: newAmount,
+          })));
     updatedTransactions[transactionIndex] = {
       ...current,
       ...updateData,
