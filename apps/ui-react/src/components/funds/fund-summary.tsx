@@ -96,8 +96,11 @@ export function FundSummary({
   const today = startOfDay(new Date());
   const thirtyDaysAgo = subDays(today, 29);
   // The chart's first day is its baseline: its flows sit in the starting
-  // point, not in the movement the line shows. In / Out start after it.
+  // point, not in the movement the line shows. In / Out start after it,
+  // and stop at today — future activities are previsions, not money that
+  // has landed yet.
   const flowsStart = addDays(thirtyDaysAgo, 1);
+  const flowsEnd = addDays(today, 1);
 
   const positionsInput = useMemo(
     () =>
@@ -141,6 +144,9 @@ export function FundSummary({
 
   const balance = getFundBalanceAtDate(today);
   const balancePrev = getFundBalanceAtDate(thirtyDaysAgo);
+  // The prevision: where the balance lands once every future activity has
+  // landed too
+  const longTermBalance = getFundBalanceAtDate(new Date(9999, 11, 31));
 
   // A leg's null side facing an Expense or Revenue account is the outside
   // of the balance sheet, not Untracked — those legs never move Untracked
@@ -163,6 +169,7 @@ export function FundSummary({
             .filter(
               (m) =>
                 m.date.getTime() >= flowsStart.getTime() &&
+                m.date.getTime() < flowsEnd.getTime() &&
                 m.toFund === null &&
                 m.fromFund !== null &&
                 isLegNullSideUntracked(
@@ -180,6 +187,7 @@ export function FundSummary({
               .filter(
                 (m) =>
                   m.date.getTime() >= flowsStart.getTime() &&
+                  m.date.getTime() < flowsEnd.getTime() &&
                   m.fromFund === null &&
                   m.toFund !== null &&
                   isLegNullSideUntracked(
@@ -381,6 +389,24 @@ export function FundSummary({
           <span className="flex items-center gap-1 font-mono font-medium">
             <RollingAmount value={last30Out} />
           </span>
+        </div>
+
+        <div className="mt-4 flex items-center text-xs text-muted-foreground">
+          <div className="font-medium">Long-term balance</div>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            {Math.abs(balance - longTermBalance) >= 0.01 && (
+              <>
+                <span className="font-mono">
+                  <RollingAmount value={balance} />
+                </span>
+                <ArrowRight className="size-3" />
+              </>
+            )}
+            <span className="font-mono">
+              <RollingAmount value={longTermBalance} />
+            </span>
+          </div>
         </div>
       </div>
 

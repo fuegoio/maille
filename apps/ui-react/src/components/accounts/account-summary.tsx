@@ -73,15 +73,24 @@ export function AccountSummary({
       startingDate: user.startingDate,
     });
 
-  const balance = getAccountTotal({});
+  // Balances and flows stop at today: future activities are previsions,
+  // not money that has landed yet
+  const balance = getAccountTotal({ date: today });
   const balancePrev = getAccountTotal({ date: thirtyDaysAgo });
   // The chart's first day is its baseline: its flows sit in the starting
   // point, not in the movement the line shows. In / Out start after it.
   const flowsStart = addDays(thirtyDaysAgo, 1);
-  const last30In = getAccountTotal({ flow: "in", rangeStart: flowsStart });
+  const last30In = getAccountTotal({
+    flow: "in",
+    rangeStart: flowsStart,
+    date: today,
+  });
   const last30Out = Math.abs(
-    getAccountTotal({ flow: "out", rangeStart: flowsStart }),
+    getAccountTotal({ flow: "out", rangeStart: flowsStart, date: today }),
   );
+  // The prevision: where the balance lands once every future activity has
+  // landed too
+  const longTermBalance = getAccountTotal({});
 
   const getAccountCashBalanceAtDate = (date: Date): number => {
     if (!account?.movements) return 0;
@@ -205,6 +214,29 @@ export function AccountSummary({
             </div>
           </div>
         )}
+
+        <div
+          className={cn(
+            "flex items-center text-xs text-muted-foreground",
+            account?.movements ? "mt-2" : "mt-4",
+          )}
+        >
+          <div className="font-medium">Long-term balance</div>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            {Math.abs(balance - longTermBalance) >= 0.01 && (
+              <>
+                <span className="font-mono">
+                  <RollingAmount value={balance} />
+                </span>
+                <ArrowRight className="size-3" />
+              </>
+            )}
+            <span className="font-mono">
+              <RollingAmount value={longTermBalance} />
+            </span>
+          </div>
+        </div>
       </div>
 
       <ChartContainer

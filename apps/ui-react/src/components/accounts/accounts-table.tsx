@@ -1,5 +1,6 @@
 import { ACCOUNT_TYPES, AccountType } from "@maille/core/accounts";
 import { Link } from "@tanstack/react-router";
+import { startOfDay } from "date-fns";
 import { ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -44,12 +45,17 @@ export function AccountsTable() {
 
   const currencyFormatter = useCurrencyFormatter();
 
+  // Balances stop at today: future activities are previsions, not money
+  // that has landed yet
+  const today = startOfDay(new Date());
+
   const getAccountTotal = (accountId: string) =>
     getAccountBalanceAtDate({
       accountId,
       activities,
       accounts,
       startingDate: user.startingDate,
+      date: today,
     });
 
   const getAccountTypeTotal = (accountType: AccountType) => {
