@@ -342,6 +342,36 @@ export interface DeleteAssetEvent extends BaseSyncEvent {
   };
 }
 
+export interface AddAssetValuationEvent extends BaseSyncEvent {
+  type: "addAssetValuation";
+  payload: {
+    id: string;
+    asset: string;
+    /** ISO date: the day the value was observed. */
+    date: string;
+    value: number;
+  };
+}
+
+export interface UpdateAssetValuationEvent extends BaseSyncEvent {
+  type: "updateAssetValuation";
+  payload: {
+    id: string;
+    asset: string;
+    /** ISO date: the day the value was observed. */
+    date?: string;
+    value?: number;
+  };
+}
+
+export interface DeleteAssetValuationEvent extends BaseSyncEvent {
+  type: "deleteAssetValuation";
+  payload: {
+    id: string;
+    asset: string;
+  };
+}
+
 export interface CreateAssetDepreciationEvent extends BaseSyncEvent {
   type: "createAssetDepreciation";
   payload: {
@@ -601,6 +631,9 @@ export type SyncEvent =
   | CreateAssetEvent
   | UpdateAssetEvent
   | DeleteAssetEvent
+  | AddAssetValuationEvent
+  | UpdateAssetValuationEvent
+  | DeleteAssetValuationEvent
   | CreateAssetDepreciationEvent
   | UpdateAssetDepreciationEvent
   | DeleteAssetDepreciationEvent

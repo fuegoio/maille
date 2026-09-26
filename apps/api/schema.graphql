@@ -98,6 +98,13 @@ type AssetDepreciation {
   subcategory: String
 }
 
+type AssetValuation {
+  asset: String!
+  date: Date!
+  id: String!
+  value: Float!
+}
+
 type Contact {
   contact: ContactUser!
   createdAt: Date!
@@ -281,6 +288,7 @@ type MovementWorkflow {
 }
 
 type Mutation {
+  addAssetValuation(asset: String!, date: Date!, id: String!, value: Float!): AssetValuation!
   addInvestmentPrice(date: Date!, id: String!, investment: String!, price: Float!): InvestmentPrice!
   addTransaction(activityId: String!, amount: Float!, fromAccount: String!, fromAsset: String, fromCounterparty: String, fundMoves: [FundMoveInput!], id: String!, toAccount: String!, toAsset: String, toCounterparty: String): Transaction!
 
@@ -308,6 +316,7 @@ type Mutation {
   deleteActivitySubCategory(id: String!): DeleteActivityResponse!
   deleteAsset(id: String!): DeleteAssetResponse!
   deleteAssetDepreciation(id: String!): DeleteAssetDepreciationResponse!
+  deleteAssetValuation(id: String!): Boolean!
   deleteContact(id: String!): Boolean!
   deleteCounterparty(id: String!): Boolean!
   deleteFund(id: String!): Boolean!
@@ -337,6 +346,7 @@ type Mutation {
   updateActivitySubCategory(emoji: String, id: String!, name: String!): ActivitySubCategory!
   updateAsset(account: String, description: String, id: String!, location: String, name: String): Asset!
   updateAssetDepreciation(basis: Float, category: String, expenseAccount: String, id: String!, months: Int, startMonth: Date, subcategory: String): AssetDepreciation!
+  updateAssetValuation(date: Date, id: String!, value: Float): AssetValuation!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateFund(color: String, endDate: Date, id: String!, name: String, parentFund: String, startDate: Date): Fund!
   updateInvestment(account: String, description: String, id: String!, name: String, quantity: Float, symbol: String): Investment!
@@ -362,6 +372,7 @@ type Query {
   activityCategories: [ActivityCategory!]!
   activitySubcategories: [ActivitySubCategory!]!
   assetDepreciations: [AssetDepreciation!]!
+  assetValuations: [AssetValuation!]!
   assets: [Asset!]!
   contacts: [Contact!]!
   counterparties: [Counterparty!]!

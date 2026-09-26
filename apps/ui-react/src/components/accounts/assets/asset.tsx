@@ -5,6 +5,7 @@ import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
 import { AssetDepreciationSection } from "@/components/accounts/assets/asset-depreciation";
+import { AssetValuationSection } from "@/components/accounts/assets/asset-valuation";
 import { ActivitiesTable } from "@/components/activities/activities-table";
 import { ActivityViewSettingsButton } from "@/components/activities/activity-view-settings-button";
 import { ExportActivitiesButton } from "@/components/activities/export-activities-button";
@@ -57,6 +58,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
   const mutate = useSync((state) => state.mutate);
 
   const asset = useAssets((state) => state.getAssetById(assetId));
+  const assetValuations = useAssets((state) => state.assetValuations);
   const activities = useActivities((state) => state.activities);
 
   const { view } = useSearch({ from: "/_authenticated/assets/$id" });
@@ -127,14 +129,19 @@ export function AssetPage({ assetId }: AssetPageProps) {
 
   const deleteAsset = () => {
     if (!asset) return;
-    const assetData = { ...asset };
+    // The rollback carries the valuations too — the delete cascade
+    // owns them on the server.
+    const rollbackData = {
+      asset: { ...asset },
+      valuations: assetValuations.filter((v) => v.asset === asset.id),
+    };
     mutate({
       name: "deleteAsset",
       mutation: deleteAssetMutation,
       variables: {
         id: asset.id,
       },
-      rollbackData: assetData,
+      rollbackData,
       events: [
         {
           type: "deleteAsset",
@@ -340,6 +347,8 @@ export function AssetPage({ assetId }: AssetPageProps) {
               </div>
 
               <AssetDepreciationSection asset={asset} />
+
+              <AssetValuationSection asset={asset} />
             </div>
           </TabsContent>
 

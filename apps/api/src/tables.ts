@@ -266,6 +266,25 @@ export const assets = pgTable("assets", {
   location: text("location"),
 });
 
+// A dated observation of an asset's estimated value — an appraisal, a
+// trusted comp. The valuation layer: displayed next to the asset's
+// ledger book value, never booked into it.
+export const assetValuations = pgTable(
+  "asset_valuations",
+  {
+    id: text("id").primaryKey(),
+    user: text("user")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    asset: text("asset")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    date: timestamp("date", { mode: "date" }).notNull(),
+    value: real("value").notNull(),
+  },
+  (table) => [unique("asset_valuations_asset_date_key").on(table.asset, table.date)],
+);
+
 export const assetDepreciations = pgTable("asset_depreciations", {
   id: text("id").primaryKey(),
   user: text("user")
