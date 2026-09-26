@@ -408,6 +408,67 @@ export interface DeleteCounterpartyEvent extends BaseSyncEvent {
   };
 }
 
+export interface CreateInvestmentEvent extends BaseSyncEvent {
+  type: "createInvestment";
+  payload: {
+    id: string;
+    account: string;
+    name: string;
+    symbol: string | null;
+    description: string | null;
+    quantity: number;
+  };
+}
+
+export interface UpdateInvestmentEvent extends BaseSyncEvent {
+  type: "updateInvestment";
+  payload: {
+    id: string;
+    account?: string;
+    name?: string;
+    symbol?: string | null;
+    description?: string | null;
+    quantity?: number;
+  };
+}
+
+export interface DeleteInvestmentEvent extends BaseSyncEvent {
+  type: "deleteInvestment";
+  payload: {
+    id: string;
+  };
+}
+
+export interface AddInvestmentPriceEvent extends BaseSyncEvent {
+  type: "addInvestmentPrice";
+  payload: {
+    id: string;
+    investment: string;
+    /** ISO date: the day the price was observed. */
+    date: string;
+    price: number;
+  };
+}
+
+export interface UpdateInvestmentPriceEvent extends BaseSyncEvent {
+  type: "updateInvestmentPrice";
+  payload: {
+    id: string;
+    investment: string;
+    /** ISO date: the day the price was observed. */
+    date?: string;
+    price?: number;
+  };
+}
+
+export interface DeleteInvestmentPriceEvent extends BaseSyncEvent {
+  type: "deleteInvestmentPrice";
+  payload: {
+    id: string;
+    investment: string;
+  };
+}
+
 export interface CreateContactEvent extends BaseSyncEvent {
   type: "createContact";
   payload: {
@@ -546,6 +607,12 @@ export type SyncEvent =
   | CreateCounterpartyEvent
   | UpdateCounterpartyEvent
   | DeleteCounterpartyEvent
+  | CreateInvestmentEvent
+  | UpdateInvestmentEvent
+  | DeleteInvestmentEvent
+  | AddInvestmentPriceEvent
+  | UpdateInvestmentPriceEvent
+  | DeleteInvestmentPriceEvent
   | CreateContactEvent
   | DeleteContactEvent
   | CreateViewEvent

@@ -25,6 +25,7 @@ import { Route as AuthenticatedProjectsIdRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMovementsToLinkRouteImport } from './routes/_authenticated/movements/to-link'
 import { Route as AuthenticatedMovementsIdRouteImport } from './routes/_authenticated/movements/$id'
 import { Route as AuthenticatedMonthsMonthRouteImport } from './routes/_authenticated/months/$month'
+import { Route as AuthenticatedInvestmentsIdRouteImport } from './routes/_authenticated/investments/$id'
 import { Route as AuthenticatedFundsUntrackedRouteImport } from './routes/_authenticated/funds/untracked'
 import { Route as AuthenticatedFundsIdRouteImport } from './routes/_authenticated/funds/$id'
 import { Route as AuthenticatedCounterpartiesIdRouteImport } from './routes/_authenticated/counterparties/$id'
@@ -123,6 +124,12 @@ const AuthenticatedMonthsMonthRoute =
     path: '/months/$month',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInvestmentsIdRoute =
+  AuthenticatedInvestmentsIdRouteImport.update({
+    id: '/investments/$id',
+    path: '/investments/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFundsUntrackedRoute =
   AuthenticatedFundsUntrackedRouteImport.update({
     id: '/funds/untracked',
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/counterparties/$id': typeof AuthenticatedCounterpartiesIdRoute
   '/funds/$id': typeof AuthenticatedFundsIdRoute
   '/funds/untracked': typeof AuthenticatedFundsUntrackedRoute
+  '/investments/$id': typeof AuthenticatedInvestmentsIdRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -213,6 +221,7 @@ export interface FileRoutesByTo {
   '/counterparties/$id': typeof AuthenticatedCounterpartiesIdRoute
   '/funds/$id': typeof AuthenticatedFundsIdRoute
   '/funds/untracked': typeof AuthenticatedFundsUntrackedRoute
+  '/investments/$id': typeof AuthenticatedInvestmentsIdRoute
   '/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -241,6 +250,7 @@ export interface FileRoutesById {
   '/_authenticated/counterparties/$id': typeof AuthenticatedCounterpartiesIdRoute
   '/_authenticated/funds/$id': typeof AuthenticatedFundsIdRoute
   '/_authenticated/funds/untracked': typeof AuthenticatedFundsUntrackedRoute
+  '/_authenticated/investments/$id': typeof AuthenticatedInvestmentsIdRoute
   '/_authenticated/months/$month': typeof AuthenticatedMonthsMonthRoute
   '/_authenticated/movements/$id': typeof AuthenticatedMovementsIdRoute
   '/_authenticated/movements/to-link': typeof AuthenticatedMovementsToLinkRoute
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/counterparties/$id'
     | '/funds/$id'
     | '/funds/untracked'
+    | '/investments/$id'
     | '/months/$month'
     | '/movements/$id'
     | '/movements/to-link'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/counterparties/$id'
     | '/funds/$id'
     | '/funds/untracked'
+    | '/investments/$id'
     | '/months/$month'
     | '/movements/$id'
     | '/movements/to-link'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/_authenticated/counterparties/$id'
     | '/_authenticated/funds/$id'
     | '/_authenticated/funds/untracked'
+    | '/_authenticated/investments/$id'
     | '/_authenticated/months/$month'
     | '/_authenticated/movements/$id'
     | '/_authenticated/movements/to-link'
@@ -458,6 +471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMonthsMonthRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/investments/$id': {
+      id: '/_authenticated/investments/$id'
+      path: '/investments/$id'
+      fullPath: '/investments/$id'
+      preLoaderRoute: typeof AuthenticatedInvestmentsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/funds/untracked': {
       id: '/_authenticated/funds/untracked'
       path: '/funds/untracked'
@@ -533,6 +553,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCounterpartiesIdRoute: typeof AuthenticatedCounterpartiesIdRoute
   AuthenticatedFundsIdRoute: typeof AuthenticatedFundsIdRoute
   AuthenticatedFundsUntrackedRoute: typeof AuthenticatedFundsUntrackedRoute
+  AuthenticatedInvestmentsIdRoute: typeof AuthenticatedInvestmentsIdRoute
   AuthenticatedMonthsMonthRoute: typeof AuthenticatedMonthsMonthRoute
   AuthenticatedMovementsIdRoute: typeof AuthenticatedMovementsIdRoute
   AuthenticatedMovementsToLinkRoute: typeof AuthenticatedMovementsToLinkRoute
@@ -558,6 +579,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCounterpartiesIdRoute: AuthenticatedCounterpartiesIdRoute,
   AuthenticatedFundsIdRoute: AuthenticatedFundsIdRoute,
   AuthenticatedFundsUntrackedRoute: AuthenticatedFundsUntrackedRoute,
+  AuthenticatedInvestmentsIdRoute: AuthenticatedInvestmentsIdRoute,
   AuthenticatedMonthsMonthRoute: AuthenticatedMonthsMonthRoute,
   AuthenticatedMovementsIdRoute: AuthenticatedMovementsIdRoute,
   AuthenticatedMovementsToLinkRoute: AuthenticatedMovementsToLinkRoute,

@@ -21,6 +21,7 @@ import { useCounterparties } from "./stores/counterparties";
 import { useCustomViews } from "./stores/customViews";
 import { useAssetDepreciations } from "./stores/depreciations";
 import { useFunds } from "./stores/funds";
+import { useInvestments } from "./stores/investments";
 import { useMovements } from "./stores/movements";
 import { useProjects } from "./stores/projects";
 import { useSync } from "./stores/sync";
@@ -218,6 +219,22 @@ const userDataQuery = graphql(/* GraphQL */ `
       initialBalance
     }
 
+    investments {
+      id
+      account
+      name
+      symbol
+      description
+      quantity
+    }
+
+    investmentPrices {
+      id
+      investment
+      date
+      price
+    }
+
     contacts {
       id
       contact {
@@ -367,6 +384,15 @@ export const fetchUserData = async () => {
     });
   });
 
+  // Populate investments and their price points
+  useInvestments.setState({
+    investments: userData.investments,
+    investmentPrices: userData.investmentPrices.map((price) => ({
+      ...price,
+      date: new Date(price.date),
+    })),
+  });
+
   // Populate contacts
   userData.contacts.forEach((contact) => {
     useContacts.getState().addContact({
@@ -431,6 +457,7 @@ export const clearAllStores = () => {
   useAssetDepreciations.setState({ depreciations: [] });
   useContacts.setState({ contacts: [] });
   useCounterparties.setState({ counterparties: [] });
+  useInvestments.setState({ investments: [], investmentPrices: [] });
   useMovements.setState({ movements: [] });
   useProjects.setState({ projects: [] });
   useFunds.setState({ funds: [], fundAllocations: [] });

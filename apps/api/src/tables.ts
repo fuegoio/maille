@@ -9,6 +9,7 @@ import {
   real,
   integer,
   jsonb,
+  unique,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { AccountType, type AssetDepreciationMethod } from "@maille/core/accounts";
@@ -355,6 +356,42 @@ export const counterparties = pgTable("counterparties", {
   contact: text("contact").references(() => user.id, { onDelete: "set null" }),
   initialBalance: real("initial_balance"),
 });
+
+// A position held in an investment account: units of a security, fund,
+// coin — or a whole-position product at quantity 1. The ledger tracks
+// the account's cash flows; quantity is the valuation layer's input.
+export const investments = pgTable("investments", {
+  id: text("id").primaryKey(),
+  user: text("user")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  account: text("account")
+    .notNull()
+    .references(() => accounts.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  symbol: text("symbol"),
+  description: text("description"),
+  quantity: real("quantity").notNull().default(0),
+});
+
+// A dated observation of an investment's unit price. One price per day:
+// adding a price for an existing date replaces it. The series is the
+// valuation layer — it never books into the ledger.
+export const investmentPrices = pgTable(
+  "investment_prices",
+  {
+    id: text("id").primaryKey(),
+    user: text("user")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    investment: text("investment")
+      .notNull()
+      .references(() => investments.id, { onDelete: "cascade" }),
+    date: timestamp("date", { mode: "date" }).notNull(),
+    price: real("price").notNull(),
+  },
+  (table) => [unique("investment_prices_investment_date_key").on(table.investment, table.date)],
+);
 
 export const funds = pgTable("funds", {
   id: text("id").primaryKey(),

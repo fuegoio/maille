@@ -7,6 +7,7 @@
   "exports": {
     "./activities": "./src/activities/index.ts",
     "./accounts": "./src/accounts/index.ts",
+    "./valuations": "./src/valuations/index.ts",
     "./movements": "./src/movements/index.ts",
     "./projects": "./src/projects/index.ts",
     "./funds": "./src/funds/index.ts",

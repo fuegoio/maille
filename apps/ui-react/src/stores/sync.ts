@@ -21,6 +21,7 @@ import { useCounterparties } from "./counterparties";
 import { useCustomViews } from "./customViews";
 import { useAssetDepreciations } from "./depreciations";
 import { useFunds } from "./funds";
+import { useInvestments } from "./investments";
 import { useMovements } from "./movements";
 import { useProjects } from "./projects";
 import { storage } from "./storage";
@@ -80,6 +81,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useAssetDepreciations.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
+            useInvestments.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
             useCustomViews.getState().handleEvent(event);
             useWorkflows.getState().handleEvent(event);
@@ -139,6 +141,10 @@ export const useSync = create<SyncState>()(
             ...mutation,
             result,
           } as Mutation);
+          useInvestments.getState().handleMutationSuccess({
+            ...mutation,
+            result,
+          } as Mutation);
           useCounterparties.getState().handleMutationSuccess({
             ...mutation,
             result,
@@ -191,6 +197,7 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleMutationError(mutation);
           useAssetDepreciations.getState().handleMutationError(mutation);
           useCounterparties.getState().handleMutationError(mutation);
+          useInvestments.getState().handleMutationError(mutation);
           useContacts.getState().handleMutationError(mutation);
           useCustomViews.getState().handleMutationError(mutation);
           useWorkflows.getState().handleMutationError(mutation);
@@ -233,6 +240,7 @@ export const useSync = create<SyncState>()(
             useAssets.getState().handleEvent(event);
             useAssetDepreciations.getState().handleEvent(event);
             useCounterparties.getState().handleEvent(event);
+            useInvestments.getState().handleEvent(event);
             useContacts.getState().handleEvent(event);
             useCustomViews.getState().handleEvent(event);
             useWorkflows.getState().handleEvent(event);
@@ -292,6 +300,7 @@ export const useSync = create<SyncState>()(
           useAssets.getState().handleEvent(event);
           useAssetDepreciations.getState().handleEvent(event);
           useCounterparties.getState().handleEvent(event);
+          useInvestments.getState().handleEvent(event);
           useContacts.getState().handleEvent(event);
           useWorkflows.getState().handleEvent(event);
         }

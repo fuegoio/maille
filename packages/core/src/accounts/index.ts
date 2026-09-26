@@ -1,5 +1,6 @@
 export * from "./assets";
 export * from "./counterparties";
+export * from "./investments";
 
 export enum AccountType {
   BANK_ACCOUNT = "bank_account",
