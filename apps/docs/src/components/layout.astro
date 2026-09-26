@@ -1,0 +1,46 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "@/styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <ClientRouter />
+    <script is:inline>
+      // Apply the persisted theme before first paint. Mirrors the
+      // next-themes setup fumadocs' RootProvider uses after hydration.
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var dark =
+            stored === "dark" ||
+            ((stored === "system" || !stored) &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch {
+          /* noop */
+        }
+      })();
+    </script>
+  </head>
+  <body
+    class="flex min-h-screen flex-col"
+    transition:persist
+    transition:animate="none"
+    transition:name="page-layout"
+  >
+    <slot />
+  </body>
+</html>

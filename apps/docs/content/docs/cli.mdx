@@ -1,0 +1,61 @@
+---
+title: CLI reference
+description: Drive your Maille instance from the terminal.
+---
+
+The `maille` CLI is a GraphQL client for common resource operations. Some
+features remain UI- or API-only. After [self-hosting](/docs/self-hosting), log in
+once and script the supported workflows.
+
+## Authentication
+
+```bash
+maille login \
+  --url http://localhost:3000/api \
+  --ui-url http://localhost:5173
+maille auth logout # clear stored credentials
+```
+
+The CLI stores its API URL, UI URL, bearer token, and user metadata in
+`~/.maille/config.json` with mode `0600`. Device authorization opens the
+configured UI and exchanges credentials with your API.
+
+## Resources
+
+Commands cover these common resources. Run `--help` on each command to see its
+actual operations:
+
+| Command                 | Resource                                       |
+| ----------------------- | ---------------------------------------------- |
+| `maille activities`     | Activities                                     |
+| `maille categories`     | Activity categories and subcategories          |
+| `maille transactions`   | Transactions attached to an activity           |
+| `maille movements`      | Bank movements and their reconciliation status |
+| `maille accounts`       | All account types                              |
+| `maille assets`         | Assets                                         |
+| `maille counterparties` | Counterparties                                 |
+| `maille projects`       | Projects                                       |
+| `maille funds`          | Funds                                          |
+| `maille contacts`       | Contacts                                       |
+
+Run any command with `--help` for its subcommands and options, for example:
+
+```bash
+maille movements list --help
+```
+
+## Typical session
+
+A short daily loop from the terminal:
+
+```bash
+maille movements list --unreconciled   # what the bank said
+maille activities create --help        # record what actually happened
+maille movements link --help           # attribute a movement to an activity
+maille funds list                       # list fund metadata
+```
+
+<Callout type="info">
+  Run `maille <command> --help` before scripting a mutation. The CLI exposes the
+  required IDs and amounts explicitly so reconciliation remains auditable.
+</Callout>

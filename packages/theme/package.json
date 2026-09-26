@@ -1,0 +1,21 @@
+{
+  "name": "@maille/theme",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    "./fonts.css": "./src/fonts.css",
+    "./tokens.css": "./src/tokens.css",
+    "./tailwind.css": "./src/tailwind.css",
+    "./base.css": "./src/base.css"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource-variable/merriweather": "^5.3.0"
+  }
+}

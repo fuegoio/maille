@@ -23,6 +23,7 @@ coverage
 
 # Build Outputs
 .next/
+.astro/
 out/
 build
 dist
@@ -38,6 +39,7 @@ yarn-error.log*
 *.pem
 
 *.tsbuildinfo
+*.bun-build
 
 *.db
 dist
