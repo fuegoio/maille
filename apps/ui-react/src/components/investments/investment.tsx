@@ -100,7 +100,7 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
     ],
   });
 
-  // The position's value reads from the price series — the valuation
+  // The position's value reads from the price series: the valuation
   // layer, never the ledger. The newest observation values it.
   const investmentPriceList = React.useMemo(
     () =>
@@ -326,8 +326,8 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
 
               <div className="mt-1 text-sm text-muted-foreground">
                 {lastPrice
-                  ? `Market value — as of ${format(lastPrice.date, "dd MMM yyyy")}`
-                  : "Market value — add a first price below"}
+                  ? `Market value as of ${format(lastPrice.date, "dd MMM yyyy")}`
+                  : "Market value: add a first price below"}
               </div>
 
               <DebouncedTextarea
@@ -447,9 +447,9 @@ function UnitPriceSection({
   return (
     <ValuationTimeline
       title="Unit price"
-      description="Dated price observations. The latest one values the position — none of them ever touch the ledger."
+      description="Dated price observations. The latest one values the position; none of them ever touch the ledger."
       valueLabel="Unit price"
-      emptyText="No price yet — the position's value appears with its first observation."
+      emptyText="No price yet: the position's value appears with its first observation."
       points={prices.map(({ id, date, price: value }) => ({
         id,
         date,

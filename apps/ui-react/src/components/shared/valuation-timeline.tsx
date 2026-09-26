@@ -29,13 +29,13 @@ interface ValuationTimelineProps {
   title: string;
   /** The one-line explanation under the heading. */
   description: string;
-  /** What the observed amount is called — labels the input and chart. */
+  /** What the observed amount is called: labels the input and chart. */
   valueLabel: string;
   /** The empty-state sentence when no observation exists yet. */
   emptyText: string;
   /** The observations, newest first. */
   points: ValuationTimelinePoint[];
-  /** A new observation for `date`. Callers upsert — one per day. */
+  /** A new observation for `date`. Callers upsert: one per day. */
   onAdd: (date: Date, value: number) => void;
   /** The observation's value changed. */
   onUpdateValue: (pointId: string, value: number) => void;
@@ -46,7 +46,7 @@ interface ValuationTimelineProps {
 /**
  * The shared valuation timeline: dated observations of a value with the
  * add form, the chart and the editable rows. One observation per day.
- * The series is the valuation layer — it never books into the ledger.
+ * The series is the valuation layer; it never books into the ledger.
  */
 export function ValuationTimeline({
   title,

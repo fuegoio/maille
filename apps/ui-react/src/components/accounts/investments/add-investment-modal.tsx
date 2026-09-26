@@ -120,7 +120,7 @@ export function AddInvestmentModal({
               />
             </FieldContent>
             <FieldDescription>
-              Ticker, ISIN or coin — however you identify it.
+              Ticker, ISIN or coin, however you identify it.
             </FieldDescription>
           </Field>
 
@@ -135,7 +135,7 @@ export function AddInvestmentModal({
               />
             </FieldContent>
             <FieldDescription>
-              Units held — shares, coins, fund parts. Update it as you trade.
+              Units held: shares, coins, fund parts. Update it as you trade.
             </FieldDescription>
             <FieldError>{errors.quantity?.message}</FieldError>
           </Field>

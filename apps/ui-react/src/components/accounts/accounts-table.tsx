@@ -66,7 +66,7 @@ export function AccountsTable() {
       date: today,
     });
 
-  // The estimation reads the valuation layer — priced positions for
+  // The estimation reads the valuation layer: priced positions for
   // investment accounts, valued assets for assets accounts. Other
   // account types hold no estimation: their balance is their value.
   const estimationAt = new Date(endOfToday());
@@ -154,7 +154,7 @@ export function AccountsTable() {
                   return "";
                 }
                 // No account holds an estimation: the cell stays
-                // empty — absence, never a zero.
+                // empty. Absence, never a zero.
                 const estimations = accounts
                   .filter((account) => account.type === accountType)
                   .map((account) =>

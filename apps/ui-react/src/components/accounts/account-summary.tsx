@@ -329,8 +329,8 @@ export function AccountSummary({
         </LineChart>
       </ChartContainer>
 
-      {/* The estimation reads the valuation layer — priced positions
-        or valued assets — next to the ledger's balance above. Its own
+      {/* The estimation reads the valuation layer: priced positions
+        or valued assets, next to the ledger's balance above. Its own
         bordered section, below the chart. */}
       {estimation && (
         <div className="border-t p-6">

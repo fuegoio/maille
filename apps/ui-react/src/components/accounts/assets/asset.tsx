@@ -129,7 +129,7 @@ export function AssetPage({ assetId }: AssetPageProps) {
 
   const deleteAsset = () => {
     if (!asset) return;
-    // The rollback carries the valuations too — the delete cascade
+    // The rollback carries the valuations too: the delete cascade
     // owns them on the server.
     const rollbackData = {
       asset: { ...asset },

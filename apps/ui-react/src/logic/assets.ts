@@ -127,7 +127,7 @@ import type { AccountEstimation } from "./investments";
 /**
  * An assets account's estimation: the sum of its assets' estimated
  * values at their latest observation. Null when the account holds no
- * asset or none has ever been valued — absence, never a zero.
+ * asset or none has ever been valued: absence, never a zero.
  */
 export function getAssetsAccountEstimation(
   assets: readonly Asset[],
