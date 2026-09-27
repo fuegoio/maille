@@ -1,0 +1,90 @@
+---
+title: Time & previsions
+description: When an entry affects balances, where history begins, and what future-dated entries mean.
+---
+
+A ledger is a time series, not a spreadsheet. Every transaction belongs to a
+date, and every balance is a position **at** a date. Maille derives any
+balance by replaying the transactions dated at or before the moment you ask
+about, which is what makes "what did I have in March?" an exact question, not
+a reconstruction.
+
+## The activity date is the ledger date
+
+A transaction takes its date from its activity. That single date decides:
+
+- when the transaction starts affecting account balances;
+- whether it is included in a period report;
+- whether it counts in a position or quantity today.
+
+Other dates in Maille are context, not ledger time. A project's start and end
+dates describe the scope of an effort; they do not move the transactions that
+belong to it. A movement's date is the institution's claim about when value
+moved, compared against the ledger but never substituted for it. When you
+reconcile, the amounts must agree; the dates may legitimately differ by a day
+or two.
+
+## The starting date is the boundary of history
+
+The ledger's starting date answers "history begins here":
+
+- transactions dated before it are excluded from balances and reports;
+- account starting balances describe each account at that boundary;
+- a fund without its own start date uses the ledger starting date for its
+  opening allocations.
+
+The starting date is what keeps imported history honest. Everything before
+the boundary is summarized by opening balances; everything after it is
+explained by transactions. There is no synthetic "opening transaction", and
+therefore no fake event in your activity list pretending something happened.
+
+Moving the starting date later can exclude transactions that previously
+counted; moving it earlier exposes a period your opening balances may not
+describe. Treat it as a decision about where truth begins, and set it once,
+early.
+
+## Future entries are previsions
+
+An activity whose date is in the future is **scheduled**: its transactions
+exist, but they do not affect any balance, quantity, or fund position until
+their date arrives. This is a prevision — a statement of intent in the same
+shape as a fact, so that when the day comes it becomes true without being
+re-entered.
+
+| Date of activity            | Status     | Counted in balances |
+| --------------------------- | ---------- | ------------------- |
+| Future                      | Scheduled  | No                  |
+| Today or past, reconciled   | Completed  | Yes                 |
+| Today or past, unreconciled | Incomplete | Yes                 |
+
+Note the last row: an incomplete activity still affects balances. Its
+transactions are recorded facts; what is incomplete is the proof against the
+bank, not the ledger entry itself. The status dimension says "you have not
+verified this against a statement yet", never "this did not happen".
+
+## Monthly conventions
+
+Some ledger events are generated rather than entered. Depreciation
+installments land on the first of each month, and investment prices and asset
+valuations are dated observations on a timeline. Both follow the same reading
+rule as balances: the value in effect at a date is the latest observation at
+or before it, and observations after the date you ask about are invisible — a
+future price is a prevision, not a valuation.
+
+## Implications of dating choices
+
+- **Dating an activity on the wrong day** misplaces it in every period report
+  and every historical balance. The date is load-bearing; prefer the day value
+  actually moved.
+- **Backdating an activity** instantly changes all balances and reports
+  computed after that date, including already-read ones. Nothing else needs to
+  be edited, which is the point of derivation.
+- **Scheduling an activity far in the future** keeps it visible and counted
+  nowhere until it arrives. Editing its amount while scheduled is free; the
+  ledger only feels it when the date passes.
+- **Editing a fund's start date** re-dates its opening allocations, and is
+  rejected if it would move the fund's boundary after transactions already
+  allocated to it.
+
+Continue with [Book value & estimation](/docs/ledger/book-value-and-estimation)
+for the other thing dates govern: which observation is in effect.

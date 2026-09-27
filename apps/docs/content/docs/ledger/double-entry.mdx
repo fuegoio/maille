@@ -1,0 +1,100 @@
+---
+title: Double entry
+description: Every movement of value has two sides, and what that rule buys a personal ledger.
+---
+
+Double entry is the rule that value never appears or disappears: it always
+moves **from** somewhere **to** somewhere. A transaction in Maille is one such
+movement — an amount, a source account, and a destination account. The
+balances of both accounts change by exactly that amount, in opposite
+directions, and nothing else in the ledger changes.
+
+Classic bookkeeping expresses this with debits and credits. Maille expresses
+it with directions: money leaves the `from` account and enters the `to`
+account. The discipline is identical — the two sides must name the accounts
+and the amount must be the same on both — only the vocabulary differs, because
+for personal finance "from my bank to my landlord's expense" reads more
+naturally than "debit rent expense, credit bank".
+
+## The personal accounting equation
+
+Bookkeeping's fundamental equation is:
+
+```text
+Assets = Liabilities + Equity
+```
+
+For a person, equity is **net worth**, and Maille derives it rather than
+storing it:
+
+```text
+Net worth = (bank + cash + investments + assets) − liabilities
+```
+
+Revenue and expense accounts sit in a second equation that explains how net
+worth changed between two dates:
+
+```text
+Net worth change = Revenues − Expenses
+```
+
+A salary transaction moves value from a revenue account into a bank account.
+The revenue account is not a place money sits — it is the source the value
+arrived through. Six months later, summing the revenue accounts tells you
+exactly why your net worth grew by that much, and summing balances tells you
+where it ended up. The two views must agree because they are derived from the
+same transactions.
+
+## The four things value can do
+
+Every transaction in a personal ledger is one of four movements:
+
+| Movement        | From                                                                      | To              | Effect on net worth |
+| --------------- | ------------------------------------------------------------------------- | --------------- | ------------------- |
+| Earn            | Revenue                                                                   | Balance account | Increases           |
+| Spend           | Balance account                                                           | Expense         | Decreases           |
+| Move (transfer) | Balance account                                                           | Balance account | None                |
+| Convert or owe  | Balance or liability account with an asset, investment, or liability side | Depends         | None until realized |
+
+The third row is the one personal tools most often get wrong. Moving money
+from a current account to a savings account, or withdrawing cash, is not
+spending: neither side is an expense account, so the transaction is neutral
+and no report counts it as consumption. Classification follows the ledger,
+never the other way around — an activity is an expense because one of its
+transactions names an expense account, not because a label says so.
+
+The fourth row is where double entry earns its keep. Buying shares moves money
+from a bank account to an investment account: your net worth does not change,
+the composition of it does. Taking a loan moves value from a liability account
+(the debt you now owe) into your bank account: you are not richer, and the
+ledger says so because the liability balance grew by the same amount the bank
+balance did.
+
+## Compound events: one activity, several transactions
+
+Real events rarely fit one movement. Paying a shared grocery bill by card,
+partly for yourself and partly for a flatmate, involves: the bank account (the
+money), an expense account (the consumption), and a counterparty leg (the part
+the flatmate now owes you). Maille keeps the event as one **activity** — the
+human-readable identity, with its date, name, and category — and lets it carry
+several **transactions**, each an exact double-entry movement. The activity is
+what you recognize; the transactions are what is true in the accounting sense.
+
+## What the rule buys
+
+- **Balances cannot drift.** A balance is not a number someone set once and
+  edited since; it is the sum of opening state plus every transaction. A
+  displayed balance can always be audited down to the entries.
+- **Errors are visible.** Money that entered without a source or left without
+  a destination has no valid representation — the mistake surfaces as an
+  unexplained reconciliation difference rather than as a wrong total.
+- **Reports are consistent by construction.** Spending, income, and net worth
+  all derive from the same transactions, so they cannot disagree with each
+  other.
+- **Direction carries meaning.** Because legs say from and to, a shared
+  expense can distinguish the part you consumed from the part someone owes
+  you, and a liability can be tracked to the euro without trusting a name in
+  an account label.
+
+Read [Chart of accounts](/docs/ledger/chart-of-accounts) next for how the
+accounts these movements name are classified.

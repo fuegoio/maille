@@ -1,0 +1,76 @@
+---
+title: What is a ledger?
+description: The bookkeeping idea behind Maille, and the three kinds of facts a personal ledger keeps apart.
+---
+
+A ledger is a record of changes to positions, kept so that every total can be
+re-derived from the changes that produced it. Bookkeeping has used this shape
+for centuries: a list of dated entries, each entry naming the value it moves,
+and balances computed by replaying the entries. Maille applies that discipline
+to personal finance, where most tools instead store summaries — a balance
+field, a spent-this-month counter — that slowly stop agreeing with the
+transactions behind them.
+
+This section explains the concepts before the features. Read it once and the
+rest of Maille becomes predictable: every screen is a different projection of
+the same records.
+
+<Cards>
+  <Card title="Double entry" href="/docs/ledger/double-entry">
+    The rule that every movement has two sides, and what it means for personal money.
+  </Card>
+  <Card title="Chart of accounts" href="/docs/ledger/chart-of-accounts">
+    Balance accounts and flow accounts, and how Maille's account types map to classic bookkeeping.
+  </Card>
+  <Card title="Time & previsions" href="/docs/ledger/time-and-previsions">
+    When an entry affects balances, where history begins, and what future entries mean.
+  </Card>
+  <Card title="Book value & estimation" href="/docs/ledger/book-value-and-estimation">
+    The difference between what the ledger says and what the market says, and why only sales book a
+    gain.
+  </Card>
+  <Card title="Correctness" href="/docs/ledger/correctness">
+    How a ledger stays trustworthy: derivation, equality checks, invariants, and the states Maille
+    refuses to enter.
+  </Card>
+  <Card title="Glossary" href="/docs/ledger/glossary">
+    Every term the documentation uses, defined in one place.
+  </Card>
+</Cards>
+
+## The ledger and the two other kinds of facts
+
+Maille keeps three kinds of facts, and never converts one into another:
+
+| Kind        | Records                                            | Answers                   | Booked into balances? |
+| ----------- | -------------------------------------------------- | ------------------------- | --------------------- |
+| Ledger      | Activities, transactions, fund legs                | What happened, and why    | Yes                   |
+| Evidence    | Movements (bank and broker statement lines), links | What the institution said | No, only compared     |
+| Observation | Investment prices, asset valuations                | What the thing is worth   | No, only displayed    |
+
+A statement line is evidence about money; it is not an explanation of it. A
+market price is a measurement of a position; it is not income. The ledger
+records what you concluded happened, and the other two kinds of facts either
+corroborate it or describe it. Confusing the three is how approximations enter
+a finance tool, and refusing to confuse them is the core of Maille's design.
+
+## Why a personal ledger and not a spending app
+
+A spending app answers one question well — what did I spend this month — by
+classifying statement lines. A ledger answers a family of questions from one
+set of records:
+
+- **Where is my money and how much do I owe?** Balance accounts and liability
+  accounts, valued by replaying transactions.
+- **What changed it?** Flow accounts: every change entered through a revenue or
+  expense account, or moved between balance accounts as a transfer.
+- **Does my record agree with the bank?** Reconciliation: the ledger total per
+  account, compared against the movements the institution reported.
+- **What is the money for?** Funds: a dimension over the money, not a
+  duplication of it.
+- **What did it used to be?** Because balances are derived from dated entries,
+  every past date can be recomputed exactly.
+
+None of this requires you to be an accountant. It requires only that every
+event you record says where value came from and where it went — the idea the
+next page makes precise.

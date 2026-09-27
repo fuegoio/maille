@@ -68,3 +68,25 @@ silently assigned.
   A transfer between bank accounts and a transfer between funds answer different questions. Record
   the account transaction for location and the fund leg for purpose when both change.
 </Callout>
+
+## Implications of each action
+
+- **Open a fund with allocations** — the allocations claim parts of accounts'
+  opening positions at the fund's start date. Rejected when an allocation
+  exceeds what the account supports: the purpose view may never contradict the
+  balance sheet.
+- **Edit the fund's start date** — its allocations re-date with it, never
+  before the ledger starting date. Rejected if the new date would fall after
+  transactions already allocated to the fund.
+- **Add a fund leg** — purpose moves with the money that provably moved: legs
+  are bounded by their transaction's amount. The null side is Untracked, so
+  assignments from and releases to untracked money are explicit.
+- **Move a fund in the tree** — tree balances recompute; moves between funds
+  inside a subtree cancel when the subtree is viewed whole. Placing a fund
+  under its own descendant is rejected.
+- **Delete a fund** — its opening allocations go with it; transaction fund
+  legs remain but stop counting. Children become roots. Zero the fund with
+  legs first if its history should remain meaningful.
+
+The complete reference for actions across the model is
+[Actions & implications](/docs/financial/actions).

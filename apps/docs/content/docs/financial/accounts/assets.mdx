@@ -45,3 +45,23 @@ the months the market disagrees.
 See [Investment accounts](/docs/financial/accounts/investment-accounts).
 The same house can be either: lived in, it is an asset carried at cost;
 genuinely held for return, it is a position whose appraisals are price points.
+
+## Implications of each action
+
+- **Create an asset** — book value starts deriving from the transaction legs
+  that reference it. Buying the car moves value into it; contributions and
+  part-sales continue to adjust book value.
+- **Add a valuation** — a dated observation of the whole object's worth. The
+  estimation and unrealized difference recompute; the book value never moves.
+- **Create or edit a depreciation plan** — the plan owns its future
+  installments: editing it creates, updates, or deletes exactly the activities
+  dated today or later. Past installments stay frozen history, because
+  consumption already booked cannot be un-booked by a plan.
+- **Delete a depreciation plan** — future installments it still owns are
+  deleted; past ones remain as plain ledger activities.
+- **Sell the asset** — the only way the estimated-versus-book difference
+  becomes a fact: the sale transaction realizes the gain or loss at the price
+  actually obtained.
+- **Delete the asset** — its valuations and depreciation plan go with it;
+  transaction legs keep their amounts. See
+  [Accounts](/docs/financial/accounts) for the cascade.

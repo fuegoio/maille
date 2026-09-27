@@ -61,3 +61,18 @@ The estimation appears next to the balance, with its observation date and its
 unrealized difference, and is never booked into the ledger. See
 [Investment accounts](/docs/financial/accounts/investment-accounts) and
 [Assets](/docs/financial/accounts/assets).
+
+## Implications of each action
+
+| Action                   | Implication                                                                                                                                                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create an account        | The type is chosen now and decides the derived activity types of every transaction touching it. Pick the type for the financial role, not the label.                                                                  |
+| Rename an account        | Labels only. Reports follow the record, so nothing else changes.                                                                                                                                                      |
+| Edit a starting balance  | A boundary correction: every derived balance and report for the account shifts for all dates. Never use it to paper over a present-day difference — differences belong to transactions.                               |
+| Toggle movement tracking | An evidence contract: enabling makes touching activities incomplete until movements cover them; disabling lets them complete without evidence.                                                                        |
+| Delete an account        | Deletes with it every transaction leg referencing it, its movements, positions, assets, counterparties, and fund allocations. The most destructive action in Maille — prefer renaming or disabling movement tracking. |
+
+Every action above recomputes balances, fund positions, and statuses
+automatically; the table lists what cannot be undone. The complete reference,
+including activities, movements, funds, and valuations, is
+[Actions & implications](/docs/financial/actions).

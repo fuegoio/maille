@@ -1,0 +1,82 @@
+---
+title: Chart of accounts
+description: How accounts are classified into balances and flows, and how Maille's types map to classic bookkeeping.
+---
+
+A chart of accounts is the vocabulary of a ledger: the fixed set of locations
+value can be held, owed, earned, or spent. Every transaction names two of
+them, so the quality of your reports is decided when you choose the accounts,
+not when you read them.
+
+Maille's chart of accounts has seven types, in two families:
+
+| Family  | Types                                       | Question answered                | Money sits in them?      |
+| ------- | ------------------------------------------- | -------------------------------- | ------------------------ |
+| Balance | bank, investment, cash, assets, liabilities | Where value is, and what is owed | Yes, as a position       |
+| Flow    | revenue, expense                            | Why value changed                | No, value passed through |
+
+Balance accounts are **stocks**: they hold a position at every point in time.
+Flow accounts are **flows**: they accumulate what passed through them over a
+period. The two families behave differently in every report, which is why the
+distinction is worth internalizing before you create accounts.
+
+## Where net worth lives
+
+Classic bookkeeping has an equity section: the owner's stake in the business.
+Maille deliberately has no equity account. Net worth is computed — the sum of
+balance accounts minus what is owed — because an account you edit by hand can
+disagree with the balances it summarizes, and a derived number cannot. For the
+same reason, revenues and expenses are not "closed into equity" at year end in
+Maille: they remain permanent, queryable records of flows, and any period's
+net-worth change can be recomputed from them.
+
+## Choosing granularity
+
+The practical question for a personal chart of accounts is how many accounts
+to create. The ledger's answer is: create accounts where the **financial
+treatment differs**, use categories where only the **reporting label**
+differs.
+
+- Two bank accounts with separate statements are two accounts: each needs its
+  own balance and its own reconciliation against its own movements.
+- "Groceries" and "Household supplies" are one Expense account with two
+  categories: they differ in how you want to report them, not in how money
+  moves.
+- A loan with a real repayment schedule is a liabilities account: its balance
+  is a fact you will want next to your assets.
+- A flatmate's share of expenses is not an account at all: it is a
+  counterparty on transaction legs, from which shared liability is computed.
+
+Over-creating accounts makes reconciliation heavier (more movements to match)
+without improving any report. Under-creating accounts collapses facts that
+differ — putting a brokerage account and your wallet in one account makes
+"money I can spend today" unanswerable.
+
+## The role of each type
+
+Each account type has a dedicated page under
+[Accounts](/docs/financial/accounts), with the actions it supports and their
+implications:
+
+- [Bank accounts](/docs/financial/accounts/bank-accounts) — money an
+  institution holds and reports on, the reconciliation surface of the ledger.
+- [Investment accounts](/docs/financial/accounts/investment-accounts) — value
+  held for return, with positions and a price timeline.
+- [Cash](/docs/financial/accounts/cash) — money only you can count.
+- [Assets](/docs/financial/accounts/assets) — objects owned and used, carried
+  at cost and depreciated.
+- [Liabilities](/docs/financial/accounts/liabilities) — what you owe, as a
+  first-class balance.
+- [Expenses](/docs/financial/accounts/expenses) and
+  [Revenues](/docs/financial/accounts/revenues) — the flow accounts that
+  explain changes.
+
+## Movement tracking is per account
+
+An account either expects external evidence or it does not. Bank and broker
+accounts you import statements for have movement tracking enabled; conceptual
+accounts like Expense or a wallet have it disabled. The setting decides when
+activities touching the account are considered complete — see
+[Movements & reconciliation](/docs/financial/movements-and-reconciliation).
+Choosing it is part of designing your chart of accounts, because it determines
+which balances you promise to prove against the outside world.

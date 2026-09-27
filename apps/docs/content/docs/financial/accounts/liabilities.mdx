@@ -17,3 +17,17 @@ what is calculated from the shared activity transactions and mappings
 described in
 [Categories, projects & sharing](/docs/financial/categories-projects-and-sharing),
 so the split changes only when the underlying transactions change.
+
+## Implications of each action
+
+- **Record a loan received** — value moves from the liability account to the
+  account that received the money. Your net worth is unchanged: the bank
+  balance and the debt grew by the same amount, and the ledger shows both.
+- **Record a repayment** — value moves back, reducing what is owed. Split the
+  repayment across transactions when interest and principal must land in
+  different places, as one activity.
+- **Edit the starting balance** — corrects the opening amount owed at the
+  ledger boundary; every derived figure of the account shifts with it.
+- **Delete the account** — removes the debt record **and** its transaction
+  history, including the repayments that proved it was shrinking. See
+  [Accounts](/docs/financial/accounts).

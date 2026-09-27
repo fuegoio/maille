@@ -1,0 +1,72 @@
+---
+title: Glossary
+description: Every Maille and bookkeeping term used in this documentation, defined in one place.
+---
+
+## Core objects
+
+| Term                       | Definition                                                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ledger**                 | The record of dated entries from which every total is derived. In Maille: your transactions, kept in your Postgres database.                              |
+| **Account**                | A ledger location value is held, owed, earned, or spent at. See [Chart of accounts](/docs/ledger/chart-of-accounts).                                      |
+| **Balance account**        | An account that holds a position: bank, investment, cash, assets, liabilities.                                                                            |
+| **Flow account**           | An account value passes through: revenue or expense. Flows explain change; they never hold money.                                                         |
+| **Activity**               | The human-readable financial event: a name, a date, an optional category, subcategory, and project, with one or more transactions.                        |
+| **Transaction**            | One double-entry movement: an amount, a source account, a destination account, optional asset/investment/counterparty references, and optional fund legs. |
+| **Movement**               | An external statement line imported from a bank or broker: a date, an amount, a name, on an account. Evidence, not explanation.                           |
+| **Reconciliation link**    | A many-to-many join between a movement and an activity, carrying the amount attributed to that link.                                                      |
+| **Fund**                   | A purpose money is earmarked for, independent of the account holding the money.                                                                           |
+| **Fund leg (fund move)**   | An annotation on a transaction recording that its amount moved between fund purposes (`fromFund` / `toFund`, either may be null for Untracked).           |
+| **Opening allocation**     | A fund's opening entry: at the fund's start date, this much of an account's balance belongs to the fund.                                                  |
+| **Category / subcategory** | Two-level reporting labels on an activity. They never change balances.                                                                                    |
+| **Project**                | A grouping of activities belonging to one real-world effort or period.                                                                                    |
+| **Contact**                | Another Maille user connected to you.                                                                                                                     |
+| **Counterparty**           | The ledger-side identity used on transaction legs to record who a shared leg belongs to; can be mapped to a contact.                                      |
+| **Asset**                  | A singular object you own and use, carried at book value, optionally depreciated and valued.                                                              |
+| **Investment (position)**  | Units of a security, fund, or whole-position product held in an investment account.                                                                       |
+| **View**                   | A saved table configuration over one resource, attached to a scope.                                                                                       |
+
+## Balances and valuation
+
+| Term                      | Definition                                                                                                                        |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Balance**               | An account's derived position at a date: starting balance plus transactions up to that date.                                      |
+| **Starting balance**      | An account's opening position at the ledger's starting date. A boundary condition, not a transaction.                             |
+| **Starting cash balance** | The uninvested portion of an investment account's opening position, kept distinct from its starting balance.                      |
+| **Starting date**         | The ledger's historical boundary. Transactions before it are excluded; opening balances apply at it.                              |
+| **Book value**            | What the ledger says something is worth: money in minus money out.                                                                |
+| **Estimation**            | What dated observations say something is worth now: the latest price or valuation at or before the date. Displayed, never booked. |
+| **Price**                 | A dated observation of an investment's unit price. One per day; a new observation for the same day replaces it.                   |
+| **Valuation**             | A dated observation of an asset's estimated whole value.                                                                          |
+| **Unrealized difference** | The gap between an estimation and book value, realized only by a sale.                                                            |
+| **Initial quantity**      | A position's opening units, the quantity-side analogue of a starting balance.                                                     |
+| **Net worth**             | Derived, not stored: balance accounts minus liabilities.                                                                          |
+
+## States
+
+| Term                  | Definition                                                                                                        |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Scheduled**         | An activity whose date is in the future. A prevision: recorded, counted nowhere until its date arrives.           |
+| **Incomplete**        | An activity or movement whose reconciliation totals do not yet agree. The ledger entry stands; the proof is owed. |
+| **Completed**         | An activity or movement whose reconciliation equality holds exactly (two decimals).                               |
+| **Untracked**         | Money in a balance account not allocated to any fund. Displayed as a real amount, never silently assigned.        |
+| **Movement tracking** | The per-account setting deciding whether activities touching it require linked movements to be complete.          |
+| **Default account**   | One of the bootstrapped accounts (Revenue, Expense, Cash, Assets, Liabilities) created with your user.            |
+
+## Bookkeeping ideas behind the model
+
+| Term                       | Definition                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Double entry**           | The rule that every movement has two sides: value leaves one account and enters another by the same amount.               |
+| **Debit / credit**         | The classic vocabulary for a transaction's two sides. Maille uses from/to instead.                                        |
+| **Stock vs flow**          | Balances are stocks (positions at a time); revenues and expenses are flows (amounts over a period).                       |
+| **Chart of accounts**      | The chosen set of account types and instances: the vocabulary of the ledger.                                              |
+| **Equity / net worth**     | The owner's stake. Maille derives it from balance accounts instead of storing it.                                         |
+| **Transfer**               | A transaction between two balance accounts: location changes, nothing is earned or consumed.                              |
+| **Reconciliation**         | Proving the ledger agrees with external evidence by exact comparison of totals.                                           |
+| **Depreciation**           | Spreading an asset's cost over its useful life as monthly expense activities. A plan, owned by the asset, generates them. |
+| **Basis**                  | The amount a depreciation plan spreads over its months.                                                                   |
+| **Realized vs unrealized** | Realized: converted to ledger fact by a transaction (a sale). Unrealized: existing only in the estimation layer.          |
+| **Cost basis (in Maille)** | Book value: what you put in. Maille does not track per-unit tax lots.                                                     |
+| **Prevision**              | A future-dated entry: intent in the shape of a fact, effective when its date arrives.                                     |
+| **Audit trail**            | The append-only change history kept on activities and movements.                                                          |

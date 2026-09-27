@@ -1,0 +1,85 @@
+---
+title: Book value & estimation
+description: The ledger records cost; observations record worth. Only a sale turns one into the other.
+---
+
+A personal ledger must hold two numbers about anything whose value changes by
+itself:
+
+- **Book value** — what the ledger says: the money that entered minus the
+  money that left, through dated transactions.
+- **Estimated value** — what an observation says: a market price, an
+  appraisal, a trusted comparison, dated on a timeline.
+
+Maille keeps the two in separate layers and never converts an observation
+into a ledger entry. This page explains why that boundary is the single most
+consequential design decision in the valuation model.
+
+## Book value is transactional truth
+
+An investment account's balance is the net of the cash you moved in and out
+of it. An asset's book value is the money it received minus the money it gave.
+Both are auditable: every cent of them traces to a transaction leg. Book value
+answers "what did I put into this?" — which is the only question a ledger can
+answer with certainty.
+
+## Estimations are observations on a timeline
+
+An estimated value is a **dated observation**, not a field that gets
+overwritten:
+
+- an investment price is an observation of a unit price, one per day, with
+  the latest replacing the same-day one;
+- an asset valuation is an observation of the whole object's worth.
+
+The estimation in effect at any date is the latest observation at or before
+it. That rule makes history possible: a position can be valued as of last
+quarter using the prices that existed then, and an appraisal from two years
+ago does not silently vanish when a newer one arrives. An unpriced position
+has **no** estimation — absence is displayed as absence, never as zero,
+because "we do not know" and "it is worth nothing" are different facts.
+
+Estimation for an account sums the priced positions. It carries the date of
+the observation it rests on and its unrealized difference against book value,
+so you always know both how fresh the market's opinion is and how far it has
+drifted from cost.
+
+## Why observations never book
+
+Booking a market gain would create revenue with no transaction behind it. It
+would violate double entry — value appearing in a bank account without moving
+from anywhere — and it would make income mean something other than "value
+that actually reached me". The consequences compound:
+
+- **Revenue would become an opinion.** Realized income and mark-to-market
+  gains would be indistinguishable in every report.
+- **The ledger would forecast.** A schedule that grows a value by assumption
+  keeps claiming income in the months the market disagrees with it. This is
+  why Maille has depreciation and deliberately no reverse depreciation: use
+  can be spread arithmetically, but gain is a fact only a buyer can create.
+- **Balances would drift from the bank.** Book value is what reconciles
+  against statements. Rebook it with market noise and reconciliation loses
+  its meaning.
+
+So the unrealized difference is displayed — next to the balance, with its
+observation date — and nothing more.
+
+## Realization: where the layers meet
+
+The only moment an observation's gain becomes ledger fact is a sale. Selling
+a position moves value from the investment account back to a bank account at
+the price you actually obtained: the difference between your book value and
+the sale proceeds is a realized gain or loss, recorded through the same
+double-entry machinery as any other event. Realization is when the market's
+opinion is replaced by a counterparty's payment.
+
+The same logic covers assets: an appraisal shown as an estimation never books,
+and the gain relative to book value is realized only when the asset is sold.
+
+## Where to read more
+
+- [Investment accounts](/docs/financial/accounts/investment-accounts) —
+  positions, quantities, and the price timeline.
+- [Assets](/docs/financial/accounts/assets) — book value, depreciation
+  plans, and valuations.
+- [Revenues](/docs/financial/accounts/revenues) — realized income only.

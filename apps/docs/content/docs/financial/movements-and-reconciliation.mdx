@@ -59,5 +59,24 @@ whose movement-tracked account totals are not fully backed by statement lines.
   linked amounts account for the expected total.
 </Callout>
 
+## Implications of each action
+
+- **Import a movement** — adds evidence, spends nothing. Until a link exists,
+  the line sits in the queue and no ledger number has changed.
+- **Link an amount** — the attributed amount counts toward both records at
+  once: the movement completes when its links sum to its statement amount,
+  the activity when movement totals cover its transaction totals on
+  movement-tracked accounts. Partial amounts are the supported way to split
+  one statement line across several activities.
+- **Edit a link's amount** — both statuses recompute immediately. Increasing
+  a link past what either record supports leaves them incomplete, never
+  silently over-covered.
+- **Unlink or delete a movement** — the proof disappears, not the fact: the
+  activity's transactions stand, and both records return to incomplete. The
+  queue shows them again.
+- **Edit a movement's amount, date, or account** — the comparison re-runs
+  against the corrected evidence. Changing the account can move the
+  reconciliation requirement to a different activity's totals.
+
 See [Import movements](/docs/installation/importing-movements) for CSV and
 paste-based ingestion.

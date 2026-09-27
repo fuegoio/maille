@@ -71,5 +71,32 @@ Categories, subcategories, and projects belong to the activity because they
 describe the event. Account and fund movements belong to transactions because
 they describe the financial effect.
 
+## Implications of each action
+
+- **Create an activity** — with no transactions it derives as neutral and
+  counts nowhere. Everything updates the moment its first transaction lands.
+- **Date it in the future** — it becomes a prevision: visible, editable, and
+  excluded from every balance until its date arrives. Editing a scheduled
+  activity is free; the ledger only feels it when the date passes.
+- **Edit a transaction's amount or accounts** — the movement itself changes,
+  so every derived number follows: balances at every date, the activity's
+  types and per-type amounts, statuses. Linked movements may stop covering
+  the new totals, and the activity returns to incomplete until the evidence
+  is adjusted.
+- **Edit a transaction's quantity** (investment legs) — units are separate
+  facts from money: the quantity re-drives held units and estimations, while
+  the amount keeps reconciling against statements.
+- **Add fund legs** — the same money gains a purpose annotation. Legs are
+  bounded by the transaction's amount, so a purpose can never describe more
+  money than provably moved.
+- **Delete a transaction** — the movement disappears; the activity's types
+  and statuses recompute from what remains.
+- **Delete an activity** — its transactions and reconciliation links go with
+  it. Movements survive and return to incomplete: evidence without an
+  explanation again.
+- **Change the category or project** — reporting only. No balance, type, or
+  status can change, because classification can never contradict the ledger.
+
 Continue with [Movements & reconciliation](/docs/financial/movements-and-reconciliation)
-to see how external statement evidence connects to this model.
+to see how external statement evidence connects to this model, and see
+[Actions & implications](/docs/financial/actions) for the complete reference.

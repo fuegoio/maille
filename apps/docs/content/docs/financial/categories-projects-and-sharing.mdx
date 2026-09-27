@@ -62,3 +62,24 @@ the ledger with concepts that answer different questions. Maille instead keeps:
 
 That separation is what lets one activity participate in several useful views
 without duplicating its transactions.
+
+## Implications of each action
+
+- **Rename a category, subcategory, or project** — safe at any time: reports
+  follow the record, and no financial fact changes.
+- **Delete a category** — affected activities lose the label (subcategory,
+  category, or project becomes null); their transactions, amounts, and
+  statuses are untouched. Deleting a category removes its subcategories with
+  it.
+- **Give a project dates** — describes the project's scope only. The activity
+  date still decides when each transaction affects the ledger.
+- **Map a counterparty to a contact** — the financial identity joins a real
+  person, and shared-liability reports can attribute amounts to them.
+  Unmapping separates the two again without touching transactions.
+- **Delete a counterparty** — transaction legs lose the reference, and the
+  shared liability those legs carried disappears from computed reports.
+- **Change a stored sharing proportion** — does not change the computed
+  liability: who owes what derives from transaction legs, so the split
+  changes only when the underlying transactions change.
+
+The complete reference is [Actions & implications](/docs/financial/actions).

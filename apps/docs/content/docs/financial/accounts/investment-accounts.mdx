@@ -51,3 +51,21 @@ The test is why you hold the thing. Held for return, divisible into units,
 and repriced by a market: an investment, even at exactly one unit, as with a
 rental property whose appraisals become price points. Held for use: an
 [Asset](/docs/financial/accounts/assets).
+
+## Implications of each action
+
+- **Create a position** — the initial quantity is the opening state, like a
+  starting balance. Quantities afterwards move only through transaction legs.
+- **Record a buy or sell** — the amount moves money between accounts and
+  revalues the ledger side; the quantity moves units. Keep both faithful: the
+  money reconciles against statements, the units drive the estimation.
+- **Add a price** — a dated observation. The estimation and its unrealized
+  difference recompute; past valuations at earlier dates keep using the
+  earlier prices. Adding a price for an existing date replaces that day's
+  observation.
+- **Delete a price** — the estimation falls back to the previous observation,
+  or to absence. An unpriced position shows no estimation, never zero.
+- **Delete a position** — transaction legs keep their amounts but lose their
+  units, so recorded buys and sales remain as money facts.
+- **Edit the starting cash balance** — corrects the uninvested opening
+  position only; the starting balance covers the whole account.

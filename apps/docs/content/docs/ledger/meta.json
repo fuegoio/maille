@@ -1,0 +1,13 @@
+{
+  "title": "Ledger concepts",
+  "description": "What a ledger is, and the bookkeeping ideas Maille is built on.",
+  "pages": [
+    "!index",
+    "double-entry",
+    "chart-of-accounts",
+    "time-and-previsions",
+    "book-value-and-estimation",
+    "correctness",
+    "glossary"
+  ]
+}

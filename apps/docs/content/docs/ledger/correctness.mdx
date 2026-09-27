@@ -1,0 +1,82 @@
+---
+title: Correctness
+description: Derivation, equality checks, and the invalid states Maille refuses to enter.
+---
+
+A ledger is only as trustworthy as its guarantees. Maille's correctness model
+rests on four ideas: derive instead of store, check equality exactly, keep an
+append-only record, and refuse states that would make two views disagree.
+
+## Derived, not stored
+
+Every total you see is computed from dated records at read time:
+
+- account balances from starting balances plus transactions;
+- activity types and per-type amounts from the account types of transaction
+  legs;
+- fund balances and per-account fund positions from a replay of allocations
+  and fund legs;
+- shared liability from counterparty legs and mapped accounts;
+- investment quantities from initial quantities plus leg quantities.
+
+Nothing that can be derived is stored, so no two stored numbers can disagree.
+The cost is computation; the benefit is that a display bug cannot corrupt the
+ledger, and an edit anywhere updates everything that depends on it, instantly
+and consistently.
+
+## Equality, not approximation
+
+Where two things should be equal, Maille compares them as an equality, within
+a two-decimal rounding:
+
+- a movement is complete when its linked amounts sum to its statement amount;
+- an activity is complete when, for every movement-tracked account it touches,
+  the transaction total equals the linked movement total;
+- fund legs may not exceed the amount of the transaction they travel with;
+- a fund allocation may not exceed what the account's position supports.
+
+These are checks, not confidence scores. There is no fuzzy matching that
+quietly declares a 90% match good enough — a record is complete only when
+the amounts account for each other exactly, and everything else stays visibly
+incomplete.
+
+## Invariants the model cannot violate
+
+Some states would make two views contradict each other, and the mutation
+layer rejects them outright:
+
+- **Over-allocated funds.** Assigning more money to funds than the underlying
+  accounts hold would make the purpose view disagree with the balance sheet.
+  Money without a fund stays visibly **Untracked** instead of being silently
+  absorbed.
+- **Cycles in the fund tree.** A fund cannot become its own parent or be
+  moved under one of its descendants; a cycle has no root and no readable
+  tree balance.
+- **A fund start date after transactions already allocated to it.** Moving
+  the boundary behind existing flows would orphan them.
+- **Fund legs beyond their transaction.** A purpose leg is an annotation on
+  money that provably moved, so it cannot describe more money than the
+  transaction carried.
+
+## Append-only history
+
+Activities and movements keep a change log: an append-only timeline of what
+was edited, from what, to what. Corrections in a ledger should not look like
+nothing happened — the current state stays clean, and the record of how it got
+there stays inspectable. This is the personal-finance version of an audit
+trail, and it is why you can edit freely without losing the ability to answer
+"when did this change?".
+
+## What this implies for how you work
+
+- **Edit fearlessly.** Changing a transaction recomputes every dependent
+  number. There is no "recalculate" step to forget.
+- **Trust incompleteness.** An incomplete record is not an error — it is the
+  system telling you a proof is still owed. Work the queues until they are
+  empty, and then every completed record is backed by evidence.
+- **Expect refusals.** A rejected allocation or fund move is the model
+  protecting a guarantee. The fix is to record the underlying fact, not to
+  force the label.
+- **Audit anything.** Any balance, report total, or fund position can be
+  traced down to the dated entries that produced it — that traceability is
+  the product.
