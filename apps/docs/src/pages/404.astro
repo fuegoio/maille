@@ -1,0 +1,26 @@
+---
+import { Docs } from "@/components/docs";
+import "@/styles/global.css";
+import { source } from "@/lib/source";
+import Layout from "@/components/layout.astro";
+---
+
+<Layout title="Page not found — Maille" description="This page does not exist.">
+  <Docs
+    tree={source.getPageTree()}
+    pathname="/404"
+    params={{}}
+    client:load
+  >
+    <h1 class="text-3xl">Page not found</h1>
+    <p class="mb-8 text-lg text-fd-muted-foreground">
+      The page you are looking for does not exist.
+    </p>
+    <div class="prose flex-1">
+      <p>
+        It may have been moved or renamed. The
+        <a href="/docs">documentation index</a> lists every page.
+      </p>
+    </div>
+  </Docs>
+</Layout>
