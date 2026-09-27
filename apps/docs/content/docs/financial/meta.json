@@ -5,6 +5,7 @@
   "pagesIndex": "[Financial model](/docs/financial)",
   "pages": [
     "accounts",
+    "account-types",
     "activities-and-transactions",
     "movements-and-reconciliation",
     "funds",

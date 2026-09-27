@@ -1,0 +1,53 @@
+---
+title: Investment accounts
+description: Invested value and available cash, repriced by the market through dated price observations.
+---
+
+An investment account holds value put to work for a return: shares, funds,
+bonds, anything a market reprices over time. The type exists because invested
+value carries two numbers that must stay distinct: the balance, which is what
+the ledger says you moved in and out, and the estimation, which is what the
+market says the position is worth.
+
+## Positions
+
+Each investment in the account is a position with an initial quantity, the
+same opening role a starting balance plays for an account. Units then move
+only through transaction legs: a purchase into the position carries the
+quantity bought, a sale out of it carries the quantity sold. The quantity
+held at a date is the initial quantity plus every landed purchase minus every
+landed sale. Activities scheduled in the future are previsions; their units
+do not count until their date arrives.
+
+## The price timeline
+
+A price is a dated observation of the unit price, not a field that gets
+overwritten. The price in effect at a date is the latest observation at or
+before it, so history is kept and a position can be valued at any past date.
+Between observations, the last price stands.
+
+## Estimation
+
+The account summary shows the market estimation under the balance: the sum
+over priced positions of quantity held times latest price. It carries the
+date of the observation it rests on and the unrealized difference against the
+balance, and when only some positions are priced it says how many were
+counted. When nothing is priced there is no estimation at all; absence is
+never shown as zero.
+
+An estimation is a measurement, not a ledger event. It never produces a
+transaction and never becomes revenue. The difference is realized when you
+sell, as a normal activity.
+
+## Cash in the account
+
+Uninvested money belongs to the account too. Investment accounts carry a
+starting cash balance, kept distinct from the starting balance so available
+cash stays visible next to invested value.
+
+## Investment or asset?
+
+The test is why you hold the thing. Held for return, divisible into units,
+and repriced by a market: an investment, even at exactly one unit, as with a
+rental property whose appraisals become price points. Held for use: an
+[Asset](/docs/financial/account-types/assets).

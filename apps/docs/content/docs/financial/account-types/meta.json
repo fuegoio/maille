@@ -1,0 +1,13 @@
+{
+  "title": "Account types",
+  "description": "Why each account type exists, and how it behaves.",
+  "pages": [
+    "bank-accounts",
+    "cash",
+    "investment-accounts",
+    "assets",
+    "liabilities",
+    "expenses",
+    "revenues"
+  ]
+}

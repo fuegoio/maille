@@ -9,19 +9,22 @@ interprets the movement.
 
 ## Account types
 
-| Type                 | Role in the model                            | Typical examples                 |
-| -------------------- | -------------------------------------------- | -------------------------------- |
-| `bank_account`       | Money held by a financial institution        | Current account, savings account |
-| `investment_account` | Invested value and available investment cash | Brokerage account                |
-| `cash`               | Money held directly                          | Wallet, cash envelope            |
-| `assets`             | Non-cash value you own                       | Car, home, equipment             |
-| `liabilities`        | Amounts you owe                              | Loan, credit balance             |
-| `expense`            | Destination for consumed value               | Groceries, rent, fees            |
-| `revenue`            | Source of earned value                       | Salary, interest, refund         |
+| Type                                                                      | Role in the model                            | Typical examples                 |
+| ------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------- |
+| [`bank_account`](/docs/financial/account-types/bank-accounts)             | Money held by a financial institution        | Current account, savings account |
+| [`investment_account`](/docs/financial/account-types/investment-accounts) | Invested value and available investment cash | Brokerage account                |
+| [`cash`](/docs/financial/account-types/cash)                              | Money held directly                          | Wallet, cash envelope            |
+| [`assets`](/docs/financial/account-types/assets)                          | Non-cash value you own                       | Car, home, equipment             |
+| [`liabilities`](/docs/financial/account-types/liabilities)                | Amounts you owe                              | Loan, credit balance             |
+| [`expense`](/docs/financial/account-types/expenses)                       | Destination for consumed value               | Groceries, rent, fees            |
+| [`revenue`](/docs/financial/account-types/revenues)                       | Source of earned value                       | Salary, interest, refund         |
 
 The balance, investment, asset, and liability types answer **where value is**.
 Expense and revenue accounts answer **why value changed**. A transfer between
 two balance accounts changes location without becoming income or expense.
+
+Each type has its own page under
+[Account types](/docs/financial/account-types).
 
 ## Defaults
 
@@ -51,14 +54,11 @@ against external statement lines. Enable it for bank and broker accounts you
 import. Leave it disabled for conceptual accounts such as Expense or Revenue,
 which have no external statement of their own.
 
-## Assets and liabilities
+## Book value and estimation
 
-An asset record can be attached to an `assets` account. Its value is derived
-from asset-tagged transaction flows. A linear depreciation plan produces
-monthly activities, keeping depreciation in the same ledger as every other
-change.
-
-Liability accounts represent obligations. Shared liabilities are not guessed
-from the account name or balance; they are calculated from the shared activity
-transactions and mappings described in
-[Categories, projects & sharing](/docs/financial/categories-projects-and-sharing).
+Balance is what the ledger says. Investment accounts and asset accounts can
+also carry an estimation: what dated observations say the value is worth now.
+The estimation appears next to the balance, with its observation date and its
+unrealized difference, and is never booked into the ledger. See
+[Investment accounts](/docs/financial/account-types/investment-accounts) and
+[Assets](/docs/financial/account-types/assets).

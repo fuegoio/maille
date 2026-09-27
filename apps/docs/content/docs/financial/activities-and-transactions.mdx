@@ -17,16 +17,18 @@ Each transaction contains:
 - an amount;
 - a source account;
 - a destination account;
-- optional asset or counterparty references on either side;
+- optional asset, investment, or counterparty references on either side;
+- optional unit quantities, when a leg moves an investment position;
 - optional fund legs.
 
 For example:
 
-| Activity        | From         | To              | Meaning                       |
-| --------------- | ------------ | --------------- | ----------------------------- |
-| Salary          | Revenue      | Bank account    | Earned value entered the bank |
-| Groceries       | Bank account | Expense         | Value was consumed            |
-| Move to savings | Bank account | Savings account | Value changed location        |
+| Activity        | From         | To              | Meaning                                            |
+| --------------- | ------------ | --------------- | -------------------------------------------------- |
+| Salary          | Revenue      | Bank account    | Earned value entered the bank                      |
+| Groceries       | Bank account | Expense         | Value was consumed                                 |
+| Move to savings | Bank account | Savings account | Value changed location                             |
+| Buy shares      | Bank account | Broker account  | Value entered a position, with the quantity bought |
 
 The transfer is neither revenue nor expense because neither transaction side is
 a revenue or expense account.

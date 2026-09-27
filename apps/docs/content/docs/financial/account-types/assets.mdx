@@ -1,0 +1,47 @@
+---
+title: Assets
+description: Objects owned and used, carried at cost, with optional dated valuations.
+---
+
+An asset is a singular object you own and use: a car, a home, equipment. The
+type exists for value that is neither cash nor a market position, and whose
+book value comes from what you put into it rather than from what a market
+says.
+
+## Book value
+
+An asset's value in the ledger is the money it received minus the money it
+gave, through transaction legs tagged with the asset. Buying the car moves
+value into it; depreciation and a sale are the only scheduled changes its book
+value ever receives.
+
+## Depreciation
+
+An object you use wears out, and depreciation spreads that consumption over
+time as plain ledger activities. A plan states the amount to spread, the
+number of monthly installments, the first month, and the expense account the
+installments are booked to. Editing a plan regenerates the installments it
+still owns, from today forward; past installments stay frozen history.
+
+Depreciation is arithmetic, not prediction: a known amount spread over a
+known period, booking your use of the object.
+
+## Estimated value
+
+Observations of worth are a different kind of fact from bookkeeping. An
+appraisal is dated, external, and evidence-backed, so valuations form a
+timeline like investment prices: the latest valuation at or before a date is
+the estimated value then, shown as the Estimation next to the balance in the
+account summary. A valuation is never booked. An object that gained value
+produced no income; the gain is visible as a number, and only a sale realizes
+it.
+
+There is deliberately no reverse depreciation. A schedule that grows a value
+by assumption would book income nobody paid, and would keep claiming it in
+the months the market disagrees.
+
+## Asset or investment?
+
+See [Investment accounts](/docs/financial/account-types/investment-accounts).
+The same house can be either: lived in, it is an asset carried at cost;
+genuinely held for return, it is a position whose appraisals are price points.

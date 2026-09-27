@@ -1,0 +1,22 @@
+---
+title: Cash
+description: Money held directly, with no statement to reconcile against.
+---
+
+Cash is money in a wallet, a drawer, or wherever only you can count it. No
+institution records it, so there is nothing to reconcile against: cash
+activities are complete without bank evidence, and the bootstrapped Cash
+account is created without movement tracking.
+
+## Why the type exists
+
+Cash is as real as bank money, and its balance is derived from the same
+transactions. What differs is verification. A bank balance can be checked
+against a statement; a cash balance cannot. Separating the two lets Maille
+require evidence where evidence exists and stay quiet where it does not.
+
+## Usage
+
+A withdrawal moves value from a bank account to cash; a purchase paid in cash
+moves value from cash to an expense account. The balance tells you how much
+physical money you hold at any date.
