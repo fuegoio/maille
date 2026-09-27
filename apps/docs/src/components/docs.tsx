@@ -70,6 +70,7 @@ export function Docs({
     <RootProvider pathname={pathname} params={params} navigate={navigate} search={{ SearchDialog }}>
       <DocsLayout
         tree={tree}
+        tabs={false}
         githubUrl={GITHUB_URL}
         nav={{
           title: <MailleWordmark />,

@@ -55,6 +55,25 @@
   font-size: var(--text-base);
 }
 
+/* Keep desktop navigation in place while the article scrolls independently. */
+@media (min-width: 768px) {
+  html,
+  body {
+    overflow: hidden;
+  }
+
+  #nd-docs-layout {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  #nd-docs-layout > main {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+}
+
 /* Active sidebar page: Ledger Green is the only saturated voice — carried
    by the hairline mark, not a fill. */
 [data-active="true"]:not(:hover) {

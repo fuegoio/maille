@@ -19,6 +19,8 @@ const meta = defineCollection({
     pages: z.array(z.string()).optional(),
     icon: z.string().optional(),
     root: z.boolean().optional(),
+    collapsible: z.boolean().optional(),
+    pagesIndex: z.string().optional(),
   }),
 });
 
