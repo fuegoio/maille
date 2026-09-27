@@ -1,6 +1,6 @@
 {
-  "title": "Account types",
-  "description": "Why each account type exists, and how it behaves.",
+  "title": "Accounts",
+  "collapsible": false,
   "pages": [
     "bank-accounts",
     "cash",

@@ -1,7 +1,5 @@
 {
   "title": "Installation & usage",
   "description": "Deploy, configure, and operate Maille.",
-  "collapsible": false,
-  "pagesIndex": "[Installation & usage](/docs/installation)",
-  "pages": ["authentication", "settings", "importing-movements", "cli"]
+  "pages": ["!index", "authentication", "settings", "importing-movements", "cli"]
 }

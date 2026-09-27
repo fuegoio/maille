@@ -23,7 +23,14 @@ async function createSource() {
   };
 
   for (const page of await getCollection("docs")) {
-    const virtualPath = page.id;
+    // Astro's glob loader strips a trailing "/index" from entry ids, but
+    // fumadocs needs the segment to bind an index page to its folder.
+    // Restore it from the file name, except for the root index.
+    const fileName = page.filePath?.split("/").pop();
+    const virtualPath =
+      fileName !== undefined && /^index\.(md|mdx)$/.test(fileName) && page.id !== "index"
+        ? `${page.id}/index`
+        : page.id;
 
     out.files.push({
       type: "page",

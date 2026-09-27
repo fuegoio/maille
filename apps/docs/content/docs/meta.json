@@ -1,4 +1,10 @@
 {
   "title": "Maille",
-  "pages": ["index", "installation", "financial"]
+  "pages": [
+    "index",
+    "---Installation & usage---",
+    "...installation",
+    "---Financial model---",
+    "...financial"
+  ]
 }

@@ -1,11 +1,9 @@
 {
   "title": "Financial model",
   "description": "Understand the ledger choices behind Maille.",
-  "collapsible": false,
-  "pagesIndex": "[Financial model](/docs/financial)",
   "pages": [
+    "!index",
     "accounts",
-    "account-types",
     "activities-and-transactions",
     "movements-and-reconciliation",
     "funds",
