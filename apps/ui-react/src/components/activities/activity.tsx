@@ -474,7 +474,7 @@ export function ActivityPage({
                 />
               )}
 
-              <div className="mt-1 flex items-baseline justify-between gap-4">
+              <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                 {isLocked ? (
                   <div className="min-w-0 flex-1 px-0 py-0.5 text-3xl font-semibold md:text-3xl">
                     {activity.name}

@@ -389,7 +389,7 @@ export function MovementPage({ movementId }: MovementPageProps) {
                 className="h-auto border-0 bg-transparent px-0 py-0.5 font-normal text-muted-foreground hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent"
               />
 
-              <div className="mt-1 flex items-baseline justify-between gap-4">
+              <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                 <DebouncedInput
                   key={movement.id}
                   id="name"
