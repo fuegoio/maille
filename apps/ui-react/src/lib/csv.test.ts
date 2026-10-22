@@ -102,4 +102,46 @@ describe("parseRecords", () => {
     expect(records[1]["Value"]).toBe("-1 000,00");
     expect(records[0]["Solde"]).toBe("2426.61");
   });
+
+  it("keeps both columns when the header row repeats a title", () => {
+    const csv = "Date;Montant;Montant\n2026-01-02;-7,90;-1 000,00\n";
+    expect(parseRecords(csv, "auto")).toEqual([
+      { Date: "2026-01-02", Montant: "-7,90", "Montant (2)": "-1 000,00" },
+    ]);
+  });
+
+  it("numbers three or more repeated titles", () => {
+    const csv = "A;A;A;B\n1;2;3;4\n";
+    expect(parseRecords(csv, "auto")).toEqual([
+      { A: "1", "A (2)": "2", "A (3)": "3", B: "4" },
+    ]);
+  });
+
+  it("does not collide with a column already suffixed in the file", () => {
+    const csv = "A;A;A (2)\n1;2;3\n";
+    expect(parseRecords(csv, "auto")).toEqual([
+      { A: "1", "A (2)": "2", "A (3)": "3" },
+    ]);
+  });
+
+  it("leaves repeated unnamed columns hidden but harmless", () => {
+    const csv = "Date;;Montant;\n2026-01-02;;-7,90;\n";
+    const [record] = parseRecords(csv, "auto");
+    expect(record.Date).toBe("2026-01-02");
+    expect(record.Montant).toBe("-7,90");
+  });
+
+  it("treats titles differing only by whitespace as duplicates", () => {
+    const csv = "Montant; Montant \n1;2\n";
+    expect(parseRecords(csv, "auto")).toEqual([
+      { Montant: "1", "Montant (2)": "2" },
+    ]);
+  });
+
+  it("pads short rows with empty strings", () => {
+    const csv = "Date;Label;Amount\n2026-01-02;Coffee\n";
+    expect(parseRecords(csv, "auto")).toEqual([
+      { Date: "2026-01-02", Label: "Coffee", Amount: "" },
+    ]);
+  });
 });
