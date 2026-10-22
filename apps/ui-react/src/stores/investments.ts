@@ -24,6 +24,7 @@ interface InvestmentsState {
       symbol?: string | null;
       description?: string | null;
       quantity?: number;
+      initialPrice?: number | null;
     },
   ) => void;
   deleteInvestment: (investmentId: string) => void;
@@ -235,26 +236,45 @@ export const useInvestments = create<InvestmentsState>()(
     }),
     {
       name: "investments",
-      version: 1,
+      version: 2,
       storage: storage,
-      migrate: (persisted) => {
-        // Version 0 stored the position's current quantity; it became the
-        // derived-from-ledger model's baseline, initialQuantity.
-        const state = persisted as {
-          investments?: Record<string, unknown>[];
-        };
-        if (state.investments) {
-          state.investments = state.investments.map((investment) =>
-            "initialQuantity" in investment
-              ? investment
-              : {
-                  ...investment,
-                  initialQuantity: investment.quantity ?? 0,
-                },
-          );
+      migrate: (persisted, version) => {
+        if (version < 1) {
+          // Version 0 stored the position's current quantity; it became
+          // the derived-from-ledger model's baseline, initialQuantity.
+          const state = persisted as {
+            investments?: Record<string, unknown>[];
+          };
+          if (state.investments) {
+            state.investments = state.investments.map((investment) =>
+              "initialQuantity" in investment
+                ? investment
+                : {
+                    ...investment,
+                    initialQuantity: investment.quantity ?? 0,
+                  },
+            );
+          }
+        }
+        if (version < 2) {
+          // Version 1 predates the opening price: those positions
+          // start unpriced, like every position did.
+          const state = persisted as {
+            investments?: Record<string, unknown>[];
+          };
+          if (state.investments) {
+            state.investments = state.investments.map((investment) =>
+              "initialPrice" in investment
+                ? investment
+                : {
+                    ...investment,
+                    initialPrice: null,
+                  },
+            );
+          }
         }
         migrationFlags.refetchUserData = true;
-        return state;
+        return persisted;
       },
     },
   ),

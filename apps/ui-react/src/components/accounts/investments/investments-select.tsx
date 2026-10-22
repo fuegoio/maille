@@ -88,6 +88,7 @@ export function InvestmentSelect({
       symbol: null,
       description: null,
       initialQuantity: 0,
+      initialPrice: null,
     };
 
     mutate({

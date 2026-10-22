@@ -8,7 +8,7 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { ChartLine, Hash, Layers, Tag, Trash2 } from "lucide-react";
+import { ChartLine, Coins, Hash, Layers, Tag, Trash2 } from "lucide-react";
 import * as React from "react";
 
 import { AccountLabel } from "@/components/accounts/account-label";
@@ -206,6 +206,7 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
     symbol?: string | null;
     description?: string | null;
     initialQuantity?: number;
+    initialPrice?: number | null;
   }) => {
     if (!investment) return;
     mutate({
@@ -512,6 +513,30 @@ export function InvestmentPage({ investmentId }: InvestmentPageProps) {
                           })
                         }
                         placeholder="Initial quantity"
+                        className="h-auto w-24 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        initial
+                      </span>
+                    </label>
+
+                    <label className="flex h-6 items-center gap-1.5 rounded-full border px-2.5">
+                      <Coins className="size-3 shrink-0 text-muted-foreground" />
+                      <DebouncedInput
+                        key={investment.id}
+                        aria-label="Initial price"
+                        value={
+                          investment.initialPrice === null
+                            ? ""
+                            : String(investment.initialPrice)
+                        }
+                        onCommit={(initialPrice) =>
+                          handleUpdateInvestment({
+                            initialPrice:
+                              initialPrice === "" ? null : Number(initialPrice),
+                          })
+                        }
+                        placeholder="Initial price"
                         className="h-auto w-24 border-0 bg-transparent px-0 py-0 text-xs dark:bg-transparent"
                       />
                       <span className="text-xs text-muted-foreground">

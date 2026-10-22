@@ -8,7 +8,11 @@ import {
   type InvestmentPrice,
 } from "@maille/core/accounts";
 
-export { investmentPrices, latestInvestmentPrice } from "@maille/core/accounts";
+export {
+  investmentPrices,
+  latestInvestmentPrice,
+  unitPriceAt,
+} from "@maille/core/accounts";
 
 /**
  * A transaction as the investment sees it: which leg touches the
@@ -158,7 +162,10 @@ export function getAccountEstimation(
   let valued = 0;
   let asOf: Date | null = null;
   for (const investment of accountPositions) {
-    const price = latestInvestmentPrice(prices, investment.id, at);
+    // The initial price is the opening observation: it values the
+    // position but carries no observation date for `asOf`.
+    const observed = latestInvestmentPrice(prices, investment.id, at);
+    const price = observed ? observed.price : investment.initialPrice;
     if (price === null) continue;
     valued += 1;
     value +=
@@ -168,8 +175,11 @@ export function getAccountEstimation(
         prices,
         at,
       ) ?? 0;
-    if (asOf === null || price.date.getTime() > asOf.getTime()) {
-      asOf = price.date;
+    if (
+      observed !== null &&
+      (asOf === null || observed.date.getTime() > asOf.getTime())
+    ) {
+      asOf = observed.date;
     }
   }
 

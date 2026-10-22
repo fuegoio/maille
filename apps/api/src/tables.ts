@@ -214,6 +214,9 @@ export const investments = pgTable("investments", {
   symbol: text("symbol"),
   description: text("description"),
   initialQuantity: real("initial_quantity").notNull().default(0),
+  // The position's opening unit price: in effect until the first dated
+  // observation. Null means the position starts unpriced.
+  initialPrice: real("initial_price"),
 });
 
 // A dated observation of an investment's unit price. One price per day:

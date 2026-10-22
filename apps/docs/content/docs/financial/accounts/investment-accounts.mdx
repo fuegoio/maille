@@ -19,12 +19,18 @@ held at a date is the initial quantity plus every landed purchase minus every
 landed sale. Activities scheduled in the future are previsions; their units
 do not count until their date arrives.
 
+A position also carries an initial price: the opening unit price of the units
+you already held, set when the position is created. Like the initial
+quantity, it needs no date: it is in effect at every date until the first
+observation lands on the price timeline.
+
 ## The price timeline
 
 A price is a dated observation of the unit price, not a field that gets
 overwritten. The price in effect at a date is the latest observation at or
-before it, so history is kept and a position can be valued at any past date.
-Between observations, the last price stands.
+before it, or the position's initial price when none has landed yet, so
+history is kept and a position can be valued at any past date. Between
+observations, the last price stands.
 
 ## Estimation
 

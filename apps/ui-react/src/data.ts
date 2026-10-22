@@ -237,6 +237,7 @@ const userDataQuery = graphql(/* GraphQL */ `
       symbol
       description
       initialQuantity
+      initialPrice
     }
 
     investmentPrices {

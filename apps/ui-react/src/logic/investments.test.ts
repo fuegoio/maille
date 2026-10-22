@@ -17,6 +17,7 @@ const investment = (
   symbol: null,
   description: null,
   initialQuantity: 10,
+  initialPrice: null,
   ...overrides,
 });
 
@@ -164,6 +165,52 @@ describe("getAccountEstimation", () => {
       valued: 1,
       positions: 2,
     });
+  });
+
+  it("values a position at its initial price before any observation", () => {
+    const investments = [
+      investment({ id: "inv-1", initialQuantity: 10, initialPrice: 42 }),
+    ];
+    const estimation = getAccountEstimation(investments, [], [], "acc-1", at);
+    expect(estimation).toEqual({
+      value: 420,
+      valued: 1,
+      positions: 1,
+      asOf: null,
+    });
+  });
+
+  it("prefers a dated observation over the initial price", () => {
+    const investments = [
+      investment({ id: "inv-1", initialQuantity: 10, initialPrice: 42 }),
+    ];
+    const prices = [
+      price({
+        id: "p1",
+        investment: "inv-1",
+        date: new Date("2026-01-15"),
+        price: 100,
+      }),
+    ];
+    const estimation = getAccountEstimation(
+      investments,
+      [],
+      prices,
+      "acc-1",
+      at,
+    );
+    expect(estimation).toEqual({
+      value: 1000,
+      valued: 1,
+      positions: 1,
+      asOf: new Date("2026-01-15"),
+    });
+  });
+
+  it("is null when no position is priced or carries an initial price", () => {
+    expect(
+      getAccountEstimation([investment({ id: "inv-1" })], [], [], "acc-1", at),
+    ).toBeNull();
   });
 });
 

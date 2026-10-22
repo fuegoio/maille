@@ -30,6 +30,7 @@ const createInvestmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
   symbol: z.string().optional(),
   initialQuantity: z.string().optional(),
+  initialPrice: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -58,6 +59,7 @@ export function AddInvestmentModal({
       name: "",
       symbol: "",
       initialQuantity: "",
+      initialPrice: "",
       description: "",
     },
   });
@@ -66,6 +68,7 @@ export function AddInvestmentModal({
     const initialQuantity = data.initialQuantity
       ? Number(data.initialQuantity)
       : 0;
+    const initialPrice = data.initialPrice ? Number(data.initialPrice) : null;
     const investment = {
       id: crypto.randomUUID(),
       account: accountId,
@@ -73,6 +76,10 @@ export function AddInvestmentModal({
       symbol: data.symbol || null,
       description: data.description || null,
       initialQuantity: Number.isFinite(initialQuantity) ? initialQuantity : 0,
+      initialPrice:
+        initialPrice !== null && Number.isFinite(initialPrice)
+          ? initialPrice
+          : null,
     };
 
     mutate({
@@ -141,6 +148,23 @@ export function AddInvestmentModal({
               sells then derive the current quantity.
             </FieldDescription>
             <FieldError>{errors.initialQuantity?.message}</FieldError>
+          </Field>
+
+          <Field>
+            <FieldLabel>Initial price (optional)</FieldLabel>
+            <FieldContent>
+              <Input
+                {...register("initialPrice")}
+                type="number"
+                step="any"
+                placeholder="0"
+              />
+            </FieldContent>
+            <FieldDescription>
+              The opening unit price, in effect until the first dated price
+              observation.
+            </FieldDescription>
+            <FieldError>{errors.initialPrice?.message}</FieldError>
           </Field>
 
           <Field>
