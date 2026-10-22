@@ -33,19 +33,57 @@ export function parseAmountValue(raw: string): number {
   return parseFloat(raw.replace(/\s/g, "").replace(/,/g, "."));
 }
 
+// Some banks export the same column title twice. csv-parse's named columns
+// would keep only the last occurrence, silently dropping the other's values,
+// so the header row is turned into record keys here with a deduplicated name
+// per column ("Montant", "Montant (2)", ...).
+function uniqueColumnNames(headers: string[]): string[] {
+  const used = new Set<string>();
+  return headers.map((header) => {
+    const base = header.trim();
+    // Unnamed columns stay unnamed: the mapping UI hides them anyway, and
+    // several of them sharing the "" key is harmless.
+    if (base === "") return "";
+    if (!used.has(base)) {
+      used.add(base);
+      return base;
+    }
+    let suffix = 2;
+    // Continue the base title's series even when the repeated title already
+    // carries a suffix ("A", "A", "A (2)" -> "A (3)") so keys stay readable.
+    const series = base.replace(/ \(\d+\)$/, "");
+    let candidate = `${series} (${suffix})`;
+    while (used.has(candidate)) {
+      suffix += 1;
+      candidate = `${series} (${suffix})`;
+    }
+    used.add(candidate);
+    return candidate;
+  });
+}
+
 export function parseRecords(
   text: string,
   delimiter: DelimiterOption,
 ): Record<string, string>[] {
   const clean = text.replace(/^\uFEFF/, "");
-  return parseCSV(clean, {
+  const rows = parseCSV(clean, {
     delimiter:
       delimiter === "auto"
         ? detectDelimiter(clean)
         : DELIMITER_VALUES[delimiter],
-    columns: true,
+    columns: false,
     skip_empty_lines: true,
     relax_quotes: true,
     relax_column_count: true,
-  }) as Record<string, string>[];
+  }) as string[][];
+  if (rows.length === 0) return [];
+  const names = uniqueColumnNames(rows[0]);
+  return rows.slice(1).map((row) => {
+    const record: Record<string, string> = {};
+    names.forEach((name, i) => {
+      record[name] = row[i] ?? "";
+    });
+    return record;
+  });
 }
