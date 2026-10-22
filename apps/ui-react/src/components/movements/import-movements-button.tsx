@@ -56,7 +56,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadDropZone } from "@/components/upload-drop-zone";
 import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
-import { parseRecords, type DelimiterOption } from "@/lib/csv";
+import {
+  parseAmountValue,
+  parseRecords,
+  type DelimiterOption,
+} from "@/lib/csv";
 import { getGraphQLDate } from "@/lib/date";
 import { extractMovementsFromText } from "@/lib/extract-movements";
 import { movementCreateHistoryEvent } from "@/lib/history-events";
@@ -203,7 +207,7 @@ export function ImportMovementsButton({
       amountColumns.reduce((sum, column) => {
         const raw = record[column];
         if (!raw) return sum;
-        const parsed = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
+        const parsed = parseAmountValue(raw);
         return sum + (isNaN(parsed) ? 0 : parsed);
       }, 0) *
       (ratio / 100)
@@ -358,7 +362,7 @@ export function ImportMovementsButton({
           return withDuplicate({ date, isDuplicate, skip: isDuplicate });
         }
 
-        const amount = parseFloat(raw.replace(/ /g, "").replace(/,/g, "."));
+        const amount = parseAmountValue(raw);
         if (isNaN(amount) || amount === r.amount) return r;
         const isDuplicate = checkDuplicate(
           previewAccount,
