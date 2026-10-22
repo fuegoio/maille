@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { detectDelimiter, parseRecords } from "./csv";
+import { detectDelimiter, parseAmountValue, parseRecords } from "./csv";
 
 describe("detectDelimiter", () => {
   it("detects the most frequent delimiter on the header line", () => {
@@ -25,6 +25,24 @@ describe("detectDelimiter", () => {
 
   it("falls back to semicolon for empty text", () => {
     expect(detectDelimiter("")).toBe(";");
+  });
+});
+
+describe("parseAmountValue", () => {
+  it("parses decimal commas", () => {
+    expect(parseAmountValue("-7,90")).toBe(-7.9);
+  });
+
+  it("strips thousands separators, including non-breaking ones", () => {
+    expect(parseAmountValue("-1 806,10")).toBe(-1806.1);
+    expect(parseAmountValue("57\u00A0498,00")).toBe(57498);
+    expect(parseAmountValue("-1\u202F806,10")).toBe(-1806.1);
+    expect(parseAmountValue("1 000.50")).toBe(1000.5);
+  });
+
+  it("returns NaN for non-numeric values", () => {
+    expect(parseAmountValue("")).toBeNaN();
+    expect(parseAmountValue("Non")).toBeNaN();
   });
 });
 

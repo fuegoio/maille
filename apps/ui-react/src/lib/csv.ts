@@ -25,6 +25,14 @@ export function detectDelimiter(text: string): string {
   return best;
 }
 
+// Bank exports format amounts per locale: comma decimals and thousands
+// separators that range from plain spaces to non-breaking (U+00A0) or
+// narrow no-break spaces (U+202F). parseFloat stops at any of them, so
+// strip all whitespace (\s covers every Unicode space) before parsing.
+export function parseAmountValue(raw: string): number {
+  return parseFloat(raw.replace(/\s/g, "").replace(/,/g, "."));
+}
+
 export function parseRecords(
   text: string,
   delimiter: DelimiterOption,
