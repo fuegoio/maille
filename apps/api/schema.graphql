@@ -242,6 +242,7 @@ type Investment {
   account: String!
   description: String
   id: String!
+  initialPrice: Float
   initialQuantity: Float!
   name: String!
   symbol: String
@@ -305,7 +306,7 @@ type Mutation {
   createContact(contact: String!, id: String!): Contact!
   createCounterparty(account: String!, contact: String, description: String, id: String!, initialBalance: Float, name: String!): Counterparty!
   createFund(color: String, endDate: Date, id: String!, name: String!, parentFund: String, startDate: Date): Fund!
-  createInvestment(account: String!, description: String, id: String!, initialQuantity: Float, name: String!, symbol: String): Investment!
+  createInvestment(account: String!, description: String, id: String!, initialPrice: Float, initialQuantity: Float, name: String!, symbol: String): Investment!
   createMovement(account: String!, amount: Float!, date: Date!, id: String!, name: String!): Movement!
   createMovementActivity(activityId: String!, amount: Float!, id: String!, movementId: String!): MovementActivity!
   createProject(emoji: String, id: String!, name: String!): Project!
@@ -349,7 +350,7 @@ type Mutation {
   updateAssetValuation(date: Date, id: String!, value: Float): AssetValuation!
   updateCounterparty(contact: String, description: String, id: String!, initialBalance: Float, name: String): Counterparty!
   updateFund(color: String, endDate: Date, id: String!, name: String, parentFund: String, startDate: Date): Fund!
-  updateInvestment(account: String, description: String, id: String!, initialQuantity: Float, name: String, symbol: String): Investment!
+  updateInvestment(account: String, description: String, id: String!, initialPrice: Float, initialQuantity: Float, name: String, symbol: String): Investment!
   updateInvestmentPrice(date: Date, id: String!, price: Float): InvestmentPrice!
   updateMovement(account: String, amount: Float, date: Date, id: String!, name: String): Movement!
   updateMovementActivity(amount: Float!, id: String!): MovementActivity!

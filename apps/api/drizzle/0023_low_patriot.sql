@@ -1,0 +1,1 @@
+ALTER TABLE "investments" ADD COLUMN "initial_price" real;

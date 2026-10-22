@@ -20,6 +20,7 @@ export const createInvestmentMutation = graphql(/* GraphQL */ `
     $symbol: String
     $description: String
     $initialQuantity: Float
+    $initialPrice: Float
   ) {
     createInvestment(
       id: $id
@@ -28,6 +29,7 @@ export const createInvestmentMutation = graphql(/* GraphQL */ `
       symbol: $symbol
       description: $description
       initialQuantity: $initialQuantity
+      initialPrice: $initialPrice
     ) {
       id
     }
@@ -41,6 +43,7 @@ export const updateInvestmentMutation = graphql(/* GraphQL */ `
     $symbol: String
     $description: String
     $initialQuantity: Float
+    $initialPrice: Float
   ) {
     updateInvestment(
       id: $id
@@ -48,6 +51,7 @@ export const updateInvestmentMutation = graphql(/* GraphQL */ `
       symbol: $symbol
       description: $description
       initialQuantity: $initialQuantity
+      initialPrice: $initialPrice
     ) {
       id
     }

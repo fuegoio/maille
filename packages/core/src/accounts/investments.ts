@@ -14,6 +14,13 @@ export type Investment = {
    * investment.
    */
   initialQuantity: number;
+  /**
+   * The baseline unit price before any observation: the position's
+   * opening price, the price role the initial quantity's cost plays.
+   * In effect at every date until the first dated observation lands;
+   * null means the position starts unpriced.
+   */
+  initialPrice: number | null;
 };
 
 /**
@@ -77,6 +84,22 @@ export function investmentQuantityAt(
 }
 
 /**
+ * The unit price in effect at `at`: the latest observation at or
+ * before it, or the initial price when none has landed yet. Null
+ * means the investment has never been priced: no value exists, as
+ * opposed to a value of zero.
+ */
+export function unitPriceAt(
+  investment: Pick<Investment, "id" | "initialPrice">,
+  prices: readonly InvestmentPrice[],
+  at: Date,
+): number | null {
+  const price = latestInvestmentPrice(prices, investment.id, at);
+  if (price !== null) return price.price;
+  return investment.initialPrice;
+}
+
+/**
  * The investment's market value at `at`: units held (derived from the
  * ledger legs) times the unit price in effect then. Null when unpriced:
  * the caller decides how absence is displayed, and never books it.
@@ -87,7 +110,7 @@ export function investmentValueAt(
   prices: readonly InvestmentPrice[],
   at: Date,
 ): number | null {
-  const price = latestInvestmentPrice(prices, investment.id, at);
+  const price = unitPriceAt(investment, prices, at);
   if (price === null) return null;
-  return investmentQuantityAt(investment, transactions) * price.price;
+  return investmentQuantityAt(investment, transactions) * price;
 }

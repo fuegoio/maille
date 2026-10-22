@@ -32,6 +32,7 @@ export const registerInvestmentsMutations = () => {
         symbol: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
         initialQuantity: t.arg.float({ required: false }),
+        initialPrice: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const account = (
@@ -56,6 +57,7 @@ export const registerInvestmentsMutations = () => {
               symbol: args.symbol || undefined,
               description: args.description || undefined,
               initialQuantity: args.initialQuantity ?? 0,
+              initialPrice: args.initialPrice ?? null,
             })
             .returning()
         )[0];
@@ -72,6 +74,7 @@ export const registerInvestmentsMutations = () => {
             symbol: investment.symbol,
             description: investment.description,
             initialQuantity: investment.initialQuantity,
+            initialPrice: investment.initialPrice,
           },
           createdAt: new Date(),
           clientId: ctx.session.id,
@@ -93,6 +96,7 @@ export const registerInvestmentsMutations = () => {
         symbol: t.arg.string({ required: false }),
         description: t.arg.string({ required: false }),
         initialQuantity: t.arg.float({ required: false }),
+        initialPrice: t.arg.float({ required: false }),
       },
       resolve: async (root, args, ctx) => {
         const investment = await getUserInvestment(args.id, ctx.user.id);
@@ -125,6 +129,10 @@ export const registerInvestmentsMutations = () => {
         }
         if (args.initialQuantity != null) {
           updates.initialQuantity = args.initialQuantity;
+        }
+        // Nullable field: null clears the opening price back to unpriced.
+        if (args.initialPrice !== undefined) {
+          updates.initialPrice = args.initialPrice;
         }
 
         const updatedInvestment = (

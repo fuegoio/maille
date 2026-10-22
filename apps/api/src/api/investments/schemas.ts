@@ -14,6 +14,7 @@ InvestmentSchema.implement({
     symbol: t.exposeString("symbol", { nullable: true }),
     description: t.exposeString("description", { nullable: true }),
     initialQuantity: t.exposeFloat("initialQuantity"),
+    initialPrice: t.exposeFloat("initialPrice", { nullable: true }),
   }),
 });
 
